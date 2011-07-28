@@ -56,9 +56,9 @@ int  main               OF((int argc, char *argv[]));
 /* ===========================================================================
  * Test compress() and uncompress()
  */
-void test_compress(compr, comprLen, uncompr, uncomprLen)
-    Byte *compr, *uncompr;
-    uLong comprLen, uncomprLen;
+void test_compress(
+    Byte *compr, uLong comprLen, 
+	Byte *uncompr, uLong uncomprLen)
 {
     int err;
     uLong len = (uLong)strlen(hello)+1;

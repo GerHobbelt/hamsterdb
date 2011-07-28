@@ -15,11 +15,12 @@
 
 /* @(#) $Id$ */
 
-#include <stdio.h>
+/* [i_a] #include <stdio.h> */
 #include "zlib.h"
 
 #ifdef STDC
 #  include <string.h>
+#  include <stdio.h> /* [i_a] FILE i/o on MSVC platform */
 #  include <stdlib.h>
 #endif
 

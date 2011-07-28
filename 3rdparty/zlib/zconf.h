@@ -8,6 +8,42 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
+
+
+
+
+/* [i_a] */
+#ifndef HAS_MSVC_2005_ISO_RTL
+#if defined(_MSC_VER)
+#if _MSC_VER >= 1400 /* VS.NET 2005 or above: 'fix' those deprecated functions */
+#define HAS_MSVC_2005_ISO_RTL     1
+#endif
+#endif
+
+#ifndef HAS_MSVC_2005_ISO_RTL
+#define HAS_MSVC_2005_ISO_RTL     0
+#endif
+
+#if HAS_MSVC_2005_ISO_RTL
+#pragma warning(disable : 4996)
+// Or just turn off warnings about the newly deprecated CRT functions.
+#ifndef _CRT_SECURE_NO_DEPRECATE
+#define _CRT_SECURE_NO_DEPRECATE
+#endif
+#ifndef _CRT_NONSTDC_NO_DEPRECATE
+#define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+#ifndef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES    
+#define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES     1
+#endif
+#endif
+#endif
+/* [/i_a] */
+
+
+
+
+
 /*
  * If you *really* need a unique prefix for all types and library functions,
  * compile with -DZ_PREFIX. The "standard" zlib should be compiled without it.
@@ -164,7 +200,7 @@
                         /* Type declarations */
 
 #ifndef OF /* function prototypes */
-#  ifdef STDC
+#  if defined(STDC) || defined(_MSC_VER) /* [i_a] */
 #    define OF(args)  args
 #  else
 #    define OF(args)  ()

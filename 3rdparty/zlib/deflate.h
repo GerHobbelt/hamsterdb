@@ -10,8 +10,8 @@
 
 /* @(#) $Id$ */
 
-#ifndef DEFLATE_H
-#define DEFLATE_H
+#ifndef _DEFLATE_H /* [i_a] */
+#define _DEFLATE_H
 
 #include "zutil.h"
 

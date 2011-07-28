@@ -28,8 +28,8 @@
   (zlib format), rfc1951.txt (deflate format) and rfc1952.txt (gzip format).
 */
 
-#ifndef ZLIB_H
-#define ZLIB_H
+#ifndef _ZLIB_H /* [i_a] */
+#define _ZLIB_H
 
 #include "zconf.h"
 
@@ -1348,7 +1348,7 @@ ZEXTERN int ZEXPORT inflateBackInit_ OF((z_streamp strm, int windowBits,
         ZLIB_VERSION, sizeof(z_stream))
 
 
-#if !defined(ZUTIL_H) && !defined(NO_DUMMY_DECL)
+#if !defined(_ZUTIL_H) && !defined(NO_DUMMY_DECL)
     struct internal_state {int dummy;}; /* hack for buggy compilers */
 #endif
 
