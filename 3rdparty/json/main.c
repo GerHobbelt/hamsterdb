@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <locale.h>
 
 #include "JSON_parser.h"
 
@@ -23,17 +24,17 @@ static int s_IsKey = 0;
 static void print_indention()
 {
     size_t i;
-    
+
     for (i = 0; i < s_Level; ++i) {
         printf(s_pIndention);
     }
 }
- 
+
 
 static int print(void* ctx, int type, const JSON_value* value)
 {
     switch(type) {
-    case JSON_T_ARRAY_BEGIN:    
+    case JSON_T_ARRAY_BEGIN:
         if (!s_IsKey) print_indention();
         s_IsKey = 0;
         printf("[\n");
@@ -65,7 +66,8 @@ static int print(void* ctx, int type, const JSON_value* value)
     case JSON_T_FLOAT:
         if (!s_IsKey) print_indention();
         s_IsKey = 0;
-        printf("float: %s\n", value->vu.str.value); /* We wanted stringified floats */
+        // printf("float: %s\n", value->vu.str.value); /* We wanted stringified floats */
+        printf("float: " JSON_PARSER_FLOAT_SPRINTF_TOKEN "\n", value->vu.float_value); /* We wanted stringified floats */
         break;
     case JSON_T_NULL:
         if (!s_IsKey) print_indention();
@@ -86,7 +88,7 @@ static int print(void* ctx, int type, const JSON_value* value)
         s_IsKey = 1;
         print_indention();
         printf("key = '%s', value = ", value->vu.str.value);
-        break;   
+        break;
     case JSON_T_STRING:
         if (!s_IsKey) print_indention();
         s_IsKey = 0;
@@ -96,12 +98,15 @@ static int print(void* ctx, int type, const JSON_value* value)
         assert(0);
         break;
     }
-    
+
     return 1;
 }
 
+
 int main(int argc, char* argv[]) {
     int count = 0;
+    FILE* input;
+
 /*
     Read STDIN. Exit with a message if the input is not well-formed JSON text.
 
@@ -111,17 +116,26 @@ int main(int argc, char* argv[]) {
     JSON_config config;
 
     struct JSON_parser_struct* jc = NULL;
-    
+
     init_JSON_config(&config);
-    
+
     config.depth                  = 20;
     config.callback               = &print;
     config.allow_comments         = 1;
-    config.handle_floats_manually = 1;
-    
+    config.handle_floats_manually = 0;
+
+    /* Important! Set locale before parser is created.*/
+    if (argc >= 2) {
+        if (!setlocale(LC_ALL, argv[1])) {
+            fprintf(stderr, "Failed to set locale to '%s'\n", argv[1]);
+        }
+    } else {
+        fprintf(stderr, "No locale provided, C locale is used\n");
+    }
+
     jc = new_JSON_parser(&config);
-    
-    FILE* input = stdin;
+
+    input = stdin;
     for (; input ; ++count) {
         int next_char = fgetc(input);
         if (next_char <= 0) {
@@ -138,6 +152,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "JSON_parser_end: syntax error\n");
         return 1;
     }
-    
+
     return 0;
 }
+
