@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -48,7 +48,7 @@ extern "C" {
 #define HAM_TRANSFER_MAGIC_V1   (('h'<<24)|('a'<<16)|('m'<<8)|'1')
 
 /**
- * the maximum number of indices (if this file is an environment with 
+ * the maximum number of indices (if this file is an environment with
  * multiple indices)
  */
 #define DB_MAX_INDICES      16  /* 16*32 = 512 byte wasted */
@@ -69,7 +69,7 @@ extern "C" {
 /**
  * the persistent database index header
  */
-typedef HAM_PACK_0 union HAM_PACK_1 
+typedef HAM_PACK_0 union HAM_PACK_1
 {
     HAM_PACK_0 struct HAM_PACK_1 {
         /** name of the DB: 1..HAM_DEFAULT_DATABASE_NAME-1 */
@@ -83,7 +83,7 @@ typedef HAM_PACK_0 union HAM_PACK_1
 
         /* reserved */
         ham_u16_t  _reserved1;
-    
+
         /** address of this page */
         ham_offset_t _self;
 
@@ -133,7 +133,7 @@ typedef HAM_PACK_0 union HAM_PACK_1
  * set the cache for extended keys
  */
 #define db_set_extkey_cache(db, c) (db)->_extkey_cache=(c)
- 
+
 /**
  * the database structure
  */
@@ -212,7 +212,7 @@ struct ham_db_t
     /** some database specific run-time data */
     ham_runtime_statistics_dbdata_t _db_perf_data;
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     /** the remote database handle */
     ham_u64_t _remote_handle;
 #endif
@@ -230,31 +230,31 @@ struct ham_db_t
     /**
      * get number of keys
      */
-    ham_status_t (*_fun_get_key_count)(ham_db_t *db, ham_txn_t *txn, 
+    ham_status_t (*_fun_get_key_count)(ham_db_t *db, ham_txn_t *txn,
                     ham_u32_t flags, ham_offset_t *keycount);
 
     /**
      * insert a key/value pair
      */
-    ham_status_t (*_fun_insert)(ham_db_t *db, ham_txn_t *txn, 
+    ham_status_t (*_fun_insert)(ham_db_t *db, ham_txn_t *txn,
                     ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
     /**
      * erase a key/value pair
      */
-    ham_status_t (*_fun_erase)(ham_db_t *db, ham_txn_t *txn, 
+    ham_status_t (*_fun_erase)(ham_db_t *db, ham_txn_t *txn,
                     ham_key_t *key, ham_u32_t flags);
 
     /**
      * lookup of a key/value pair
      */
-    ham_status_t (*_fun_find)(ham_db_t *db, ham_txn_t *txn, 
+    ham_status_t (*_fun_find)(ham_db_t *db, ham_txn_t *txn,
                     ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
     /**
      * create a cursor
      */
-    ham_status_t (*_fun_cursor_create)(ham_db_t *db, ham_txn_t *txn, 
+    ham_status_t (*_fun_cursor_create)(ham_db_t *db, ham_txn_t *txn,
                     ham_u32_t flags, ham_cursor_t **cursor);
 
     /**
@@ -265,7 +265,7 @@ struct ham_db_t
     /**
      * insert a key with a cursor
      */
-    ham_status_t (*_fun_cursor_insert)(ham_cursor_t *cursor, 
+    ham_status_t (*_fun_cursor_insert)(ham_cursor_t *cursor,
                     ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
     /**
@@ -276,25 +276,25 @@ struct ham_db_t
     /**
      * position the cursor on a key and return the record
      */
-    ham_status_t (*_fun_cursor_find)(ham_cursor_t *cursor, ham_key_t *key, 
+    ham_status_t (*_fun_cursor_find)(ham_cursor_t *cursor, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /**
      * get number of duplicates
      */
-    ham_status_t (*_fun_cursor_get_duplicate_count)(ham_cursor_t *cursor, 
+    ham_status_t (*_fun_cursor_get_duplicate_count)(ham_cursor_t *cursor,
                     ham_size_t *count, ham_u32_t flags);
 
     /**
      * overwrite a cursor
      */
-    ham_status_t (*_fun_cursor_overwrite)(ham_cursor_t *cursor, 
+    ham_status_t (*_fun_cursor_overwrite)(ham_cursor_t *cursor,
                     ham_record_t *record, ham_u32_t flags);
 
     /**
      * move a cursor, return key and/or record
      */
-    ham_status_t (*_fun_cursor_move)(ham_cursor_t *cursor, 
+    ham_status_t (*_fun_cursor_move)(ham_cursor_t *cursor,
                     ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
     /**
@@ -384,7 +384,7 @@ struct ham_db_t
 #define db_set_duplicate_compare_func(db, f)     (db)->_duperec_func=(f)
 
 /**
- * get the runtime-flags - the flags are "mixed" with the flags from 
+ * get the runtime-flags - the flags are "mixed" with the flags from
  * the Environment
  */
 #define db_get_rt_flags(db)            (env_get_rt_flags(db_get_env(db))      \
@@ -501,13 +501,13 @@ struct ham_db_t
 
 /**
  * Mix a set of flag bits into the data access mode, according to the rule
- * 
+ *
  * <pre>
  * DAM(new) = (DAM & and_mask) | or_mask
  * </pre>
- * 
+ *
  * This is a quick qay to set or unset particular DAM bits.
- * 
+ *
  * @sa ham_data_access_modes
  */
 #define db_set_data_access_mode_masked(db, or_mask, and_mask)                \
@@ -526,8 +526,8 @@ struct ham_db_t
 #define db_is_active(db)   (db)->_is_active
 
 /**
- * set the 'active' flag of the database: a non-zero value 
- * for @a s sets the @a db to 'active', zero(0) sets the @a db 
+ * set the 'active' flag of the database: a non-zero value
+ * for @a s sets the @a db to 'active', zero(0) sets the @a db
  * to 'inactive' (closed)
  */
 #define db_set_active(db,s)  (db)->_is_active=!!(s)
@@ -569,17 +569,17 @@ db_uncouple_all_cursors(ham_page_t *page, ham_size_t start);
  *
  * This is the default key compare function, which uses memcmp to compare two keys.
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
-extern int HAM_CALLCONV 
+extern int HAM_CALLCONV
 db_default_compare(ham_db_t *db,
         const ham_u8_t *lhs, ham_size_t lhs_length,
         const ham_u8_t *rhs, ham_size_t rhs_length);
@@ -589,17 +589,17 @@ db_default_compare(ham_db_t *db,
  *
  * this function compares two record numbers
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
-extern int HAM_CALLCONV 
+extern int HAM_CALLCONV
 db_default_recno_compare(ham_db_t *db,
         const ham_u8_t *lhs, ham_size_t lhs_length,
         const ham_u8_t *rhs, ham_size_t rhs_length);
@@ -609,17 +609,17 @@ db_default_recno_compare(ham_db_t *db,
  *
  * compares the prefix of two keys
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
-extern int HAM_CALLCONV 
+extern int HAM_CALLCONV
 db_default_prefix_compare(ham_db_t *db,
         const ham_u8_t *lhs, ham_size_t lhs_length,
         ham_size_t lhs_real_length,
@@ -629,17 +629,17 @@ db_default_prefix_compare(ham_db_t *db,
 /**
  * compare two records for a duplicate key
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
-extern int HAM_CALLCONV 
+extern int HAM_CALLCONV
 db_default_dupe_compare(ham_db_t *db,
         const ham_u8_t *lhs, ham_size_t lhs_length,
         const ham_u8_t *rhs, ham_size_t rhs_length);
@@ -662,15 +662,15 @@ db_get_extended_key(ham_db_t *db, ham_u8_t *key_data,
  *
  * calls the comparison function
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
 extern int
 db_compare_keys(ham_db_t *db, ham_key_t *lsh, ham_key_t *rhs);
@@ -680,12 +680,12 @@ db_compare_keys(ham_db_t *db, ham_key_t *lsh, ham_key_t *rhs);
  * in such a way that @ref db_compare_keys can use the data and optionally
  * call @ref db_get_extended_key on this key to obtain all key data, when this
  * is an extended key.
- * 
+ *
  * the 'ptr' says whether the first or the second static pointer should be
  * used. Valid values are 0 and 1.
  */
-extern ham_status_t 
-db_prepare_ham_key_for_compare(ham_db_t *db, int ptr, 
+extern ham_status_t
+db_prepare_ham_key_for_compare(ham_db_t *db, int ptr,
                 int_key_t *src, ham_key_t *dest);
 
 /**
@@ -697,24 +697,24 @@ db_create_backend(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t flags);
 /**
  * fetch a page.
  *
- * @param page_ref call-by-reference variable which will be set to 
+ * @param page_ref call-by-reference variable which will be set to
  *      point to the retrieved @ref ham_page_t instance.
  * @param db the database handle - if it's not available then please
  *      use env_fetch_page()
- * @param address the storage address (a.k.a. 'RID') where the page is 
- *      located in the device store (file, memory, ...). 
- * @param flags An optional, bit-wise combined set of the 
+ * @param address the storage address (a.k.a. 'RID') where the page is
+ *      located in the device store (file, memory, ...).
+ * @param flags An optional, bit-wise combined set of the
  *      @ref db_fetch_page_flags flag collection.
  *
- * @return the retrieved page in @a *page_ref and HAM_SUCCESS as a 
+ * @return the retrieved page in @a *page_ref and HAM_SUCCESS as a
  *      function return value.
- * @return a NULL value in @a *page_ref and HAM_SUCCESS when the page 
- *      could not be retrieved because the set conditions were not be 
- *      met (see @ref DB_ONLY_FROM_CACHE) 
+ * @return a NULL value in @a *page_ref and HAM_SUCCESS when the page
+ *      could not be retrieved because the set conditions were not be
+ *      met (see @ref DB_ONLY_FROM_CACHE)
  * @return one of the @ref ham_status_codes error codes as an error occurred.
  */
 extern ham_status_t
-db_fetch_page(ham_page_t **page_ref, ham_db_t *db, 
+db_fetch_page(ham_page_t **page_ref, ham_db_t *db,
         ham_offset_t address, ham_u32_t flags);
 
 /*
@@ -722,32 +722,32 @@ db_fetch_page(ham_page_t **page_ref, ham_db_t *db,
  * doing.
  */
 extern ham_status_t
-db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db, 
+db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         ham_offset_t address, ham_u32_t flags);
 
 /**
  * @defgroup db_fetch_page_flags @ref db_fetch_page Flags
  * @{
  *
- * These flags can be bitwise-OR mixed with the @ref HAM_HINTS_MASK flags, 
+ * These flags can be bitwise-OR mixed with the @ref HAM_HINTS_MASK flags,
  * i.e. the hint bits as listed in @ref ham_hinting_flags
  *
- * @sa ham_hinting_flags 
+ * @sa ham_hinting_flags
  */
 
 /**
- * Force @ref db_fetch_page to only return a valid @ref ham_page_t instance 
- * reference when it is still stored in the cache, otherwise a NULL pointer 
+ * Force @ref db_fetch_page to only return a valid @ref ham_page_t instance
+ * reference when it is still stored in the cache, otherwise a NULL pointer
  * will be returned instead (and no error code)!
  */
 #define DB_ONLY_FROM_CACHE                0x0002
 
 /**
- * Register new pages in the cache, but give them an 'old' age upon first 
+ * Register new pages in the cache, but give them an 'old' age upon first
  * creation, so they are flushed before anything else.
  *
- * This is a hacky way to ensure code simplicity while blob I/O does not 
- * thrash the cache but meanwhile still gets added to the activity log in 
+ * This is a hacky way to ensure code simplicity while blob I/O does not
+ * thrash the cache but meanwhile still gets added to the activity log in
  * a proper fashion.
  */
 #define DB_NEW_PAGE_DOES_THRASH_CACHE    0x0004
@@ -768,7 +768,7 @@ db_flush_page(ham_env_t *env, ham_page_t *page, ham_u32_t flags);
  *
  * @param flags Set to DB_FLUSH_NODELETE if you do NOT want the cache to
  * be cleared
- * @param cache 
+ * @param cache
  */
 extern ham_status_t
 db_flush_all(ham_cache_t *cache, ham_u32_t flags);
@@ -778,7 +778,7 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags);
 /**
  * Allocate a new page.
  *
- * @param page_ref call-by-reference result: will store the @ref ham_page_t 
+ * @param page_ref call-by-reference result: will store the @ref ham_page_t
  *        instance reference.
  * @param db the database; if the database handle is not available, you
  *        can use env_alloc_page
@@ -789,14 +789,14 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags);
  *        - PAGE_IGNORE_FREELIST        ignores all freelist-operations
  *        - PAGE_CLEAR_WITH_ZERO        memset the persistent page with 0
  *        - DB_NEW_PAGE_DOES_THRASH_CACHE
- *        - PAGE_DONT_LOG_CONTENT       do not log page content for new 
+ *        - PAGE_DONT_LOG_CONTENT       do not log page content for new
  *                                      pages
  *
  * @note The page will be aligned at the current page size. Any wasted
  * space (due to the alignment) is added to the freelist.
  */
 extern ham_status_t
-db_alloc_page(ham_page_t **page_ref, ham_db_t *db, 
+db_alloc_page(ham_page_t **page_ref, ham_db_t *db,
                 ham_u32_t type, ham_u32_t flags);
 
 /*
@@ -804,7 +804,7 @@ db_alloc_page(ham_page_t **page_ref, ham_db_t *db,
  * doing.
  */
 extern ham_status_t
-db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db, 
+db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
                 ham_u32_t type, ham_u32_t flags);
 
 #define PAGE_IGNORE_FREELIST          8
@@ -836,7 +836,7 @@ extern ham_status_t
 db_write_page_and_delete(ham_page_t *page, ham_u32_t flags);
 
 /**
- * Resize the record data buffer. This buffer is an internal storage for 
+ * Resize the record data buffer. This buffer is an internal storage for
  * record buffers. When a ham_record_t structure is returned to the user,
  * the record->data pointer will point to this buffer.
  *
@@ -846,7 +846,7 @@ extern ham_status_t
 db_resize_record_allocdata(ham_db_t *db, ham_size_t size);
 
 /**
- * Resize the key data buffer. This buffer is an internal storage for 
+ * Resize the key data buffer. This buffer is an internal storage for
  * key buffers. When a ham_key_t structure is returned to the user,
  * the key->data pointer will point to this buffer.
  *
@@ -856,7 +856,7 @@ extern ham_status_t
 db_resize_key_allocdata(ham_db_t *db, ham_size_t size);
 
 /**
-* @defgroup ham_database_flags 
+* @defgroup ham_database_flags
 * @{
 */
 
@@ -866,7 +866,7 @@ db_resize_key_allocdata(ham_db_t *db, ham_size_t size);
 #define DB_USE_MMAP                  0x00000100
 
 /**
- * An internal database flag - env handle is private to 
+ * An internal database flag - env handle is private to
  * the @ref ham_db_t instance
  */
 #define DB_ENV_IS_PRIVATE            0x00080000

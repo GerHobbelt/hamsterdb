@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -36,20 +36,20 @@ extern "C" {
 
 /**
  * This is the minimum chunk size; all chunks (pages and blobs) are aligned
- * to this size. 
+ * to this size.
  *
- * WARNING: pages (and 'aligned' huge blobs) are aligned to 
- * a DB_PAGESIZE_MIN_REQD_ALIGNMENT boundary, that is, any 'aligned=true' 
- * freelist allocations will produce blocks which are aligned to a 
+ * WARNING: pages (and 'aligned' huge blobs) are aligned to
+ * a DB_PAGESIZE_MIN_REQD_ALIGNMENT boundary, that is, any 'aligned=true'
+ * freelist allocations will produce blocks which are aligned to a
  * 8*32 == 256 bytes boundary.
  */
 #define DB_CHUNKSIZE        32
 
 /**
- * The minimum required database page alignment: since the freelist scanner 
- * works on a byte-boundary basis for aligned storage, all aligned storage 
- * must/align to an 8-bits times 1 DB_CHUNKSIZE-per-bit boundary. Which for a 
- * 32 bytes chunksize means your pagesize minimum required alignment/size 
+ * The minimum required database page alignment: since the freelist scanner
+ * works on a byte-boundary basis for aligned storage, all aligned storage
+ * must/align to an 8-bits times 1 DB_CHUNKSIZE-per-bit boundary. Which for a
+ * 32 bytes chunksize means your pagesize minimum required alignment/size
  * is 8*32 = 256 bytes.
  */
 #define DB_PAGESIZE_MIN_REQD_ALIGNMENT		(8 * DB_CHUNKSIZE)
@@ -59,7 +59,7 @@ extern "C" {
 /**
  * the persistent database header
  */
-typedef HAM_PACK_0 struct HAM_PACK_1 
+typedef HAM_PACK_0 struct HAM_PACK_1
 {
 	/** magic cookie - always "ham\0" */
 	ham_u8_t  _magic[4];
@@ -89,10 +89,10 @@ typedef HAM_PACK_0 struct HAM_PACK_1
 	/** reserved */
 	ham_u16_t _reserved1;
 
-	/* 
-	 * following here: 
+	/*
+	 * following here:
 	 *
-	 * 1. the private data of the index backend(s) 
+	 * 1. the private data of the index backend(s)
 	 *      -> see env_get_indexdata()
 	 *
 	 * 2. the freelist data
@@ -138,7 +138,7 @@ struct ham_env_t
 
     /** the log object */
     ham_log_t *_log;
-		   
+
     /** the Environment flags - a combination of the persistent flags
      * and runtime flags */
     ham_u32_t _rt_flags;
@@ -152,19 +152,19 @@ struct ham_env_t
     /** the cachesize which was specified when the env was created/opened */
     ham_size_t _cachesize;
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     /** libcurl remote handle */
     void *_curl;
 #endif
 
-    /** the max. number of databases which was specified when the env 
+    /** the max. number of databases which was specified when the env
      * was created */
 	ham_u16_t _max_databases;
 
-	/** 
+	/**
      * non-zero after this item has been opened/created.
-	 * Indicates whether this environment is 'active', i.e. between 
-	 * a create/open and matching close API call. 
+	 * Indicates whether this environment is 'active', i.e. between
+	 * a create/open and matching close API call.
      */
 	unsigned _is_active: 1;
 
@@ -185,7 +185,7 @@ struct ham_env_t
 	ham_runtime_statistics_globdata_t _perf_data;
 
     /*
-     * following here: function pointers which implement access to 
+     * following here: function pointers which implement access to
      * local or remote databases. they are initialized in ham_env_create_ex
      * and ham_env_open_ex after the ham_env_t handle was initialized and
      * an allocator was created.
@@ -210,19 +210,19 @@ struct ham_env_t
     /**
      * rename a database in the Environment
      */
-    ham_status_t (*_fun_rename_db)(ham_env_t *env, ham_u16_t oldname, 
+    ham_status_t (*_fun_rename_db)(ham_env_t *env, ham_u16_t oldname,
             ham_u16_t newname, ham_u32_t flags);
 
     /**
      * erase a database from the Environment
      */
-    ham_status_t (*_fun_erase_db)(ham_env_t *env, ham_u16_t name, 
+    ham_status_t (*_fun_erase_db)(ham_env_t *env, ham_u16_t name,
             ham_u32_t flags);
 
     /**
      * get all database names
      */
-    ham_status_t (*_fun_get_database_names)(ham_env_t *env, 
+    ham_status_t (*_fun_get_database_names)(ham_env_t *env,
             ham_u16_t *names, ham_size_t *count);
 
     /**
@@ -238,33 +238,33 @@ struct ham_env_t
     /**
      * create a database in the environment
      */
-    ham_status_t (*_fun_create_db)(ham_env_t *env, ham_db_t *db, 
-                ham_u16_t dbname, ham_u32_t flags, 
+    ham_status_t (*_fun_create_db)(ham_env_t *env, ham_db_t *db,
+                ham_u16_t dbname, ham_u32_t flags,
                 const ham_parameter_t *param);
 
     /**
      * open a database in the environment
      */
-    ham_status_t (*_fun_open_db)(ham_env_t *env, ham_db_t *db, 
-                ham_u16_t dbname, ham_u32_t flags, 
+    ham_status_t (*_fun_open_db)(ham_env_t *env, ham_db_t *db,
+                ham_u16_t dbname, ham_u32_t flags,
                 const ham_parameter_t *param);
 
     /**
      * create a transaction in this environment
      */
-    ham_status_t (*_fun_txn_begin)(ham_env_t *env, ham_db_t *db, 
+    ham_status_t (*_fun_txn_begin)(ham_env_t *env, ham_db_t *db,
                 ham_txn_t **txn, ham_u32_t flags);
 
     /**
      * aborts a transaction
      */
-    ham_status_t (*_fun_txn_abort)(ham_env_t *env, ham_txn_t *txn, 
+    ham_status_t (*_fun_txn_abort)(ham_env_t *env, ham_txn_t *txn,
                 ham_u32_t flags);
 
     /**
      * commits a transaction
      */
-    ham_status_t (*_fun_txn_commit)(ham_env_t *env, ham_txn_t *txn, 
+    ham_status_t (*_fun_txn_commit)(ham_env_t *env, ham_txn_t *txn,
                 ham_u32_t flags);
 
     /**
@@ -388,13 +388,13 @@ env_get_header(ham_env_t *env);
 #define env_is_dirty(env)                page_is_dirty(env_get_header_page(env))
 
 /**
- * Get a reference to the array of database-specific private data; 
+ * Get a reference to the array of database-specific private data;
  * interpretation of the data is up to the backends.
  *
- * @return a pointer to the persisted @ref db_indexdata_t data array. 
+ * @return a pointer to the persisted @ref db_indexdata_t data array.
  *
  * @note Use @ref env_get_indexdata_ptr instead when you want a reference to the
- *       @ref db_indexdata_t-based private data for a particular database in 
+ *       @ref db_indexdata_t-based private data for a particular database in
  *       the environment.
  */
 #define env_get_indexdata_arrptr(env)                                         \
@@ -402,13 +402,13 @@ env_get_header(ham_env_t *env);
         env_get_header_page(env)) + sizeof(env_header_t)))
 
 /**
- * Get the private data of the specified database stored at index @a i; 
+ * Get the private data of the specified database stored at index @a i;
  * interpretation of the data is up to the backend.
  *
- * @return a pointer to the persisted @ref db_indexdata_t data for the 
+ * @return a pointer to the persisted @ref db_indexdata_t data for the
  * given database.
  *
- * @note Use @ref db_get_indexdata_offset to retrieve the @a i index value 
+ * @note Use @ref db_get_indexdata_offset to retrieve the @a i index value
  * for your database.
  */
 #define env_get_indexdata_ptr(env, i)      (env_get_indexdata_arrptr(env) + (i))
@@ -443,12 +443,12 @@ env_get_header(ham_env_t *env);
  */
 #define env_set_rt_flags(env, f)         (env)->_rt_flags=(f)
 
-/** 
+/**
  * get the linked list of all open databases
  */
 #define env_get_list(env)                (env)->_next
 
-/** 
+/**
  * set the linked list of all open databases
  */
 #define env_set_list(env, db)            (env)->_next=(db)
@@ -578,8 +578,8 @@ env_set_serialno(ham_env_t *env, ham_u32_t n);
 	 env_get_max_databases(env)*sizeof(db_indexdata_t))
 
 /**
- * set the 'active' flag of the environment: a non-zero value 
- * for @a s sets the @a env to 'active', zero(0) sets the @a env 
+ * set the 'active' flag of the environment: a non-zero value
+ * for @a s sets the @a env to 'active', zero(0) sets the @a env
  * to 'inactive' (closed)
  */
 #define env_set_active(env,s)       (env)->_is_active=!!(s)
@@ -645,7 +645,7 @@ env_set_serialno(ham_env_t *env, ham_u32_t n);
  * no Database handle
  */
 extern ham_status_t
-env_fetch_page(ham_page_t **page_ref, ham_env_t *env, 
+env_fetch_page(ham_page_t **page_ref, ham_env_t *env,
         ham_offset_t address, ham_u32_t flags);
 
 /**
@@ -672,16 +672,16 @@ env_initialize_remote(ham_env_t *env);
 
 /**
  * Ensure that the environment occupies a minimum number of pages.
- * 
+ *
  * This is useful with various storage devices to prevent / reduce
  * fragmentation.
- * 
+ *
  * @param env the environment reference.
- * @param minimum_page_count The desired minimum number of storage pages 
+ * @param minimum_page_count The desired minimum number of storage pages
         * available to the environment/database.
- * 
- * process: 
- * 
+ *
+ * process:
+ *
  * <ol>
  * <li> detect how many pages we already have in the environment
  * <li> calculate how many pages we should have
@@ -689,7 +689,7 @@ env_initialize_remote(ham_env_t *env);
  *      the device driver to allocate the remainder and mark
  *      them all as 'free'.
  * </ol>
- * 
+ *
  * @remark Caveat:
  *    The required size may be so large that it does not
  *    fit in the current freelist, so one or more of

@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -20,7 +20,7 @@
 #include "mem.h"
 #include "cursor.h"
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
 
 #define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
 #include <curl/curl.h>
@@ -53,7 +53,7 @@ __writefunc(void *buffer, size_t size, size_t nmemb, void *ptr)
 
         /* did we receive the whole data in this packet? */
         if (payload_size+8==size*nmemb) {
-            buf->wrapper=proto_unpack((ham_size_t)(size*nmemb), 
+            buf->wrapper=proto_unpack((ham_size_t)(size*nmemb),
                         (ham_u8_t *)&cbuf[0]);
             if (!buf->wrapper)
                 return (0);
@@ -173,7 +173,7 @@ _perform_request(ham_env_t *env, CURL *handle, proto_wrapper_t *request,
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 _remote_fun_create(ham_env_t *env, const char *filename,
             ham_u32_t flags, ham_u32_t mode, const ham_parameter_t *param)
 {
@@ -198,7 +198,7 @@ _remote_fun_create(ham_env_t *env, const char *filename,
     st=proto_connect_reply_get_status(reply);
     if (st==0) {
         env_set_curl(env, handle);
-        env_set_rt_flags(env, 
+        env_set_rt_flags(env,
                 env_get_rt_flags(env)
                     |proto_connect_reply_get_env_flags(reply));
     }
@@ -208,8 +208,8 @@ _remote_fun_create(ham_env_t *env, const char *filename,
     return (st);
 }
 
-static ham_status_t 
-_remote_fun_open(ham_env_t *env, const char *filename, ham_u32_t flags, 
+static ham_status_t
+_remote_fun_open(ham_env_t *env, const char *filename, ham_u32_t flags,
         const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -233,7 +233,7 @@ _remote_fun_open(ham_env_t *env, const char *filename, ham_u32_t flags,
     st=proto_connect_reply_get_status(reply);
     if (st==0) {
         env_set_curl(env, handle);
-        env_set_rt_flags(env, 
+        env_set_rt_flags(env,
                 env_get_rt_flags(env)
                     |proto_connect_reply_get_env_flags(reply));
     }
@@ -244,7 +244,7 @@ _remote_fun_open(ham_env_t *env, const char *filename, ham_u32_t flags,
 }
 
 static ham_status_t
-_remote_fun_rename_db(ham_env_t *env, ham_u16_t oldname, 
+_remote_fun_rename_db(ham_env_t *env, ham_u16_t oldname,
                 ham_u16_t newname, ham_u32_t flags)
 {
     ham_status_t st;
@@ -275,7 +275,7 @@ _remote_fun_erase_db(ham_env_t *env, ham_u16_t name, ham_u32_t flags)
 {
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_env_erase_db_request(name, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -297,7 +297,7 @@ _remote_fun_erase_db(ham_env_t *env, ham_u16_t name, ham_u32_t flags)
 }
 
 static ham_status_t
-_remote_fun_get_database_names(ham_env_t *env, ham_u16_t *names, 
+_remote_fun_get_database_names(ham_env_t *env, ham_u16_t *names,
             ham_size_t *count)
 {
     ham_status_t st;
@@ -336,7 +336,7 @@ _remote_fun_get_database_names(ham_env_t *env, ham_u16_t *names,
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 _remote_fun_env_get_parameters(ham_env_t *env, ham_parameter_t *param)
 {
     static char filename[1024];
@@ -345,7 +345,7 @@ _remote_fun_env_get_parameters(ham_env_t *env, ham_parameter_t *param)
     ham_size_t i=0, num_names=0;
     ham_u32_t *names;
     ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -355,7 +355,7 @@ _remote_fun_env_get_parameters(ham_env_t *env, ham_parameter_t *param)
     }
 
     /* allocate a memory and copy the parameter names */
-    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env), 
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
             num_names*sizeof(ham_u32_t));
     if (!names)
         return (HAM_OUT_OF_MEMORY);
@@ -414,7 +414,7 @@ _remote_fun_env_get_parameters(ham_env_t *env, ham_parameter_t *param)
             break;
         case HAM_PARAM_GET_FILENAME:
             if (proto_env_get_parameters_reply_has_filename(reply)) {
-                strncpy(filename, 
+                strncpy(filename,
                         proto_env_get_parameters_reply_get_filename(reply),
                             sizeof(filename));
                 p->value=PTR_TO_U64(&filename[0]);
@@ -458,8 +458,8 @@ _remote_fun_env_flush(ham_env_t *env, ham_u32_t flags)
     return (st);
 }
 
-static ham_status_t 
-_remote_fun_create_db(ham_env_t *env, ham_db_t *db, 
+static ham_status_t
+_remote_fun_create_db(ham_env_t *env, ham_db_t *db,
         ham_u16_t dbname, ham_u32_t flags, const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -468,7 +468,7 @@ _remote_fun_create_db(ham_env_t *env, ham_db_t *db,
     ham_u32_t *names;
     ham_u64_t *values;
     const ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -478,9 +478,9 @@ _remote_fun_create_db(ham_env_t *env, ham_db_t *db,
     }
 
     /* allocate a memory and copy the parameter names */
-    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env), 
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
             num_params*sizeof(ham_u32_t));
-    values=(ham_u64_t *)allocator_alloc(env_get_allocator(env), 
+    values=(ham_u64_t *)allocator_alloc(env_get_allocator(env),
             num_params*sizeof(ham_u64_t));
     if (!names || !values)
         return (HAM_OUT_OF_MEMORY);
@@ -493,7 +493,7 @@ _remote_fun_create_db(ham_env_t *env, ham_db_t *db,
         }
     }
 
-    request=proto_init_env_create_db_request(dbname, flags, 
+    request=proto_init_env_create_db_request(dbname, flags,
                 names, values, num_params);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -540,8 +540,8 @@ _remote_fun_create_db(ham_env_t *env, ham_db_t *db,
     return (db_initialize_remote(db));
 }
 
-static ham_status_t 
-_remote_fun_open_db(ham_env_t *env, ham_db_t *db, 
+static ham_status_t
+_remote_fun_open_db(ham_env_t *env, ham_db_t *db,
         ham_u16_t dbname, ham_u32_t flags, const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -550,7 +550,7 @@ _remote_fun_open_db(ham_env_t *env, ham_db_t *db,
     ham_u32_t *names;
     ham_u64_t *values;
     const ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -560,9 +560,9 @@ _remote_fun_open_db(ham_env_t *env, ham_db_t *db,
     }
 
     /* allocate a memory and copy the parameter names */
-    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env), 
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
             num_params*sizeof(ham_u32_t));
-    values=(ham_u64_t *)allocator_alloc(env_get_allocator(env), 
+    values=(ham_u64_t *)allocator_alloc(env_get_allocator(env),
             num_params*sizeof(ham_u64_t));
     if (!names || !values)
         return (HAM_OUT_OF_MEMORY);
@@ -575,7 +575,7 @@ _remote_fun_open_db(ham_env_t *env, ham_db_t *db,
         }
     }
 
-    request=proto_init_env_open_db_request(dbname, flags, 
+    request=proto_init_env_open_db_request(dbname, flags,
                 names, values, num_params);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -630,17 +630,17 @@ _remote_fun_env_close(ham_env_t *env, ham_u32_t flags)
         curl_easy_cleanup(env_get_curl(env));
         env_set_curl(env, 0);
     }
-    
+
     return (0);
 }
 
 static ham_status_t
-_remote_fun_txn_begin(ham_env_t *env, ham_db_t *db, 
+_remote_fun_txn_begin(ham_env_t *env, ham_db_t *db,
                 ham_txn_t **txn, ham_u32_t flags)
 {
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_txn_begin_request(db_get_remote_handle(db), flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -660,7 +660,7 @@ _remote_fun_txn_begin(ham_env_t *env, ham_db_t *db,
         return (st);
     }
 
-    *txn=(ham_txn_t *)allocator_alloc(env_get_allocator(env), 
+    *txn=(ham_txn_t *)allocator_alloc(env_get_allocator(env),
                             sizeof(ham_txn_t));
     if (!(*txn))
         return (HAM_OUT_OF_MEMORY);
@@ -671,7 +671,7 @@ _remote_fun_txn_begin(ham_env_t *env, ham_db_t *db,
         *txn=0;
     }
     else {
-        txn_set_remote_handle(*txn, 
+        txn_set_remote_handle(*txn,
                     proto_txn_begin_reply_get_txn_handle(reply));
     }
 
@@ -685,7 +685,7 @@ _remote_fun_txn_commit(ham_env_t *env, ham_txn_t *txn, ham_u32_t flags)
 {
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_txn_commit_request(txn_get_remote_handle(txn), flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -721,7 +721,7 @@ _remote_fun_txn_abort(ham_env_t *env, ham_txn_t *txn, ham_u32_t flags)
     proto_wrapper_t *request, *reply;
 
     request=proto_init_txn_abort_request(txn_get_remote_handle(txn), flags);
-    
+
     st=_perform_request(env, env_get_curl(env), request, &reply);
     proto_delete(request);
     if (st) {
@@ -754,7 +754,7 @@ _remote_fun_close(ham_db_t *db, ham_u32_t flags)
     ham_status_t st;
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
+
     /*
      * auto-cleanup cursors?
      */
@@ -801,7 +801,7 @@ _remote_fun_get_parameters(ham_db_t *db, ham_parameter_t *param)
     ham_size_t i, num_names=0;
     ham_u32_t *names;
     ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -811,7 +811,7 @@ _remote_fun_get_parameters(ham_db_t *db, ham_parameter_t *param)
     }
 
     /* allocate a memory and copy the parameter names */
-    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env), 
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
             num_names*sizeof(ham_u32_t));
     if (!names)
         return (HAM_OUT_OF_MEMORY);
@@ -909,8 +909,8 @@ _remote_fun_check_integrity(ham_db_t *db, ham_txn_t *txn)
     ham_status_t st;
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
-    request=proto_init_check_integrity_request(db_get_remote_handle(db), 
+
+    request=proto_init_check_integrity_request(db_get_remote_handle(db),
                         txn ? txn_get_remote_handle(txn) : 0);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -937,8 +937,8 @@ _remote_fun_get_key_count(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
     ham_status_t st;
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
-    request=proto_init_db_get_key_count_request(db_get_remote_handle(db), 
+
+    request=proto_init_db_get_key_count_request(db_get_remote_handle(db),
                         txn ? txn_get_remote_handle(txn) : 0, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -973,9 +973,9 @@ _remote_fun_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
     /* recno: do not send the key */
     if (db_get_rt_flags(db)&HAM_RECORD_NUMBER)
         send_key=HAM_FALSE;
-    
-    request=proto_init_db_insert_request(db_get_remote_handle(db), 
-                        txn ? txn_get_remote_handle(txn) : 0, 
+
+    request=proto_init_db_insert_request(db_get_remote_handle(db),
+                        txn ? txn_get_remote_handle(txn) : 0,
                         send_key ? key : 0, record, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1013,8 +1013,8 @@ _remote_fun_find(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
 
-    request=proto_init_db_find_request(db_get_remote_handle(db), 
-                        txn ? txn_get_remote_handle(txn) : 0, 
+    request=proto_init_db_find_request(db_get_remote_handle(db),
+                        txn ? txn_get_remote_handle(txn) : 0,
                         key, record, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1069,9 +1069,9 @@ _remote_fun_erase(ham_db_t *db, ham_txn_t *txn, ham_key_t *key, ham_u32_t flags)
     ham_status_t st;
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
-    request=proto_init_db_erase_request(db_get_remote_handle(db), 
-                        txn ? txn_get_remote_handle(txn) : 0, 
+
+    request=proto_init_db_erase_request(db_get_remote_handle(db),
+                        txn ? txn_get_remote_handle(txn) : 0,
                         key, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1098,8 +1098,8 @@ _remote_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
     ham_env_t *env=db_get_env(db);
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
-    request=proto_init_cursor_create_request(db_get_remote_handle(db), 
+
+    request=proto_init_cursor_create_request(db_get_remote_handle(db),
                         txn ? txn_get_remote_handle(txn) : 0, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1119,12 +1119,12 @@ _remote_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
         return (st);
     }
 
-    *cursor=(ham_cursor_t *)allocator_calloc(env_get_allocator(env), 
+    *cursor=(ham_cursor_t *)allocator_calloc(env_get_allocator(env),
                             sizeof(ham_cursor_t));
     if (!(*cursor))
         return (HAM_OUT_OF_MEMORY);
 
-    cursor_set_remote_handle(*cursor, 
+    cursor_set_remote_handle(*cursor,
                 proto_cursor_create_reply_get_cursor_handle(reply));
 
     proto_delete(reply);
@@ -1138,7 +1138,7 @@ _remote_cursor_clone(ham_cursor_t *src, ham_cursor_t **dest)
     ham_env_t *env=db_get_env(cursor_get_db(src));
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_cursor_clone_request(cursor_get_remote_handle(src));
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1158,12 +1158,12 @@ _remote_cursor_clone(ham_cursor_t *src, ham_cursor_t **dest)
         return (st);
     }
 
-    *dest=(ham_cursor_t *)allocator_calloc(env_get_allocator(env), 
+    *dest=(ham_cursor_t *)allocator_calloc(env_get_allocator(env),
                             sizeof(ham_cursor_t));
     if (!(*dest))
         return (HAM_OUT_OF_MEMORY);
 
-    cursor_set_remote_handle(*dest, 
+    cursor_set_remote_handle(*dest,
                 proto_cursor_clone_reply_get_cursor_handle(reply));
 
     proto_delete(reply);
@@ -1177,7 +1177,7 @@ _remote_cursor_close(ham_cursor_t *cursor)
     ham_status_t st;
     ham_env_t *env=db_get_env(cursor_get_db(cursor));
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_cursor_close_request(cursor_get_remote_handle(cursor));
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1211,8 +1211,8 @@ _remote_cursor_insert(ham_cursor_t *cursor, ham_key_t *key,
     /* recno: do not send the key */
     if (db_get_rt_flags(db)&HAM_RECORD_NUMBER)
         send_key=HAM_FALSE;
-    
-    request=proto_init_cursor_insert_request(cursor_get_remote_handle(cursor), 
+
+    request=proto_init_cursor_insert_request(cursor_get_remote_handle(cursor),
                         send_key ? key : 0, record, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1251,8 +1251,8 @@ _remote_cursor_erase(ham_cursor_t *cursor, ham_u32_t flags)
     ham_db_t *db=cursor_get_db(cursor);
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
-    request=proto_init_cursor_erase_request(cursor_get_remote_handle(cursor), 
+
+    request=proto_init_cursor_erase_request(cursor_get_remote_handle(cursor),
                                     flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1274,7 +1274,7 @@ _remote_cursor_erase(ham_cursor_t *cursor, ham_u32_t flags)
 }
 
 static ham_status_t
-_remote_cursor_find(ham_cursor_t *cursor, ham_key_t *key, 
+_remote_cursor_find(ham_cursor_t *cursor, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
@@ -1282,9 +1282,9 @@ _remote_cursor_find(ham_cursor_t *cursor, ham_key_t *key,
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
 
-    request=proto_init_cursor_find_request(cursor_get_remote_handle(cursor), 
+    request=proto_init_cursor_find_request(cursor_get_remote_handle(cursor),
                         key, record, flags);
-    
+
     st=_perform_request(env, env_get_curl(env), request, &reply);
     proto_delete(request);
     if (st) {
@@ -1297,7 +1297,7 @@ _remote_cursor_find(ham_cursor_t *cursor, ham_key_t *key,
     ham_assert(proto_has_cursor_find_reply(reply)!=0, (""));
 
     st=proto_cursor_find_reply_get_status(reply);
-    if (st) 
+    if (st)
         goto bail;
 
     /* approx. matching: need to copy the _flags! */
@@ -1323,14 +1323,14 @@ bail:
 }
 
 static ham_status_t
-_remote_cursor_get_duplicate_count(ham_cursor_t *cursor, 
+_remote_cursor_get_duplicate_count(ham_cursor_t *cursor,
         ham_size_t *count, ham_u32_t flags)
 {
     ham_status_t st;
     ham_db_t *db=cursor_get_db(cursor);
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_cursor_get_duplicate_count_request(
                         cursor_get_remote_handle(cursor), flags);
 
@@ -1346,7 +1346,7 @@ _remote_cursor_get_duplicate_count(ham_cursor_t *cursor,
     ham_assert(proto_has_cursor_get_duplicate_count_reply(reply)!=0, (""));
 
     st=proto_cursor_get_duplicate_count_reply_get_status(reply);
-    if (st) 
+    if (st)
         goto bail;
 
     *count=proto_cursor_get_duplicate_count_reply_get_count(reply);
@@ -1357,14 +1357,14 @@ bail:
 }
 
 static ham_status_t
-_remote_cursor_overwrite(ham_cursor_t *cursor, 
+_remote_cursor_overwrite(ham_cursor_t *cursor,
             ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
     ham_db_t *db=cursor_get_db(cursor);
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_cursor_overwrite_request(
                         cursor_get_remote_handle(cursor), record, flags);
 
@@ -1387,15 +1387,15 @@ _remote_cursor_overwrite(ham_cursor_t *cursor,
 }
 
 static ham_status_t
-_remote_cursor_move(ham_cursor_t *cursor, ham_key_t *key, 
+_remote_cursor_move(ham_cursor_t *cursor, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
     ham_db_t *db=cursor_get_db(cursor);
     ham_env_t *env=db_get_env(db);
     proto_wrapper_t *request, *reply;
-    
-    request=proto_init_cursor_move_request(cursor_get_remote_handle(cursor), 
+
+    request=proto_init_cursor_move_request(cursor_get_remote_handle(cursor),
                         key, record, flags);
 
     st=_perform_request(env, env_get_curl(env), request, &reply);
@@ -1410,7 +1410,7 @@ _remote_cursor_move(ham_cursor_t *cursor, ham_key_t *key,
     ham_assert(proto_has_cursor_move_reply(reply)!=0, (""));
 
     st=proto_cursor_move_reply_get_status(reply);
-    if (st) 
+    if (st)
         goto bail;
 
     /* modify key/record, but make sure that USER_ALLOC is respected! */
@@ -1452,7 +1452,7 @@ bail:
 ham_status_t
 env_initialize_remote(ham_env_t *env)
 {
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     env->_fun_create             =_remote_fun_create;
     env->_fun_open               =_remote_fun_open;
     env->_fun_rename_db          =_remote_fun_rename_db;
@@ -1478,7 +1478,7 @@ env_initialize_remote(ham_env_t *env)
 ham_status_t
 db_initialize_remote(ham_db_t *db)
 {
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     db->_fun_close          =_remote_fun_close;
     db->_fun_get_parameters =_remote_fun_get_parameters;
     db->_fun_check_integrity=_remote_fun_check_integrity;
