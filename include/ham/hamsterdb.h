@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -13,7 +13,7 @@
  * @file hamsterdb.h
  * @brief Include file for hamsterdb Embedded Storage
  * @author Christoph Rupp, chris@crupp.de
- * @version 1.1.10
+ * @version 1.1.11
  *
  * @mainpage
  *
@@ -2099,8 +2099,8 @@ ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
  * size */
 #define HAM_PARAM_CACHESIZE          0x00000100
 
-/** Parameter name for @ref ham_open_ex, @ref ham_create_ex; sets the page
- * size */
+/** Parameter name for @ref ham_env_create_ex, @ref ham_create_ex; sets the 
+ * page size */
 #define HAM_PARAM_PAGESIZE           0x00000101
 
 /** Parameter name for @ref ham_create_ex; sets the key size */
