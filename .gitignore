@@ -21,3 +21,6 @@ messages.pb.cc
 messages.pb.h
 documentation
 
+*.bak
+*~
+
