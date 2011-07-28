@@ -1,4 +1,9 @@
 *.o
+*.bak
+*.a
+*.la
+*.obj
+*~
 Makefile
 Makefile.in
 aclocal.m4
