@@ -469,8 +469,19 @@ page_set_next(ham_page_t *page, int which, ham_page_t *other);
 /**
  * check if a page is in a linked list
  */
+#if HAM_DEBUG
 extern ham_bool_t 
 page_is_in_list(ham_page_t *head, ham_page_t *page, int which);
+#else
+#define page_is_in_list(head, page, which)                          \
+    (page_get_next(page, which)                                     \
+        ? HAM_TRUE                                                  \
+        : (page_get_previous(page, which))                          \
+            ? HAM_TRUE                                              \
+            : (head==page)                                          \
+                ? HAM_TRUE                                          \
+                : HAM_FALSE)
+#endif
 
 /**
  * linked list functions: insert the page at the beginning of a list

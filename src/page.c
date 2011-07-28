@@ -113,7 +113,6 @@ page_set_previous(ham_page_t *page, int which, ham_page_t *other)
     if (other)
         my_validate_page(other);
 }
-#endif /* HAM_DEBUG */
 
 ham_bool_t 
 page_is_in_list(ham_page_t *head, ham_page_t *page, int which)
@@ -126,6 +125,7 @@ page_is_in_list(ham_page_t *head, ham_page_t *page, int which)
         return (HAM_TRUE);
     return (HAM_FALSE);
 }
+#endif /* HAM_DEBUG */
 
 ham_page_t *
 page_list_insert(ham_page_t *head, int which, ham_page_t *page)
@@ -268,28 +268,22 @@ page_flush(ham_page_t *page)
 	ham_assert(dev, (0));
 	env = device_get_env(dev);
 	ham_assert(env, (0));
-	ham_assert(page_get_owner(page) ? env == db_get_env(page_get_owner(page)) : 1, (0));
-
-    /* 
-     * refcount can be zero if ham_flush() is called - therefore the following
-     * assert is not valid:
-     *
-     * ham_assert(page_get_refcount(page)==0, (0)); 
-     */
+	ham_assert(page_get_owner(page) 
+                    ? env == db_get_env(page_get_owner(page)) 
+                    : 1, (0));
 
 	/* 
-	as we are about to write a modified page to disc, we MUST flush 
-	the log before we do write the page in order to assure crash 
-	recovery:
-
-	as this page belongs to us, it may well be a page which was modified
-	in the pending transaction and any such edits should be REWINDable
-	after a crash when that page has just been written.
-	*/
-    if (env
-        && env_get_log(env) 
-        && !(log_get_state(env_get_log(env))&LOG_STATE_CHECKPOINT)) 
-	{
+	 * as we are about to write a modified page to disc, we MUST flush 
+	 * the log before we do write the page in order to assure crash 
+	 * recovery:
+     *
+	 * as this page belongs to us, it may well be a page which was modified
+	 * in the pending transaction and any such edits should be REWINDable
+	 * after a crash when that page has just been written.
+	 */
+    if (env 
+            && env_get_log(env)
+            && !(log_get_state(env_get_log(env))&LOG_STATE_CHECKPOINT)) {
         st=ham_log_append_flush_page(env_get_log(env), page);
         if (st)
             return (st);

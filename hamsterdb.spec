@@ -1,9 +1,7 @@
-%define __soversion_major 1
-%define __soversion %{__soversion_major}.1.8
 
 Summary: hamsterdb Embedded Storage
 Name: hamsterdb
-Version: 1.1.9
+Version: 1.1.10
 Release: 1%{?dist}
 Source0: http://hamsterdb.com/public/dl/%{name}-%{version}.tar.gz
 URL: http://hamsterdb.com/

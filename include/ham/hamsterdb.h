@@ -13,7 +13,93 @@
  * @file hamsterdb.h
  * @brief Include file for hamsterdb Embedded Storage
  * @author Christoph Rupp, chris@crupp.de
- * @version 1.1.9
+ * @version 1.1.10
+ *
+ * @mainpage
+ *
+ * This manual documents the hamsterdb C API. hamsterdb is a key/value database
+ * that is linked directly into your application, avoiding all the overhead
+ * that is related to external databases and RDBMS systems.
+ *
+ * This header file declares all functions and macros that are needed to use
+ * hamsterdb. The comments are formatted in Doxygen style and can be extracted
+ * to automagically generate documentation. The documentation is also available
+ * online here: <a href="http://hamsterdb.com/public/scripts/html_www">
+    http://hamsterdb.com/public/scripts/html_www</a>.
+ *
+ * In addition, there's a tutorial book hosted on github:
+ * <a href="http://github.com/cruppstahl/hamsterdb/wiki/Tutorial">
+    http://github.com/cruppstahl/hamsterdb/wiki/Tutorial</a>.
+ *
+ * If you want to create or open Databases or Environments (a collection of
+ * multiple Databases), the following functions will be interesting for you:
+ * <table>
+ * <tr><td>@ref ham_env_new</td><td>Allocates a new Environment handle</td></tr>
+ * <tr><td>@ref ham_env_create_ex</td><td>Creates an Environment</td></tr>
+ * <tr><td>@ref ham_env_open_ex</td><td>Opens an Environment</td></tr>
+ * <tr><td>@ref ham_env_close</td><td>Closes an Environment</td></tr>
+ * <tr><td>@ref ham_env_delete</td><td>Deletes the Environment handle</td></tr>
+ * <tr><td>@ref ham_new</td><td>Allocates a new handle for a Database</td></tr>
+ * <tr><td>@ref ham_env_create_db</td><td>Creates a Database in an
+    Environment</td></tr>
+ * <tr><td>@ref ham_env_open_db</td><td>Opens a Database from an
+    Environment</td></tr>
+ * <tr><td>@ref ham_close</td><td>Closes a Database</td></tr>
+ * <tr><td>@ref ham_delete</td><td>Deletes the Database handle</td></tr>
+ * </table>
+ *
+ * To insert, lookup or delete key/value pairs, the following functions are
+ * used:
+ * <table>
+ * <tr><td>@ref ham_insert</td><td>Inserts a key/value pair into a
+    Database</td></tr>
+ * <tr><td>@ref ham_find</td><td>Lookup of a key/value pair in a
+    Database</td></tr>
+ * <tr><td>@ref ham_erase</td><td>Erases a key/value pair from a
+    Database</td></tr>
+ * </table>
+ * 
+ * Alternatively, you can use Cursors to iterate over a Database:
+ * <table>
+ * <tr><td>@ref ham_cursor_create</td><td>Creates a new Cursor</td></tr>
+ * <tr><td>@ref ham_cursor_find</td><td>Positions the Cursor on a key</td></tr>
+ * <tr><td>@ref ham_cursor_insert</td><td>Inserts a new key/value pair with a 
+    Cursor</td></tr>
+ * <tr><td>@ref ham_cursor_erase</td><td>Deletes the key/value pair that 
+    the Cursor points to</td></tr>
+ * <tr><td>@ref ham_cursor_overwrite</td><td>Overwrites the value of the current    key</td></tr>
+ * <tr><td>@ref ham_cursor_move</td><td>Moves the Cursor to the first, next, 
+    previous or last key in the Database</td></tr>
+ * <tr><td>@ref ham_cursor_close</td><td>Closes the Cursor</td></tr>
+ * </table>
+ *
+ * If you want to use Transactions, then the following functions are required:
+ * <table>
+ * <tr><td>@ref ham_txn_begin</td><td>Begins a new Transaction</td></tr>
+ * <tr><td>@ref ham_txn_commit</td><td>Commits the current
+    Transaction</td></tr>
+ * <tr><td>@ref ham_txn_abort</td><td>Aborts the current Transaction</td></tr>
+ * </table>
+ *
+ * hamsterdb supports remote Databases via http. The server can be embedded 
+ * into your application or run standalone (see tools/hamzilla for a Unix
+ * daemon or Win32 service which hosts Databases). If you want to embed the
+ * server then the following functions have to be used:
+ * <table>
+ * <tr><td>@ref ham_srv_init</td><td>Initializes the server</td></tr>
+ * <tr><td>@ref ham_srv_add_env</td><td>Adds an Environment to the
+    server. The Environment with all its Databases will then be available
+    remotely.</td></tr>
+ * <tr><td>@ref ham_srv_close</td><td>Closes the server and frees all allocated
+    resources</td></tr>
+ * </table>
+ *
+ * If you need help then you're always welcome to use the <a
+    href="http://hamsterdb-support.1045726.n5.nabble.com/">forum</a>,
+ * drop a message (chris at crupp dot de) or with the <a 
+    href="http://hamsterdb.com/index/contact">contact form</a>.
+ *
+ * Have fun!
  */
 
 #ifndef HAM_HAMSTERDB_H__
@@ -452,9 +538,13 @@ ham_env_create(ham_env_t *env, const char *filename,
  * @param flags Optional flags for opening the Environment, combined with
  *          bitwise OR. Possible flags are:
  *      <ul>
- *       <li>@ref HAM_WRITE_THROUGH</li> Immediately write modified pages to 
- *            the disk. This slows down all Database operations, but may
- *            save the Database integrity in case of a system crash.
+ *       <li>@ref HAM_WRITE_THROUGH </li> Flushes all file handles after
+ *            committing or aborting a Transaction using fsync(), fdatasync()
+ *            or FlushFileBuffers(). This flag has no effect
+ *            if Transactions are disabled. Slows down performance but makes
+ *            sure that all file handles and operating system caches are 
+ *            transferred to disk, thus providing a stronger durability in case
+ *            the computer crashes.
  *       <li>@ref HAM_IN_MEMORY_DB</li> Creates an In-Memory Environment. No 
  *            file will be created, and the Database contents are lost after
  *            the Environment is closed. The @a filename parameter can
@@ -480,8 +570,8 @@ ham_env_create(ham_env_t *env, const char *filename,
  *            a given file at a given time. Deprecated - this is now the
  *            default
  *       <li>@ref HAM_ENABLE_RECOVERY</li> Enables logging/recovery for this
- *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB, 
- *            @ref HAM_DISABLE_FREELIST_FLUSH and @ref HAM_WRITE_THROUGH.
+ *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB 
+ *            and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS</li> Enables Transactions for this
  *            Database. 
  *            <b>Remark</b> Transactions were introduced in hamsterdb 1.0.4,
@@ -570,9 +660,13 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *       <li>@ref HAM_READ_ONLY </li> Opens the file for reading only.
  *            Operations that need write access (i.e. @ref ham_insert) will
  *            return @ref HAM_DB_READ_ONLY
- *       <li>@ref HAM_WRITE_THROUGH </li> Immediately write modified pages
- *            to the disk. This slows down all Database operations, but
- *            could save the Database integrity in case of a system crash.
+ *       <li>@ref HAM_WRITE_THROUGH </li> Flushes all file handles after
+ *            committing or aborting a Transaction using fsync(), fdatasync()
+ *            or FlushFileBuffers(). This flag has no effect
+ *            if Transactions are disabled. Slows down performance but makes
+ *            sure that all file handles and operating system caches are 
+ *            transferred to disk, thus providing a stronger durability in case
+ *            the computer crashes.
  *       <li>@ref HAM_DISABLE_MMAP </li> Do not use memory mapped files for I/O.
  *            By default, hamsterdb checks if it can use mmap,
  *            since mmap is faster than read/write. For performance
@@ -594,8 +688,7 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *       <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
  *            Database. Will return @ref HAM_NEED_RECOVERY, if the Database
  *            is in an inconsistent state. Not allowed in combination 
- *            with @ref HAM_IN_MEMORY_DB, @ref HAM_DISABLE_FREELIST_FLUSH 
- *            and @ref HAM_WRITE_THROUGH.
+ *            with @ref HAM_IN_MEMORY_DB and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_AUTO_RECOVERY </li> Automatically recover the Database,
  *            if necessary. This flag implies @ref HAM_ENABLE_RECOVERY.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
@@ -1042,6 +1135,14 @@ ham_txn_begin(ham_txn_t **txn, ham_db_t *db, ham_u32_t flags);
  * Note that the function will fail with @ref HAM_CURSOR_STILL_OPEN if
  * a Cursor was attached to this Transaction (with @ref ham_cursor_create
  * or @ref ham_cursor_clone), and the Cursor was not closed.
+ *
+ * To improve the Durability, you can specify the flag @ref HAM_WRITE_THROUGH 
+ * when opening or creating the Environment. hamsterdb will then flush all 
+ * open file handles when committing or aborting a Transaction using fsync(), 
+ * fdatasync() or FlushFileBuffers(). This slows down performance but makes
+ * sure that all file handles and operating system caches are immediately
+ * transferred to disk, thus providing a stronger durability in case the 
+ * computer crashes.
  * 
  * @param txn Pointer to a Transaction structure
  * @param flags Optional flags for committing the Transaction, combined with
@@ -1055,9 +1156,6 @@ ham_txn_begin(ham_txn_t **txn, ham_db_t *db, ham_u32_t flags);
 HAM_EXPORT ham_status_t
 ham_txn_commit(ham_txn_t *txn, ham_u32_t flags);
 
-/** Flag for @ref ham_txn_commit */
-#define HAM_TXN_FORCE_WRITE                                    1
-
 /**
  * Aborts a Transaction
  *
@@ -1066,6 +1164,14 @@ ham_txn_commit(ham_txn_t *txn, ham_u32_t flags);
  * Note that the function will fail with @ref HAM_CURSOR_STILL_OPEN if
  * a Cursor was attached to this Transaction (with @ref ham_cursor_create
  * or @ref ham_cursor_clone), and the Cursor was not closed.
+ *
+ * To improve the Durability, you can specify the flag @ref HAM_WRITE_THROUGH 
+ * when opening or creating the Environment. hamsterdb will then flush all 
+ * open file handles when committing or aborting a Transaction using fsync(), 
+ * fdatasync() or FlushFileBuffers(). This slows down performance but makes
+ * sure that all file handles and operating system caches are immediately
+ * transferred to disk, thus providing a stronger durability in case the 
+ * computer crashes.
  * 
  * @param txn Pointer to a Transaction structure
  * @param flags Optional flags for aborting the Transaction, combined with
@@ -1150,9 +1256,13 @@ ham_create(ham_db_t *db, const char *filename,
  * @param flags Optional flags for opening the Database, combined with
  *        bitwise OR. Possible flags are:
  *      <ul>
- *       <li>@ref HAM_WRITE_THROUGH </li> Immediately write modified pages to 
- *            disk. This slows down all Database operations, but may
- *            save the Database integrity in case of a system crash.
+ *       <li>@ref HAM_WRITE_THROUGH </li> Flushes all file handles after
+ *            committing or aborting a Transaction using fsync(), fdatasync()
+ *            or FlushFileBuffers(). This flag has no effect
+ *            if Transactions are disabled. Slows down performance but makes
+ *            sure that all file handles and operating system caches are 
+ *            transferred to disk, thus providing a stronger durability in case
+ *            the computer crashes.
  *       <li>@ref HAM_USE_BTREE </li> Use a B+Tree for the index structure.
  *            Currently enabled by default, but future releases
  *            of hamsterdb will offer additional index structures,
@@ -1199,8 +1309,8 @@ ham_create(ham_db_t *db, const char *filename,
  *            a given file at a given time. Deprecated - this is now the
  *            default
  *       <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
- *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB, 
- *            @ref HAM_DISABLE_FREELIST_FLUSH and @ref HAM_WRITE_THROUGH.
+ *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB 
+ *            and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
  *            Database. 
  *            <b>Remark</b> Transactions were introduced in hamsterdb 1.0.4,
@@ -1287,9 +1397,13 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *       <li>@ref HAM_READ_ONLY </li> Opens the file for reading only.
  *            Operations which need write access (i.e. @ref ham_insert) will
  *            return @ref HAM_DB_READ_ONLY.
- *       <li>@ref HAM_WRITE_THROUGH </li> Immediately write modified pages
- *            to the disk. This slows down all Database operations, but
- *            could save the Database integrity in case of a system crash.
+ *       <li>@ref HAM_WRITE_THROUGH </li> Flushes all file handles after
+ *            committing or aborting a Transaction using fsync(), fdatasync()
+ *            or FlushFileBuffers(). This flag has no effect
+ *            if Transactions are disabled. Slows down performance but makes
+ *            sure that all file handles and operating system caches are 
+ *            transferred to disk, thus providing a stronger durability in case
+ *            the computer crashes.
  *       <li>@ref HAM_DISABLE_VAR_KEYLEN </li> Do not allow the use of variable
  *            length keys. Inserting a key, which is larger than the
  *            B+Tree index key size, returns @ref HAM_INV_KEYSIZE.
@@ -1314,8 +1428,7 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *       <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
  *            Database. Will return @ref HAM_NEED_RECOVERY, if the Database
  *            is in an inconsistent state. Not allowed in combination 
- *            with @ref HAM_IN_MEMORY_DB, @ref HAM_DISABLE_FREELIST_FLUSH 
- *            and @ref HAM_WRITE_THROUGH.
+ *            with @ref HAM_IN_MEMORY_DB and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_AUTO_RECOVERY </li> Automatically recover the Database,
  *            if necessary. This flag implies @ref HAM_ENABLE_RECOVERY.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this

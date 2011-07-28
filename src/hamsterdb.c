@@ -264,11 +264,6 @@ __check_recovery_flags(ham_u32_t flags)
                        "HAM_IN_MEMORY_DB not allowed"));
             return (HAM_FALSE);
         }
-        if (flags&HAM_WRITE_THROUGH) {
-            ham_trace(("combination of HAM_ENABLE_RECOVERY and "
-                       "HAM_WRITE_THROUGH not allowed"));
-            return (HAM_FALSE);
-        }
         if (flags&HAM_DISABLE_FREELIST_FLUSH) {
             ham_trace(("combination of HAM_ENABLE_RECOVERY and "
                        "HAM_DISABLE_FREELIST_FLUSH not allowed"));
@@ -1220,7 +1215,9 @@ ham_env_create_ex(ham_env_t *env, const char *filename,
 
     env_set_active(env, HAM_TRUE);
 
-    return (st);
+    /* flush the environment to make sure that the header page is written 
+     * to disk */
+    return (ham_env_flush(env, 0));
 }
 
 ham_status_t HAM_CALLCONV
@@ -1261,7 +1258,8 @@ ham_env_create_db(ham_env_t *env, ham_db_t *db,
 
     db_set_active(db, HAM_TRUE);
 
-    return (db_set_error(db, st));
+    /* make sure that the header page is flushed */
+    return (ham_env_flush(env, 0));
 }
 
 ham_status_t HAM_CALLCONV

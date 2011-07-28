@@ -690,41 +690,6 @@ db_create_backend(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t flags)
     return btree_create(backend_ref, db, flags);
 }
 
-static ham_status_t
-__purge_cache(ham_env_t *env)
-{
-    ham_status_t st;
-    ham_page_t *page;
-
-    /*
-     * first, try to delete unused pages from the cache
-     */
-    if (env_get_cache(env) && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
-        ham_cache_t *cache=env_get_cache(env);
-
-#if defined(HAM_DEBUG) && defined(HAM_ENABLE_INTERNAL) && !defined(HAM_LEAN_AND_MEAN_FOR_PROFILING)
-        if (cache_too_big(cache)) {
-            (void)cache_check_integrity(cache);
-        }
-#endif
-
-        while (cache_too_big(cache)) {
-            page=cache_get_unused_page(cache);
-            if (!page) {
-                if (env_get_rt_flags(env)&HAM_CACHE_STRICT) 
-                    return (HAM_CACHE_FULL);
-                else
-                    break;
-            }
-            st=db_write_page_and_delete(page, 0);
-            if (st)
-                return st;
-        }
-    }
-
-    return (HAM_SUCCESS);
-}
-
 ham_status_t
 db_free_page(ham_page_t *page, ham_u32_t flags)
 {
@@ -742,11 +707,8 @@ db_free_page(ham_page_t *page, ham_u32_t flags)
     if (st)
         return (st);
 
-    if (env_get_cache(env)) {
-        st=cache_remove_page(env_get_cache(env), page);
-        if (st)
-            return (st);
-    }
+    if (env_get_cache(env))
+        cache_remove_page(env_get_cache(env), page);
 
     /*
      * if this page has a header, and it's either a B-Tree root page or 
@@ -822,7 +784,7 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         }
 #endif
         if (purge) {
-            st=__purge_cache(env);
+            st=env_purge_cache(env);
             if (st)
                 return st;
         }
@@ -867,9 +829,7 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
             goto done;
         }
         else if (st) 
-        {
             return st;
-        }
     }
 
     if (!page) {
@@ -902,24 +862,9 @@ done:
      * disable page content logging ONLY when the page is 
      * completely new (contains bogus 'before' data) 
      */
-    if (tellpos == 0) /* [i_a] BUG! */
-    {
+    if (tellpos == 0)
         flags &= ~PAGE_DONT_LOG_CONTENT;
-    }
 
-    /*
-     * As we re-purpose a page, we will reset its pagecounter as
-     * well to signal its first use as the new type assigned here.
-     *
-     * only do this if the page is reused - otherwise page_get_type()
-     * accesses uninitialized memory, and valgrind complains
-     */
-    if (tellpos && env_get_cache(env) && (page_get_type(page) != type)) {
-#if 0 // this is done at the end of this call...
-        //page_set_cache_cntr(page, env_get_cache(env)->_timeslot++);
-        cache_update_page_access_counter(newroot, env_get_cache(env)); /* bump up */
-#endif
-    }
     page_set_type(page, type);
     page_set_owner(page, db);
     page_set_undirty(page);
@@ -980,8 +925,7 @@ done:
                  a 'derived' transaction which is COMMITTED: that TXN will only
                  contain the filesize and freelist edits then!
     */
-    if (!(flags & PAGE_DONT_LOG_CONTENT) && (env && env_get_log(env)))
-    {
+    if (!(flags & PAGE_DONT_LOG_CONTENT) && (env && env_get_log(env))) {
         st=ham_log_add_page_before(page);
         if (st) 
             return st;
@@ -1006,15 +950,8 @@ done:
         }
     }
 
-    if (env_get_cache(env)) 
-    {
-        unsigned int bump = 0;
-
-        st=cache_put_page(env_get_cache(env), page);
-        if (st) {
-            return st;
-            /* TODO memleak? */
-        }
+    if (env_get_cache(env)) {
+        cache_put_page(env_get_cache(env), page);
 #if 0
         /*
         Some quick measurements indicate that this (and the btree lines which
@@ -1039,36 +976,18 @@ done:
         Don't bother with high/low watermarks in purging either as that didn't help
         neither.
         */
-        switch (type)
-        {
-        default:
-        case PAGE_TYPE_UNKNOWN:
-        case PAGE_TYPE_HEADER:
-            break;
-
-        case PAGE_TYPE_B_ROOT:
-        case PAGE_TYPE_B_INDEX:
-            bump = (cache_get_max_elements(env_get_cache(env)) + 32 - 1) / 32;
-            if (bump > 4)
-                bump = 4;
-            break;
-
-        case PAGE_TYPE_FREELIST:
-            bump = (cache_get_max_elements(env_get_cache(env)) + 8 - 1) / 8;
-            break;
-        }
 #endif
         if (flags & DB_NEW_PAGE_DOES_THRASH_CACHE) {
             /* give it an 'antique' age so this one will get flushed pronto */
-            page_set_cache_cntr(page, 1 /* cache->_timeslot - 1000 */ );
+            page_set_cache_cntr(page, 1);
         }
         else {
-            cache_update_page_access_counter(page, env_get_cache(env), bump);
+            cache_update_page_access_counter(page, env_get_cache(env), 0);
         }
     }
 
     *page_ref = page;
-    return HAM_SUCCESS;
+    return (HAM_SUCCESS);
 }
 
 ham_status_t
@@ -1116,7 +1035,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         }
 #endif
         if (purge) {
-            st=__purge_cache(env);
+            st=env_purge_cache(env);
             if (st)
                 return st;
         }
@@ -1142,14 +1061,13 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         if (page) {
             if (env_get_txn(env)) {
                 st=txn_add_page(env_get_txn(env), page, HAM_FALSE);
-                if (st) {
-                    return st;
-                }
+                if (st)
+                    return (st);
             }
             *page_ref = page;
             ham_assert(page_get_pers(page), (""));
             ham_assert(db ? page_get_owner(page)==db : 1, (""));
-            return HAM_SUCCESS;
+            return (HAM_SUCCESS);
         }
     }
 
@@ -1188,11 +1106,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
     }
 
     if (env_get_cache(env)) {
-        st=cache_put_page(env_get_cache(env), page);
-        if (st) {
-            (void)page_delete(page);
-            return st;
-        }
+        cache_put_page(env_get_cache(env), page);
         if (flags & DB_NEW_PAGE_DOES_THRASH_CACHE) {
             /* give it an 'antique' age so this one will get flushed pronto */
             page_set_cache_cntr(page, 1 /* cache->_timeslot - 1000 */ );
@@ -1218,9 +1132,8 @@ db_flush_page(ham_env_t *env, ham_page_t *page, ham_u32_t flags)
 {
     ham_status_t st;
 
-    /* write the page, if it's dirty and if write-through is enabled */
-    if ((env_get_rt_flags(env)&HAM_WRITE_THROUGH 
-            || flags&HAM_WRITE_THROUGH 
+    /* write the page if it's dirty and HAM_WRITE_THROUGH is set */
+    if ((flags&HAM_WRITE_THROUGH 
             || !env_get_cache(env)) 
             && page_is_dirty(page)) {
         st=page_flush(page);
@@ -1228,13 +1141,9 @@ db_flush_page(ham_env_t *env, ham_page_t *page, ham_u32_t flags)
             return (st);
     }
 
-    /*
-     * put page back into the cache; do NOT update the page_counter, as
-     * this flush operation should not be considered an 'additional page
-     * access' impacting the page life-time in the cache.
-     */
+    /* put page back into the cache */
     if (env_get_cache(env))
-        return (cache_put_page(env_get_cache(env), page));
+        cache_put_page(env_get_cache(env), page);
 
     return (0);
 }
@@ -1281,6 +1190,7 @@ db_write_page_and_delete(ham_page_t *page, ham_u32_t flags)
     ham_env_t *env=device_get_env(page_get_device(page));
     
     ham_assert(0 == (flags & ~DB_FLUSH_NODELETE), (0));
+    ham_assert(0 == page_get_refcount(page), (0));
 
     /*
      * write page to disk if it's dirty (and if we don't have 
@@ -1302,9 +1212,7 @@ db_write_page_and_delete(ham_page_t *page, ham_u32_t flags)
         st=db_uncouple_all_cursors(page, 0);
         if (st)
             return (st);
-        st=cache_remove_page(env_get_cache(env), page);
-        if (st)
-            return (st);
+        cache_remove_page(env_get_cache(env), page);
         st=page_free(page);
         if (st)
             return (st);

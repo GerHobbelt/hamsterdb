@@ -55,6 +55,74 @@ __check_create_parameters(ham_env_t *env, ham_db_t *db, const char *filename,
 extern ham_status_t
 free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context);
 
+static ham_status_t
+__purge_cache_max20(ham_env_t *env)
+{
+    ham_status_t st;
+    ham_page_t *page;
+    ham_cache_t *cache=env_get_cache(env);
+    unsigned i, max_pages=cache_get_cur_elements(cache);
+
+    /* don't remove pages from the cache if it's an in-memory database */
+    if (!cache)
+        return (0);
+    if ((env_get_rt_flags(env)&HAM_IN_MEMORY_DB))
+        return (0);
+    if (!cache_too_big(cache))
+        return (0);
+
+    /* 
+     * max_pages specifies how many pages we try to flush in case the
+     * cache is full. some benchmarks showed that 10% is a good value. 
+     *
+     * if STRICT cache limits are enabled then purge as much as we can
+     */
+    if (!(env_get_rt_flags(env)&HAM_CACHE_STRICT)) {
+        max_pages/=10;
+        /* but still we set an upper limit to avoid IO spikes */
+        if (max_pages>20)
+            max_pages=20;
+    }
+
+    /* try to free 10% of the unused pages */
+    for (i=0; i<max_pages; i++) {
+        page=cache_get_unused_page(cache);
+        if (!page) {
+            if (i==0 && (env_get_rt_flags(env)&HAM_CACHE_STRICT)) 
+                return (HAM_CACHE_FULL);
+            else
+                break;
+        }
+
+        st=db_write_page_and_delete(page, 0);
+        if (st)
+            return (st);
+    }
+
+    if (i==max_pages && max_pages!=0)
+        return (HAM_LIMITS_REACHED);
+    return (0);
+}
+
+ham_status_t
+env_purge_cache(ham_env_t *env)
+{
+    ham_status_t st;
+    ham_cache_t *cache=env_get_cache(env);
+
+    /* don't purge while txn is in progress */
+    if (env_get_txn(env))
+        return (0);
+
+    do {
+        st=__purge_cache_max20(env);
+        if (st && st!=HAM_LIMITS_REACHED)
+            return st;
+    } while (st==HAM_LIMITS_REACHED && cache_too_big(cache));
+
+    return (0);
+}
+
 ham_u16_t
 env_get_max_databases(ham_env_t *env)
 {
@@ -274,6 +342,7 @@ _local_fun_open(ham_env_t *env, const char *filename, ham_u32_t flags,
      * read 512 byte and extract the "real" page size, then read 
      * the real page. (but i really don't like this)
      */
+read_headerpage:
     {
         ham_page_t *page=0;
         env_header_t *hdr;
@@ -421,22 +490,28 @@ fail_with_fake_cleansing:
             }
             env_set_log(env, log);
             if (!isempty) {
-                if (flags&HAM_AUTO_RECOVERY) 
-                {
+                if (flags&HAM_AUTO_RECOVERY) {
+                    ham_page_t *hdr=env_get_header_page(env);
                     st=ham_log_recover(log, env_get_device(env), env);
                     if (st) {
                         (void)ham_env_close(env, 0);
                         return (st);
                     }
-               }
+                    /* it's highly likely that the header page was modified 
+                     * during recovery, therefore we have to read it again */
+                    page_set_undirty(hdr);
+                    (void)page_free(hdr);
+                    page_delete(hdr);
+                    env_set_header_page(env, 0);
+                    goto read_headerpage;
+                }
                 else {
-                    (void)ham_env_close(env, 0);
+                    (void)ham_env_close(env, HAM_DONT_CLEAR_LOG);
                     return (HAM_NEED_RECOVERY);
                 }
             }
         }
-        else if (st && st==HAM_FILE_NOT_FOUND)
-        {
+        else if (st && st==HAM_FILE_NOT_FOUND) {
             st=ham_log_create(env_get_allocator(env), env, 
                     env_get_filename(env), 0644, 0, &log);
             if (st) {
@@ -1295,6 +1370,9 @@ _local_fun_txn_commit(ham_env_t *env, ham_txn_t *txn, ham_u32_t flags)
     if (st==0) {
         memset(txn, 0, sizeof(*txn));
         allocator_free(env_get_allocator(env), txn);
+
+        /* now it's the time to purge caches */
+        env_purge_cache(env);
     }
 
     return (st);
@@ -1307,6 +1385,11 @@ _local_fun_txn_abort(ham_env_t *env, ham_txn_t *txn, ham_u32_t flags)
     if (st==0) {
         memset(txn, 0, sizeof(*txn));
         allocator_free(env_get_allocator(env), txn);
+    }
+
+    if (st==0 || st==HAM_CACHE_FULL) {
+        /* now it's the time to purge caches */
+        env_purge_cache(env);
     }
 
     return (st);
