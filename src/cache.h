@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -19,12 +19,12 @@
 
 #include "internal_fwd_decl.h"
 
-	
+
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
-/** CACHE_BUCKET_SIZE should be a prime number or similar, as it is used in 
+/** CACHE_BUCKET_SIZE should be a prime number or similar, as it is used in
  * a MODULO hash scheme */
 #define CACHE_BUCKET_SIZE    10317
 
@@ -56,7 +56,7 @@ struct ham_cache_t
     /** linked list of unused pages */
     ham_page_t *_garbagelist;
 
-    /** 
+    /**
      * a 'timer' counter used to set/check the age of cache entries:
      * higher values represent newer / more important entries.
      */
@@ -175,7 +175,7 @@ cache_delete(ham_cache_t *cache);
  * get an unused page (or an unreferenced page, if no unused page
  * was available
  *
- * @remark if the page is dirty, it's the caller's responsibility to 
+ * @remark if the page is dirty, it's the caller's responsibility to
  * write it to disk!
  *
  * @remark the page is removed from the cache
@@ -198,7 +198,7 @@ cache_get_page(ham_cache_t *cache, ham_offset_t address, ham_u32_t flags);
 /**
  * store a page in the cache
  */
-extern void 
+extern void
 cache_put_page(ham_cache_t *cache, ham_page_t *page);
 
 /**
@@ -206,13 +206,13 @@ cache_put_page(ham_cache_t *cache, ham_page_t *page);
  * (The page is assumed to exist in the cache!)
  */
 extern void
-cache_update_page_access_counter(ham_page_t *page, ham_cache_t *cache, 
+cache_update_page_access_counter(ham_page_t *page, ham_cache_t *cache,
                     ham_u32_t extra_bump);
 
 /**
  * remove a page from the cache
  */
-extern void 
+extern void
 cache_remove_page(ham_cache_t *cache, ham_page_t *page);
 
 /**
@@ -220,7 +220,7 @@ cache_remove_page(ham_cache_t *cache, ham_page_t *page);
  */
 #define cache_too_big(c)                                                      \
     ((cache_get_cur_elements(c)*env_get_pagesize(cache_get_env(c))            \
-            >cache_get_capacity(cache)) ? HAM_TRUE : HAM_FALSE) 
+            >cache_get_capacity(c)) ? HAM_TRUE : HAM_FALSE)
 
 /**
  * check the cache integrity
@@ -231,6 +231,6 @@ cache_check_integrity(ham_cache_t *cache);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_CACHE_H__ */
