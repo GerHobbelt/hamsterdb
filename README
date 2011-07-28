@@ -1,5 +1,5 @@
 
-hamsterdb Embedded Storage 1.1.7                   Sun Oct 31 12:50:29 CET 2010
+hamsterdb Embedded Storage 1.1.9                   Fri Feb 18 20:57:05 CET 2011
 (C) Christoph Rupp, chris@crupp.de; http://www.hamsterdb.com
 
 This is the README file of hamsterdb Embedded Storage.
@@ -12,8 +12,8 @@ hamsterdb Embedded Storage is a database engine written in ANSI C. It supports
 a B+Tree index structure, uses memory mapped I/O (if available), supports 
 fast Cursors and variable length keys and can create In-Memory Databases.
 
-This release fixes a bug when using HAM_DIRECT_ACCESS and records with
-a size <= 8 bytes. It also features major performance improvements. 
+This release fixes a bug in the Transaction handling, and an out-of-memory
+condition with long-running Transactions. 
 
 2. Changes
 
@@ -21,20 +21,27 @@ New Features
 * none
 
 Bugfixes
-* HAM_DIRECT_ACCESS with records <= 8 bytes were not returned correctly
-* Fixed a small memory leak when using remote transactions
+* linux 64bit: when having long-running transactions with very big 
+    databases (200 GB), and the working set of mmapped memory gets too big,
+    mmap will fail and return ENOMEM. In this case, hamsterdb now falls
+    back to malloc/read.
+* merged bugfix from branch bleeding_edge: on 64bit windows, the remote
+    handles returned by the server were broken
+* several smaller fixes based on static code analysis
+* removed two wrong asserts and stabilized transaction routines with 
+    big databases and long-running transactions
 
 Other Changes
-* Several performance improvements with and without extended keys
+* added hamsterdb.spec to generate RPM files (thanks, John Gunkel)
 
 To see a list of all changes, look in the file ChangeLog.
 
 3. Roadmap
 
+- improve Transaction handling (see http://crupp.de/2010/10/14/a-new-implementation-for-transactions/)
 - update .NET wrapper
 - update Java wrapper
 - update Python wrapper
-- improve Transaction handling
 
 4. Features
 

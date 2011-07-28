@@ -795,6 +795,7 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
     ham_status_t st;
     ham_offset_t tellpos=0;
     ham_page_t *page = NULL;
+    ham_bool_t in_list=HAM_FALSE;
 
     *page_ref = 0;
     ham_assert(0 == (flags & ~(PAGE_IGNORE_FREELIST 
@@ -837,8 +838,10 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
             /* try to fetch the page from the txn */
             if (env_get_txn(env)) {
                 page=txn_get_page(env_get_txn(env), tellpos);
-                if (page)
+                if (page) {
+                    in_list=HAM_TRUE;
                     goto done;
+                }
             }
             /* try to fetch the page from the cache */
             if (env_get_cache(env)) {
@@ -995,8 +998,8 @@ done:
             return st;
     }
 
-    if (env_get_txn(env)) {
-        st=txn_add_page(env_get_txn(env), page, HAM_FALSE);
+    if (env_get_txn(env) && in_list==HAM_FALSE) {
+        st=txn_add_page(env_get_txn(env), page, HAM_TRUE);
         if (st) {
             return st;
             /* TODO memleak? */
@@ -1497,7 +1500,8 @@ _local_fun_close(ham_db_t *db, ham_u32_t flags)
      */
     (void)db_resize_record_allocdata(db, 0);
     if (db_get_key_allocdata(db)) {
-        allocator_free(env_get_allocator(env), db_get_key_allocdata(db));
+        if (env)
+            allocator_free(env_get_allocator(env), db_get_key_allocdata(db));
         db_set_key_allocdata(db, 0);
         db_set_key_allocsize(db, 0);
     }
@@ -2198,7 +2202,7 @@ _local_cursor_find(ham_cursor_t *cursor, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
-    ham_txn_t local_txn;
+    ham_txn_t local_txn={0};
     ham_db_t *db=cursor_get_db(cursor);
     ham_env_t *env=db_get_env(db);
     ham_offset_t recno=0;
