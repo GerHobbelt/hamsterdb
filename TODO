@@ -8,187 +8,72 @@ x a finished TODO item
 
 -----------------------------------------------------------------------------
 
-x hamsterdb.com: add permanent redirect from hamsterdb.com to 
-	www.hamsterdb.com (and all other domains!)
+x performance improvements for extkeys:
+    x resize the hash table
+    x ownership: one cache per DB, not per ENV
+    x when closing the DB: before freeing *ANY* page, call 
+        extkey_cache_purge_all() and delete extkey of the DB
+    x when freeing the page: don't close extkeys if extkey-cache of this
+        db was deleted
+    x key_compare_pub_to_int: how can we get around the malloc in 
+        db_prepare_...? we need two pointers and they should be owned by
+        the database (and NOT overwrite the keyalloc-pointers!)
+        -> could store pointers in btree structure
 
-x do not build mongoose if remote is diabled
+x when using DIRECT_ACCESS and the record is tiny/small (<= 8 bytes) the 
+    flag will be ignored (see email from Lionel)
+    x add unittests which show the problems
+    x and fix them :)
 
-x some cleanup:
-    x db_set_allocdata -> for records, but we need a similar function for keys!
-        currently, db_set_key_allocdata() is used, but it's very clumsy
-    x check_create_parameters -> move to env.c?? - no, also needed in
-        hamsterdb.c
-    x my_free_cb is duplicated in env.c und hamsterdb.c!
-    x make sure there are no more warnings
+x a small memory leak
+    ==12954== 44 bytes in 1 blocks are definitely lost in loss record 1 of 6
+    ==12954==    at 0x4024F20: malloc (vg_replace_malloc.c:236)
+    ==12954==    by 0x40B44E0: alloc_impl (mem.c:38)
+    ==12954==    by 0x40B0B5F: _remote_fun_txn_begin (remote.c:663)
+    ==12954==    by 0x40A582D: ham_txn_begin (hamsterdb.c:314)
+    ==12954==    by 0x8156438: RemoteTest::txnBeginCommitTest() (remote.cpp:494)
 
-x server: 
-    x shutdown time is very long (10 sec)
-    x mongoose - disable default handler (returns file listing!)
-    x add mongoose license to readme!
-    x make sure connections are not closed immediately (keep-alive)
-        -> done automatically (10 seconds)
+x when inserting sequential values (i.e. db1.c) then the hinter should kick
+    in and (with help of histograms) do an APPEND or PREPEND
+    x if upper_bound or lower_bound was set: set a flag; otherwise unset it
+    x if this flag was set: when splitting a page, select the pivot value
+        in a higher (or lower) range (or is the current algorithm good enough?)
+    x if this flag was set: compare key with upper_bound (or lower_bound)
+        on insert/btree_cursor_insert and set force_append/force_prepend
+        if it's a hit (and immediately update the histogram)
+    x unittests/debugging/profiling
 
-x move to github server!!
-    x upload/import code
-    x update release.sh scripts
-    x update ohloh enlistments
-    x update hamsterdb.com/download/subversion URL and page
-    x svnserve: disable read for anonymous access, disable write for 
-            ssh-access
-    x write a blog comment
-    x add to ChangeLog!
+x when repeatedly requesting unused pages from the cache, and the calls always
+    fail, the hinter should also kick in and avoid these calls for a certain
+    timespan (i.e. only every 5th call will go to the cache)
+    x no, don't use the hinter; but rewrite the cache mechanism to get an
+        unused page
 
-x need a client1.c sample (which works with server1.c)
+x monster.sh - errors
+    x --data_access_mode=HAM_DAM_SEQUENTIAL_INSERT --keysize=680 --duplicate=1       ../../testfiles/1/190.tst
+    x --data_access_mode=HAM_DAM_SEQUENTIAL_INSERT --keysize=680 --duplicate=1       ../../testfiles/1/194.tst
+    x --data_access_mode=HAM_DAM_SEQUENTIAL_INSERT --pagesize=1024 --overwrite=1 --keysize=16      ../../testfiles/1/170.tst
+    x --data_access_mode=HAM_DAM_SEQUENTIAL_INSERT --pagesize=1024 --overwrite=1 --keysize=16      ../../testfiles/1/ext_021.tst
 
-x more unittests
-    x test with big blobs!
-    x unittest: negative insert, negative find, negative erase
-    x unittest: ham_env_create_db w/ extended params
-    x unittest for approx matching
+x release 1.1.7
 
-x libhamserver.a should have its own libtool version! - already has!
+------------------------------------------------------------
 
-x improve documentation
-    x hamserver.h - add doxygen section etc
-    x extend the tutorial
-
-x call curl_global_cleanup() (take care - eventually not threadsafe?!)
-    x finally get rid of ALL the memory leaks for remote stuff
-
-x unix daemon
-    x -h for help
-    x -f for foreground
-    x shutdown by sending sigterm
-    x -c for config file
-    x -p for pidfile
-    x fail if no config file was specified
-    x configuration file: no default path; is set by command line parameter
-            (on windows we need a default path!)
-        x use to specify the port
-        x use to specify available databases/Environments and their url
-        x use to specify the logging (Yes, no and where to?)
-    x initialize the server
-    x create new environments and databases (if requested)
-    x on shutdown: close all environments, close the server
-    x make sure that all relevant signals are caught
-    x rename json.h/c -> config.h/c
-    x also rename functions and structures
-    x "-c config -f" does not run in foreground - getopts-bug
-    x logging: will need enhancements in hamserver
-        x access log: mongoose OPT_ACCESS_LOG
-        x error log: mongoose OPT_ERROR_LOG
-    x on shutdown: what if transactions and cursors are open?
-
-x improve documentation in hamsterdb.h
-    x ham_insert: does not list HAM_HINT_APPEND/PREPEND - not true!
-    x move all comments from ham_*_open to ham_*_open_ex
-    x move all comments from ham_*_create to ham_*_create_ex etc
-    x ham_txn_begin: has no comments, just parameters
-    x ham_open_ex: dito
-    x ham_create_ex: dito
-    x ham_open, ham_create, ham_env_open, ham_env_create: should be 
-            deprecated??? - no, but will be removed with 2.0
-
-x move hamsterdb/server to hamsterdb/src/server
-    x also rename hamserver.h to hamsterdb_srv.h? would be more consistent
-        x and hamserver_XXX to ham_srv_XXX
-    x make sure unittests are still running
-
-x add protobuf and libcurl dependency to README
-
-x fix ham_flush/ham_env_flush inconsistencies - ham_env_flush is enough
-    x ham_flush will be deprecated
-    x remove ham_flush from db.c, remote.c, server
-    x ham_env_close must call ham_env_flush - remove duplicate calls? 
-        - no, it's fine as it is
-    x make sure unittests are still working
-
-x add Windows support for remote functionality
-    x remove protobuf-c, directly use protobuf
-        x rewrite remote.c
-        x don't create 3rdparty/protocol - better: src/protocol!
-        x remove dependency from configure.in
-    x add protobuf-compiler executable to 3rdparty
-    x add precompiled protobuf-library to 3rdparty
-    x add precompiled libcurl-library to 3rdparty
-    x run unittests
-    x remove TODOs from server sources
-    x msvc: add projects for the new samples
-    x two tests fail on win32:
-        RemoteTest::getEnvParamsTest
-        RemoteTest::getDbParamsTest
-    . what about WinCE?
-
-x update win32 files to 2008
-
-x hamsterdb forum - many compiler errors on archlinux; fix them!
-    x also rename endian.h because it conflicts
-
-x ssb sent me clang/llvm static code analysis - integrate fixes
-
-x to improve testing, client/server samples should use the same path/database
-        as example.config
-
-o unix daemon/windows service
-    x read config file from where? <exename>.config
-    x command line switches -install, -start, -stop, -uninstall
-    x write logfile to file or to syslog? - no, use normal logfiles
-    x need msvc project
-    x need seperate config.example files for win32 and unix? - no
-    x linux: default config path as in windows
-    x rename (hamzilla?)
-    x when killing the unix daemon: ps -ea still shows process
-    x win32: run in foreground
-    x log errors (different error-levels)
-        x new command line parameter log-level
-        x stderr if foreground
-        x syslog (linux daemon)
-        x OutputDebugString
-    o test on win64
-
-x samples: do no longer use ham_create/ham_open, use _ex-functions instead
-
-x documentation: add information about unix daemon and win32 service to 
-    Tutorial (Wiki)
-
-o webpage changes
-    o add client1.c/server1.c to hamsterdb.com/documentation/samples
-    o update all other C/C++ samples on the webpage
-
-o utilize the github wiki
-    x move the FAQ
-    x move the tutorial
-    o samples (remove from doxygen) - really??
-    o update hamsterdb.com with the links
-    . tutorial/faq: add hinting flags
-    . tutorial/faq: add DAMs
-    . internal developer documentation (remove from doxygen)
-        o cursors
-        o ??
-
-o next release - need hamsterdb-alien package!
-
-o a small memory leak
-==12954== 44 bytes in 1 blocks are definitely lost in loss record 1 of 6
-==12954==    at 0x4024F20: malloc (vg_replace_malloc.c:236)
-==12954==    by 0x40B44E0: alloc_impl (mem.c:38)
-==12954==    by 0x40B0B5F: _remote_fun_txn_begin (remote.c:663)
-==12954==    by 0x40A582D: ham_txn_begin (hamsterdb.c:314)
-==12954==    by 0x8156438: RemoteTest::txnBeginCommitTest() (remote.cpp:494)
-
------------------------------------------------------------------------------
+o what about a HAM_RMW flag for ham_insert - it will do a read/modify/write
+    operation if the record already exists; but how can we propagate a callback
+    for this? 
+    o empty/small/tiny records
+    o large records
+    o in-memory records
+    o unittests
+    o documentation in header file
+    o documentation in wiki
 
 o release new .NET wrapper with fix from a.todorov (-> nabble)
+    x move to github
+    . add server functionality
 
-o move to github
-
-. add server functionality
-
------------------------------------------------------------------------------
-
-o create a new branch to integrate hamsterdb2 (ACID transactions, logical
-	journalling, running many Transactions in parallel)
-    -> integrate-ham2.txt in hamsterdb-meta project shows timeline
+o when compiling mongoose it shows a warning (gcc 4)
 
 . add automatic code coverage using gconv
     http://www.manpagez.com/man/1/gcov/
@@ -216,12 +101,13 @@ o create a new branch to integrate hamsterdb2 (ACID transactions, logical
         -> also clean up db.h, env.h...
     o add tests for --disable-remote and --disable-local to release.sh
 
+. remove the garbage-list from the cache - it's not used
 
 -----------------------------------------------------------------------------
 
 o update the Python API 
 
-o move to github
+x move to github
 
 . add server functionality
 
@@ -229,7 +115,7 @@ o move to github
 
 o update the java API 
 
-o move to github
+x move to github
 
 o add server functionality
 
@@ -266,6 +152,7 @@ o how can we support the following environments
     http://www.purenetworks.com/
     http://www.omegathemes.com/tf/smartages/#
     http://eucalyptus.com/
+    http://www.pctools.com/de
     x the header page image is too large
     o frontpage: have multiple images (scrolling in background) with more
         text info? 

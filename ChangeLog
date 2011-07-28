@@ -1,3 +1,28 @@
+Oct 31, 2010 - chris ---------------------------------------------------
+                      release of hamsterdb-1.1.7
+
+Oct 22, 2010 - chris ---------------------------------------------------
+o further enhanced performance by improving some cache interfaces
+
+Oct 20, 2010 - chris ---------------------------------------------------
+o enhanced performance when appending (or prepending) keys; hamsterdb 
+    will automatically assume HAM_HINT_APPEND (or HAM_HINT_PREPEND) if the 
+    previous operation was also an append (or prepend)
+
+Oct 16, 2010 - chris ---------------------------------------------------
+o fixed a small memory leak when committing remote transactions
+o bugfix: using HAM_DIRECT_ACCESS with records of a length <= 8 bytes
+    returned pointers to temporary copies of the record and not to the
+    original data (thanks, Lionel)
+
+Oct 14, 2010 - chris ---------------------------------------------------
+o another important performance improvements when using hamsterdb with
+    extended keys
+
+Oct 13, 2010 - chris ---------------------------------------------------
+o performance improvements - hamsterdb scales now better with millions
+    of keys
+
 Sep 15, 2010 - chris ---------------------------------------------------
                       release of hamsterdb-1.1.6
 

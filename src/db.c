@@ -554,8 +554,11 @@ db_get_extended_key(ham_db_t *db, ham_u8_t *key_data,
 }
 
 extern ham_status_t 
-db_prepare_ham_key_for_compare(ham_db_t *db, int_key_t *src, ham_key_t *dest)
+db_prepare_ham_key_for_compare(ham_db_t *db, int ptr, 
+                int_key_t *src, ham_key_t *dest)
 {
+    ham_btree_t *be=0;
+    mem_allocator_t *alloc;
     void *p;
 
     if (!(key_get_flags(src) & KEY_IS_EXTENDED)) {
@@ -567,18 +570,22 @@ db_prepare_ham_key_for_compare(ham_db_t *db, int_key_t *src, ham_key_t *dest)
     }
 
     dest->size = key_get_size(src);
+    be=(ham_btree_t*)db_get_backend(db);
+    alloc=env_get_allocator(db_get_env(db));
+    p = ptr ? btree_get_keydata2(be) : btree_get_keydata1(be);
+    p = allocator_realloc(alloc, p, dest->size);
+    if (ptr) btree_set_keydata2(be, p); else btree_set_keydata1(be, p);
 
-    p = allocator_alloc(env_get_allocator(db_get_env(db)), dest->size);
     if (!p) {
         dest->data = 0;
-        return HAM_OUT_OF_MEMORY;
+        return (HAM_OUT_OF_MEMORY);
     }
 
     memcpy(p, key_get_key(src), db_get_keysize(db));
     dest->data = p;
 
     /* set a flag that this memory has to be freed by hamsterdb */
-    dest->_flags |= KEY_IS_ALLOCATED;
+    //dest->_flags |= KEY_IS_ALLOCATED;
     dest->_flags |= KEY_IS_EXTENDED;
     dest->flags  |= HAM_KEY_USER_ALLOC;
 
@@ -684,7 +691,7 @@ db_create_backend(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t flags)
 }
 
 static ham_status_t
-my_purge_cache(ham_env_t *env)
+__purge_cache(ham_env_t *env)
 {
     ham_status_t st;
     ham_page_t *page;
@@ -693,18 +700,19 @@ my_purge_cache(ham_env_t *env)
      * first, try to delete unused pages from the cache
      */
     if (env_get_cache(env) && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
+        ham_cache_t *cache=env_get_cache(env);
 
 #if defined(HAM_DEBUG) && defined(HAM_ENABLE_INTERNAL) && !defined(HAM_LEAN_AND_MEAN_FOR_PROFILING)
-        if (cache_too_big(env_get_cache(env))) {
-            (void)cache_check_integrity(env_get_cache(env));
+        if (cache_too_big(cache)) {
+            (void)cache_check_integrity(cache);
         }
 #endif
 
-        while (cache_too_big(env_get_cache(env))) {
-            page=cache_get_unused_page(env_get_cache(env));
+        while (cache_too_big(cache)) {
+            page=cache_get_unused_page(cache);
             if (!page) {
                 if (env_get_rt_flags(env)&HAM_CACHE_STRICT) 
-                    return HAM_CACHE_FULL;
+                    return (HAM_CACHE_FULL);
                 else
                     break;
             }
@@ -803,17 +811,17 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
      * which can happen on Win32) */
     if (env_get_cache(env) 
             && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
-        ham_bool_t purge=HAM_TRUE;
+        ham_cache_t *cache=env_get_cache(env);
+        ham_bool_t purge=cache_too_big(cache);
 #if defined(WIN32) && defined(HAM_32BIT)
         if (env_get_rt_flags(env)&HAM_CACHE_UNLIMITED) {
-            ham_cache_t *cache=env_get_cache(env);
             if (cache_get_cur_elements(cache)*env_get_pagesize(env) 
                     > PURGE_THRESHOLD)
                 purge=HAM_FALSE;
         }
 #endif
         if (purge) {
-            st=my_purge_cache(env);
+            st=__purge_cache(env);
             if (st)
                 return st;
         }
@@ -1095,17 +1103,17 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
     if (!(flags&DB_ONLY_FROM_CACHE) 
             && env_get_cache(env) 
             && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
-        ham_bool_t purge=HAM_TRUE;
+        ham_cache_t *cache=env_get_cache(env);
+        ham_bool_t purge=cache_too_big(cache);
 #if defined(WIN32) && defined(HAM_32BIT)
         if (env_get_rt_flags(env)&HAM_CACHE_UNLIMITED) {
-            ham_cache_t *cache=env_get_cache(env);
             if (cache_get_cur_elements(cache)*env_get_pagesize(env) 
                     > PURGE_THRESHOLD)
                 purge=HAM_FALSE;
         }
 #endif
         if (purge) {
-            st=my_purge_cache(env);
+            st=__purge_cache(env);
             if (st)
                 return st;
         }
@@ -1291,6 +1299,9 @@ db_write_page_and_delete(ham_page_t *page, ham_u32_t flags)
         st=db_uncouple_all_cursors(page, 0);
         if (st)
             return (st);
+        st=cache_remove_page(env_get_cache(env), page);
+        if (st)
+            return (st);
         st=page_free(page);
         if (st)
             return (st);
@@ -1441,6 +1452,13 @@ _local_fun_close(ham_db_t *db, ham_u32_t flags)
         }
     }
 
+    /* get rid of the extkey-cache */
+    if (db_get_extkey_cache(db)) {
+        (void)extkey_cache_purge_all(db_get_extkey_cache(db));
+        extkey_cache_destroy(db_get_extkey_cache(db));
+        db_set_extkey_cache(db, 0);
+    }
+
     /*
      * in-memory-database: free all allocated blobs
      */
@@ -1482,14 +1500,6 @@ _local_fun_close(ham_db_t *db, ham_u32_t flags)
         allocator_free(env_get_allocator(env), db_get_key_allocdata(db));
         db_set_key_allocdata(db, 0);
         db_set_key_allocsize(db, 0);
-    }
-
-    /*
-     * free the cache for extended keys
-     */
-    if (db_get_extkey_cache(db)) {
-        extkey_cache_destroy(db_get_extkey_cache(db));
-        db_set_extkey_cache(db, 0);
     }
 
     /* close the backend */
