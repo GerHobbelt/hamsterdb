@@ -8,9 +8,24 @@
  *
  * See files COPYING.* for License information.
  */
-/*! \page appendix_gpl2 Appendix I: The GNU General Public License 2.0
+/*! \page trouble Troubleshooting 
 
-\verbinclude COPYING.GPL2
+\section Backwards Compatibility
+
+bla bla
+
+
+
+
+
+\subsection Migrating Databases From Older Releases
+
+export + import yada yada.
+
+No tool for that right now. 
+
+Oops?
+
 
 
 */

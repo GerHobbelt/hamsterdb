@@ -1,0 +1,133 @@
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ *
+ * See files COPYING.* for License information.
+ */
+
+/*
+special documentation snippets for the user manual: internals which would otherwise cause error/warning reports about
+undefined/undocumented items.
+
+                                  !!!
+THIS FILE SHOULD ONLY BE INCLUDED IN THE USER-LEVEL DOXYFILE; these snippets 
+should NOT be included when generating the internal documentation, i.e. when 
+using DOXYFILE.INT 
+                                  !!!
+*/
+
+
+/**
+@def DB_CHUNKSIZE
+
+[INTERNAL] defines the size of a 'chunk' of (persisted) memory; set to 32 [bytes].
+*/
+#define DB_CHUNKSIZE 32
+
+
+
+/**
+@def DB_MAX_INDICES 
+
+[INTERNAL] defines the default maximum number of databases (a.k.a. indexes) per environment. Currently set to 16. 'default maximum' means this number is
+assumed when the user did not specify a different maximum number at the time of environment creation using @ref HAM_PARAM_MAX_ENV_DATABASES.
+
+@sa ham_env_create
+*/
+#define DB_MAX_INDICES   16
+
+
+
+/**
+ * [INTERNAL] the default hamsterdb page cache size is 2 MiB. You can 
+ *            override this default value by specifying your preferred 
+ *            cache size using the @ref HAM_PARAM_CACHESIZE parameter 
+ *            when creating or opening the environment (the cache is 
+ *            shared by all databases (a.k.a. indexes) in a hamsterdb 
+ *            environment).
+
+@sa ham_create 
+@sa ham_env_create
+@sa ham_env_create_ex
+@sa ham_open
+@sa ham_env_open
+@sa ham_env_open_ex
+ */
+#define HAM_DEFAULT_CACHESIZE      (2*1024*1024)
+
+
+
+
+/**
+[INTERNAL] a compile-time activated macro which allows faulty or suspect conditions to log/write a message.
+*/
+void ham_trace(void)
+{
+}
+
+
+/**
+[INTERNAL] a compile-time activated macro which checks internal pre- and postconditions. Our version of the ubiquitous assert().
+*/
+void ham_assert(int condition)
+{
+  if (!condition) fail(report);
+}
+
+
+/**
+[INTERNAL] a compile-time activated macro which checks internal pre- and postconditions. Really an alternative for assert() for when the statement checked must be present in all builds (assert() and ham_assert() alike do not generate any code in release builds where assertion checking has been disabled for performance reasons).
+*/
+void ham_verify(int statement)
+{
+  if (!statement) fail(report);
+}
+
+
+
+/**
+[INTERNAL] Used to log a message with specified severity.
+*/
+void ham_log(char *message)
+{
+}
+
+
+
+/**
+[INTERNAL] File read mathod which uses operating system APIs which do <em>not</em> use memory mapping on any platform. Comparable to the ubiquitous fread() C run-time API.
+*/
+int pread()
+{
+}
+
+
+
+/**
+[INTERNAL] File write mathod which uses operating system APIs which do <em>not</em> use memory mapping on any platform. Comparable to the ubiquitous fwrite() C run-time API.
+*/
+int pwrite()
+{
+}
+
+
+/**
+[INTERNAL] Endian-dependent macro function which transforms persistent ('db') formatted RIDs (Record IDs) to native ('h' = host) format RIDs. This conversion ensures that files written on a Little Endian machine are readable from a Big Endian machine and vice versa, thus allowing you to transfer the hamster databases across various platforms without any cost.
+*/
+ham_offset_t ham_db2h_rid(ham_pers_rid_t rid)
+{
+}
+
+
+
+/**
+[INTERNAL] Endian-dependent macro function which transforms native ('h' = host) formatted RIDs (Record IDs) to persistent ('db') format RIDs. This conversion ensures that files written on a Little Endian machine are readable from a Big Endian machine and vice versa, thus allowing you to transfer the hamster databases across various platforms without any cost.
+*/
+ham_pers_rid_t ham_h2db_rid(ham_offset_t rid)
+{
+}
+

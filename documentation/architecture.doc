@@ -1,0 +1,312 @@
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ *
+ * See files COPYING.* for License information.
+ */
+/*! \page arch hamsterdb Architecture and Internal Structure
+
+
+
+\section arch_env_db_etc Environments, Databases ... and Tables
+
+Your first time around the hamster, especially when you come from a classic database (SQL)
+background, may be quite confusing due to the same terms being used for different
+concepts.
+
+Below we provide a table listing the various subjects and who calls what, but before we go 
+there, please be aware that the hamster is, in its essence, a key/value store and as such
+does not provide a 'query language' of any kind (like, say, SQL).
+
+Instead, key/value pairs are inserted, updated, deleted, searched for and traversed by invoking 
+specific hamster API methods, e.g. @ref ham_insert, @ref ham_insert(flags = @ref HAM_OVERWRITE),
+@ref ham_erase, @ref ham_find and @ref ham_cursor_move respectively, though more than just these
+very basic methods are available.
+
+Let us start with the big picture: you can let the hamster manage an 'environment' 
+(@ref ham_env_create / @ref ham_env_open / ...) which is the largest single entity known to
+the hamster. When you look for a similar concept, then you will find that others refer to 
+this sort of thing as a 'schema' or 'database'.
+
+Unfortunately, the hamster uses the term 'database' for would otherwise be considered a single
+'table' within such an 'environment' (schema / ...).
+
+Hamster databases (tables) nor any other parts of its 'environments' can be shared between 
+environments: every part of an environment is strictly a part of that environment: 
+databases (tables), log/recovery files, etc.
+
+The basic hamster environment is stored in a single file, but the hamster supports partitioning
+the environment and database space, so that a single 'environment' may encompass a large set
+of files located on several different storage media.
+
+
+
+
+
+
+
+
+what we call a database is a 'table' is SQL database parlance.
+
+While our environments might be considered a 'database' or maybe more like a 'schema'.
+
+'recno' is a 'sequence' in Oracle terms
+
+
+
+
+
+\section architectural_overview Architectural overview
+
+
+
+yada yada 
+
+when time allows (probably not) add dot graph to show block digram of api upper 
+layer, btree middle section and generic device backend, so it's quickly visible 
+where that alluded hash table would end up.
+
+
+tbd
+
+A picture of the hamster modular layout.
+
+A few lines on why what goes where.
+
+
+
+
+\section arch_design_blocks Design Blocks
+
+tbd
+
+
+
+\section arch_api_layer The API layer
+
+Our ham_xyz functions, which wrap several chunks of functionality and form a simple application
+programming interface: transactions, database management and access (CRUD).
+
+'upsert' functionality can be had by specifying the overwrite flag with the insert operation.
+
+
+
+
+\section arch_backend The Backend
+
+The meat of the database query technology sits here. The default backend is a B+-tree with a
+span between 5 and 65535. 
+
+Anything that speeds up these actions in a cross-device portable fashion is located in here as well: the
+hinters and B+-tree statistics gatherer.
+
+
+
+\section arch_cursors Cursors
+
+Cursors impact both the API and Backend building blocks and this has been solved by cordoning off all
+backend-specific behaviour in the cursor interface: a cursor is like a OO class instance, where the
+supported actions are provided through methods, which in the 'C' language become function pointers.
+
+
+
+
+\section arch_transactions Transactions
+
+Transaction logic, where it sits and what it means for the various backends.
+
+How we go about committing and aborting (rollbacking) transactions.
+
+Segue into logging, given the need to properly detect transaction completion upon crash + reboot.
+
+
+
+\section arch_log_and_recovery Logging and Recovery
+
+The benefits and drawbacks of database logging. Note that we do not perform 
+action logging (logging keys and records with each operation; this type of 
+logging works well for transaction management, but is rather unadvised when it 
+comes to database crash recovery as such a log needs a known state even around 
+the time of the crash, which is exactly what you don't get) but page logging 
+(impact logging?) which takes up more space and is slower, but guarantees 
+recovery within rather wide bounds.
+
+Yes, there are situations where a transaction og won't save your bacon, so 
+backing up your database is strongly advised at all times,
+
+
+Mention the swapping of log files: why and when.
+
+
+
+\section arch_the_device The Device
+
+A big honkin' piece of tech, ranging from easy-as-pie memory and flat file I/O 
+devices, which serve the active backend directly, to complex partitioning and 
+replication-capable device collectives organized in a device graph. 
+
+
+
+\section arch_performance Speed Is Not An Afterthought
+
+Or is it ;-)
+
+Anyway, discuss caches: page caches, freelist caches, and such tiny morsels as 
+the single key store dragged along by the ham_db_t struct to reduce the number 
+of alloc/free operations when traversing a (part of) a database.
+
+Then there's the bottlenecks: freelist and indexing system (B+-tree), with 
+particular focus on the freelist management. Before 1.1.2 this freelist 
+management was shared among all databases in a single environment but with the 
+advent of paritioning devices the freelist is distributed across these devices, 
+allowing, for instance, a paritioning scheme which partitions the storage space 
+by daabase name, resulting in each database in such an environment having its 
+own device instance, which in turn allows us to untangle the freelist bottleneck 
+by giving each database its own freelist.
+
+And that's just one example.
+
+The hinsters and statistics gathering at dual levels (freelist and backend 
+level) helps speed up operations both as a group and individually.
+
+
+
+
+\section arch_putting_it_all_together Putting it all together: API, backends and devices
+
+bla bla about the merger of API level wrappers, transaction, logging, backend 
+and device modules into one working whole.
+
+
+
+\subsection arch_device_graph The Device Graph: Why It Is Not A Stack Or Chain
+
+When you ish to 'bundle' certain partitions, the ability to 'bundle' multiple 
+outgoing edges into a single vertex (device node) is highly desirable.
+
+This DAG (Directed Acyclic Graph) of devices is a generalization of a device 
+tree, which is what happens when you introduce partition schemes as device 
+nodes.
+
+These nodes are also called 'device layers' within the code, as the device 
+organization in the DAG can most often be viewed as multiple stacked layers of 
+devices, one feeding into another until the data ends up on a physical storage 
+medium, be it a hard disc, flash memory card or otherwise.
+
+
+
+\section arch_special_considerations Special Considerations
+
+The not-so-simple pieces of the puzzle.
+
+
+\subsection arch_db_validation Database Validation / Integrity Checking
+
+yeah
+
+
+\subsection arch_bulk_io Bulk I/O
+
+currently absent. More or less a set of single actions, where the hinters and cursors
+can help a lot, unless the hamster one day attains a truely dedicated bulk [C]RUD interface.
+
+
+\subsection arch_dupe_keys_and_foreign_keys Duplicate Keys and Secondary Indexes
+
+Of course the hamster supports duplicate keys in databases, but what about secondary indexes, i.e.
+indexes on foreign keys?
+
+Sorted record storage for dupe keys helps here when such a daabase is used as an index 
+into another table.
+
+We do not support such a feature within the hamster kernel, but this facility enables anyone
+using the hamster API (and the cursors) for that very purpose, e.g. using a sequenced key
+as primary key to store content in records, while storing other indexes as extra databases,
+which store those recno's as record value with each 'foreign key'. Traversing such indexes
+using a cursor will deliver the real content, stored in the recno-based database, in the expected
+\e sorted order, i.e. in order of the foreign key, concatenated by the primary index, which,
+in this example, is the unique recno.
+
+Alternatively, two sorted indexes on the same key material can be done the same way, either 
+by storing the real record content with the first key in sorted order, while a second table
+stores the other key in alternative sorting order (possibly by specifying a custom compare callback
+for that database) with the first key as secondary record content so any cursors traversing
+the second table can deliver the real content in the desired order.
+
+Note that such be done in one single API invocation by registering a custom record filter with
+the 'foreign index', which takes the secondary record content and recursively calls back into
+the hamster to obtain the real record content from the primary table, essentially delivering
+functionality equivalent to that offered by BDB and beyond.
+ 
+
+
+\section arch_customizing_hamster Customizing / Extending The Hamster
+
+There's several ways to extend the hamster:
+
+- add record filters
+
+- add custom backends (e.g. hash tables' based indexing)
+
+- add custom devices as nodes in custom built device graphs.
+
+
+
+\subsection arch_custom_device_graphs Your Own, Custom Device Graph
+
+What to do and not to do here.
+
+How the hamster copes with partitioning and other culprits in a multiway 
+(partitioning) database and/or environment.
+
+
+
+\subsection arch_custom_devices Custom Devices
+
+You can add your own devices and mix them into the mix.
+
+
+
+\subsection arch_custom_backends Custom Backends
+
+You can register a custom backend with each database: instead of using the 
+default B+-tree index, you can thus replace the index with a hash-based one, for 
+intance.
+
+
+
+<h3>Doxygen's internals</h3>
+
+<B>Note that this section is still under construction!</B>
+
+The following picture shows how source files are processed by doxygen.
+
+\image html archoverview.gif "Data flow overview"
+\image latex archoverview.eps "Data flow overview" width=14cm
+
+
+\verbatim
+0x06 file name 1 
+0x06 preprocessed contents of file 1
+...
+0x06 file name n
+0x06 preprocessed contents of file n
+\endverbatim
+
+Possible improvements for future versions:
+ - Use one scanner/parser per language instead of one big scanner.
+   -# subitem a
+   -# sub b
+   -# sub c
+ - Move the first pass parsing of documentation blocks to a separate module.
+ - Parse defines (these are currently gathered by the preprocessor, and
+   ignored by the language parser).
+
+
+*/
+
+
