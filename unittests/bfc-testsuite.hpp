@@ -1,4 +1,4 @@
-/* 
+/*
  * bfc-testsuite
 
   Copyright (C) 2005-2008 Christoph Rupp, www.crupp.de
@@ -22,21 +22,21 @@
 
 /*
  * The BFC unit test suite comes as a set of one header file, which you must
- * include in each test source file defining tests / test fixtures, plus a 
+ * include in each test source file defining tests / test fixtures, plus a
  * few support files, which must be compiled into the test binary.
- * 
+ *
  * This is the global header file (bfc-testsuite.hpp).
- * 
+ *
  * The support source files are:
- * 
+ *
  *   bfc-testsuite.cpp  (implements all BFC core methods; compile-time speedup)
- * 
- *   bfc-signal.c       (implements a portable signal function, 
+ *
+ *   bfc-signal.c       (implements a portable signal function,
  *                       used by the BFC kernel)
- * 
- *   bfc_signal.h       (header file which exports the relevant content 
+ *
+ *   bfc_signal.h       (header file which exports the relevant content
  *                       of bfc_signal.c)
- * 
+ *
  *   empty_sample.cpp   (an example BFC test fixture and (nil) test case: Test1
  */
 
@@ -45,6 +45,22 @@
 
 #if defined(_MSC_VER)
 #include <windows.h>    // __try/__except support API
+
+/* [i_a] make sure crtdbg.h is loaded before malloc.h */
+#if defined(WIN32) || defined(__WIN32)
+
+#if defined(DEBUG) || defined(_DEBUG)
+#ifndef _CRTDBG_MAP_ALLOC
+#define _CRTDBG_MAP_ALLOC 1
+#endif
+#endif
+#if _MSC_VER >= 1400 && _MSC_VER < 1500 /* bloody MSVC2005 b0rks on crtdbg.h otherwise! */
+#include <cstdlib>
+#endif
+#include <crtdbg.h>
+
+#endif
+
 #endif
 
 #include <string.h>
@@ -56,9 +72,9 @@
 #include <iostream>
 #include <stdarg.h>
 #ifndef UNDER_CE
-/* the signal catching / hardware exception catching stuff 
+/* the signal catching / hardware exception catching stuff
  * for UNIX (and a bit for Win32/64 too) */
-#   include <signal.h> 
+#   include <signal.h>
 #endif
 #include <setjmp.h>
 #include <stdlib.h>
@@ -97,8 +113,8 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)!=catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" != "#act \
-                            "; actual values: '%s' == '%s'", \
+							"assertion failed in expr "#exp" == "#act \
+							"; actual values: '%s' != '%s'", \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
                     } while (0)
@@ -109,8 +125,20 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)==catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" == "#act \
-                            "; actual values: '%s' != '%s'", \
+							"assertion failed in expr "#exp" != "#act \
+							"; actual values: '%s' == '%s'", \
+							get_caught_value_string(0), \
+							get_caught_value_string(1)); } \
+					} while (0)
+
+#define BFC_ASSERT_CMP(exp, comparator, act) \
+					do { \
+                        ditch_all_caught_values(); \
+                        if (!(catch_value(0, exp) comparator catch_value(1, act))) { \
+                            throw_bfc_error(__FILE__, __LINE__, \
+                            __FUNCTION__, \
+							"assertion failed in expr "#exp" "#comparator" "#act \
+							"; actual values: '%s' <-> '%s'", \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
                     } while (0)
@@ -122,8 +150,8 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-                            " != NULL" \
-                            "; actual value: '%s' == NULL", \
+							" == NULL" \
+							"; actual value: '%s' != NULL", \
                             get_caught_value_string(0)); } \
                     } while (0)
 
@@ -134,8 +162,8 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-                            " == NULL" \
-                            "; actual value: '%s' != NULL", \
+							" != NULL" \
+							"; actual value: '%s' == NULL", \
                             get_caught_value_string(0)); } \
                     } while (0)
 
@@ -159,9 +187,9 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)!=catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" != "#act \
-                            " for scenario #%d" \
-                            "; actual values: '%s' == '%s'", \
+							"assertion failed in expr "#exp" == "#act \
+							" for scenario #%d" \
+							"; actual values: '%s' != '%s'", \
                             int(scenario), \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
@@ -173,9 +201,9 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)==catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" == "#act \
-                            " for scenario #%d" \
-                            "; actual values: '%s' != '%s'", \
+							"assertion failed in expr "#exp" != "#act \
+							" for scenario #%d" \
+							"; actual values: '%s' == '%s'", \
                             int(scenario), \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
@@ -188,9 +216,9 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-                            " != NULL" \
-                            " for scenario #%d" \
-                            "; actual value: '%s' == NULL", \
+							" == NULL" \
+							" for scenario #%d" \
+							"; actual value: '%s' != NULL", \
                             int(scenario), \
                             get_caught_value_string(0)); } \
                     } while (0)
@@ -202,12 +230,27 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-                            " == NULL" \
-                            " for scenario #%d" \
-                            "; actual value: '%s' != NULL", \
+							" != NULL" \
+							" for scenario #%d" \
+							"; actual value: '%s' == NULL", \
                             int(scenario), \
                             get_caught_value_string(0)); } \
                     } while (0)
+
+#define BFC_ASSERT_CMP_I(exp, comparator, act, scenario) \
+					do { \
+						ditch_all_caught_values(); \
+                        if (!(catch_value(0, exp) comparator catch_value(1, act))) { \
+                            throw_bfc_error(__FILE__, __LINE__, \
+                            __FUNCTION__, \
+							"assertion failed in expr "#exp" "#comparator" "#act \
+							" for scenario #%d" \
+							"; actual values: '%s' <-> '%s'", \
+							int(scenario), \
+							get_caught_value_string(0), \
+							get_caught_value_string(1)); } \
+					} while (0)
+
 
 struct test
 {
@@ -224,6 +267,7 @@ public:
     error(const error &base, const char *m, ...);
     error(const char *f, int l, fixture &fix, const char *t, const char *m, va_list args);
     error(const error &src);
+    error();
     ~error();
     void vfmt_message(const char *msg, va_list args);
     void fmt_message(const char *msg, ...);
@@ -245,10 +289,10 @@ public:
    on/off the signal, ahem, 'stack'.
 
    On Win32/64, using MSVC, most of this burden is taken up by the
-   MSVC-specific __try/__except mechanism, but UNIX/GCC doesn't have 
+   MSVC-specific __try/__except mechanism, but UNIX/GCC doesn't have
    such a mechanism; there, it's signals galore.
  */
-typedef enum 
+typedef enum
 {
     // 'major' states:
     BFC_STATE_NONE             = 0,
@@ -289,6 +333,8 @@ public:
     virtual void handler(bfc::error &err) = 0;
     virtual ~bfc_assert_monitor() {};
 };
+
+
 
 
 
@@ -634,6 +680,26 @@ public:
 };
 
 
+class bfc_value_catcher_string : public bfc_value_catcher
+{
+public:
+	bfc_value_catcher_string(const std::string &v)
+	: _v(v) {
+	}
+protected:
+	std::string _v;
+public:
+	virtual ~bfc_value_catcher_string() {};
+	virtual const char *value(void)
+	{
+		return _v.c_str();
+	}
+};
+
+
+
+
+
 
 
 
@@ -651,6 +717,7 @@ public:
     virtual ~fixture()
     {
         ditch_all_caught_values();
+		clear_tests();
     }
 
     const char *get_name() const
@@ -663,9 +730,9 @@ public:
        Invoke the Function Under Test
 
        implement this one when you want to catch custom C++ exceptions;
-       these must be converted to bfc::error class throwing exceptions 
+       these must be converted to bfc::error class throwing exceptions
        to work best with BFC.
-       
+
        If you don't do this, your exceptions may be either caught by the
        platform-specific SEH handler or fall through the test rig and
        out the other side, losing information on the way, leading to
@@ -683,12 +750,12 @@ public:
 
     virtual void throw_bfc_error(const char *file, int line, const char *function, const char *message, ...);
 
-    // clear all tests
+    /** clear all tests */
     void clear_tests() {
         m_tests.resize(0);
     }
 
-    // register a new test function
+    /** register a new test function */
     void register_test(const char *name, method foo);
 
     std::vector<test> &get_tests() {
@@ -765,11 +832,15 @@ protected:
 
     virtual void ditch_all_caught_values(void)
     {
-        for (unsigned i=0; i<_caught_values_size; i++)
-            if (_caught_values[i])
-                delete _caught_values[i];
-        if (_caught_values)
-            free((void *)_caught_values);
+		if (_caught_values) /* BUGFIX */
+		{
+			for (size_t i = 0; i < _caught_values_size; i++)
+			{
+				if (_caught_values[i])
+					delete _caught_values[i];
+			}
+			free((void *)_caught_values);
+		}
         _caught_values = NULL;
         _caught_values_size = 0;
     }
@@ -855,6 +926,12 @@ protected:
         add_caught_value(idx, c);
         return v;
     }
+	const std::string &catch_value(int idx, const std::string &v)
+	{
+		bfc_value_catcher_string *c = new bfc_value_catcher_string(v);
+		add_caught_value(idx, c);
+		return v;
+	}
 };
 
 
@@ -873,11 +950,12 @@ typedef enum
 
 
 extern "C" {
-    /*
-       WARNING: some systems have 'int' returning signal handlers, others
+    /**
+       @warning
+	   some systems have 'int' returning signal handlers, others
        have 'void' returning signal handlers. Since the ones, which expect
        a 'void' return type, will silently ignore the return value
-       at run-time anyhow, we can keep things simple here and just 
+       at run-time anyhow, we can keep things simple here and just
        specify 'int'.
 
        However, this will cause a set of compiler warnings to appear;
@@ -927,12 +1005,12 @@ protected:
         {
             signal_handler_f handler;
 #ifdef UNDER_CE
-        } old_sig_handlers[1]; 
+        } old_sig_handlers[1];
 #else
-        } old_sig_handlers[NSIG + 1]; 
+        } old_sig_handlers[NSIG + 1];
 #endif
         /*
-           ^^^ most systems include signal 0 in the NSIG count, but we should 
+           ^^^ most systems include signal 0 in the NSIG count, but we should
            dimension this one conservatively.
 
            (see also [APitUE, pp. 292])
@@ -961,24 +1039,24 @@ protected:
     static const char *bfc_sigdescr(int signal_code);
 
 public:
-    // register a new test fixture
+    /** register a new test fixture */
     void register_fixture(fixture *f) {
         m_fixtures.push_back(f);
     }
 
-    // add an error
+    /** add an error */
     void add_error(const error *e) {
         m_errors.push_back(*e);
     }
 
-    // add a successful run
+    /** add a successful run */
     void add_success(void) {
         m_success++;
     }
 
     /**
     reset error collection, etc.
-    
+
     invoke this before calling a @ref run() method when you don't wish to use
     the default, built-in reporting (@a print_err_report == true)
     */
@@ -990,39 +1068,39 @@ public:
     void print_errors(bool panic_flush = false);
 
     /**
- run all tests - returns number of errors 
+ run all tests - returns number of errors
 */
     unsigned int run(bool print_err_report = true);
     /**
  run all tests (optional fixture and/or test selection) - returns number of errors
 */
-    unsigned int run(const char *fixture_name, const char *test_name = NULL, 
+    unsigned int run(const char *fixture_name, const char *test_name = NULL,
             bool print_err_report = true);
 
     /**
  run all tests in a given range (start in/exclusive, end inclusive)
-    
+
 @return number of errors
 */
     unsigned int run(
         const std::string &begin_fixture, const std::string &begin_test,
         const std::string &end_fixture, const std::string &end_test,
-        bool inclusive_begin, 
+        bool inclusive_begin,
         bool is_not_a_series = false,
         bool print_err_report = true);
 
-    // run all tests of a fixture
+    /** run all tests of a fixture */
     unsigned int run(fixture *f, const char *test_name = NULL, bool print_err_report = true);
 
-    // run a single test of a fixture
+    /** run a single test of a fixture */
     bool run(fixture *f, const test *test, bfc_error_report_mode_t print_err_report = BFC_REPORT_IN_HERE);
 
 protected:
-    // run a single test of a fixture
+    /** run a single test of a fixture */
     bool exec_a_single_test(fixture *f, const test *test);
 
 public:
-    // singleton:
+    /** singleton: */
     static testrunner *get_instance();
     static void delete_instance(void);
 
