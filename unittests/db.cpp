@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -58,24 +58,24 @@ protected:
     memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         m_alloc=memtracker_new();
         BFC_ASSERT_EQUAL(0, ham_env_new(&m_env));
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         env_set_allocator(m_env, (mem_allocator_t *)m_alloc);
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create(m_env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create(m_env, BFC_OPATH(".test"),
                         (m_inmemory ? HAM_IN_MEMORY_DB : 0), 0644));
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create_db(m_env, m_db, 13, 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create_db(m_env, m_db, 13,
                         HAM_ENABLE_DUPLICATES, 0));
     }
-    
-    virtual void teardown() 
-    { 
+
+    virtual void teardown()
+    {
         __super::teardown();
 
         ham_env_close(m_env, 0);
@@ -127,7 +127,7 @@ public:
         BFC_ASSERT(0!=db_get_prefix_compare_func(m_db));
         ham_prefix_compare_func_t oldfoo=db_get_prefix_compare_func(m_db);
         db_set_prefix_compare_func(m_db, (ham_prefix_compare_func_t)18);
-        BFC_ASSERT_EQUAL((ham_prefix_compare_func_t)18, 
+        BFC_ASSERT_EQUAL((ham_prefix_compare_func_t)18,
                 db_get_prefix_compare_func(m_db));
         db_set_prefix_compare_func(m_db, oldfoo);
 
@@ -216,13 +216,13 @@ public:
     void defaultPrefixCompareTest()
     {
         BFC_ASSERT(db_default_prefix_compare(0,
-                        (ham_u8_t *)"abc", 3, 3, 
+                        (ham_u8_t *)"abc", 3, 3,
                         (ham_u8_t *)"abc", 3, 3)==HAM_PREFIX_REQUEST_FULLKEY);
         BFC_ASSERT(db_default_prefix_compare(0,
-                        (ham_u8_t *)"ab",  2, 2, 
+                        (ham_u8_t *)"ab",  2, 2,
                         (ham_u8_t *)"abc", 3, 3)==-1); // comparison code has become 'smarter' so can resolve this one without the need for further help
         BFC_ASSERT(db_default_prefix_compare(0,
-                        (ham_u8_t *)"ab",  2, 3, 
+                        (ham_u8_t *)"ab",  2, 3,
                         (ham_u8_t *)"abc", 3, 3)==HAM_PREFIX_REQUEST_FULLKEY);
         BFC_ASSERT(-1==db_default_prefix_compare(0,
                         (ham_u8_t *)"abc", 3, 3,
@@ -240,7 +240,7 @@ public:
                         (ham_u8_t *)0,     0, 3,
                         (ham_u8_t *)"abc", 3, 3)==HAM_PREFIX_REQUEST_FULLKEY);
         BFC_ASSERT(db_default_prefix_compare(0,
-                        (ham_u8_t *)"abc", 3, 80239, 
+                        (ham_u8_t *)"abc", 3, 80239,
                         (ham_u8_t *)"abc", 3, 2)==HAM_PREFIX_REQUEST_FULLKEY);
     }
 
@@ -306,13 +306,13 @@ public:
 
         // checks to make sure structure packing by the compiler is still okay
         // HAM_PACK_0 HAM_PACK_1 HAM_PACK_2 OFFSETOF
-        BFC_ASSERT(compare_sizes(sizeof(ham_backend_t), 
+        BFC_ASSERT(compare_sizes(sizeof(ham_backend_t),
                 OFFSETOF(ham_btree_t, _rootpage)));
         BFC_ASSERT(compare_sizes(sizeof(blob_t), 28));
         BFC_ASSERT(compare_sizes(sizeof(dupe_entry_t), 16));
-        BFC_ASSERT(compare_sizes(sizeof(dupe_table_t), 
+        BFC_ASSERT(compare_sizes(sizeof(dupe_table_t),
                 8 + sizeof(dupe_entry_t)));
-        BFC_ASSERT(compare_sizes(sizeof(ham_btree_t) - OFFSETOF(ham_btree_t, 
+        BFC_ASSERT(compare_sizes(sizeof(ham_btree_t) - OFFSETOF(ham_btree_t,
                 _rootpage), 8 + sizeof(void*)*2 + 2));
         BFC_ASSERT(compare_sizes(sizeof(btree_node_t), 28 + sizeof(int_key_t)));
         BFC_ASSERT(compare_sizes(sizeof(int_key_t), 12));
@@ -321,20 +321,20 @@ public:
         db_indexdata_t d;
         BFC_ASSERT(compare_sizes(sizeof(d.b), 32));
         BFC_ASSERT(compare_sizes(DB_INDEX_SIZE, 32));
-        BFC_ASSERT(compare_sizes(sizeof(freelist_payload_t), 
+        BFC_ASSERT(compare_sizes(sizeof(freelist_payload_t),
                 16 + 13 + sizeof(freelist_page_statistics_t)));
         freelist_payload_t f;
         BFC_ASSERT(compare_sizes(sizeof(f._s._s16), 5));
-        BFC_ASSERT(compare_sizes(OFFSETOF(freelist_payload_t, 
+        BFC_ASSERT(compare_sizes(OFFSETOF(freelist_payload_t,
                 _s._s16), 16));
-        BFC_ASSERT(compare_sizes(OFFSETOF(freelist_payload_t, 
+        BFC_ASSERT(compare_sizes(OFFSETOF(freelist_payload_t,
                 _s._s16._bitmap), 16 + 4));
-        BFC_ASSERT(compare_sizes(sizeof(freelist_page_statistics_t), 
+        BFC_ASSERT(compare_sizes(sizeof(freelist_page_statistics_t),
               4*8+sizeof(freelist_slotsize_stats_t)*HAM_FREELIST_SLOT_SPREAD));
         BFC_ASSERT(compare_sizes(sizeof(freelist_slotsize_stats_t), 8*4));
         BFC_ASSERT(compare_sizes(HAM_FREELIST_SLOT_SPREAD, 16-5+1));
         BFC_ASSERT(compare_sizes(db_get_freelist_header_size16(), 16 + 4));
-        BFC_ASSERT(compare_sizes(db_get_freelist_header_size32(), 
+        BFC_ASSERT(compare_sizes(db_get_freelist_header_size32(),
                 16 + 12 + sizeof(freelist_page_statistics_t)));
         BFC_ASSERT(compare_sizes(db_get_int_key_header_size(), 11));
         BFC_ASSERT(compare_sizes(sizeof(log_header_t), 8));
@@ -356,11 +356,11 @@ public:
         for (i = 0; i < 5; i++)
         {
             BFC_ASSERT_I(compare_sizes(
-                (ham_size_t)btree_node_get_key_offset(&page, i), 
+                (ham_size_t)btree_node_get_key_offset(&page, i),
                 (ham_size_t)1000+12+28+(i*(11+666))), i);
         }
         BFC_ASSERT(compare_sizes(page_get_persistent_header_size(), 12));
-        // make sure the 'header page' is at least as large as your usual 
+        // make sure the 'header page' is at least as large as your usual
         // header page, then hack it...
         struct
         {

@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -13,9 +13,9 @@
 /**
  * This is the hamsterdb Database Server.
  *
- * On Unix it's implemented as a daemon, on Windows it's a Win32 Service. 
+ * On Unix it's implemented as a daemon, on Windows it's a Win32 Service.
  * The configuration file has json format - see example.config.
- * The Win32 implementation is based on 
+ * The Win32 implementation is based on
  * http://www.devx.com/cplus/Article/9857/1954
  */
 
@@ -73,8 +73,8 @@ static TCHAR *serviceDescription = TEXT("Provides network access to hamsterdb Da
 static option_t opts[]={
     {
         ARG_HELP,               // symbolic name of this option
-        "h",                    // short option 
-        "help",                 // long option 
+        "h",                    // short option
+        "help",                 // long option
         "this help screen",     // help string
         0 },                    // no flags
     {
@@ -215,7 +215,7 @@ hlog(int level, const char *format, ...)
     }
 }
 
-static void 
+static void
 signal_handler(int sig)
 {
     (void)sig;
@@ -269,7 +269,7 @@ read_config(const char *configfile, config_table_t **params)
     /* read the whole file into 'buf' */
     fp=fopen(configfile, "rt");
     if (!fp) {
-        hlog(LOG_FATAL, "Failed to open config file %s: %s\n", 
+        hlog(LOG_FATAL, "Failed to open config file %s: %s\n",
                 configfile, strerror(errno));
         exit(-1);
     }
@@ -278,7 +278,7 @@ read_config(const char *configfile, config_table_t **params)
     fseek(fp, 0, SEEK_SET);
     buf=(char *)malloc(len+1); /* for zero-terminating byte */
     if (fread(buf, 1, len, fp)!=len) {
-        hlog(LOG_FATAL, "Failed to read config file %s: %s\n", 
+        hlog(LOG_FATAL, "Failed to read config file %s: %s\n",
                 configfile, strerror(errno));
         exit(-1);
     }
@@ -288,7 +288,7 @@ read_config(const char *configfile, config_table_t **params)
     /* parse the file */
     st=config_parse_string(buf, params);
     if (st) {
-        hlog(LOG_FATAL, "failed to read configuration file: %s\n", 
+        hlog(LOG_FATAL, "failed to read configuration file: %s\n",
                 ham_strerror(st));
         exit(-1);
     }
@@ -305,7 +305,7 @@ write_pidfile(const char *pidfile)
         hlog(LOG_FATAL, "failed to write pidfile: %s\n", strerror(errno));
         exit(-1);
     }
-#ifdef WIN32	
+#ifdef WIN32
     fprintf(fp, "%u", (unsigned)_getpid());
 #else
 	fprintf(fp, "%u", (unsigned)getpid());
@@ -364,7 +364,7 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
         ham_env_new(&env);
 
         /* First try to open the Environment */
-        hlog(LOG_DBG, "Opening Environment %s (flags 0x%x)\n", 
+        hlog(LOG_DBG, "Opening Environment %s (flags 0x%x)\n",
                 params->envs[e].path, flags);
         st=ham_env_open_ex(env, params->envs[e].path, flags, 0);
         if (st) {
@@ -374,16 +374,16 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
                 hlog(LOG_DBG, "Env was not found; trying to create it\n");
                 st=ham_env_create_ex(env, params->envs[e].path, flags, 0644, 0);
                 if (st) {
-                    hlog(LOG_FATAL, "Failed to create Env %s: %s\n", 
+                    hlog(LOG_FATAL, "Failed to create Env %s: %s\n",
                             params->envs[e].path, ham_strerror(st));
                     exit(-1);
                 }
-                hlog(LOG_DBG, "Env %s created successfully\n", 
+                hlog(LOG_DBG, "Env %s created successfully\n",
                             params->envs[e].path);
                 created_env=1;
             }
             else {
-                hlog(LOG_FATAL, "Failed to open Env %s: %s\n", 
+                hlog(LOG_FATAL, "Failed to open Env %s: %s\n",
                             params->envs[e].path, ham_strerror(st));
                 exit(-1);
             }
@@ -393,15 +393,15 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
          * created */
         if (created_env) {
             ham_db_t *db;
-    
+
             for (d=0; d<params->envs[e].db_count; d++) {
                 ham_u32_t flags=format_flags(params->envs[e].dbs[d].flags);
 
                 ham_new(&db);
 
-                hlog(LOG_DBG, "Creating Database %u\n", 
+                hlog(LOG_DBG, "Creating Database %u\n",
                         params->envs[e].dbs[d].name);
-                st=ham_env_create_db(env, db, params->envs[e].dbs[d].name, 
+                st=ham_env_create_db(env, db, params->envs[e].dbs[d].name,
                                     flags, 0);
                 if (st) {
                     hlog(LOG_FATAL, "Failed to create Database %u: %s\n",
@@ -409,7 +409,7 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
                     exit(-1);
                 }
 
-                hlog(LOG_DBG, "Created Database %u successfully\n", 
+                hlog(LOG_DBG, "Created Database %u successfully\n",
                         params->envs[e].dbs[d].name);
 
                 ham_close(db, 0);
@@ -417,13 +417,13 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
             }
         }
 
-        hlog(LOG_DBG, "Attaching Env to Server (url %s)\n", 
+        hlog(LOG_DBG, "Attaching Env to Server (url %s)\n",
                 params->envs[e].url);
 
         /* Add the Environment to the server */
         st=ham_srv_add_env(srv, env, params->envs[e].url);
         if (st) {
-            hlog(LOG_FATAL, "Failed to attach Env to Server: %s\n", 
+            hlog(LOG_FATAL, "Failed to attach Env to Server: %s\n",
                     ham_strerror(st));
             exit(-1);
         }
@@ -454,7 +454,7 @@ win32_service_install(void)
 				CloseServiceHandle(service);
                 hlog(LOG_DBG, "Service was installed successfully.\n");
 			}
-			else 
+			else
             switch(GetLastError()) {
 			case ERROR_ACCESS_DENIED:
 				hlog(LOG_FATAL, "The handle to the SCM database does not "
@@ -484,7 +484,7 @@ win32_service_install(void)
                         "this database.\n");
 				break;
 			default:
-				hlog(LOG_FATAL, "Failed to install the service (error %u)\n", 
+				hlog(LOG_FATAL, "Failed to install the service (error %u)\n",
                         GetLastError());
 				break;
  			}
@@ -504,7 +504,7 @@ win32_service_uninstall(void)
 	SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
 
 	if (scm) {
-		SC_HANDLE service = OpenService(scm, serviceName, 
+		SC_HANDLE service = OpenService(scm, serviceName,
                     SERVICE_QUERY_STATUS | DELETE);
 		if (service) {
 			SERVICE_STATUS sst;
@@ -575,17 +575,17 @@ win32_service_stop(void)
     SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
 
 	if (scm) {
-		SC_HANDLE service = OpenService(scm, serviceName, 
+		SC_HANDLE service = OpenService(scm, serviceName,
                     SERVICE_QUERY_STATUS | DELETE | SERVICE_STOP);
 		if (service) {
 			SERVICE_STATUS sst;
 			if (QueryServiceStatus(service, &sst )) {
-				if (sst.dwCurrentState == SERVICE_STOPPED) { 
+				if (sst.dwCurrentState == SERVICE_STOPPED) {
 					hlog(LOG_NORMAL, "Service is already stopped\n");
 				}
 				else {
 					if (!ControlService(service, SERVICE_CONTROL_STOP, &sst)) {
-					    hlog(LOG_FATAL, "ControlService failed (%d)\n", 
+					    hlog(LOG_FATAL, "ControlService failed (%d)\n",
                                 GetLastError());
     				}
 				}
@@ -610,18 +610,18 @@ win32_service_start(void)
 	SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
 
 	if (scm) {
-		SC_HANDLE service = OpenService(scm, serviceName, 
+		SC_HANDLE service = OpenService(scm, serviceName,
                     SERVICE_QUERY_STATUS | SERVICE_START | DELETE);
 		if (service) {
 			SERVICE_STATUS sst;
 			if (QueryServiceStatus(service, &sst )) {
-				if (sst.dwCurrentState != SERVICE_STOPPED 
+				if (sst.dwCurrentState != SERVICE_STOPPED
 						&& sst.dwCurrentState != SERVICE_STOP_PENDING) {
 					hlog(LOG_NORMAL, "Service is already running\n");
 				}
 				else {
 					if (!StartService(service, 0, NULL)) {
-					    hlog(LOG_FATAL, "StartService failed (%d)\n", 
+					    hlog(LOG_FATAL, "StartService failed (%d)\n",
                                 GetLastError());
     				}
 				}
@@ -640,7 +640,7 @@ win32_service_start(void)
         hlog(LOG_FATAL, "OpenSCManager failed\n");
 }
 
-void WINAPI 
+void WINAPI
 ServiceMain(DWORD argc, TCHAR *argv[])
 {
 	ssth = RegisterServiceCtrlHandler(serviceName, ServiceControlHandler);
@@ -649,7 +649,7 @@ ServiceMain(DWORD argc, TCHAR *argv[])
 		stop_me = CreateEvent(0, FALSE, FALSE, 0);
 
 		// running
-		sst.dwControlsAccepted |= (SERVICE_ACCEPT_STOP 
+		sst.dwControlsAccepted |= (SERVICE_ACCEPT_STOP
                                     | SERVICE_ACCEPT_SHUTDOWN);
 		sst.dwCurrentState = SERVICE_RUNNING;
 		SetServiceStatus(ssth, &sst);
@@ -670,7 +670,7 @@ ServiceMain(DWORD argc, TCHAR *argv[])
 		stop_me = 0;
 
 		// service is now stopped
-		sst.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP 
+		sst.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP
                                 | SERVICE_ACCEPT_SHUTDOWN);
 		sst.dwCurrentState = SERVICE_STOPPED;
 		SetServiceStatus(ssth, &sst);
@@ -750,7 +750,7 @@ main(int argc, char **argv)
                 break;
             case ARG_CONFIG:
                 configfile=param;
-                hlog(LOG_DBG, "Paramter: configuration file is %s\n", 
+                hlog(LOG_DBG, "Paramter: configuration file is %s\n",
                         configfile);
                 break;
             case ARG_PIDFILE:
@@ -817,7 +817,7 @@ main(int argc, char **argv)
         init_syslog();
 
 	/* if there's no configuration file then load a default one:
-	 * Just look for a configuration file with the same name (but a 
+	 * Just look for a configuration file with the same name (but a
      * different extension ".config") in the same directory
 	 * as hamsvc[.exe] */
 	if (!configfile) {
@@ -830,7 +830,7 @@ main(int argc, char **argv)
 #endif
 		strcat(configbuffer, ".config");
 		configfile=&configbuffer[0];
-        hlog(LOG_DBG, "Parameter: No config file specified - using %s\n", 
+        hlog(LOG_DBG, "Parameter: No config file specified - using %s\n",
                 configfile);
 	}
 
@@ -877,12 +877,12 @@ main(int argc, char **argv)
 	    hlog(LOG_DBG, "Config: port is %u\n", cfg.port);
 		if (params->globals.enable_access_log) {
 			cfg.access_log_path=params->globals.access_log;
-	        hlog(LOG_DBG, "Config: http access hlog is %s\n", 
+	        hlog(LOG_DBG, "Config: http access hlog is %s\n",
                     cfg.access_log_path);
         }
 		if (params->globals.enable_error_log) {
 			cfg.error_log_path=params->globals.error_log;
-	        hlog(LOG_DBG, "Config: http error hlog is %s\n", 
+	        hlog(LOG_DBG, "Config: http error hlog is %s\n",
                     cfg.error_log_path);
         }
 	}
@@ -910,7 +910,7 @@ main(int argc, char **argv)
 		initialize_server(srv, params);
 
     /* This is the unix "main loop" which waits till the server is terminated.
-     * Any registered signal will terminate the server by setting the 
+     * Any registered signal will terminate the server by setting the
      * 'running' flag to 0. (The Win32 main loop is hidden in
      * win32_service_run()). */
 #ifndef WIN32

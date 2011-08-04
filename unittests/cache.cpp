@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -58,24 +58,24 @@ protected:
     memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         m_alloc=memtracker_new();
         BFC_ASSERT_EQUAL(0, ham_env_new(&m_env));
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         env_set_allocator(m_env, (mem_allocator_t *)m_alloc);
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create(m_env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create(m_env, BFC_OPATH(".test"),
                         HAM_ENABLE_TRANSACTIONS
                         | HAM_ENABLE_RECOVERY, 0644));
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create_db(m_env, m_db, 13, 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create_db(m_env, m_db, 13,
                         HAM_ENABLE_DUPLICATES, 0));
     }
-    
-    virtual void teardown() { 
+
+    virtual void teardown() {
         __super::teardown();
 
         ham_env_close(m_env, 0);
@@ -108,7 +108,7 @@ public:
         BFC_ASSERT(cache_too_big(cache)==1);
         cache_delete(cache);
     }
-    
+
     void putGetTest(void)
     {
         ham_page_t *page;
@@ -149,7 +149,7 @@ public:
         page_set_pers(page, 0);
         page_delete(page);
     }
-    
+
     void putGetReplaceTest(void)
     {
         ham_page_t *page1, *page2;
@@ -182,7 +182,7 @@ public:
         page_set_pers(page2, 0);
         page_delete(page2);
     }
-    
+
     void multiplePutTest(void)
     {
         const int MAX=20;
@@ -199,21 +199,21 @@ public:
             cache_put_page(cache, page[i]);
         }
         for (int i=0; i<MAX; i++) {
-            BFC_ASSERT_EQUAL(page[i], 
+            BFC_ASSERT_EQUAL(page[i],
                     cache_get_page(cache, (i+1)*1024, 0));
         }
         for (int i=0; i<MAX; i++) {
             cache_remove_page(cache, page[i]);
         }
         for (int i=0; i<MAX; i++) {
-            BFC_ASSERT_EQUAL((ham_page_t *)0, 
+            BFC_ASSERT_EQUAL((ham_page_t *)0,
                     cache_get_page(cache, (i+1)*1024, 0));
             page_set_pers(page[i], 0);
             page_delete(page[i]);
         }
         cache_delete(cache);
     }
-    
+
     void negativeGetTest(void)
     {
         ham_cache_t *cache=cache_new(m_env, 15);
@@ -222,7 +222,7 @@ public:
         }
         cache_delete(cache);
     }
-    
+
     void unusedTest(void)
     {
         ham_page_t *page1, *page2;
@@ -256,7 +256,7 @@ public:
         page_set_pers(page2, 0);
         page_delete(page2);
     }
-    
+
     void overflowTest(void)
     {
         ham_cache_t *cache=cache_new(m_env, 15*os_get_pagesize());
@@ -314,13 +314,13 @@ public:
         ham_close(m_db, 0);
 
         ham_parameter_t param[]={
-            {HAM_PARAM_PAGESIZE,  1024*128}, 
+            {HAM_PARAM_PAGESIZE,  1024*128},
             {0, 0}};
 
         ham_page_t *p[1024];
         ham_db_t *db;
         BFC_ASSERT_EQUAL(0, ham_new(&db));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_create_ex(db, ".test", HAM_CACHE_STRICT, 0644, &param[0]));
         ham_env_t *env=db_get_env(db);
         ham_cache_t *cache=env_get_cache(env);
@@ -350,12 +350,12 @@ public:
     {
         ham_env_t *env;
         ham_parameter_t param[]={
-            {HAM_PARAM_CACHESIZE, 100*1024}, 
-            {HAM_PARAM_PAGESIZE,  1024}, 
+            {HAM_PARAM_CACHESIZE, 100*1024},
+            {HAM_PARAM_PAGESIZE,  1024},
             {0, 0}};
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_env_create_ex(env, ".test.db", 0, 0644, &param[0]));
         ham_cache_t *cache=env_get_cache(env);
 
@@ -369,14 +369,14 @@ public:
     {
         ham_env_t *env;
         ham_parameter_t param[]={
-            {HAM_PARAM_CACHESIZE, 100*1024}, 
+            {HAM_PARAM_CACHESIZE, 100*1024},
             {0, 0}};
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_env_create_ex(env, ".test.db", 0, 0644, &param[0]));
         ham_env_close(env, 0);
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_env_open_ex(env, ".test.db", 0, &param[0]));
         ham_cache_t *cache=env_get_cache(env);
 
@@ -390,8 +390,8 @@ public:
     {
         ham_db_t *db;
         ham_parameter_t param[]={
-            {HAM_PARAM_CACHESIZE, 100*1024}, 
-            {HAM_PARAM_PAGESIZE,  1024}, 
+            {HAM_PARAM_CACHESIZE, 100*1024},
+            {HAM_PARAM_PAGESIZE,  1024},
             {0, 0}};
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
@@ -409,7 +409,7 @@ public:
     {
         ham_db_t *db;
         ham_parameter_t param[]={
-            {HAM_PARAM_CACHESIZE, 100*1024}, 
+            {HAM_PARAM_CACHESIZE, 100*1024},
             {0, 0}};
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));

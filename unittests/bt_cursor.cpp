@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -34,7 +34,7 @@ class BtreeCursorTest : public hamsterDB_fixture
     define_super(hamsterDB_fixture);
 
 public:
-    BtreeCursorTest(bool inmemory=false, ham_size_t pagesize=0, 
+    BtreeCursorTest(bool inmemory=false, ham_size_t pagesize=0,
                     const char *name="BtreeCursorTest")
     :   hamsterDB_fixture(name),
         m_db(0), m_inmemory(inmemory), m_alloc(0),
@@ -61,13 +61,13 @@ protected:
     ham_size_t m_pagesize;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         ham_parameter_t params[]=
         {
-            // set pagesize, otherwise 16-bit limit bugs in freelist 
+            // set pagesize, otherwise 16-bit limit bugs in freelist
             // will fire on Win32
             { HAM_PARAM_PAGESIZE, (m_pagesize ? m_pagesize : 4096) },
             { 0, 0 }
@@ -77,15 +77,15 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT((m_alloc=memtracker_new())!=0);
-        BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"),
                     HAM_ENABLE_DUPLICATES|(m_inmemory?HAM_IN_MEMORY_DB:0),
                     0664, params));
 
         m_env=db_get_env(m_db);
     }
 
-    virtual void teardown() 
-    { 
+    virtual void teardown()
+    {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
@@ -137,7 +137,7 @@ public:
 
         ham_btree_t *be=(ham_btree_t *)db_get_backend(m_db);
         ham_page_t *page;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 db_fetch_page(&page, m_db, btree_get_rootpage(be), 0));
         BFC_ASSERT(page!=0);
         BFC_ASSERT_EQUAL(0, db_uncouple_all_cursors(page, 0));
@@ -161,8 +161,8 @@ public:
         memset(&rec, 0, sizeof(rec));
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(m_db, BFC_OPATH(".test"),
                         (m_inmemory ? HAM_IN_MEMORY_DB : 0),
                         0664, &params[0]));
         m_env=db_get_env(m_db);
@@ -280,7 +280,7 @@ public:
         BFC_ASSERT_EQUAL(clone, db_get_cursors(m_db));
 
         for (int i=0; i<5; i++) {
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_close(cursor[i]));
         }
         BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
@@ -305,7 +305,7 @@ public:
         BFC_ASSERT_EQUAL((ham_cursor_t *)clone, db_get_cursors(m_db));
 
         for (int i=4; i>=0; i--) {
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_close(cursor[i]));
         }
         BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
@@ -334,15 +334,15 @@ public:
         value=1;
         BFC_ASSERT_EQUAL(0, ham_cursor_find(cursor, &key, 0));
         BFC_ASSERT_EQUAL(0, ham_erase(m_db, 0, &key, 0));
-        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL, 
+        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL,
                 ham_cursor_move(cursor, &key, 0, 0));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(cursor, &key, 0, HAM_CURSOR_FIRST));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(cursor2, &key, 0, HAM_CURSOR_FIRST));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_erase(cursor, 0));
-        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL, 
+        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL,
                 ham_cursor_move(cursor2, &key, 0, 0));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
@@ -399,13 +399,13 @@ public:
         BFC_ASSERT(!(bt_cursor_get_flags(btc)&BT_CURSOR_FLAG_UNCOUPLED));
 
         /* insert duplicate - cursor stays coupled */
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key2, &rec, HAM_DUPLICATE));
         BFC_ASSERT(bt_cursor_get_flags(btc)&BT_CURSOR_FLAG_COUPLED);
         BFC_ASSERT(!(bt_cursor_get_flags(btc)&BT_CURSOR_FLAG_UNCOUPLED));
 
         /* insert item AFTER the middle item - cursor stays coupled */
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key3, &rec, 0));
         BFC_ASSERT(bt_cursor_get_flags(btc)&BT_CURSOR_FLAG_COUPLED);
         BFC_ASSERT(!(bt_cursor_get_flags(btc)&BT_CURSOR_FLAG_UNCOUPLED));
@@ -418,7 +418,7 @@ public:
 class BtreeCursorTest64Kpage : public BtreeCursorTest
 {
 public:
-    BtreeCursorTest64Kpage(bool inmemory=false, ham_size_t pagesize = 64*1024, 
+    BtreeCursorTest64Kpage(bool inmemory=false, ham_size_t pagesize = 64*1024,
             const char *name="BtreeCursorTest64Kpage")
     : BtreeCursorTest(inmemory, pagesize, name)
     {
@@ -428,7 +428,7 @@ public:
 class InMemoryBtreeCursorTest : public BtreeCursorTest
 {
 public:
-    InMemoryBtreeCursorTest(ham_size_t pagesize = 0, 
+    InMemoryBtreeCursorTest(ham_size_t pagesize = 0,
             const char *name="InMemoryBtreeCursorTest")
     :   BtreeCursorTest(true, pagesize, name)
     {
@@ -438,7 +438,7 @@ public:
 class InMemoryBtreeCursorTest64Kpage : public InMemoryBtreeCursorTest
 {
 public:
-    InMemoryBtreeCursorTest64Kpage(ham_size_t pagesize = 64*1024, 
+    InMemoryBtreeCursorTest64Kpage(ham_size_t pagesize = 64*1024,
             const char *name="InMemoryBtreeCursorTest64Kpage")
     : InMemoryBtreeCursorTest(pagesize, name)
     {

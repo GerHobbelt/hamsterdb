@@ -1,20 +1,21 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
 
-/*
+/**
 This file showcases a minimal BFC test fixture template.
 
 
 expected BFC output on Win64:
----------------------------
+
+<pre>
 ----- error #1 in EmptyTest::Test1
 ..\..\unittests\bfc-testsuite.cpp:734 system exception occurred during executing
  the test code. The thread tried to read from or write to a virtual address for
@@ -22,7 +23,8 @@ which it does not have the appropriate access. (The thread attempted to read the
  inaccessible data at address $0000000000000000)
 ----- error #2 in EmptyTest::EmptyTest::Test2
 ..\..\unittests\empty_sample.cpp:58 assertion failed in expr 0 == 1
----------------------------
+</pre>
+
 */
 
 
@@ -33,9 +35,9 @@ which it does not have the appropriate access. (The thread attempted to read the
 using namespace bfc;
 
 
-/*
+/**
 __super is MSVC specific, but other compilers can simply offer the same
-using this macro; place at the top of class definition and you're good 
+using this macro; place at the top of class definition and you're good
 to go.
 */
 #if !defined(_MSC_VER) || (_MSC_VER < 1310 /* MSVC.NET 2003 */)
@@ -63,15 +65,15 @@ public:
     }
 
 protected:
-    virtual void setup() 
-	{ 
+    virtual void setup()
+	{
 		__super::setup();
 
 		// add your own setup code, which is run before each test invocation
     }
-    
-    virtual void teardown() 
-	{ 
+
+    virtual void teardown()
+	{
 		__super::teardown();
 
 		// add your own teardown code, which is always run after each test invocation (even when the test failed dramatically!)

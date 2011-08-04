@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -31,7 +31,7 @@ class DeviceTest : public hamsterDB_fixture
 
 public:
     DeviceTest(bool inmemory=false, const char *name="DeviceTest")
-    : hamsterDB_fixture(name), 
+    : hamsterDB_fixture(name),
         m_db(0), m_inmemory(inmemory), m_dev(0), m_alloc(0)
     {
         testrunner::get_instance()->register_fixture(this);
@@ -55,23 +55,23 @@ protected:
     memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         (void)os::unlink(BFC_OPATH(".test"));
 
         m_alloc=memtracker_new();
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644));
         m_env=db_get_env(m_db);
         m_dev=env_get_device(m_env);
     }
-    
-    virtual void teardown() 
-    { 
+
+    virtual void teardown()
+    {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
@@ -207,11 +207,11 @@ public:
         for (i=0; i<10; i++)
             memset(buffer[i], i, ps);
         for (i=0; i<10; i++) {
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     m_dev->write(m_dev, i*ps, buffer[i], ps));
         }
         for (i=0; i<10; i++) {
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     m_dev->read(m_dev, i*ps, buffer[i], ps));
             memset(temp, i, ps);
             BFC_ASSERT_EQUAL(0, memcmp(buffer[i], temp, ps));
@@ -238,7 +238,7 @@ public:
         for (i=0; i<2; i++) {
             BFC_ASSERT(page_get_npers_flags(pages[i])&PAGE_NPERS_MALLOC);
             memset(page_get_pers(pages[i]), i+1, ps);
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     m_dev->write_page(m_dev, pages[i]));
             BFC_ASSERT_EQUAL(0, page_free(pages[i]));
             page_delete(pages[i]);
@@ -250,7 +250,7 @@ public:
             BFC_ASSERT((pages[i]=page_new(m_env)));
             page_set_self(pages[i], ps*i);
             BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, pages[i]));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     memcmp(page_get_pers(pages[i]), temp, sizeof(temp)));
             BFC_ASSERT_EQUAL(0, page_free(pages[i]));
             page_delete(pages[i]);

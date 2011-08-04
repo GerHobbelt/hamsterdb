@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -31,7 +31,7 @@
 using namespace bfc;
 
 static int
-__compare_numbers(ham_db_t *db, 
+__compare_numbers(ham_db_t *db,
                   const ham_u8_t *lhs, ham_size_t lhs_length,
                   const ham_u8_t *rhs, ham_size_t rhs_length)
 {
@@ -71,8 +71,8 @@ public:
 
         /*
          * insert 2 dupes, create 2 cursors (both on the first dupe).
-         * delete the first cursor, make sure that both cursors are 
-         * NILled and the second dupe is still available 
+         * delete the first cursor, make sure that both cursors are
+         * NILled and the second dupe is still available
          */
         BFC_REGISTER_TEST(DupeTest, eraseDuplicateTest);
 
@@ -84,8 +84,8 @@ public:
 
         /*
          * insert 2 dupes, create 2 cursors (both on the second dupe).
-         * delete the first cursor, make sure that both cursors are 
-         * NILled and the first dupe is still available 
+         * delete the first cursor, make sure that both cursors are
+         * NILled and the first dupe is still available
          */
         BFC_REGISTER_TEST(DupeTest, eraseSecondDuplicateTest);
 
@@ -199,8 +199,8 @@ public:
         BFC_REGISTER_TEST(DupeTest, insertManyManyTest);
 
         /*
-         * insert several duplicates; then set a cursor to the 2nd duplicate. 
-         * clone the cursor, move it to the next element. then erase the 
+         * insert several duplicates; then set a cursor to the 2nd duplicate.
+         * clone the cursor, move it to the next element. then erase the
          * first cursor.
          */
         BFC_REGISTER_TEST(DupeTest, cloneTest);
@@ -212,27 +212,27 @@ protected:
     std::vector<std::string> m_data;
 
 public:
-    virtual void setup() 
-	{ 
+    virtual void setup()
+	{
 		__super::setup();
 
         (void)os::unlink(BFC_OPATH(".test"));
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_ENABLE_DUPLICATES, 0664));
 
         m_data.resize(0);
     }
 
-    virtual void teardown() 
-	{ 
+    virtual void teardown()
+	{
 		__super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, HAM_AUTO_CLEANUP));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
     }
-    
+
     void insertDuplicatesTest(void)
     {
         ham_key_t key;
@@ -247,7 +247,7 @@ public:
             rec.data=data;
             rec.size=sizeof(data);
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
         }
 
@@ -274,7 +274,7 @@ public:
             rec.data=data;
             rec.size=sizeof(data);
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
         }
 
@@ -283,10 +283,10 @@ public:
         rec.data=data;
         rec.size=sizeof(data);
         ::memset(&data, 0x99, sizeof(data));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key, &rec, HAM_OVERWRITE));
 
-        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, &key, &rec2, 
+        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, &key, &rec2,
                     HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL((ham_size_t)sizeof(data), rec2.size);
         BFC_ASSERT_EQUAL(0, ::memcmp(data, rec2.data, sizeof(data)));
@@ -295,15 +295,15 @@ public:
             ::memset(&key, 0, sizeof(key));
             ::memset(&rec2, 0, sizeof(rec));
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(c, &key, &rec2, HAM_CURSOR_NEXT));
             BFC_ASSERT_EQUAL((ham_size_t)sizeof(data), rec2.size);
             BFC_ASSERT_EQUAL(0, ::memcmp(data, rec2.data, sizeof(data)));
         }
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c, 0, 0, HAM_CURSOR_FIRST));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)5, count);
 
@@ -332,7 +332,7 @@ public:
             }
             rec.data=sizes[i] ? data : 0;
             rec.size=sizes[i];
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
             BFC_ASSERT_EQUAL(sizes[i], rec.size);
             if (sizes[i]) {
@@ -355,7 +355,7 @@ public:
             }
             rec.data=sizes[i] ? data : 0;
             rec.size=sizes[i];
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
             BFC_ASSERT_EQUAL(sizes[i], rec.size);
             if (sizes[i]) {
@@ -364,7 +364,7 @@ public:
             }
         }
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(cursor, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)MAX, count);
 
@@ -380,7 +380,7 @@ public:
             }
             rec.data=sizes[i] ? data : 0;
             rec.size=sizes[i];
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_PREVIOUS));
             BFC_ASSERT_EQUAL(sizes[i], rec.size);
             if (sizes[i]) {
@@ -389,7 +389,7 @@ public:
             }
         }
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(cursor, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)MAX, count);
 
@@ -401,7 +401,7 @@ public:
         ::memset(data, 0x99, 16);
         rec.data=data;
         rec.size=16;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key, &rec, HAM_OVERWRITE));
 
         BFC_ASSERT_EQUAL(0, ham_find(m_db, 0, &key, &rec2, 0));
@@ -409,7 +409,7 @@ public:
         BFC_ASSERT_EQUAL(0, ::memcmp(data, rec2.data, 16));
         free(data);
     }
-    
+
     void insertMoveForwardTest(void)
     {
         ham_key_t key;
@@ -423,7 +423,7 @@ public:
             rec.data=data;
             rec.size=sizeof(data);
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
         }
 
@@ -433,7 +433,7 @@ public:
             ::memset(&key, 0, sizeof(key));
             ::memset(&rec, 0, sizeof(rec));
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
             BFC_ASSERT_EQUAL((ham_size_t)sizeof(data), rec.size);
             BFC_ASSERT_EQUAL(0, ::memcmp(data, rec.data, sizeof(data)));
@@ -441,7 +441,7 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, 
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
@@ -460,7 +460,7 @@ public:
             rec.data=data;
             rec.size=sizeof(data);
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
         }
 
@@ -470,7 +470,7 @@ public:
             ::memset(&key, 0, sizeof(key));
             ::memset(&rec, 0, sizeof(rec));
             ::memset(&data, i+0x15, sizeof(data));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_PREVIOUS));
             BFC_ASSERT_EQUAL((ham_size_t)sizeof(data), rec.size);
             BFC_ASSERT_EQUAL(0, ::memcmp(data, rec.data, sizeof(data)));
@@ -478,7 +478,7 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, 
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_PREVIOUS));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
@@ -514,7 +514,7 @@ public:
         BFC_ASSERT_EQUAL(0, ::memcmp(data, rec.data, sizeof(data)));
 
         BFC_ASSERT_EQUAL(0, ham_erase(m_db, 0, &key, 0));
-        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, 
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_find(m_db, 0, &key, &rec, 0));
     }
 
@@ -554,7 +554,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
     }
 
-    void checkData(ham_cursor_t *cursor, ham_u32_t flags, 
+    void checkData(ham_cursor_t *cursor, ham_u32_t flags,
             ham_status_t expected, const char *data)
     {
         ham_key_t key;
@@ -562,7 +562,7 @@ public:
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
 
-        BFC_ASSERT_EQUAL(expected, 
+        BFC_ASSERT_EQUAL(expected,
                 ham_cursor_move(cursor, &key, &rec, flags));
 
         if (expected==0) {
@@ -583,7 +583,7 @@ public:
         ham_size_t count;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "3333333333");
@@ -623,7 +623,7 @@ public:
         checkData(c, HAM_CURSOR_NEXT,     0, "2222222222");
         checkData(c, HAM_CURSOR_NEXT,     0, "3333333333");
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)10, count);
 
@@ -635,7 +635,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("000", "aaaaaaaaaa");
         insertData("111", "1111111111");
         insertData("111", "2222222222");
@@ -667,7 +667,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("000", "aaaaaaaaaa");
         insertData("111", "8888888888");
         insertData("111", "9999999999");
@@ -684,11 +684,11 @@ public:
         checkData(c, HAM_CURSOR_NEXT,     0, "8888888888");
         checkData(c, HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES, 0, "9999999999");
         checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES, 0, "8888888888");
-        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES, 
+        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES,
                         HAM_KEY_NOT_FOUND, 0);
 
         checkData(c, HAM_CURSOR_FIRST,    0, "aaaaaaaaaa");
-        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES, 
+        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES,
                         HAM_KEY_NOT_FOUND, 0);
 
         ham_cursor_close(c);
@@ -766,13 +766,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c2, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -783,13 +783,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, 0));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -828,19 +828,19 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c2, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(3, *(int *)rec.data);
 
@@ -850,25 +850,25 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(3, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(3, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, HAM_CURSOR_PREVIOUS));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
@@ -921,7 +921,7 @@ public:
         BFC_ASSERT(db_get_rt_flags(m_db)&HAM_ENABLE_DUPLICATES);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("111", "4444444444");
         insertData("111", "5555555555");
         insertData("111", "6666666666");
@@ -935,9 +935,9 @@ public:
         checkData(c, HAM_CURSOR_NEXT,     0, "6666666666");
         checkData(c, HAM_CURSOR_NEXT,     0, "bbbbbbbbbb");
 
-        checkData(c, HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES, 
+        checkData(c, HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES,
                         HAM_KEY_NOT_FOUND, 0);
-        checkData(c, HAM_CURSOR_NEXT, 
+        checkData(c, HAM_CURSOR_NEXT,
                         HAM_KEY_NOT_FOUND, 0);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
@@ -948,7 +948,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "3333333333");
         insertData(0, "2222222222");
         insertData(0, "1111111111");
@@ -984,14 +984,14 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_find(c1, &key, 0));
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, 0));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_find(c2, &key, 0));
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, 0));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
@@ -1001,13 +1001,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1041,14 +1041,14 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_find(c1, &key, 0));
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, 0));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_find(c2, &key, 0));
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, 0));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
@@ -1060,13 +1060,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1099,13 +1099,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c2, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1115,13 +1115,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
@@ -1154,13 +1154,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c2, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1172,13 +1172,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
@@ -1211,13 +1211,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(1, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c2, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1227,13 +1227,13 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c1, &key, &rec, HAM_CURSOR_LAST));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, 0));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1246,7 +1246,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "3333333333");
@@ -1266,11 +1266,11 @@ public:
         checkData(c, HAM_CURSOR_PREVIOUS|HAM_SKIP_DUPLICATES, 0, "1111111111");
 
         checkData(c, HAM_CURSOR_LAST,     0, "xxxxxxxx");
-        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES, 
+        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES,
                 HAM_KEY_NOT_FOUND, 0);
 
         checkData(c, HAM_CURSOR_FIRST,    0, "1111111111");
-        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES, 
+        checkData(c, HAM_CURSOR_PREVIOUS|HAM_ONLY_DUPLICATES,
                 HAM_KEY_NOT_FOUND, 0);
         checkData(c, HAM_CURSOR_PREVIOUS|HAM_SKIP_DUPLICATES,
                 HAM_KEY_NOT_FOUND, 0);
@@ -1288,7 +1288,7 @@ public:
         ::memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "33");
@@ -1305,7 +1305,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_overwrite(c, &rec, 0));
         checkData(c, HAM_CURSOR_FIRST,    0, "1111111111");
         checkData(c, HAM_CURSOR_NEXT,     0, "2222222222");
-        checkData(c, HAM_CURSOR_NEXT,     0, 
+        checkData(c, HAM_CURSOR_NEXT,     0,
                 "3333333333333333333333333333333333333333333333333333");
         checkData(c, HAM_CURSOR_NEXT,     0, "4444444444");
 
@@ -1316,7 +1316,7 @@ public:
 
         checkData(c, HAM_CURSOR_LAST,     0, "5555555555");
         checkData(c, HAM_CURSOR_PREVIOUS, 0, "44");
-        checkData(c, HAM_CURSOR_PREVIOUS, 0, 
+        checkData(c, HAM_CURSOR_PREVIOUS, 0,
                 "3333333333333333333333333333333333333333333333333333");
 
         ham_cursor_close(c);
@@ -1332,7 +1332,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c1));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c2));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c3));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "33");
@@ -1351,14 +1351,14 @@ public:
         rec.data=(void *)"3333333333333333333333333333333333333333333333333333";
         rec.size=(ham_size_t)strlen((char *)rec.data)+1;
         BFC_ASSERT_EQUAL(0, ham_cursor_overwrite(c1, &rec, 0));
-        checkData(c1, 0,                   0, 
+        checkData(c1, 0,                   0,
                 "3333333333333333333333333333333333333333333333333333");
         checkData(c2, HAM_CURSOR_FIRST,    0, "1111111111");
         checkData(c1, HAM_CURSOR_FIRST,    0, "1111111111");
         checkData(c1, HAM_CURSOR_NEXT,     0, "2222222222");
-        checkData(c1, HAM_CURSOR_NEXT,     0, 
+        checkData(c1, HAM_CURSOR_NEXT,     0,
                 "3333333333333333333333333333333333333333333333333333");
-        checkData(c3, 0,                   0, 
+        checkData(c3, 0,                   0,
                 "3333333333333333333333333333333333333333333333333333");
         checkData(c1, HAM_CURSOR_NEXT,     0, "4444444444");
         checkData(c3, HAM_CURSOR_NEXT,     0, "4444444444");
@@ -1368,14 +1368,14 @@ public:
         rec.size=(ham_size_t)strlen((char *)rec.data)+1;
         BFC_ASSERT_EQUAL(0, ham_cursor_overwrite(c1, &rec, 0));
         checkData(c3, 0,                   0, "44");
-        checkData(c3, HAM_CURSOR_PREVIOUS, 0, 
+        checkData(c3, HAM_CURSOR_PREVIOUS, 0,
                 "3333333333333333333333333333333333333333333333333333");
         checkData(c3, HAM_CURSOR_NEXT,     0, "44");
         checkData(c3, HAM_CURSOR_NEXT,     0, "5555555555");
 
         checkData(c1, HAM_CURSOR_LAST,     0, "5555555555");
         checkData(c1, HAM_CURSOR_PREVIOUS, 0, "44");
-        checkData(c1, HAM_CURSOR_PREVIOUS, 0, 
+        checkData(c1, HAM_CURSOR_PREVIOUS, 0,
                 "3333333333333333333333333333333333333333333333333333");
         checkData(c1, HAM_CURSOR_FIRST,    0, "1111111111");
         checkData(c2, HAM_CURSOR_FIRST,    0, "1111111111");
@@ -1390,10 +1390,10 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_cursor_move(c, 0, 0, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_move(c, 0, 0,
                         HAM_SKIP_DUPLICATES|HAM_ONLY_DUPLICATES));
-        
+
         ham_cursor_close(c);
     }
 
@@ -1420,7 +1420,7 @@ public:
         rec.data=(void *)"1111111111111111111111111111111111111111";
         rec.size=(ham_size_t)strlen((char *)rec.data)+1;
         BFC_ASSERT_EQUAL(0, ham_insert(m_db, 0, &key, &rec, HAM_OVERWRITE));
-        checkData(c2, 0,                    0, 
+        checkData(c2, 0,                    0,
                 "1111111111111111111111111111111111111111");
 
         ::memset(&key, 0, sizeof(key));
@@ -1450,10 +1450,10 @@ public:
 
         /* generated with `cat ../COPYING.GPL2 | ./db5` */
 #if defined(HAM_LITTLE_ENDIAN)
-        BFC_ASSERT_EQUAL(true, 
+        BFC_ASSERT_EQUAL(true,
             os::copy(BFC_IPATH("data/dupe-endian-test-open-database-be.hdb"), BFC_OPATH(".test")));
 #else
-        BFC_ASSERT_EQUAL(true, 
+        BFC_ASSERT_EQUAL(true,
             os::copy(BFC_IPATH("data/dupe-endian-test-open-database-le.hdb"), BFC_OPATH(".test")));
 #endif
         BFC_ASSERT_EQUAL(0, ham_open(m_db, BFC_OPATH(".test"), 0));
@@ -1470,22 +1470,22 @@ public:
         BFC_ASSERT_EQUAL(_ham_byteswap32(125), *(unsigned int *)rec.data);
 
         memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec, 
+        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec,
                                 HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES));
         BFC_ASSERT_EQUAL(_ham_byteswap32(142), *(unsigned int *)rec.data);
-        
+
         memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec, 
+        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec,
                                 HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES));
         BFC_ASSERT_EQUAL(_ham_byteswap32(235), *(unsigned int *)rec.data);
 
         memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec, 
+        BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec,
                                 HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES));
         BFC_ASSERT_EQUAL(_ham_byteswap32(331), *(unsigned int *)rec.data);
 
         memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, ham_cursor_move(c, 0, &rec, 
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, ham_cursor_move(c, 0, &rec,
                                 HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
@@ -1497,7 +1497,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "3333333333");
@@ -1525,7 +1525,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_erase(c, 0));
 
         memset(&key, 0, sizeof(key));
-        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, 
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                         ham_cursor_find(c, &key, 0));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
@@ -1541,21 +1541,21 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
             rec.size=(ham_size_t)strlen((char *)rec.data)+1;
-            BFC_ASSERT_EQUAL(0, 
-                        ham_cursor_insert(c, &key, &rec, 
+            BFC_ASSERT_EQUAL(0,
+                        ham_cursor_insert(c, &key, &rec,
                                 HAM_DUPLICATE_INSERT_LAST));
             memset(&rec, 0, sizeof(rec));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, 0, &rec, 0));
             BFC_ASSERT_EQUAL(strlen((char *)rec.data)+1,
                             strlen(values[i])+1);
             BFC_ASSERT_EQUAL(0, strcmp(values[i], (char *)rec.data));
-            BFC_ASSERT_EQUAL((ham_size_t)i, 
+            BFC_ASSERT_EQUAL((ham_size_t)i,
                             bt_cursor_get_dupe_id((ham_bt_cursor_t *)c));
         }
 
@@ -1578,21 +1578,21 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
             rec.size=(ham_size_t)strlen((char *)rec.data)+1;
-            BFC_ASSERT_EQUAL(0, 
-                        ham_cursor_insert(c, &key, &rec, 
+            BFC_ASSERT_EQUAL(0,
+                        ham_cursor_insert(c, &key, &rec,
                                 HAM_DUPLICATE_INSERT_FIRST));
             memset(&rec, 0, sizeof(rec));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, 0, &rec, 0));
             BFC_ASSERT_EQUAL(strlen((char *)rec.data)+1,
                             strlen(values[i])+1);
             BFC_ASSERT_EQUAL(0, strcmp(values[i], (char *)rec.data));
-            BFC_ASSERT_EQUAL((ham_size_t)0, 
+            BFC_ASSERT_EQUAL((ham_size_t)0,
                             bt_cursor_get_dupe_id((ham_bt_cursor_t *)c));
         }
 
@@ -1615,23 +1615,23 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
             rec.size=(ham_size_t)strlen((char *)rec.data)+1;
-            BFC_ASSERT_EQUAL(0, 
-                        ham_cursor_insert(c, &key, &rec, 
+            BFC_ASSERT_EQUAL(0,
+                        ham_cursor_insert(c, &key, &rec,
                                 HAM_DUPLICATE_INSERT_AFTER));
             memset(&rec, 0, sizeof(rec));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, 0, &rec, 0));
             BFC_ASSERT_EQUAL(strlen((char *)rec.data)+1,
                             strlen(values[i])+1);
             BFC_ASSERT_EQUAL(0, strcmp(values[i], (char *)rec.data));
-            BFC_ASSERT_EQUAL((ham_size_t)(i>=1 ? 1 : 0), 
+            BFC_ASSERT_EQUAL((ham_size_t)(i>=1 ? 1 : 0),
                             bt_cursor_get_dupe_id((ham_bt_cursor_t *)c));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, 0, 0, HAM_CURSOR_FIRST));
         }
 
@@ -1654,23 +1654,23 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
             rec.size=(ham_size_t)strlen((char *)rec.data)+1;
-            BFC_ASSERT_EQUAL(0, 
-                        ham_cursor_insert(c, &key, &rec, 
+            BFC_ASSERT_EQUAL(0,
+                        ham_cursor_insert(c, &key, &rec,
                                 HAM_DUPLICATE_INSERT_BEFORE));
             memset(&rec, 0, sizeof(rec));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, 0, &rec, 0));
             BFC_ASSERT_EQUAL(strlen((char *)rec.data)+1,
                             strlen(values[i])+1);
             BFC_ASSERT_EQUAL(0, strcmp(values[i], (char *)rec.data));
             BFC_ASSERT_EQUAL((ham_size_t)(i<=1 ? 0 : i-1),
                             bt_cursor_get_dupe_id((ham_bt_cursor_t *)c));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, 0, 0, HAM_CURSOR_LAST));
         }
 
@@ -1695,7 +1695,7 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int s=0; s<5; s++) {
             for (int i=s, j=0; i<s+4; i++, j++) {
                 memset(&rec, 0, sizeof(rec));
@@ -1711,16 +1711,16 @@ public:
 
                 if (s==0) {
                     /* first round: insert the duplicates */
-                    BFC_ASSERT_EQUAL(0, 
-                            ham_cursor_insert(c, &key, &rec, 
+                    BFC_ASSERT_EQUAL(0,
+                            ham_cursor_insert(c, &key, &rec,
                                     HAM_DUPLICATE_INSERT_LAST));
                 }
                 else {
                     /* other rounds: just overwrite them */
-                    BFC_ASSERT_EQUAL(0, 
+                    BFC_ASSERT_EQUAL(0,
                             ham_cursor_overwrite(c, &rec, 0));
                     if (i!=(s+4)-1)
-                        BFC_ASSERT_EQUAL(0, 
+                        BFC_ASSERT_EQUAL(0,
                             ham_cursor_move(c, 0, 0, HAM_CURSOR_NEXT));
                 }
             }
@@ -1745,38 +1745,38 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
 
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_cursor_get_duplicate_count(0, &count, 0));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_cursor_get_duplicate_count(c, 0, 0));
-        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL, 
+        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)0, count);
 
         insertData(0, "1111111111");
         checkData(c, HAM_CURSOR_NEXT,     0, "1111111111");
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)1, count);
 
         insertData(0, "2222222222");
         checkData(c, HAM_CURSOR_NEXT,     0, "2222222222");
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)2, count);
 
         insertData(0, "3333333333");
         checkData(c, HAM_CURSOR_NEXT,     0, "3333333333");
         bt_cursor_uncouple((ham_bt_cursor_t *)c, 0);
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)3, count);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_erase(c, 0));
-        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL, 
+        BFC_ASSERT_EQUAL(HAM_CURSOR_IS_NIL,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         checkData(c, HAM_CURSOR_FIRST,    0, "1111111111");
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_get_duplicate_count(c, &count, 0));
         BFC_ASSERT_EQUAL((ham_size_t)2, count);
 
@@ -1791,7 +1791,7 @@ public:
             BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
 
             checkData(c, HAM_CURSOR_NEXT,     0, "1111111111");
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_get_duplicate_count(c, &count, 0));
             BFC_ASSERT_EQUAL((ham_size_t)2, count);
 
@@ -1811,32 +1811,32 @@ public:
         };
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_ENABLE_DUPLICATES, 0664, &params[0]));
 
         memset(&key, 0, sizeof(key));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         int i;
         for (i=0; i<256; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.size=sizeof(i);
             rec.data=&i;
 
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE));
         }
 
         for (i=0; i<256; i++) {
             memset(&rec, 0, sizeof(rec));
 
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(c, &key, &rec, HAM_CURSOR_NEXT));
             BFC_ASSERT_EQUAL((ham_size_t)4, rec.size);
             BFC_ASSERT_EQUAL(i, *(int *)rec.data);
         }
 
-        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, 
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_cursor_move(c, 0, 0, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
     }
@@ -1871,9 +1871,9 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_FIRST));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c1, &key, &rec, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(2, *(int *)rec.data);
 
@@ -1881,7 +1881,7 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c2, &key, &rec, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(3, *(int *)rec.data);
 
@@ -1891,7 +1891,7 @@ public:
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(c2, &key, &rec, 0));
         BFC_ASSERT_EQUAL(3, *(int *)rec.data);
 
@@ -1931,27 +1931,27 @@ protected:
     std::vector<ham_u32_t> m_data;
 
 public:
-    virtual void setup() 
-	{ 
+    virtual void setup()
+	{
 		__super::setup();
 
         (void)os::unlink(BFC_OPATH(".test"));
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_ENABLE_DUPLICATES|HAM_SORT_DUPLICATES, 0664));
 
         m_data.resize(0);
     }
 
-    virtual void teardown() 
-	{ 
+    virtual void teardown()
+	{
 		__super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, HAM_AUTO_CLEANUP));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
     }
-    
+
     void insertDuplicate(ham_u32_t value)
     {
         ham_key_t key;
@@ -1979,7 +1979,7 @@ public:
                 it!=m_data.end(); it++) {
             ::memset(&key, 0, sizeof(key));
             ::memset(&rec, 0, sizeof(rec));
-            BFC_ASSERT_EQUAL(0, 
+            BFC_ASSERT_EQUAL(0,
                         ham_cursor_move(c, &key, &rec, HAM_CURSOR_NEXT));
             BFC_ASSERT_EQUAL(*it, *(ham_u32_t *)rec.data);
         }
@@ -1992,26 +1992,26 @@ public:
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
 
         /* create w/o dupes, open with sorting -> fail */
-        BFC_ASSERT_EQUAL(0, 
-            ham_create(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+            ham_create(m_db, BFC_OPATH(".test"),
                     m_flags&~HAM_ENABLE_DUPLICATES, 0664));
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-            ham_open(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+            ham_open(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_SORT_DUPLICATES));
 
         /* sort without enable_dupes -> fail */
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-            ham_create(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+            ham_create(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_SORT_DUPLICATES, 0664));
-        BFC_ASSERT_EQUAL(0, 
-            ham_create(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+            ham_create(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_SORT_DUPLICATES|HAM_ENABLE_DUPLICATES, 0664));
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
 
         /* open w/ sorting -> ok */
-        BFC_ASSERT_EQUAL(0, 
-            ham_open(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+            ham_open(m_db, BFC_OPATH(".test"),
                     m_flags|HAM_SORT_DUPLICATES));
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
 
@@ -2019,42 +2019,42 @@ public:
         ham_db_t *db;
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_env_create(env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_env_create(env, BFC_OPATH(".test"),
                     m_flags|HAM_SORT_DUPLICATES, 0664));
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create(env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create(env, BFC_OPATH(".test"),
                     m_flags, 0664));
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create_db(env, db, 13, HAM_SORT_DUPLICATES, 0));
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create_db(env, db, 13, 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create_db(env, db, 13,
                         HAM_ENABLE_DUPLICATES|HAM_SORT_DUPLICATES, 0));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_open_db(env, db, 13, 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_open_db(env, db, 13,
                         HAM_SORT_DUPLICATES, 0));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_env_create_db(env, db, 14, 0, 0));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_env_open_db(env, db, 14, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_env_open_db(env, db, 14,
                         HAM_SORT_DUPLICATES, 0));
 
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_env_open(env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_env_open(env, BFC_OPATH(".test"),
                     m_flags|HAM_SORT_DUPLICATES));
 
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create(env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create(env, BFC_OPATH(".test"),
                     m_flags, 0664));
-        BFC_ASSERT_EQUAL(0, 
-                ham_env_create_db(env, db, 99, 
+        BFC_ASSERT_EQUAL(0,
+                ham_env_create_db(env, db, 99,
                         HAM_ENABLE_DUPLICATES|HAM_SORT_DUPLICATES, 0));
 
         /* make sure that HAM_DUPLICATE_INSERT_* is not allowed if
@@ -2066,23 +2066,23 @@ public:
         memset(&rec, 0, sizeof(rec));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(db, 0, 0, &c));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_cursor_insert(c, &key, &rec, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_insert(c, &key, &rec,
                         HAM_DUPLICATE_INSERT_FIRST));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_cursor_insert(c, &key, &rec, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_insert(c, &key, &rec,
                         HAM_DUPLICATE_INSERT_LAST));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_cursor_insert(c, &key, &rec, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_insert(c, &key, &rec,
                         HAM_DUPLICATE_INSERT_BEFORE));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
-                ham_cursor_insert(c, &key, &rec, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_insert(c, &key, &rec,
                         HAM_DUPLICATE_INSERT_AFTER));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_insert(c, &key, &rec, 0));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_cursor_overwrite(c, &rec, 0));
-        
+
         ham_cursor_close(c);
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(db));
@@ -2102,7 +2102,7 @@ public:
 
     void anotherSimpleInsertTest(void)
     {
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
             ham_set_duplicate_compare_func(m_db, __compare_numbers));
 
         insertDuplicate(10);
@@ -2129,7 +2129,7 @@ public:
 
     void andAnotherSimpleInsertTest(void)
     {
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
             ham_set_duplicate_compare_func(m_db, __compare_numbers));
 
         insertDuplicate(266);
@@ -2168,7 +2168,7 @@ public:
 
     /*
      * berkeleydb does not support duplicate keys with identical records,
-     * therefore this item is not covered in the acceptance tests. 
+     * therefore this item is not covered in the acceptance tests.
      *
      * that's why it's tested here.
      */

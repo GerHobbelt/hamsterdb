@@ -25,3 +25,4 @@ endif
 
 noinst_PROGRAMS		= ham_log
 noinst_BIN      	= ham_log
+
