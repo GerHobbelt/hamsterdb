@@ -1,16 +1,17 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
- * This sample demonstrates the use of duplicate items; every line is 
- * split into words, and each word is inserted with its line number. 
+ */
+
+/**
+ * This sample demonstrates the use of duplicate items; every line is
+ * split into words, and each word is inserted with its line number.
  * Then a cursor is used to print all words in a sorted order, with the
  * lines in which the word occurred.
  */
@@ -19,7 +20,7 @@
 #include <string.h>
 #include <ham/hamsterdb.h>
 
-int 
+int
 main(int argc, char **argv)
 {
     ham_status_t st;      /* status variable */
@@ -38,7 +39,7 @@ main(int argc, char **argv)
     printf("Reading from stdin...\n");
 
 	/*
-     * first step: create a new hamsterdb object 
+     * first step: create a new hamsterdb object
      */
     st=ham_new(&db);
     if (st!=HAM_SUCCESS) {
@@ -47,7 +48,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * second step: create a new Database with support for duplicate keys
+     * second step: create a new database with support for duplicate keys
      *
      * we could create an in-memory-database to speed up the sorting.
      */
@@ -58,7 +59,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * now we read each line from stdin and split it in words; then each 
+     * now we read each line from stdin and split it in words; then each
      * word is inserted into the database
      */
     while (fgets(line, sizeof(line), stdin)) {
@@ -71,11 +72,13 @@ main(int argc, char **argv)
          */
         while ((p=strtok(start, " \t\r\n"))) {
             key.data=p;
-            key.size=(ham_size_t)strlen(p)+1; /* also store the terminating 
+            key.size=(ham_size_t)strlen(p)+1; /* also store the terminating
                                                  0-byte */
             record.data=&lineno;
             record.size=sizeof(lineno);
 
+            /* note: the second parameter of ham_insert() is reserved; set it
+             * to NULL; the flag HAM_DUPLICATE inserts a duplicate key */
             st=ham_insert(db, 0, &key, &record, HAM_DUPLICATE);
             if (st!=HAM_SUCCESS) {
                 printf("ham_insert() failed with error %d\n", st);
@@ -87,8 +90,8 @@ main(int argc, char **argv)
         }
     }
 
-    /* 
-     * create a cursor 
+    /*
+     * create a cursor
      */
     st=ham_cursor_create(db, 0, 0, &cursor);
     if (st!=HAM_SUCCESS) {
@@ -111,10 +114,10 @@ main(int argc, char **argv)
             }
         }
 
-        /* 
+        /*
          * print the word and the line number
          */
-        printf("%s: appeared in line %u\n", (const char *)key.data, 
+        printf("%s: appeared in line %u\n", (const char *)key.data,
                 *(unsigned *)record.data);
     }
 
@@ -134,7 +137,7 @@ main(int argc, char **argv)
      */
     ham_delete(db);
 
-    /* 
+    /*
      * success!
      */
     return (0);

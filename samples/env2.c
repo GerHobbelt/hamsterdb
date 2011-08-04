@@ -1,14 +1,15 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * Similar to env1, an environment with a customer- and an order-database
  * is created; a third database is created which manages the 1:n relationship
  * between the other two.
@@ -22,16 +23,16 @@
 #endif
 #include <ham/hamsterdb.h>
 
-void 
+void
 error(const char *foo, ham_status_t st)
 {
 #if UNDER_CE
 	wchar_t title[1024];
 	wchar_t text[1024];
 
-	MultiByteToWideChar(CP_ACP, 0, foo, -1, title, 
+	MultiByteToWideChar(CP_ACP, 0, foo, -1, title,
             sizeof(title)/sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text, 
+	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text,
             sizeof(text)/sizeof(wchar_t));
 
 	MessageBox(0, title, text, 0);
@@ -53,30 +54,30 @@ error(const char *foo, ham_status_t st)
 #define MAX_CUSTOMERS       4
 #define MAX_ORDERS          8
 
-/* 
+/*
  * a structure for the "customer" database
  */
 typedef struct
 {
-    int id;                 /* customer id - will be the key of the 
+    int id;                 /* customer id - will be the key of the
                                customer table */
     char name[32];          /* customer name */
     /* ... additional information could follow here */
 } customer_t;
 
-/* 
+/*
  * a structure for the "orders" database
  */
 typedef struct
 {
-    int id;                 /* order id - will be the key of the 
+    int id;                 /* order id - will be the key of the
                                order table */
     int customer_id;        /* customer id */
     char assignee[32];      /* assigned to whom? */
     /* ... additional information could follow here */
 } order_t;
 
-int 
+int
 main(int argc, char **argv)
 {
     int i;
@@ -115,7 +116,7 @@ main(int argc, char **argv)
     memset(&c2o_record, 0, sizeof(c2o_record));
 
     /*
-     * first, create a new hamsterdb environment 
+     * first, create a new hamsterdb environment
      */
     st=ham_env_new(&env);
     if (st!=HAM_SUCCESS)
@@ -139,7 +140,7 @@ main(int argc, char **argv)
 
     /*
      * Then create the two Databases in this Environment; each Database
-     * has a name - the first is our "customer" Database, the second 
+     * has a name - the first is our "customer" Database, the second
      * is for the "orders"; the third manages our 1:n relation and
      * therefore needs to enable duplicate keys
      */
@@ -149,17 +150,17 @@ main(int argc, char **argv)
     st=ham_env_create_db(env, db[DBIDX_ORDER], DBNAME_ORDER, 0, 0);
     if (st!=HAM_SUCCESS)
         error("ham_env_create_db(order)", st);
-    st=ham_env_create_db(env, db[DBIDX_C2O], DBNAME_C2O, 
+    st=ham_env_create_db(env, db[DBIDX_C2O], DBNAME_C2O,
             HAM_ENABLE_DUPLICATES, 0);
     if (st!=HAM_SUCCESS)
         error("ham_env_create_db(c2o)", st);
 
-    /* 
+    /*
      * create a Cursor for each Database
      */
     for (i=0; i<MAX_DBS; i++) {
         st=ham_cursor_create(db[i], 0, 0, &cursor[i]);
-        if (st!=HAM_SUCCESS) 
+        if (st!=HAM_SUCCESS)
             error("ham_cursor_create" , st);
     }
 
@@ -177,13 +178,15 @@ main(int argc, char **argv)
         record.size=sizeof(customer_t);
         record.data=&customers[i];
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db[0], 0, &key, &record, 0);
 		if (st!=HAM_SUCCESS)
             error("ham_insert (customer)", st);
     }
 
     /*
-     * And now the orders in the second Database; contrary to env1, 
+     * And now the orders in the second Database; contrary to env1,
      * we only store the assignee, not the whole structure
      *
      * INSERT INTO orders VALUES (1, "Joe");
@@ -196,6 +199,8 @@ main(int argc, char **argv)
         record.size=sizeof(orders[i].assignee);
         record.data=orders[i].assignee;
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db[1], 0, &key, &record, 0);
 		if (st!=HAM_SUCCESS)
             error("ham_insert (order)", st);
@@ -216,6 +221,8 @@ main(int argc, char **argv)
         record.size=sizeof(int);
         record.data=&orders[i].id;
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db[2], 0, &key, &record, HAM_DUPLICATE);
 		if (st!=HAM_SUCCESS)
             error("ham_insert(c2o)", st);
@@ -229,7 +236,7 @@ main(int argc, char **argv)
      * and pick those orders with the customer id. then load the order
      * and print it
      *
-     * the outer loop is similar to 
+     * the outer loop is similar to
      * SELECT * FROM customers WHERE 1;
      */
     while (1) {
@@ -255,7 +262,7 @@ main(int argc, char **argv)
          * before we start the loop, we move the cursor to the
          * first duplicate key
          *
-         * SELECT * FROM customers, orders, c2o 
+         * SELECT * FROM customers, orders, c2o
          *   WHERE c2o.customer_id=customers.id AND
          *      c2o.order_id=orders.id;
          */
@@ -278,22 +285,22 @@ main(int argc, char **argv)
             ord_key.data=&order_id;
             ord_key.size=sizeof(int);
 
-            /* 
-             * load the order 
+            /*
+             * load the order
              * SELECT * FROM orders WHERE id = order_id;
              */
             st=ham_find(db[1], 0, &ord_key, &ord_record, 0);
             if (st!=HAM_SUCCESS)
                 error("ham_find(order)", st);
 
-            printf("  order: %d (assigned to %s)\n", 
+            printf("  order: %d (assigned to %s)\n",
                     order_id, (char *)ord_record.data);
 
             /*
              * the flag HAM_ONLY_DUPLICATES restricts the cursor
              * movement to the duplicate list.
              */
-            st=ham_cursor_move(cursor[2], &c2o_key, 
+            st=ham_cursor_move(cursor[2], &c2o_key,
                     &c2o_record, HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES);
             if (st!=HAM_SUCCESS) {
                 /* reached end of the database? */
@@ -328,7 +335,7 @@ main(int argc, char **argv)
 }
 
 #if UNDER_CE
-int 
+int
 _tmain(int argc, _TCHAR* argv[])
 {
 	return (main(0, 0));

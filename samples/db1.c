@@ -1,15 +1,16 @@
-/**
+/*
  * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
- * A simple example, which creates a database, inserts some values, 
+ */
+
+/**
+ * A simple example, which creates a database, inserts some values,
  * looks them up and erases them.
  */
 
@@ -23,16 +24,16 @@
 
 #define LOOP 100
 
-void 
+void
 error(const char *foo, ham_status_t st)
 {
 #if UNDER_CE
 	wchar_t title[1024];
 	wchar_t text[1024];
 
-	MultiByteToWideChar(CP_ACP, 0, foo, -1, title, 
+	MultiByteToWideChar(CP_ACP, 0, foo, -1, title,
             sizeof(title)/sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text, 
+	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text,
             sizeof(text)/sizeof(wchar_t));
 
 	MessageBox(0, title, text, 0);
@@ -41,7 +42,7 @@ error(const char *foo, ham_status_t st)
     exit(-1);
 }
 
-int 
+int
 main(int argc, char **argv)
 {
     int i;
@@ -54,7 +55,7 @@ main(int argc, char **argv)
     memset(&record, 0, sizeof(record));
 
     /*
-     * first step: create a new hamsterdb object 
+     * first step: create a new hamsterdb object
      */
     st=ham_new(&db);
     if (st!=HAM_SUCCESS)
@@ -63,7 +64,7 @@ main(int argc, char **argv)
     /*
      * second step: create a new hamsterdb database
      *
-     * we could also use ham_create_ex() if we wanted to specify the 
+     * we could also use ham_create_ex() if we wanted to specify the
      * page size, key size or cache size limits
      */
     st=ham_create_ex(db, "test.db", 0, 0664, 0);
@@ -73,7 +74,7 @@ main(int argc, char **argv)
     /*
      * now we can insert, delete or lookup values in the database
      *
-     * for our test program, we just insert a few values, then look them 
+     * for our test program, we just insert a few values, then look them
      * up, then delete them and try to look them up again (which will fail).
      */
     for (i=0; i<LOOP; i++) {
@@ -83,6 +84,8 @@ main(int argc, char **argv)
         record.data=&i;
         record.size=sizeof(i);
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db, 0, &key, &record, 0);
 		if (st!=HAM_SUCCESS)
             error("ham_insert", st);
@@ -99,6 +102,8 @@ main(int argc, char **argv)
         key.data=&i;
         key.size=sizeof(i);
 
+        /* note: the second parameter of ham_find() is reserved; set it to
+         * NULL */
         st=ham_find(db, 0, &key, &record, 0);
         if (st!=HAM_SUCCESS)
             error("ham_find", st);
@@ -113,7 +118,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * close the database handle, then re-open it (to demonstrate the 
+     * close the database handle, then re-open it (to demonstrate the
      * call ham_open)
      */
     st=ham_close(db, 0);
@@ -130,6 +135,8 @@ main(int argc, char **argv)
         key.size=sizeof(i);
         key.data=&i;
 
+        /* note: the second parameter of ham_erase() is reserved; set it to
+         * NULL */
         st=ham_erase(db, 0, &key, 0);
         if (st!=HAM_SUCCESS)
             error("ham_erase", st);
@@ -168,7 +175,7 @@ main(int argc, char **argv)
 }
 
 #if UNDER_CE
-int 
+int
 _tmain(int argc, _TCHAR* argv[])
 {
 	return (main(0, 0));

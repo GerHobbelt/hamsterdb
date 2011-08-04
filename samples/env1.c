@@ -1,14 +1,15 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * A simple example, which creates a database environment with
  * several databases.
  */
@@ -21,16 +22,16 @@
 #endif
 #include <ham/hamsterdb.h>
 
-void 
+void
 error(const char *foo, ham_status_t st)
 {
 #if UNDER_CE
 	wchar_t title[1024];
 	wchar_t text[1024];
 
-	MultiByteToWideChar(CP_ACP, 0, foo, -1, title, 
+	MultiByteToWideChar(CP_ACP, 0, foo, -1, title,
             sizeof(title)/sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text, 
+	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text,
             sizeof(text)/sizeof(wchar_t));
 
 	MessageBox(0, title, text, 0);
@@ -47,7 +48,7 @@ error(const char *foo, ham_status_t st)
 #define MAX_CUSTOMERS       4
 #define MAX_ORDERS          8
 
-/* 
+/*
  * a structure for the "customer" database
  */
 typedef struct
@@ -57,7 +58,7 @@ typedef struct
     /* ... additional information could follow here */
 } customer_t;
 
-/* 
+/*
  * a structure for the "orders" database
  */
 typedef struct
@@ -68,7 +69,7 @@ typedef struct
     /* ... additional information could follow here */
 } order_t;
 
-int 
+int
 main(int argc, char **argv)
 {
     int i;
@@ -105,7 +106,7 @@ main(int argc, char **argv)
     memset(&ord_record, 0, sizeof(ord_record));
 
     /*
-     * first, create a new hamsterdb environment 
+     * first, create a new hamsterdb environment
      */
     st=ham_env_new(&env);
     if (st!=HAM_SUCCESS)
@@ -123,7 +124,7 @@ main(int argc, char **argv)
     /*
      * now create a new database file for the environment
      *
-     * we could also use ham_env_create_ex() if we wanted to specify the 
+     * we could also use ham_env_create_ex() if we wanted to specify the
      * page size, key size or cache size limits
      */
     st=ham_env_create(env, "test.db", 0, 0664);
@@ -132,7 +133,7 @@ main(int argc, char **argv)
 
     /*
      * then create the two databases in this environment; each database
-     * has a name - the first is our "customer" database, the second 
+     * has a name - the first is our "customer" database, the second
      * is for the "orders"
      */
     st=ham_env_create_db(env, db[0], DBNAME_CUSTOMER, 0, 0);
@@ -142,7 +143,7 @@ main(int argc, char **argv)
     if (st!=HAM_SUCCESS)
         error("ham_env_create_db (order)", st);
 
-    /* 
+    /*
      * create a cursor for each database
      */
     for (i=0; i<MAX_DBS; i++) {
@@ -163,7 +164,7 @@ main(int argc, char **argv)
         record.size=sizeof(customer_t);
         record.data=&customers[i];
 
-        /* note: the second parameter of ham_insert() is reserved; set it to 
+        /* note: the second parameter of ham_insert() is reserved; set it to
          * NULL */
         st=ham_insert(db[0], 0, &key, &record, 0);
 		if (st!=HAM_SUCCESS)
@@ -180,7 +181,7 @@ main(int argc, char **argv)
         record.size=sizeof(order_t);
         record.data=&orders[i];
 
-        /* note: the second parameter of ham_insert() is reserved; set it to 
+        /* note: the second parameter of ham_insert() is reserved; set it to
          * NULL */
         st=ham_insert(db[1], 0, &key, &record, 0);
 		if (st!=HAM_SUCCESS)
@@ -191,7 +192,7 @@ main(int argc, char **argv)
      * to demonstrate even more functions, close all objects, then
      * re-open the environment and the two databases.
      *
-     * note that ham_env_close automatically calls ham_close on all 
+     * note that ham_env_close automatically calls ham_close on all
      * databases.
      */
     for (i=0; i<MAX_DBS; i++) {
@@ -204,7 +205,7 @@ main(int argc, char **argv)
         error("ham_env_close", st);
 
     /*
-     * now reopen the environment and the databases 
+     * now reopen the environment and the databases
      */
     st=ham_env_open(env, "test.db", 0);
     if (st!=HAM_SUCCESS)
@@ -216,7 +217,7 @@ main(int argc, char **argv)
     if (st!=HAM_SUCCESS)
         error("ham_env_open_db (order)", st);
 
-    /* 
+    /*
      * re-create a cursor for each database
      */
     for (i=0; i<MAX_DBS; i++) {
@@ -273,10 +274,10 @@ main(int argc, char **argv)
 
             /* print this order, if it belongs to the current customer */
             if (order->customer_id==customer->id)
-                printf("  order: %d (assigned to %s)\n", 
+                printf("  order: %d (assigned to %s)\n",
                         order->id, order->assignee);
 
-            st=ham_cursor_move(cursor[1], &ord_key, 
+            st=ham_cursor_move(cursor[1], &ord_key,
                     &ord_record, HAM_CURSOR_NEXT);
             if (st!=HAM_SUCCESS) {
                 /* reached end of the database? */
@@ -310,7 +311,7 @@ main(int argc, char **argv)
 }
 
 #if UNDER_CE
-int 
+int
 _tmain(int argc, _TCHAR* argv[])
 {
 	return (main(0, 0));

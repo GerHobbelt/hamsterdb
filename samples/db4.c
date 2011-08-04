@@ -1,17 +1,18 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * This sample uses hamsterdb to read data from stdin into a "record number"
- * database; every word is inserted into the database in the order of 
- * its processing. Then a cursor is used to print all words in the 
+ * database; every word is inserted into the database in the order of
+ * its processing. Then a cursor is used to print all words in the
  * original order.
  */
 
@@ -19,7 +20,7 @@
 #include <string.h>
 #include <ham/hamsterdb.h>
 
-int 
+int
 main(int argc, char **argv)
 {
     ham_status_t st;      /* status variable */
@@ -37,7 +38,7 @@ main(int argc, char **argv)
     printf("Reading from stdin...\n");
 
     /*
-     * first step: create a new hamsterdb object 
+     * first step: create a new hamsterdb object
      */
     st=ham_new(&db);
     if (st!=HAM_SUCCESS) {
@@ -46,7 +47,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * second step: create a new hamsterdb "record number" Database
+     * second step: create a new hamsterdb "record number" database
      *
      * we could create an in-memory-database to speed up the sorting.
      */
@@ -57,7 +58,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * now we read each line from stdin and split it in words; then each 
+     * now we read each line from stdin and split it in words; then each
      * word is inserted into the database
      */
     while (fgets(line, sizeof(line), stdin)) {
@@ -75,8 +76,10 @@ main(int argc, char **argv)
             key.size=sizeof(recno);
 
             record.data=p;
-            record.size=(ham_size_t)strlen(p)+1; /* also store terminating 0 */
+            record.size=(ham_size_t)strlen(p)+1; /* also store the terminating 0-byte */
 
+            /* note: the second parameter of ham_insert() is reserved; set it
+             * to NULL */
             st=ham_insert(db, 0, &key, &record, 0);
             if (st!=HAM_SUCCESS && st!=HAM_DUPLICATE_KEY) {
                 printf("ham_insert() failed with error %d\n", st);
@@ -88,8 +91,8 @@ main(int argc, char **argv)
         }
     }
 
-    /* 
-     * create a cursor 
+    /*
+     * create a cursor
      */
     st=ham_cursor_create(db, 0, 0, &cursor);
     if (st!=HAM_SUCCESS) {
@@ -112,14 +115,14 @@ main(int argc, char **argv)
             }
         }
 
-        /* 
-         * print the record number and the word 
+        /*
+         * print the record number and the word
          */
 #if WIN32
-        printf("%I64u: %s\n", *(ham_u64_t *)key.data, 
+        printf("%I64u: %s\n", *(ham_u64_t *)key.data,
                 (const char *)record.data);
 #else
-        printf("%llu: %s\n", *(unsigned long long *)key.data, 
+        printf("%llu: %s\n", *(unsigned long long *)key.data,
                 (const char *)record.data);
 #endif
     }
@@ -140,7 +143,7 @@ main(int argc, char **argv)
      */
     ham_delete(db);
 
-    /* 
+    /*
      * success!
      */
     return (0);

@@ -1,15 +1,16 @@
-/**
+/*
  * Copyright (C) 2005-2007 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
- * A simple example, which creates a database, inserts some values, 
+ */
+
+/**
+ * A simple example, which creates a database, inserts some values,
  * looks them up and erases them. Uses the C++ api.
  */
 
@@ -18,7 +19,7 @@
 
 #define LOOP 10
 
-int 
+int
 run_demo(void)
 {
     int i;
@@ -34,7 +35,7 @@ run_demo(void)
     /*
      * now we can insert, delete or lookup values in the database
      *
-     * for our test program, we just insert a few values, then look them 
+     * for our test program, we just insert a few values, then look them
      * up, then delete them and try to look them up again (which will fail).
      */
     for (i=0; i<LOOP; i++) {
@@ -99,7 +100,7 @@ run_demo(void)
         }
         catch (ham::error &e) {
             if (e.get_errno()!=HAM_KEY_NOT_FOUND) {
-                std::cerr << "db::find() returned error " << e.get_string() 
+                std::cerr << "db::find() returned error " << e.get_string()
                           << std::endl;
                 return (-1);
             }
@@ -107,7 +108,7 @@ run_demo(void)
     }
 
     /*
-     * we're done! no need to close the database handle, it's done 
+     * we're done! no need to close the database handle, it's done
      * automatically
      */
 
@@ -115,7 +116,7 @@ run_demo(void)
 	return (0);
 }
 
-int 
+int
 main(int argc, char **argv)
 {
     try {

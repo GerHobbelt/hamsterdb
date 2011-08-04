@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2009-2011 Ger Hobbelt (ger@hobbelt.com), Christoph Rupp (chris@crupp.de)
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -10,48 +10,73 @@
  */
 
 /**
- * This sample does the same as env2, but uses the C++ API.
+ * @file env4.hpp
+ * @author Ger Hobbelt, ger@hobbelt.com
+ * @version 1.1.12
+ *
+ * This sample shows the Hamster used as a store for time series (stock trades, physical measurements, ...)
+ * which are stored ordered by time. A run either import a series of data points (or simulate such a import
+ * through generation of random data) and will subsequently perform a (nonsense) Monte Carlo model test
+ * simulation on the data and then produce a (gnuplot) report output.
+ *
+ * This extended example showcases several great features of the Hamster:
+ *
+ * - As the input data time series suffers from sample jitter, it's sample times are not EXACT, which
+ *   makes it harder for regular databases to retrieve individual data points.
+ *
+ * - The Hamster includes 'near match' FIND (SQL: SELECT) modes which are used to provide a
+ *   fast time grid sampled retrieval of data points. These search modes (LT/GT/LEQ/GEQ) are
+ *   inspired on the VMS RMS $FIND search modes and are not available as such in many other database engine
+ *   offerings, either Open Source or commercial. The Hamster search modes are, for example, more powerful
+ *   than BerkeleyDB's DB_SET_RANGE get() flag, which is the closest approximation of this which BDB has currently
+ *   on offer.
+ *
+ * - The timeseries_compressor class showcases a way to compress physical or other times series data
+ *   in a way which keeps the database storage size small while permitting an (almost) infinite number of
+ *   data samples over long periods of time to be collected and stored. This class' compression idea is
+ *   in effect somewhat similar to the OSIsoft PI database compression techniques but have been designed
+ *   and developed completely independently.
+ *
+ * - This sample serves as a testbed for the statistics-driven run-time data processing optimizations (hinting)
+ *   available in the Hamster since v1.1.0.
  */
+
+#define HAM_CPP_WRAPPER_THROWS_NO_EXCEPTIONS 1
+
+#include "hamsterdb_ex.hpp"
 
 #include <iostream>
 #include <stdlib.h> /* for exit() */
-#include <ham/hamsterdb.hpp>
 
-#define MAX_DBS             3
+#define ASSERT(e)		 env4_assert(bool(e), #e)
 
-#define DBNAME_CUSTOMER     1
-#define DBNAME_ORDER        2
-#define DBNAME_C2O          3   /* C2O: Customer To Order */
-
-#define DBIDX_CUSTOMER      0
-#define DBIDX_ORDER         1
-#define DBIDX_C2O           2
-
-#define MAX_CUSTOMERS       4
-#define MAX_ORDERS          8
-
-/*
- * a structure for the "customer" database
- */
-typedef struct
+static __inline void env4_assert(bool e, const char *txt)
 {
-    int id;                 /* customer id - will be the key of the
-                               customer table */
-    char name[32];          /* customer name */
-    /* ... additional information could follow here */
-} customer_t;
+	if (!e)
+	{
+		std::cerr << "ENV4 ASSERTION FAILED: " << txt << std::endl;
+		throw ham_ex::error(+1, txt);
+	}
+}
 
-/*
- * a structure for the "orders" database
- */
-typedef struct
-{
-    int id;                 /* order id - will be the key of the
-                               order table */
-    int customer_id;        /* customer id */
-    char assignee[32];      /* assigned to whom? */
-    /* ... additional information could follow here */
-} order_t;
+
+
+// the random generator which drives the Monte Carlo simulator and Data Feed Simulator
+#include "randomgen.hpp"
+// The simplified Monte Carlo test rig
+#include "montecarlo.hpp"
+// The Data Feed Simulator
+#include "datafeedsim.hpp"
+// The (overly simplistic) model engine applied to the collected data
+#include "calcmodel.hpp"
+// The test report generator
+#include "mcreporter.hpp"
+
+
+
+
+
+#if 0
 
 int
 run_demo(void)
@@ -265,16 +290,42 @@ run_demo(void)
 	return (0);
 }
 
+#endif
+
+
 int
 main(int argc, char **argv)
 {
-    try {
-        return (run_demo());
+    try
+	{
+		env store;
+		store.create("stockdata");
+
+		Monte_Carlo_simulator::model_argument_cfg args[3];
+		args[0] = Monte_Carlo_simulator::model_argument_cfg(0, 100);
+		args[1] = Monte_Carlo_simulator::model_argument_cfg(1, 2);
+		args[2] = Monte_Carlo_simulator::model_argument_cfg(2, 3);
+
+		Monte_Carlo_simulator::argument_cfg tstart(0, 0);
+		Monte_Carlo_simulator::argument_cfg tend(1000000, 0);
+		Monte_Carlo_simulator::configuration mc_cfg(100, 60, tstart, tend, 3, args);
+
+		StockTradeModel mut(store);
+
+		Monte_Carlo_simulator rig(777, mut, mc_cfg);
+
+		rig.execute();
+		rig.munch_collected_data();
+		rig.generate_report();
     }
-    catch (ham::error &e) {
-        std::cerr << "run_demo() failed with unexpected error "
+    catch (ham::error &e)
+	{
+        std::cerr << argv[0]
+				  << " failed with unexpected error "
                   << e.get_errno() << " ('"
                   << e.get_string() << "')" << std::endl;
-        return (-1);
+        return EXIT_FAILURE;
     }
+	return EXIT_SUCCESS;
 }
+

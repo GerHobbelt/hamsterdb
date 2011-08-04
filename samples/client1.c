@@ -1,14 +1,15 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * A simple example which connects to a hamsterdb server (see server1.c),
  * creates a database, inserts some values, looks them up and erases them.
  */
@@ -20,14 +21,14 @@
 
 #define LOOP 10
 
-void 
+void
 error(const char *foo, ham_status_t st)
 {
     printf("%s() returned error %d: %s\n", foo, st, ham_strerror(st));
     exit(-1);
 }
 
-int 
+int
 main(int argc, char **argv)
 {
     int i;
@@ -50,7 +51,7 @@ main(int argc, char **argv)
     /*
      * now connect to the server which should listen at 8080
      *
-     * ham_env_create_ex() will not really create a new Environment but rather 
+     * ham_env_create_ex() will not really create a new Environment but rather
      * connect to an already existing one
      */
     st=ham_env_create_ex(env, "http://localhost:8080/env1.db", 0, 0, 0);
