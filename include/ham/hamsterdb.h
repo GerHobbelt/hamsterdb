@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -58,17 +58,17 @@
  * <tr><td>@ref ham_erase</td><td>Erases a key/value pair from a
     Database</td></tr>
  * </table>
- * 
+ *
  * Alternatively, you can use Cursors to iterate over a Database:
  * <table>
  * <tr><td>@ref ham_cursor_create</td><td>Creates a new Cursor</td></tr>
  * <tr><td>@ref ham_cursor_find</td><td>Positions the Cursor on a key</td></tr>
- * <tr><td>@ref ham_cursor_insert</td><td>Inserts a new key/value pair with a 
+ * <tr><td>@ref ham_cursor_insert</td><td>Inserts a new key/value pair with a
     Cursor</td></tr>
- * <tr><td>@ref ham_cursor_erase</td><td>Deletes the key/value pair that 
+ * <tr><td>@ref ham_cursor_erase</td><td>Deletes the key/value pair that
     the Cursor points to</td></tr>
  * <tr><td>@ref ham_cursor_overwrite</td><td>Overwrites the value of the current    key</td></tr>
- * <tr><td>@ref ham_cursor_move</td><td>Moves the Cursor to the first, next, 
+ * <tr><td>@ref ham_cursor_move</td><td>Moves the Cursor to the first, next,
     previous or last key in the Database</td></tr>
  * <tr><td>@ref ham_cursor_close</td><td>Closes the Cursor</td></tr>
  * </table>
@@ -81,7 +81,7 @@
  * <tr><td>@ref ham_txn_abort</td><td>Aborts the current Transaction</td></tr>
  * </table>
  *
- * hamsterdb supports remote Databases via http. The server can be embedded 
+ * hamsterdb supports remote Databases via http. The server can be embedded
  * into your application or run standalone (see tools/hamzilla for a Unix
  * daemon or Win32 service which hosts Databases). If you want to embed the
  * server then the following functions have to be used:
@@ -96,7 +96,7 @@
  *
  * If you need help then you're always welcome to use the <a
     href="http://hamsterdb-support.1045726.n5.nabble.com/">forum</a>,
- * drop a message (chris at crupp dot de) or with the <a 
+ * drop a message (chris at crupp dot de) or with the <a
     href="http://hamsterdb.com/index/contact">contact form</a>.
  *
  * Have fun!
@@ -183,8 +183,8 @@ typedef struct
 
 } ham_record_t;
 
-/** Flag for @ref ham_record_t (only really useful in combination with 
- * @ref ham_cursor_move, @ref ham_cursor_find, @ref ham_cursor_find_ex 
+/** Flag for @ref ham_record_t (only really useful in combination with
+ * @ref ham_cursor_move, @ref ham_cursor_find, @ref ham_cursor_find_ex
  * and @ref ham_find)
  */
 #define HAM_RECORD_USER_ALLOC   1
@@ -223,9 +223,9 @@ typedef struct
     ham_u32_t _flags;
 } ham_key_t;
 
-/** Flag for @ref ham_key_t (only really useful in combination with 
- * @ref ham_cursor_move, @ref ham_cursor_find, @ref ham_cursor_find_ex 
- * and @ref ham_find) 
+/** Flag for @ref ham_key_t (only really useful in combination with
+ * @ref ham_cursor_move, @ref ham_cursor_find, @ref ham_cursor_find_ex
+ * and @ref ham_find)
  */
 #define HAM_KEY_USER_ALLOC      1
 
@@ -258,49 +258,49 @@ typedef struct {
 
 /**
  * @defgroup ham_data_access_modes hamsterdb Data Access Mode Codes
- * @{ 
+ * @{
  *
  * which can be passed in the @ref HAM_PARAM_DATA_ACCESS_MODE parameter
  * when creating a new Database (see @ref ham_create_ex) or
  * opening an existing Database (see @ref ham_open_ex).
  *
  * @remark The Data Access Mode describes the typical application behaviour
- * (i.e. if data is only inserted sequentially) and allows hamsterdb to 
+ * (i.e. if data is only inserted sequentially) and allows hamsterdb to
  * optimize its routines for this behaviour.
  *
  * @remark The Data Access Mode is not persisted in the Database.
- * per Database basis. This means different Databases within the same 
+ * per Database basis. This means different Databases within the same
  * Environment can have different Data Access Modes.
  *
  * @sa ham_create_ex
  * @sa ham_open_ex
- * @sa ham_hinting_flags 
+ * @sa ham_hinting_flags
  */
 
-/** 
- * Assume random access (a mixed bag of random insert and delete). 
+/**
+ * Assume random access (a mixed bag of random insert and delete).
  *
- * This is the default setting for (non-RECNO) Databases created with versions 
+ * This is the default setting for (non-RECNO) Databases created with versions
  * newer than 1.0.9.
  *
- * Note: RECNO-based Databases will start in the implicit 
+ * Note: RECNO-based Databases will start in the implicit
  * @ref HAM_DAM_SEQUENTIAL_INSERT mode instead.
  *
  * This flag is non persistent.
 */
 #define HAM_DAM_RANDOM_WRITE            0x0001
 
-/** 
- * Assume sequential insert (and few or no delete) operations. 
+/**
+ * Assume sequential insert (and few or no delete) operations.
  *
- * This is the default setting for RECNO based Databases created with versions 
+ * This is the default setting for RECNO based Databases created with versions
  * newer than 1.0.9.
  *
  * This flag is non persistent.
  */
 #define HAM_DAM_SEQUENTIAL_INSERT        0x0002
 
-/* internal use only - will be set implicitly when opening a file from 1.0.x */ 
+/* internal use only - will be set implicitly when opening a file from 1.0.x */
 #define HAM_DAM_ENFORCE_PRE110_FORMAT    0x8000
 
 /**
@@ -395,9 +395,9 @@ typedef struct {
 /**
  * A typedef for a custom error handler function
  *
- * This error handler can be used in combination with 
+ * This error handler can be used in combination with
  * @ref ham_set_errhandler().
- * 
+ *
  * @param message The error message
  * @param level The error level:
  *      <ul>
@@ -430,7 +430,7 @@ typedef void HAM_CALLCONV (*ham_errhandler_fun)
  * The default error handler prints all messages to stderr. To install a
  * different logging facility, you can provide your own error handler.
  *
- * Note that the callback function must have the same calling convention 
+ * Note that the callback function must have the same calling convention
  * as the hamsterdb library.
  *
  * @param f A pointer to the error handler function, or NULL to restore
@@ -508,10 +508,10 @@ ham_env_delete(ham_env_t *env);
 /**
  * Creates a Database Environment
  *
- * This function is a simplified version of @sa ham_env_create_ex. 
+ * This function is a simplified version of @sa ham_env_create_ex.
  * It is recommended to use @ref ham_env_create_ex instead.
  *
- * @sa ham_env_create_ex 
+ * @sa ham_env_create_ex
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_env_create(ham_env_t *env, const char *filename,
@@ -523,14 +523,14 @@ ham_env_create(ham_env_t *env, const char *filename,
  * A Database Environment is a collection of Databases, which are all stored
  * in one physical file (or in-memory). Per default, up to 16 Databases can be
  * stored in one file (see @ref ham_env_create_ex on how to store even more
- * Databases). 
+ * Databases).
  *
- * Each Database in an Environment is identified by a positive 16bit 
+ * Each Database in an Environment is identified by a positive 16bit
  * value (except 0 and values at or above 0xf000).
- * Databases in an Environment can be created with @ref ham_env_create_db 
+ * Databases in an Environment can be created with @ref ham_env_create_db
  * or opened with @ref ham_env_open_db.
  *
- * @param env A valid Environment handle, which was created with 
+ * @param env A valid Environment handle, which was created with
  *          @ref ham_env_new
  * @param filename The filename of the Environment file. If the file already
  *          exists, it is overwritten. Can be NULL for an In-Memory
@@ -542,10 +542,10 @@ ham_env_create(ham_env_t *env, const char *filename,
  *            committing or aborting a Transaction using fsync(), fdatasync()
  *            or FlushFileBuffers(). This flag has no effect
  *            if Transactions are disabled. Slows down performance but makes
- *            sure that all file handles and operating system caches are 
+ *            sure that all file handles and operating system caches are
  *            transferred to disk, thus providing a stronger durability in case
  *            the computer crashes.
- *       <li>@ref HAM_IN_MEMORY_DB</li> Creates an In-Memory Environment. No 
+ *       <li>@ref HAM_IN_MEMORY_DB</li> Creates an In-Memory Environment. No
  *            file will be created, and the Database contents are lost after
  *            the Environment is closed. The @a filename parameter can
  *            be NULL. Do <b>NOT</b> use in combination with
@@ -562,7 +562,7 @@ ham_env_create(ham_env_t *env, const char *filename,
  *            more pages than the maximum cache size, but only if it's
  *            necessary and only for a short time.
  *       <li>@ref HAM_CACHE_UNLIMITED</li> Do not limit the cache. Nearly as
- *            fast as an In-Memory Database. Not allowed in combination 
+ *            fast as an In-Memory Database. Not allowed in combination
  *            with @ref HAM_CACHE_STRICT or a limited cache size.
  *       <li>@ref HAM_DISABLE_FREELIST_FLUSH</li> This flag is deprecated.
  *       <li>@ref HAM_LOCK_EXCLUSIVE</li> Place an exclusive lock on the
@@ -570,12 +570,12 @@ ham_env_create(ham_env_t *env, const char *filename,
  *            a given file at a given time. Deprecated - this is now the
  *            default
  *       <li>@ref HAM_ENABLE_RECOVERY</li> Enables logging/recovery for this
- *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB 
+ *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB
  *            and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS</li> Enables Transactions for this
- *            Database. 
+ *            Database.
  *            <b>Remark</b> Transactions were introduced in hamsterdb 1.0.4,
- *            but with certain limitations. Please read the README file 
+ *            but with certain limitations. Please read the README file
  *            for details.<br>
  *            This flag implies @ref HAM_ENABLE_RECOVERY.
  *      </ul>
@@ -599,15 +599,15 @@ ham_env_create(ham_env_t *env, const char *filename,
  * @return @ref HAM_SUCCESS upon success
  * @return @ref HAM_INV_PARAMETER if the @a env pointer is NULL or an
  *              invalid combination of flags or parameters was specified
- * @return @ref HAM_INV_PARAMETER if the value for 
- *              @ref HAM_PARAM_MAX_ENV_DATABASES is too high (either decrease 
+ * @return @ref HAM_INV_PARAMETER if the value for
+ *              @ref HAM_PARAM_MAX_ENV_DATABASES is too high (either decrease
  *              it or increase the page size)
  * @return @ref HAM_IO_ERROR if the file could not be opened or
  *              reading/writing failed
  * @return @ref HAM_INV_FILE_VERSION if the Environment version is not
  *              compatible with the library version
  * @return @ref HAM_OUT_OF_MEMORY if memory could not be allocated
- * @return @ref HAM_INV_PAGESIZE if @a pagesize is not 1024 or 
+ * @return @ref HAM_INV_PAGESIZE if @a pagesize is not 1024 or
  *              a multiple of 2048
  * @return @ref HAM_INV_KEYSIZE if @a keysize is too large (at least 4
  *              keys must fit in a page)
@@ -625,10 +625,10 @@ ham_env_create_ex(ham_env_t *env, const char *filename,
 /**
  * Opens an existing Database Environment
  *
- * This function is a simplified version of @sa ham_env_open_ex. 
+ * This function is a simplified version of @sa ham_env_open_ex.
  * It is recommended to use @ref ham_env_open_ex instead.
  *
- * @sa ham_env_open_ex 
+ * @sa ham_env_open_ex
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
@@ -641,14 +641,14 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  * A Database Environment is a collection of Databases, which are all stored
  * in one physical file (or in-memory). Per default, up to 16 Databases can be
  * stored in one file (see @ref ham_env_create_ex on how to store even more
- * Databases). 
+ * Databases).
  *
- * Each Database in an Environment is identified by a positive 16bit 
+ * Each Database in an Environment is identified by a positive 16bit
  * value (except 0 and values at or above 0xf000).
- * Databases in an Environment can be created with @ref ham_env_create_db 
+ * Databases in an Environment can be created with @ref ham_env_create_db
  * or opened with @ref ham_env_open_db.
  *
- * Specify a URL instead of a filename (i.e. 
+ * Specify a URL instead of a filename (i.e.
  * "http://localhost:8080/customers.db") to access a remote hamsterdb Server.
  *
  * @param env A valid Environment handle
@@ -664,7 +664,7 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *            committing or aborting a Transaction using fsync(), fdatasync()
  *            or FlushFileBuffers(). This flag has no effect
  *            if Transactions are disabled. Slows down performance but makes
- *            sure that all file handles and operating system caches are 
+ *            sure that all file handles and operating system caches are
  *            transferred to disk, thus providing a stronger durability in case
  *            the computer crashes.
  *       <li>@ref HAM_DISABLE_MMAP </li> Do not use memory mapped files for I/O.
@@ -678,7 +678,7 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *            more pages than the maximum cache size, but only if it's
  *            necessary and only for a short time.
  *       <li>@ref HAM_CACHE_UNLIMITED </li> Do not limit the cache. Nearly as
- *            fast as an In-Memory Database. Not allowed in combination 
+ *            fast as an In-Memory Database. Not allowed in combination
  *            with @ref HAM_CACHE_STRICT or a limited cache size.
  *       <li>@ref HAM_DISABLE_FREELIST_FLUSH </li> This flag is deprecated.
  *       <li>@ref HAM_LOCK_EXCLUSIVE </li> Place an exclusive lock on the
@@ -687,12 +687,12 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *            default
  *       <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
  *            Database. Will return @ref HAM_NEED_RECOVERY, if the Database
- *            is in an inconsistent state. Not allowed in combination 
+ *            is in an inconsistent state. Not allowed in combination
  *            with @ref HAM_IN_MEMORY_DB and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_AUTO_RECOVERY </li> Automatically recover the Database,
  *            if necessary. This flag implies @ref HAM_ENABLE_RECOVERY.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
- *            Database. 
+ *            Database.
  *            <b>Remark</b> Transactions were introduced in hamsterdb 1.0.4,
  *            but with certain limitations (which will be removed in later
  *            version). Please read the README file and the Release Notes
@@ -705,7 +705,7 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *        <li>@ref HAM_PARAM_CACHESIZE </li> The size of the Database cache,
  *            in bytes. The default size is defined in src/config.h
  *            as @a HAM_DEFAULT_CACHESIZE - usually 2MB
- *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data 
+ *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data
  *            access patterns. The default setting optimizes hamsterdb
  *            for random read/write access (@ref HAM_DAM_RANDOM_WRITE).
  *            Use @ref HAM_DAM_SEQUENTIAL_INSERT for sequential inserts (this
@@ -719,7 +719,7 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *
  * @return @ref HAM_SUCCESS upon success.
  * @return @ref HAM_INV_PARAMETER if the @a env pointer is NULL, an
- *              invalid combination of flags was specified 
+ *              invalid combination of flags was specified
  * @return @ref HAM_FILE_NOT_FOUND if the file does not exist
  * @return @ref HAM_IO_ERROR if the file could not be opened or reading failed
  * @return @ref HAM_INV_FILE_VERSION if the Environment version is not
@@ -744,7 +744,7 @@ ham_env_open_ex(ham_env_t *env, const char *filename,
  *      <ul>
  *        <li>HAM_PARAM_CACHESIZE</li> returns the cache size
  *        <li>HAM_PARAM_PAGESIZE</li> returns the page size
- *        <li>HAM_PARAM_MAX_ENV_DATABASES</li> returns the max. number of 
+ *        <li>HAM_PARAM_MAX_ENV_DATABASES</li> returns the max. number of
  *              Databases of this Database's Environment
  *        <li>HAM_PARAM_GET_FLAGS</li> returns the flags which were used to
  *              open or create this Database
@@ -771,19 +771,19 @@ ham_env_get_parameters(ham_env_t *env, ham_parameter_t *param);
  * An Environment can handle up to 16 Databases, unless higher values are
  * configured when the Environment is created (see @sa ham_env_create_ex).
  *
- * Each Database in an Environment is identified by a positive 16bit 
+ * Each Database in an Environment is identified by a positive 16bit
  * value (except 0 and values at or above 0xf000).
  *
- * This function initializes the ham_db_t handle (the second parameter). 
- * When the handle is no longer in use, it should be closed with 
+ * This function initializes the ham_db_t handle (the second parameter).
+ * When the handle is no longer in use, it should be closed with
  * @ref ham_close. Alternatively, the Database handle is closed automatically
  * if @ref ham_env_close is called with the flag @ref HAM_AUTO_CLEANUP.
  *
  * @param env A valid Environment handle.
  * @param db A valid Database handle, which will point to the created
  *          Database. To close the handle, use @ref ham_close.
- * @param name The name of the Database. If a Database with this name 
- *          already exists, the function will fail with 
+ * @param name The name of the Database. If a Database with this name
+ *          already exists, the function will fail with
  *          @ref HAM_DATABASE_ALREADY_EXISTS. Database names from 0xf000 to
  *          0xffff and 0 are reserved.
  * @param flags Optional flags for creating the Database, combined with
@@ -799,16 +799,16 @@ ham_env_get_parameters(ham_env_t *env, ham_parameter_t *param);
  *       <li>@ref HAM_ENABLE_DUPLICATES </li> Enable duplicate keys for this
  *            Database. By default, duplicate keys are disabled.
  *       <li>@ref HAM_SORT_DUPLICATES </li> Sort duplicate keys for this
- *            Database. Only allowed in combination with 
- *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with 
+ *            Database. Only allowed in combination with
+ *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
  *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
  *       <li>@ref HAM_RECORD_NUMBER </li> Creates an "auto-increment" Database.
- *            Keys in Record Number Databases are automatically assigned an 
+ *            Keys in Record Number Databases are automatically assigned an
  *            incrementing 64bit value. If key->data is not NULL
  *            (and key->flags is @ref HAM_KEY_USER_ALLOC and key->size is 8),
- *            the value of the current key is returned in @a key (a 
+ *            the value of the current key is returned in @a key (a
  *            host-endian 64bit number of type ham_u64_t). If key-data is NULL
- *            and key->size is 0, key->data is temporarily allocated by 
+ *            and key->size is 0, key->data is temporarily allocated by
  *            hamsterdb.
  *      </ul>
  *
@@ -817,7 +817,7 @@ ham_env_get_parameters(ham_env_t *env, ham_parameter_t *param);
  *      <ul>
  *        <li>@ref HAM_PARAM_KEYSIZE </li> The size of the keys in the B+Tree
  *            index. The default size is 21 bytes.
- *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data 
+ *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data
  *            access patterns. The default setting optimizes hamsterdb
  *            for random read/write access (@ref HAM_DAM_RANDOM_WRITE).
  *            Use @ref HAM_DAM_SEQUENTIAL_INSERT for sequential inserts (this
@@ -835,7 +835,7 @@ ham_env_get_parameters(ham_env_t *env, ham_parameter_t *param);
  * @return @ref HAM_DATABASE_ALREADY_EXISTS if a Database with this @a name
  *              already exists in this Environment
  * @return @ref HAM_OUT_OF_MEMORY if memory could not be allocated
- * @return @ref HAM_LIMITS_REACHED if the maximum number of Databases per 
+ * @return @ref HAM_LIMITS_REACHED if the maximum number of Databases per
  *              Environment was already created
  * @return @ref HAM_DATABASE_ALREADY_OPEN if @a db is already in use
  */
@@ -846,19 +846,19 @@ ham_env_create_db(ham_env_t *env, ham_db_t *db,
 /**
  * Opens a Database in a Database Environment
  *
- * Each Database in an Environment is identified by a positive 16bit 
+ * Each Database in an Environment is identified by a positive 16bit
  * value (except 0 and values at or above 0xf000).
  *
- * This function initializes the ham_db_t handle (the second parameter). 
- * When the handle is no longer in use, it should be closed with 
+ * This function initializes the ham_db_t handle (the second parameter).
+ * When the handle is no longer in use, it should be closed with
  * @ref ham_close. Alternatively, the Database handle is closed automatically
  * if @ref ham_env_close is called with the flag @ref HAM_AUTO_CLEANUP.
  *
  * @param env A valid Environment handle
  * @param db A valid Database handle, which will point to the opened
  *          Database. To close the handle, use @see ham_close.
- * @param name The name of the Database. If a Database with this name 
- *          does not exist, the function will fail with 
+ * @param name The name of the Database. If a Database with this name
+ *          does not exist, the function will fail with
  *          @ref HAM_DATABASE_NOT_FOUND.
  * @param flags Optional flags for opening the Database, combined with
  *        bitwise OR. Possible flags are:
@@ -868,13 +868,13 @@ ham_env_create_db(ham_env_t *env, ham_db_t *db,
  *            B+Tree index key size, returns @ref HAM_INV_KEYSIZE.
  *       <li>@ref HAM_SORT_DUPLICATES </li> Sort duplicate keys for this
  *            Database. Only allowed if the Database was created with the flag
- *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with 
+ *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
  *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
  *     </ul>
  * @param params An array of ham_parameter_t structures. The following
  *          parameters are available:
  *      <ul>
- *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data 
+ *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data
  *            access patterns. The default setting optimizes hamsterdb
  *            for random read/write access (@ref HAM_DAM_RANDOM_WRITE).
  *            Use @ref HAM_DAM_SEQUENTIAL_INSERT for sequential inserts (this
@@ -905,10 +905,10 @@ ham_env_open_db(ham_env_t *env, ham_db_t *db,
  *
  * @param env A valid Environment handle.
  * @param oldname The old name of the existing Database. If a Database
- *          with this name does not exist, the function will fail with 
+ *          with this name does not exist, the function will fail with
  *          @ref HAM_DATABASE_NOT_FOUND.
- * @param newname The new name of this Database. If a Database 
- *          with this name already exists, the function will fail with 
+ * @param newname The new name of this Database. If a Database
+ *          with this name already exists, the function will fail with
  *          @ref HAM_DATABASE_ALREADY_EXISTS.
  * @param flags Optional flags for renaming the Database, combined with
  *        bitwise OR; unused, set to 0.
@@ -925,15 +925,15 @@ ham_env_open_db(ham_env_t *env, ham_db_t *db,
  *              correctly (i.e. not yet opened or created)
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
-ham_env_rename_db(ham_env_t *env, ham_u16_t oldname, 
+ham_env_rename_db(ham_env_t *env, ham_u16_t oldname,
                 ham_u16_t newname, ham_u32_t flags);
 
 /**
  * Deletes a Database from an Environment
  *
  * @param env A valid Environment handle
- * @param name The name of the Database to delete. If a Database 
- *          with this name does not exist, the function will fail with 
+ * @param name The name of the Database to delete. If a Database
+ *          with this name does not exist, the function will fail with
  *          @ref HAM_DATABASE_NOT_FOUND. If the Database was already opened,
  *          the function will fail with @ref HAM_DATABASE_ALREADY_OPEN.
  * @param flags Optional flags for deleting the Database; unused, set to 0.
@@ -971,9 +971,9 @@ ham_env_flush(ham_env_t *env, ham_u32_t flags);
  * Enables AES encryption
  *
  * This function enables AES encryption for every Database in the Environment.
- * The AES key is cached in the Environment handle. The AES 
- * encryption/decryption is only active when file chunks are written to 
- * disk/read from disk; the cached pages in RAM are decrypted. Please read 
+ * The AES key is cached in the Environment handle. The AES
+ * encryption/decryption is only active when file chunks are written to
+ * disk/read from disk; the cached pages in RAM are decrypted. Please read
  * the FAQ for security relevant notes.
  *
  * The encryption has no effect on In-Memory Environments, but the function
@@ -981,10 +981,10 @@ ham_env_flush(ham_env_t *env, ham_u32_t flags);
  *
  * Log files and the header page of the Database are not encrypted.
  *
- * The encryption will be active till @ref ham_env_close is called. If the 
- * Environment handle is reused after calling @ref ham_env_close, the 
- * encryption is no longer active. @ref ham_env_enable_encryption should 
- * be called immediately <b>after</b> @ref ham_env_create[_ex] or 
+ * The encryption will be active till @ref ham_env_close is called. If the
+ * Environment handle is reused after calling @ref ham_env_close, the
+ * encryption is no longer active. @ref ham_env_enable_encryption should
+ * be called immediately <b>after</b> @ref ham_env_create[_ex] or
  * @ref ham_env_open[_ex].
  *
  * @param env A valid Environment handle
@@ -1007,7 +1007,7 @@ ham_env_enable_encryption(ham_env_t *env, ham_u8_t key[16], ham_u32_t flags);
 /**
  * Returns the names of all Databases in an Environment
  *
- * This function returns the names of all Databases and the number of 
+ * This function returns the names of all Databases and the number of
  * Databases in an Environment.
  *
  * The memory for @a names must be allocated by the user. @a count
@@ -1032,8 +1032,8 @@ ham_env_get_database_names(ham_env_t *env, ham_u16_t *names, ham_size_t *count);
 /**
  * Closes the Database Environment
  *
- * This function closes the Database Environment. It does not free the 
- * memory resources allocated in the @a env handle - use @ref ham_env_delete 
+ * This function closes the Database Environment. It does not free the
+ * memory resources allocated in the @a env handle - use @ref ham_env_delete
  * to free @a env.
  *
  * If the flag @ref HAM_AUTO_CLEANUP is specified, hamsterdb automatically
@@ -1041,25 +1041,25 @@ ham_env_get_database_names(ham_env_t *env, ham_u16_t *names, ham_size_t *count);
  * (which closes all open Databases and their Cursors). This invalidates the
  * ham_db_t and ham_cursor_t handles!
  *
- * If the flag is not specified, the application must close all Database 
+ * If the flag is not specified, the application must close all Database
  * handles with @ref ham_close to prevent memory leaks.
  *
  * This function also aborts all Transactions which were not yet committed,
  * and therefore renders all Transaction handles invalid. If the flag
  * @ref HAM_TXN_AUTO_COMMIT is specified, all Transactions will be committed.
  *
- * This function removes all file-level filters installed 
- * with @ref ham_env_add_file_filter (and hence also, implicitly, 
+ * This function removes all file-level filters installed
+ * with @ref ham_env_add_file_filter (and hence also, implicitly,
  * the filter installed by @ref ham_env_enable_encryption).
  *
  * @param env A valid Environment handle
  * @param flags Optional flags for closing the handle. Possible flags are:
  *          <ul>
- *            <li>@ref HAM_AUTO_CLEANUP. Calls @ref ham_close with the flag 
+ *            <li>@ref HAM_AUTO_CLEANUP. Calls @ref ham_close with the flag
  *                @ref HAM_AUTO_CLEANUP on every open Database
- *            <li>@ref HAM_TXN_AUTO_COMMIT. Automatically commit all open 
+ *            <li>@ref HAM_TXN_AUTO_COMMIT. Automatically commit all open
  *               Transactions
- *            <li>@ref HAM_TXN_AUTO_ABORT. Automatically abort all open 
+ *            <li>@ref HAM_TXN_AUTO_ABORT. Automatically abort all open
  *               Transactions; this is the default behaviour
  *          </ul>
  *
@@ -1090,15 +1090,15 @@ typedef struct ham_txn_t ham_txn_t;
 
 /**
  * Begins a new Transaction
- * 
+ *
  * A Transaction is an atomic sequence of Database operations. With @ref
  * ham_txn_begin a new sequence is started. To write all operations of this
- * sequence to the Database use @ref ham_txn_commit. To abort and cancel 
+ * sequence to the Database use @ref ham_txn_commit. To abort and cancel
  * this sequence use @ref ham_txn_abort.
  *
  * In order to use Transactions, the Environment has to be created or
  * opened with the flag @ref HAM_ENABLE_TRANSACTIONS.
- * 
+ *
  * Although for historical reasons @ref ham_txn_begin creates a Transaction
  * and attaches it to a Database (the second parameter is a @ref ham_db_t
  * handle), the Transaction is actually valid for the whole Environment.
@@ -1129,28 +1129,28 @@ ham_txn_begin(ham_txn_t **txn, ham_db_t *db, ham_u32_t flags);
 
 /**
  * Commits a Transaction
- * 
+ *
  * This function applies the sequence of Database operations.
  *
  * Note that the function will fail with @ref HAM_CURSOR_STILL_OPEN if
  * a Cursor was attached to this Transaction (with @ref ham_cursor_create
  * or @ref ham_cursor_clone), and the Cursor was not closed.
  *
- * To improve the Durability, you can specify the flag @ref HAM_WRITE_THROUGH 
- * when opening or creating the Environment. hamsterdb will then flush all 
- * open file handles when committing or aborting a Transaction using fsync(), 
+ * To improve the Durability, you can specify the flag @ref HAM_WRITE_THROUGH
+ * when opening or creating the Environment. hamsterdb will then flush all
+ * open file handles when committing or aborting a Transaction using fsync(),
  * fdatasync() or FlushFileBuffers(). This slows down performance but makes
  * sure that all file handles and operating system caches are immediately
- * transferred to disk, thus providing a stronger durability in case the 
+ * transferred to disk, thus providing a stronger durability in case the
  * computer crashes.
- * 
+ *
  * @param txn Pointer to a Transaction structure
  * @param flags Optional flags for committing the Transaction, combined with
  *        bitwise OR. Unused, set to 0.
  *
  * @return @ref HAM_SUCCESS upon success
  * @return @ref HAM_IO_ERROR if writing to the file failed
- * @return @ref HAM_CURSOR_STILL_OPEN if there are Cursors attached to this 
+ * @return @ref HAM_CURSOR_STILL_OPEN if there are Cursors attached to this
  *          Transaction
  */
 HAM_EXPORT ham_status_t
@@ -1165,27 +1165,27 @@ ham_txn_commit(ham_txn_t *txn, ham_u32_t flags);
  * a Cursor was attached to this Transaction (with @ref ham_cursor_create
  * or @ref ham_cursor_clone), and the Cursor was not closed.
  *
- * To improve the Durability, you can specify the flag @ref HAM_WRITE_THROUGH 
- * when opening or creating the Environment. hamsterdb will then flush all 
- * open file handles when committing or aborting a Transaction using fsync(), 
+ * To improve the Durability, you can specify the flag @ref HAM_WRITE_THROUGH
+ * when opening or creating the Environment. hamsterdb will then flush all
+ * open file handles when committing or aborting a Transaction using fsync(),
  * fdatasync() or FlushFileBuffers(). This slows down performance but makes
  * sure that all file handles and operating system caches are immediately
- * transferred to disk, thus providing a stronger durability in case the 
+ * transferred to disk, thus providing a stronger durability in case the
  * computer crashes.
- * 
+ *
  * @param txn Pointer to a Transaction structure
  * @param flags Optional flags for aborting the Transaction, combined with
  *        bitwise OR. Unused, set to 0.
  *
  * @return @ref HAM_SUCCESS upon success
  * @return @ref HAM_IO_ERROR if writing to the Database file or logfile failed
- * @return @ref HAM_CURSOR_STILL_OPEN if there are Cursors attached to this 
+ * @return @ref HAM_CURSOR_STILL_OPEN if there are Cursors attached to this
  *          Transaction
  */
 HAM_EXPORT ham_status_t
 ham_txn_abort(ham_txn_t *txn, ham_u32_t flags);
 
-/* note: ham_txn_abort flag 0x0001 is reserved for internal use: 
+/* note: ham_txn_abort flag 0x0001 is reserved for internal use:
  * DO_NOT_NUKE_PAGE_STATS */
 
 /**
@@ -1212,7 +1212,7 @@ ham_new(ham_db_t **db);
 /**
  * Frees a ham_db_t handle
  *
- * Frees the memory and resources of a ham_db_t structure, but does not 
+ * Frees the memory and resources of a ham_db_t structure, but does not
  * close the Database. Call this function <b>AFTER</b> you have closed the
  * Database using @ref ham_close, or you will lose your data!
  *
@@ -1226,7 +1226,7 @@ ham_delete(ham_db_t *db);
 /**
  * Creates a Database
  *
- * This function is a simplified version of @sa ham_create_ex. 
+ * This function is a simplified version of @sa ham_create_ex.
  * It is recommended to use @ref ham_create_ex instead.
  *
  * @sa ham_create_ex
@@ -1237,14 +1237,14 @@ ham_create(ham_db_t *db, const char *filename,
 
 /**
  * Creates a Database - extended version
- * 
+ *
  * This function is a shortcut for a sequence of @ref ham_env_create_ex
  * followed by @ref ham_env_create_db.
- * 
- * It creates an (internal, hidden) Environment and in this Environment it 
+ *
+ * It creates an (internal, hidden) Environment and in this Environment it
  * creates a Database with a reserved identifier - HAM_DEFAULT_DATABASE_NAME.
  *
- * As a consequence, it is no problem to create a Database with 
+ * As a consequence, it is no problem to create a Database with
  * @ref ham_create_ex, and later open it with @ref ham_env_open_ex.
  *
  * The internal Environment handle can be retrieved with @ref ham_get_env.
@@ -1260,7 +1260,7 @@ ham_create(ham_db_t *db, const char *filename,
  *            committing or aborting a Transaction using fsync(), fdatasync()
  *            or FlushFileBuffers(). This flag has no effect
  *            if Transactions are disabled. Slows down performance but makes
- *            sure that all file handles and operating system caches are 
+ *            sure that all file handles and operating system caches are
  *            transferred to disk, thus providing a stronger durability in case
  *            the computer crashes.
  *       <li>@ref HAM_USE_BTREE </li> Use a B+Tree for the index structure.
@@ -1277,18 +1277,18 @@ ham_create(ham_db_t *db, const char *filename,
  *            @ref HAM_CACHE_STRICT and do <b>NOT</b> specify @a cachesize
  *            other than 0.
  *       <li>@ref HAM_RECORD_NUMBER </li> Creates an "auto-increment" Database.
- *            Keys in Record Number Databases are automatically assigned an 
+ *            Keys in Record Number Databases are automatically assigned an
  *            incrementing 64bit value. If key->data is not NULL
  *            (and key->flags is @ref HAM_KEY_USER_ALLOC and key->size is 8),
- *            the value of the current key is returned in @a key (a 
+ *            the value of the current key is returned in @a key (a
  *            host-endian 64bit number of type ham_u64_t). If key-data is NULL
- *            and key->size is 0, key->data is temporarily allocated by 
+ *            and key->size is 0, key->data is temporarily allocated by
  *            hamsterdb.
  *       <li>@ref HAM_ENABLE_DUPLICATES </li> Enable duplicate keys for this
  *            Database. By default, duplicate keys are disabled.
  *       <li>@ref HAM_SORT_DUPLICATES </li> Sort duplicate keys for this
- *            Database. Only allowed in combination with 
- *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with 
+ *            Database. Only allowed in combination with
+ *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
  *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
  *       <li>@ref HAM_DISABLE_MMAP </li> Do not use memory mapped files for I/O.
  *            By default, hamsterdb checks if it can use mmap,
@@ -1301,7 +1301,7 @@ ham_create(ham_db_t *db, const char *filename,
  *            more pages than the maximum cache size, but only if it's
  *            necessary and only for a short time.
  *       <li>@ref HAM_CACHE_UNLIMITED </li> Do not limit the cache. Nearly as
- *            fast as an In-Memory Database. Not allowed in combination 
+ *            fast as an In-Memory Database. Not allowed in combination
  *            with @ref HAM_CACHE_STRICT or a limited cache size.
  *       <li>@ref HAM_DISABLE_FREELIST_FLUSH </li> This flag is deprecated.
  *       <li>@ref HAM_LOCK_EXCLUSIVE </li> Place an exclusive lock on the
@@ -1309,10 +1309,10 @@ ham_create(ham_db_t *db, const char *filename,
  *            a given file at a given time. Deprecated - this is now the
  *            default
  *       <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
- *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB 
+ *            Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB
  *            and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
- *            Database. 
+ *            Database.
  *            <b>Remark</b> Transactions were introduced in hamsterdb 1.0.4,
  *            but with certain limitations (which will be removed in later
  *            version). Please read the README file and the Release Notes
@@ -1334,7 +1334,7 @@ ham_create(ham_db_t *db, const char *filename,
  *            Page sizes must be 1024 or a multiple of 2048.
  *        <li>@ref HAM_PARAM_KEYSIZE </li> The size of the keys in the B+Tree
  *            index. The default size is 21 bytes.
- *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data 
+ *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data
  *            access patterns. The default setting optimizes hamsterdb
  *            for random read/write access (@ref HAM_DAM_RANDOM_WRITE).
  *            Use @ref HAM_DAM_SEQUENTIAL_INSERT for sequential inserts (this
@@ -1351,7 +1351,7 @@ ham_create(ham_db_t *db, const char *filename,
  * @return @ref HAM_INV_FILE_VERSION if the Database version is not
  *              compatible with the library version
  * @return @ref HAM_OUT_OF_MEMORY if memory could not be allocated
- * @return @ref HAM_INV_PAGESIZE if @a pagesize is not 1024 or 
+ * @return @ref HAM_INV_PAGESIZE if @a pagesize is not 1024 or
  *              a multiple of 2048
  * @return @ref HAM_INV_KEYSIZE if @a keysize is too large (at least 4
  *              keys must fit in a page)
@@ -1367,7 +1367,7 @@ ham_create_ex(ham_db_t *db, const char *filename,
 /**
  * Opens an existing Database
  *
- * This function is a simplified version of @sa ham_open_ex. 
+ * This function is a simplified version of @sa ham_open_ex.
  * It is recommended to use @ref ham_open_ex instead.
  *
  * @sa ham_open_ex
@@ -1380,11 +1380,11 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *
  * This function is a shortcut for a sequence of @ref ham_env_open_ex
  * followed by @ref ham_env_open_db.
- * 
- * It opens an (internal, hidden) Environment and in this Environment it 
+ *
+ * It opens an (internal, hidden) Environment and in this Environment it
  * opens the first Database that was created.
  *
- * As a consequence, it is no problem to open a Database with 
+ * As a consequence, it is no problem to open a Database with
  * @ref ham_open_ex, even if it was created with @ref ham_env_create_ex.
  *
  * The internal Environment handle can be retrieved with @ref ham_get_env.
@@ -1401,7 +1401,7 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *            committing or aborting a Transaction using fsync(), fdatasync()
  *            or FlushFileBuffers(). This flag has no effect
  *            if Transactions are disabled. Slows down performance but makes
- *            sure that all file handles and operating system caches are 
+ *            sure that all file handles and operating system caches are
  *            transferred to disk, thus providing a stronger durability in case
  *            the computer crashes.
  *       <li>@ref HAM_DISABLE_VAR_KEYLEN </li> Do not allow the use of variable
@@ -1418,7 +1418,7 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *            more pages than the maximum cache size, but only if it's
  *            necessary and only for a short time.
  *       <li>@ref HAM_CACHE_UNLIMITED </li> Do not limit the cache. Nearly as
- *            fast as an In-Memory Database. Not allowed in combination 
+ *            fast as an In-Memory Database. Not allowed in combination
  *            with @ref HAM_CACHE_STRICT or a limited cache size.
  *       <li>@ref HAM_DISABLE_FREELIST_FLUSH </li> This flag is deprecated.
  *       <li>@ref HAM_LOCK_EXCLUSIVE </li> Place an exclusive lock on the
@@ -1427,19 +1427,19 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *            default
  *       <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
  *            Database. Will return @ref HAM_NEED_RECOVERY, if the Database
- *            is in an inconsistent state. Not allowed in combination 
+ *            is in an inconsistent state. Not allowed in combination
  *            with @ref HAM_IN_MEMORY_DB and @ref HAM_DISABLE_FREELIST_FLUSH.
  *       <li>@ref HAM_AUTO_RECOVERY </li> Automatically recover the Database,
  *            if necessary. This flag implies @ref HAM_ENABLE_RECOVERY.
  *       <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
- *            Database. 
+ *            Database.
  *            <b>Remark</b> Transactions were introduced in hamsterdb 1.0.4,
  *            but with certain limitations. Please read the README file
  *            for details.<br>
  *            This flag imples @ref HAM_ENABLE_RECOVERY.
  *       <li>@ref HAM_SORT_DUPLICATES </li> Sort duplicate keys for this
  *            Database. Only allowed if the Database was created with the flag
- *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with 
+ *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
  *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
  *      </ul>
  *
@@ -1449,7 +1449,7 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *        <li>@ref HAM_PARAM_CACHESIZE </li> The size of the Database cache,
  *            in bytes. The default size is defined in src/config.h
  *            as @a HAM_DEFAULT_CACHESIZE - usually 2MB
- *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data 
+ *        <li>@ref HAM_PARAM_DATA_ACCESS_MODE </li> Gives a hint regarding data
  *            access patterns. The default setting optimizes hamsterdb
  *            for random read/write access (@ref HAM_DAM_RANDOM_WRITE).
  *            Use @ref HAM_DAM_SEQUENTIAL_INSERT for sequential inserts (this
@@ -1478,7 +1478,7 @@ HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_open_ex(ham_db_t *db, const char *filename,
         ham_u32_t flags, const ham_parameter_t *param);
 
-/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create, 
+/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex.
  * This flag is non persistent. */
 #define HAM_WRITE_THROUGH            0x00000001
@@ -1507,22 +1507,22 @@ ham_open_ex(ham_db_t *db, const char *filename,
 
 /* reserved: DB_USE_MMAP (not persistent)      0x00000100 */
 
-/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create, 
+/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex.
  * This flag is non persistent. */
 #define HAM_DISABLE_MMAP             0x00000200
 
-/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create, 
+/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex.
  * This flag is non persistent. */
 #define HAM_CACHE_STRICT             0x00000400
 
-/** @deprecated Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create, 
+/** @deprecated Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex.
  * This flag is non persistent. */
 #define HAM_DISABLE_FREELIST_FLUSH   0x00000800
 
-/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create, 
+/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex */
 #define HAM_LOCK_EXCLUSIVE           0x00001000
 
@@ -1534,7 +1534,7 @@ ham_open_ex(ham_db_t *db, const char *filename,
  * This flag is persisted in the Database. */
 #define HAM_ENABLE_DUPLICATES        0x00004000
 
-/** Flag for @ref ham_create_ex, @ref ham_open_ex, @ref ham_env_create_ex, 
+/** Flag for @ref ham_create_ex, @ref ham_open_ex, @ref ham_env_create_ex,
  * @ref ham_env_open_ex.
  * This flag is non persistent. */
 #define HAM_ENABLE_RECOVERY          0x00008000
@@ -1543,12 +1543,12 @@ ham_open_ex(ham_db_t *db, const char *filename,
  * This flag is non persistent. */
 #define HAM_AUTO_RECOVERY            0x00010000
 
-/** Flag for @ref ham_create_ex, @ref ham_open_ex, @ref ham_env_create_ex, 
+/** Flag for @ref ham_create_ex, @ref ham_open_ex, @ref ham_env_create_ex,
  * @ref ham_env_open_ex.
  * This flag is non persistent. */
 #define HAM_ENABLE_TRANSACTIONS      0x00020000
 
-/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create, 
+/** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex.
  * This flag is non persistent. */
 #define HAM_CACHE_UNLIMITED          0x00040000
@@ -1578,8 +1578,8 @@ ham_get_error(ham_db_t *db);
  * Typedef for a prefix comparison function
  *
  * @remark This function compares two index keys. It returns -1 if @a lhs
- * ("left-hand side", the parameter on the left side) is smaller than 
- * @a rhs ("right-hand side"), 0 if both keys are equal, and 1 if @a lhs 
+ * ("left-hand side", the parameter on the left side) is smaller than
+ * @a rhs ("right-hand side"), 0 if both keys are equal, and 1 if @a lhs
  * is larger than @a rhs.
  *
  * @remark If one of the keys is only partially loaded, but the comparison
@@ -1587,8 +1587,8 @@ ham_get_error(ham_db_t *db);
  * HAM_PREFIX_REQUEST_FULLKEY.
  */
 typedef int HAM_CALLCONV (*ham_prefix_compare_func_t)
-                                 (ham_db_t *db, 
-                                  const ham_u8_t *lhs, ham_size_t lhs_length, 
+                                 (ham_db_t *db,
+                                  const ham_u8_t *lhs, ham_size_t lhs_length,
                                   ham_size_t lhs_real_length,
                                   const ham_u8_t *rhs, ham_size_t rhs_length,
                                   ham_size_t rhs_real_length);
@@ -1615,12 +1615,12 @@ ham_set_prefix_compare_func(ham_db_t *db, ham_prefix_compare_func_t foo);
  * Typedef for a key comparison function
  *
  * @remark This function compares two index keys. It returns -1, if @a lhs
- * ("left-hand side", the parameter on the left side) is smaller than 
- * @a rhs ("right-hand side"), 0 if both keys are equal, and 1 if @a lhs 
+ * ("left-hand side", the parameter on the left side) is smaller than
+ * @a rhs ("right-hand side"), 0 if both keys are equal, and 1 if @a lhs
  * is larger than @a rhs.
  */
-typedef int HAM_CALLCONV (*ham_compare_func_t)(ham_db_t *db, 
-                                  const ham_u8_t *lhs, ham_size_t lhs_length, 
+typedef int HAM_CALLCONV (*ham_compare_func_t)(ham_db_t *db,
+                                  const ham_u8_t *lhs, ham_size_t lhs_length,
                                   const ham_u8_t *rhs, ham_size_t rhs_length);
 
 /**
@@ -1643,7 +1643,7 @@ typedef int HAM_CALLCONV (*ham_compare_func_t)(ham_db_t *db,
  * @return @ref HAM_SUCCESS upon success
  * @return @ref HAM_INV_PARAMETER if one of the parameters is NULL
  *
- * @sa ham_set_prefix_compare_func 
+ * @sa ham_set_prefix_compare_func
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_set_compare_func(ham_db_t *db, ham_compare_func_t foo);
@@ -1652,23 +1652,23 @@ ham_set_compare_func(ham_db_t *db, ham_compare_func_t foo);
  * Typedef for a record comparison function
  *
  * @remark This function compares two records. It returns -1, if @a lhs
- * ("left-hand side", the parameter on the left side) is smaller than 
- * @a rhs ("right-hand side"), 0 if both keys are equal, and 1 if @a lhs 
+ * ("left-hand side", the parameter on the left side) is smaller than
+ * @a rhs ("right-hand side"), 0 if both keys are equal, and 1 if @a lhs
  * is larger than @a rhs.
  *
  * @remark As hamsterdb allows zero-length records, it may happen that
  * either @a lhs_length or @a rhs_length, or both are zero. In this case
  * the related data pointers (@a rhs, @a lhs) <b>may</b> be NULL.
  */
-typedef int HAM_CALLCONV (*ham_duplicate_compare_func_t)(ham_db_t *db, 
-                                  const ham_u8_t *lhs, ham_size_t lhs_length, 
+typedef int HAM_CALLCONV (*ham_duplicate_compare_func_t)(ham_db_t *db,
+                                  const ham_u8_t *lhs, ham_size_t lhs_length,
                                   const ham_u8_t *rhs, ham_size_t rhs_length);
 
 /**
  * Sets the duplicate comparison function
  *
- * The comparison function compares two records which share the same key. 
- * It returns -1 if the first record is smaller, +1 if the second record is 
+ * The comparison function compares two records which share the same key.
+ * It returns -1 if the first record is smaller, +1 if the second record is
  * smaller or 0 if both records are equal.
  *
  * If @a foo is NULL, hamsterdb will use the default compare
@@ -1691,8 +1691,8 @@ typedef int HAM_CALLCONV (*ham_duplicate_compare_func_t)(ham_db_t *db,
  * @return @ref HAM_SUCCESS upon success
  * @return @ref HAM_INV_PARAMETER if one of the parameters is NULL
  *
- * @sa HAM_ENABLE_DUPLICATES 
- * @sa HAM_SORT_DUPLICATES 
+ * @sa HAM_ENABLE_DUPLICATES
+ * @sa HAM_SORT_DUPLICATES
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_set_duplicate_compare_func(ham_db_t *db, ham_duplicate_compare_func_t foo);
@@ -1744,7 +1744,7 @@ ham_enable_compression(ham_db_t *db, ham_u32_t level, ham_u32_t flags);
  *
  * If the function completes successfully, the @a record pointer is
  * initialized with the size of the record (in @a record.size) and the
- * actual record data (in @a record.data). If the record is empty, 
+ * actual record data (in @a record.data). If the record is empty,
  * @a size is 0 and @a data points to NULL.
  *
  * The @a data pointer is a temporary pointer and will be overwritten
@@ -1755,18 +1755,18 @@ ham_enable_compression(ham_db_t *db, ham_u32_t level, ham_u32_t flags);
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated of freed. The flag @ref
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
  * @ref ham_find can not search for duplicate keys. If @a key has
  * multiple duplicates, only the first duplicate is returned.
  *
- * You can read only portions of the record by specifying the flag 
- * @ref HAM_PARTIAL. In this case, hamsterdb will read 
- * <b>record->partial_size</b> bytes of the record data at offset 
- * <b>record->partial_offset</b>. If necessary, the record data will 
+ * You can read only portions of the record by specifying the flag
+ * @ref HAM_PARTIAL. In this case, hamsterdb will read
+ * <b>record->partial_size</b> bytes of the record data at offset
+ * <b>record->partial_offset</b>. If necessary, the record data will
  * be limited to the original record size. The number of actually read
- * bytes is returned in <b>record->size</b>. 
+ * bytes is returned in <b>record->size</b>.
  *
  * @param db A valid Database handle
  * @param txn A Transaction handle, or NULL
@@ -1776,36 +1776,36 @@ ham_enable_compression(ham_db_t *db, ham_u32_t level, ham_u32_t flags);
  *        bitwise OR. Possible flags are:
  *      <ul>
  *        <li>@ref HAM_FIND_EXACT_MATCH </li> (default). If the @a key exists,
- *              the cursor is adjusted to reference the record. Otherwise, an 
- *              error is returned. Note that for backwards compatibility 
- *              the value zero (0) can specified as an alternative when this 
+ *              the cursor is adjusted to reference the record. Otherwise, an
+ *              error is returned. Note that for backwards compatibility
+ *              the value zero (0) can specified as an alternative when this
  *              option is not mixed with any of the others in this list.
- *        <li>@ref HAM_FIND_LT_MATCH </li> Cursor 'find' flag 'Less Than': the 
- *              cursor is moved to point at the last record which' key 
- *              is less than the specified key. When such a record cannot 
+ *        <li>@ref HAM_FIND_LT_MATCH </li> Cursor 'find' flag 'Less Than': the
+ *              cursor is moved to point at the last record which' key
+ *              is less than the specified key. When such a record cannot
  *              be located, an error is returned.
- *        <li>@ref HAM_FIND_GT_MATCH </li> Cursor 'find' flag 'Greater Than': 
- *              the cursor is moved to point at the first record which' key is 
- *              larger than the specified key. When such a record cannot be 
+ *        <li>@ref HAM_FIND_GT_MATCH </li> Cursor 'find' flag 'Greater Than':
+ *              the cursor is moved to point at the first record which' key is
+ *              larger than the specified key. When such a record cannot be
  *              located, an error is returned.
- *        <li>@ref HAM_FIND_LEQ_MATCH </li> Cursor 'find' flag 'Less or EQual': 
- *              the cursor is moved to point at the record which' key matches 
- *              the specified key and when such a record is not available 
- *              the cursor is moved to point at the last record which' key 
- *              is less than the specified key. When such a record cannot be 
+ *        <li>@ref HAM_FIND_LEQ_MATCH </li> Cursor 'find' flag 'Less or EQual':
+ *              the cursor is moved to point at the record which' key matches
+ *              the specified key and when such a record is not available
+ *              the cursor is moved to point at the last record which' key
+ *              is less than the specified key. When such a record cannot be
  *              located, an error is returned.
- *        <li>@ref HAM_FIND_GEQ_MATCH </li> Cursor 'find' flag 'Greater or 
- *              Equal': the cursor is moved to point at the record which' key 
- *              matches the specified key and when such a record 
- *              is not available the cursor is moved to point at the first 
+ *        <li>@ref HAM_FIND_GEQ_MATCH </li> Cursor 'find' flag 'Greater or
+ *              Equal': the cursor is moved to point at the record which' key
+ *              matches the specified key and when such a record
+ *              is not available the cursor is moved to point at the first
  *              record which' key is larger than the specified key.
  *              When such a record cannot be located, an error is returned.
- *        <li>@ref HAM_FIND_NEAR_MATCH </li> Cursor 'find' flag 'Any Near Or 
- *              Equal': the cursor is moved to point at the record which' 
- *              key matches the specified key and when such a record is 
- *              not available the cursor is moved to point at either the 
- *              last record which' key is less than the specified key or 
- *              the first record which' key is larger than the specified 
+ *        <li>@ref HAM_FIND_NEAR_MATCH </li> Cursor 'find' flag 'Any Near Or
+ *              Equal': the cursor is moved to point at the record which'
+ *              key matches the specified key and when such a record is
+ *              not available the cursor is moved to point at either the
+ *              last record which' key is less than the specified key or
+ *              the first record which' key is larger than the specified
  *              key, whichever of these records is located first.
  *              When such records cannot be located, an error is returned.
  *        <li>@ref HAM_DIRECT_ACCESS </li> Only for In-Memory Databases!
@@ -1819,16 +1819,16 @@ ham_enable_compression(ham_db_t *db, ham_u32_t level, ham_u32_t flags);
  * @return @ref HAM_INV_PARAMETER if @a HAM_DIRECT_ACCESS is specified,
  *          but the Database is not an In-Memory Database.
  * @return @ref HAM_KEY_NOT_FOUND if the @a key does not exist
- * 
- * @remark When either or both @ref HAM_FIND_LT_MATCH and/or @ref 
- *        HAM_FIND_GT_MATCH have been specified as flags, the @a key structure 
- *        will be overwritten when an approximate match was found: the 
- *        @a key and @a record structures will then point at the located 
- *        @a key and @a record. In this case the caller should ensure @a key 
- *        points at a structure which must adhere to the same restrictions 
+ *
+ * @remark When either or both @ref HAM_FIND_LT_MATCH and/or @ref
+ *        HAM_FIND_GT_MATCH have been specified as flags, the @a key structure
+ *        will be overwritten when an approximate match was found: the
+ *        @a key and @a record structures will then point at the located
+ *        @a key and @a record. In this case the caller should ensure @a key
+ *        points at a structure which must adhere to the same restrictions
  *        and conditions as specified for @ref ham_cursor_move(...,
  *        HAM_CURSOR_NEXT).
- * 
+ *
  * @sa HAM_RECORD_USER_ALLOC
  * @sa HAM_KEY_USER_ALLOC
  * @sa ham_record_t
@@ -1842,36 +1842,36 @@ ham_find(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  * Inserts a Database item
  *
  * This function inserts a key/record pair as a new Database item.
- * 
+ *
  * If the key already exists in the Database, error @ref HAM_DUPLICATE_KEY
  * is returned.
  *
- * If you wish to overwrite an existing entry specify the 
- * flag @ref HAM_OVERWRITE. 
+ * If you wish to overwrite an existing entry specify the
+ * flag @ref HAM_OVERWRITE.
  *
- * You can write only portions of the record by specifying the flag 
+ * You can write only portions of the record by specifying the flag
  * @ref HAM_PARTIAL. In this case, hamsterdb will write <b>partial_size</b>
  * bytes of the record data at offset <b>partial_offset</b>. The full record
- * size will always be given in <b>record->size</b>! If 
+ * size will always be given in <b>record->size</b>! If
  * partial_size+partial_offset exceed record->size then partial_size will
- * be limited. To shrink or grow the record, adjust record->size. 
+ * be limited. To shrink or grow the record, adjust record->size.
  * @ref HAM_PARTIAL automatically overwrites existing records.
- * Gaps will be filled with null-bytes if the record did not yet exist. 
- * Using @ref HAM_PARTIAL is not allowed in combination with sorted 
+ * Gaps will be filled with null-bytes if the record did not yet exist.
+ * Using @ref HAM_PARTIAL is not allowed in combination with sorted
  * duplicates (@ref HAM_SORT_DUPLICATES).
  *
- * If you wish to insert a duplicate key specify the flag @ref HAM_DUPLICATE. 
+ * If you wish to insert a duplicate key specify the flag @ref HAM_DUPLICATE.
  * (Note that the Database has to be created with @ref HAM_ENABLE_DUPLICATES
  * in order to use duplicate keys.)
- * If no duplicate sorting is enabled (see @ref HAM_SORT_DUPLICATES), the 
+ * If no duplicate sorting is enabled (see @ref HAM_SORT_DUPLICATES), the
  * duplicate key is inserted after all other duplicate keys (see
  * @ref HAM_DUPLICATE_INSERT_LAST). Otherwise it is inserted in sorted order.
  *
- * Record Number Databases (created with @ref HAM_RECORD_NUMBER) expect 
+ * Record Number Databases (created with @ref HAM_RECORD_NUMBER) expect
  * either an empty @a key (with a size of 0 and data pointing to NULL),
  * or a user-supplied key (with key.flag @ref HAM_KEY_USER_ALLOC, a size
- * of 8 and a valid data pointer). 
- * If key.size is 0 and key.data is NULL, hamsterdb will temporarily 
+ * of 8 and a valid data pointer).
+ * If key.size is 0 and key.data is NULL, hamsterdb will temporarily
  * allocate memory for key->data, which will then point to an 8-byte
  * unsigned integer in host-endian.
  *
@@ -1884,7 +1884,7 @@ ham_find(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  *        <li>@ref HAM_OVERWRITE. If the @a key already exists, the record is
  *              overwritten. Otherwise, the key is inserted. Flag is not
  *              allowed in combination with @ref HAM_DUPLICATE.
- *        <li>@ref HAM_DUPLICATE. If the @a key already exists, a duplicate 
+ *        <li>@ref HAM_DUPLICATE. If the @a key already exists, a duplicate
  *              key is inserted. The key is inserted before the already
  *              existing key, or according to the sort order. Flag is not
  *              allowed in combination with @ref HAM_OVERWRITE.
@@ -1898,7 +1898,7 @@ ham_find(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  *              duplicate sorting is enabled (@ref HAM_SORT_DUPLICATES)
  * @return @ref HAM_INV_PARAMETER if the flags @ref HAM_OVERWRITE <b>and</b>
  *              @ref HAM_DUPLICATE were specified, or if @ref HAM_DUPLICATE
- *              was specified, but the Database was not created with 
+ *              was specified, but the Database was not created with
  *              flag @ref HAM_ENABLE_DUPLICATES.
  * @return @ref HAM_INV_PARAMETER if @ref HAM_PARTIAL is specified and
  *              record->partial_offset+record->partial_size exceeds the
@@ -1917,15 +1917,15 @@ HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
         ham_record_t *record, ham_u32_t flags);
 
-/** 
+/**
  * Flag for @ref ham_insert and @ref ham_cursor_insert
  *
- * When specified with @ref ham_insert and in case a key 
+ * When specified with @ref ham_insert and in case a key
  * is specified which stores duplicates in the Database, the first
  * duplicate record will be overwritten.
  *
  * When used with @ref ham_cursor_insert and assuming the same
- * conditions, the duplicate currently referenced by the Cursor 
+ * conditions, the duplicate currently referenced by the Cursor
  * will be overwritten.
 */
 #define HAM_OVERWRITE                   0x0001
@@ -1948,11 +1948,11 @@ ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
 /** Flag for @ref ham_find, @ref ham_cursor_find_ex, @ref ham_cursor_move */
 #define HAM_DIRECT_ACCESS               0x0040
 
-/** Flag for @ref ham_insert, @ref ham_cursor_insert, @ref ham_find, 
+/** Flag for @ref ham_insert, @ref ham_cursor_insert, @ref ham_find,
  * @ref ham_cursor_find_ex, @ref ham_cursor_move */
 #define HAM_PARTIAL                     0x0080
 
-/** 
+/**
  * Flag for @ref ham_cursor_insert
  *
  * Mutually exclusive with flag @ref HAM_HINT_PREPEND.
@@ -1960,13 +1960,13 @@ ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  * Hints the hamsterdb engine that the current key will
  * compare as @e larger than any key already existing in the Database.
  * The hamsterdb engine will verify this postulation and when found not
- * to be true, will revert to a regular insert operation 
+ * to be true, will revert to a regular insert operation
  * as if this flag was not specified. The incurred cost then is only one
  * additional key comparison.
  */
 #define HAM_HINT_APPEND               0x00080000
 
-/** 
+/**
  * Flag for @ref ham_cursor_insert
  *
  * Mutually exclusive with flag @ref HAM_HINT_APPEND.
@@ -1974,13 +1974,13 @@ ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  * Hints the hamsterdb engine that the current key will
  * compare as @e smaller than any key already existing in the Database.
  * The hamsterdb engine will verify this postulation and when found not
- * to be true, will revert to a regular insert operation 
+ * to be true, will revert to a regular insert operation
  * as if this flag was not specified. The incurred cost then is only one
  * additional key comparison.
  */
 #define HAM_HINT_PREPEND              0x00100000
 
-/** 
+/**
  * Flag mask to extract the common hint flags from a find/move/insert/erase
  * flag value.
  */
@@ -1992,8 +1992,8 @@ ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  * This function erases a Database item. If the item @a key
  * does not exist, @ref HAM_KEY_NOT_FOUND is returned.
  *
- * Note that ham_erase can not erase a single duplicate key. If the key 
- * has multiple duplicates, all duplicates of this key will be erased. Use 
+ * Note that ham_erase can not erase a single duplicate key. If the key
+ * has multiple duplicates, all duplicates of this key will be erased. Use
  * @ref ham_cursor_erase to erase a specific duplicate key.
  *
  * @param db A valid Database handle
@@ -2030,25 +2030,25 @@ ham_flush(ham_db_t *db, ham_u32_t flags);
  * Calculates the number of keys stored in the Database
  *
  * You can specify the @ref HAM_SKIP_DUPLICATES if you do now want
- * to include any duplicates in the count; if all you're after is 
+ * to include any duplicates in the count; if all you're after is
  * a quick estimate, you can specify the flag @ref HAM_FAST_ESTIMATE
- * (which implies @ref HAM_SKIP_DUPLICATES), which will improve the 
+ * (which implies @ref HAM_SKIP_DUPLICATES), which will improve the
  * execution speed of this operation significantly.
  *
  * @param db A valid Database handle
  * @param txn A Transaction handle, or NULL
  * @param flags Optional flags:
  *       <ul>
- *         <li>@ref HAM_SKIP_DUPLICATES. Excludes any duplicates from 
+ *         <li>@ref HAM_SKIP_DUPLICATES. Excludes any duplicates from
  *             the count
- *         <li>@ref HAM_FAST_ESTIMATE. Excludes any duplicates from 
+ *         <li>@ref HAM_FAST_ESTIMATE. Excludes any duplicates from
  *             the count
  *       </ul>
  * @param keycount A reference to a variable which will receive
  *                 the calculated key count per page
  *
  * @return @ref HAM_SUCCESS upon success
- * @return @ref HAM_INV_PARAMETER if @a db or @a keycount is NULL or when 
+ * @return @ref HAM_INV_PARAMETER if @a db or @a keycount is NULL or when
  *         @a flags contains an invalid flag set
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
@@ -2070,7 +2070,7 @@ ham_get_key_count(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
  *        <li>HAM_PARAM_CACHESIZE</li> returns the cache size
  *        <li>HAM_PARAM_PAGESIZE</li> returns the page size
  *        <li>HAM_PARAM_KEYSIZE</li> returns the key size
- *        <li>HAM_PARAM_MAX_ENV_DATABASES</li> returns the max. number of 
+ *        <li>HAM_PARAM_MAX_ENV_DATABASES</li> returns the max. number of
  *              Databases of this Database's Environment
  *        <li>HAM_PARAM_GET_FLAGS</li> returns the flags which were used to
  *              open or create this Database
@@ -2080,7 +2080,7 @@ ham_get_key_count(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
  *              of this parameter is a const char * pointer casted to a
  *              ham_u64_t variable)
  *        <li>HAM_PARAM_GET_DATABASE_NAME</li> returns the Database name
- *        <li>HAM_PARAM_GET_KEYS_PER_PAGE</li> returns the maximum number 
+ *        <li>HAM_PARAM_GET_KEYS_PER_PAGE</li> returns the maximum number
  *              of keys per page
  *        <li>HAM_PARAM_GET_DATA_ACCESS_MODE</li> returns the Data Access Mode
  *      </ul>
@@ -2099,7 +2099,7 @@ ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
  * size */
 #define HAM_PARAM_CACHESIZE          0x00000100
 
-/** Parameter name for @ref ham_env_create_ex, @ref ham_create_ex; sets the 
+/** Parameter name for @ref ham_env_create_ex, @ref ham_create_ex; sets the
  * page size */
 #define HAM_PARAM_PAGESIZE           0x00000101
 
@@ -2116,22 +2116,22 @@ ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
 #define HAM_PARAM_DATA_ACCESS_MODE   0x00000104
 
 /**
- * Retrieve the Database/Environment flags as were specified at the time of 
- * @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open 
+ * Retrieve the Database/Environment flags as were specified at the time of
+ * @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open
  * invocation.
  */
 #define HAM_PARAM_GET_FLAGS                0x00000200
 
 /**
- * Retrieve the filesystem file access mode as was specified at the time 
- * of @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open 
+ * Retrieve the filesystem file access mode as was specified at the time
+ * of @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open
  * invocation.
  */
 #define HAM_PARAM_GET_FILEMODE            0x00000201
 
 /**
- * Return a <code>const char *</code> pointer to the current 
- * Environment/Database file name in the @ref ham_offset_t value 
+ * Return a <code>const char *</code> pointer to the current
+ * Environment/Database file name in the @ref ham_offset_t value
  * member, when the Database is actually stored on disc.
  *
  * In-memory Databases will return a NULL (0) pointer instead.
@@ -2139,21 +2139,21 @@ ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
 #define HAM_PARAM_GET_FILENAME            0x00000202
 
 /**
- * Retrieve the Database 'name' number of this @ref ham_db_t Database within 
+ * Retrieve the Database 'name' number of this @ref ham_db_t Database within
  * the current @ref ham_env_t Environment.
  *
- * When the Database is not related to an Environment, the reserved 'name' 
+ * When the Database is not related to an Environment, the reserved 'name'
  * 0xf001 is used for this Database.
 */
 #define HAM_PARAM_GET_DATABASE_NAME       0x00000203
 #define HAM_PARAM_DBNAME                  HAM_PARAM_GET_DATABASE_NAME
 
 /**
- * Retrieve the maximum number of keys per page; this number depends on the 
+ * Retrieve the maximum number of keys per page; this number depends on the
  * currently active page and key sizes.
- * 
- * When no Database or Environment is specified with the request, the default 
- * settings for all of these will be assumed in order to produce a viable 
+ *
+ * When no Database or Environment is specified with the request, the default
+ * settings for all of these will be assumed in order to produce a viable
  * ball park value for this one.
  */
 #define HAM_PARAM_GET_KEYS_PER_PAGE        0x00000204
@@ -2195,11 +2195,11 @@ HAM_EXPORT ham_env_t *HAM_CALLCONV
 ham_get_env(ham_db_t *db);
 
 /**
- * Returns the kind of key match which produced this key as it was 
- * returned by one of the @ref ham_find(), @ref ham_cursor_find() or 
+ * Returns the kind of key match which produced this key as it was
+ * returned by one of the @ref ham_find(), @ref ham_cursor_find() or
  * @ref ham_cursor_find_ex() functions
  *
- * This routine assumes the key was passed back by one of the @ref ham_find, 
+ * This routine assumes the key was passed back by one of the @ref ham_find,
  * @ref ham_cursor_find or @ref ham_cursor_find_ex functions and not used
  * by any other hamsterdb functions after that.
  *
@@ -2208,13 +2208,13 @@ ham_get_env(ham_db_t *db);
  *
  * @param key A valid key
  *
- * @return 1 (greater than) or -1 (less than) when the given key is an 
+ * @return 1 (greater than) or -1 (less than) when the given key is an
  *      approximate result / zero (0) otherwise. Specifically:
  *      <ul>
- *        <li>+1 when the key is greater than the item searched for (key 
+ *        <li>+1 when the key is greater than the item searched for (key
  *              was a GT match)
- *        <li>-1 when the key is less than the item searched for (key was 
- *              a LT match) 
+ *        <li>-1 when the key is less than the item searched for (key was
+ *              a LT match)
  *        <li>zero (0) otherwise (key was an EQ (EXACT) match)
  *      </ul>
  */
@@ -2230,13 +2230,13 @@ ham_key_get_approximate_match_type(ham_key_t *key);
  *
  * If the flag @ref HAM_AUTO_CLEANUP is specified, hamsterdb automatically
  * calls @ref ham_cursor_close on all open Cursors. This invalidates the
- * ham_cursor_t handle! 
+ * ham_cursor_t handle!
  *
- * If the flag is not specified, the application must close all Database 
+ * If the flag is not specified, the application must close all Database
  * Cursors with @ref ham_cursor_close to prevent memory leaks.
  *
- * This function removes all record-level filters installed 
- * with @ref ham_add_record_filter (and hence also, implicitly, 
+ * This function removes all record-level filters installed
+ * with @ref ham_add_record_filter (and hence also, implicitly,
  * the filter installed by @ref ham_enable_compression).
  *
  * This function also aborts all Transactions which were not yet committed,
@@ -2247,9 +2247,9 @@ ham_key_get_approximate_match_type(ham_key_t *key);
  * @param flags Optional flags for closing the Database. Possible values are:
  *      <ul>
  *       <li>@ref HAM_AUTO_CLEANUP. Automatically closes all open Cursors
- *       <li>@ref HAM_TXN_AUTO_COMMIT. Automatically commit all open 
+ *       <li>@ref HAM_TXN_AUTO_COMMIT. Automatically commit all open
  *          Transactions
- *       <li>@ref HAM_TXN_AUTO_ABORT. Automatically abort all open 
+ *       <li>@ref HAM_TXN_AUTO_ABORT. Automatically abort all open
  *          Transactions; this is the default behaviour
  *      </ul>
  *
@@ -2342,18 +2342,18 @@ ham_cursor_clone(ham_cursor_t *src, ham_cursor_t **dest);
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated of freed. The flag @ref
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
- * You can write only portions of the record by specifying the flag 
+ * You can write only portions of the record by specifying the flag
  * @ref HAM_PARTIAL. In this case, hamsterdb will write <b>partial_size</b>
  * bytes of the record data at offset <b>partial_offset</b>. The full record
- * size will always be given in <b>record->size</b>! If 
+ * size will always be given in <b>record->size</b>! If
  * partial_size+partial_offset exceed record->size then partial_size will
- * be limited. To shrink or grow the record, adjust record->size. 
+ * be limited. To shrink or grow the record, adjust record->size.
  * @ref HAM_PARTIAL automatically overwrites existing records.
- * Gaps will be filled with null-bytes if the record did not yet exist. 
- * Using @ref HAM_PARTIAL is not allowed in combination with sorted 
+ * Gaps will be filled with null-bytes if the record did not yet exist.
+ * Using @ref HAM_PARTIAL is not allowed in combination with sorted
  * duplicates (@ref HAM_SORT_DUPLICATES).
  *
  * @param cursor A valid Cursor handle
@@ -2371,23 +2371,23 @@ ham_cursor_clone(ham_cursor_t *src, ham_cursor_t **dest);
  *      the direction for the "move". If you do not specify a direction,
  *      the Cursor will remain on the current position.
  *      <ul>
- *          <li>@ref HAM_CURSOR_FIRST </li> positions the Cursor on the first 
+ *          <li>@ref HAM_CURSOR_FIRST </li> positions the Cursor on the first
  *              item in the Database
- *          <li>@ref HAM_CURSOR_LAST </li> positions the Cursor on the last 
+ *          <li>@ref HAM_CURSOR_LAST </li> positions the Cursor on the last
  *              item in the Database
- *          <li>@ref HAM_CURSOR_NEXT </li> positions the Cursor on the next 
+ *          <li>@ref HAM_CURSOR_NEXT </li> positions the Cursor on the next
  *              item in the Database; if the Cursor does not point to any
  *              item, the function behaves as if direction was
  *              @ref HAM_CURSOR_FIRST.
- *          <li>@ref HAM_CURSOR_PREVIOUS </li> positions the Cursor on the 
- *              previous item in the Database; if the Cursor does not point to 
+ *          <li>@ref HAM_CURSOR_PREVIOUS </li> positions the Cursor on the
+ *              previous item in the Database; if the Cursor does not point to
  *              any item, the function behaves as if direction was
  *              @ref HAM_CURSOR_LAST.
- *          <li>@ref HAM_SKIP_DUPLICATES </li> skips duplicate keys of the 
- *              current key. Not allowed in combination with 
+ *          <li>@ref HAM_SKIP_DUPLICATES </li> skips duplicate keys of the
+ *              current key. Not allowed in combination with
  *              @ref HAM_ONLY_DUPLICATES.
  *          <li>@ref HAM_ONLY_DUPLICATES </li> only move through duplicate keys
- *              of the current key. Not allowed in combination with 
+ *              of the current key. Not allowed in combination with
  *              @ref HAM_SKIP_DUPLICATES.
  *        <li>@ref HAM_DIRECT_ACCESS </li> Only for In-Memory Databases!
  *              Returns a direct pointer to the data blob stored by the
@@ -2440,7 +2440,7 @@ ham_cursor_move(ham_cursor_t *cursor, ham_key_t *key,
  * Overwrites the current record
  *
  * This function overwrites the record of the current item.
- * 
+ *
  * The use of this function is not allowed if the item has duplicate keys
  * and the duplicate sorting is enabled (see @ref HAM_SORT_DUPLICATES).
  * In this case, @ref HAM_INV_PARAMETER is returned.
@@ -2467,17 +2467,17 @@ ham_cursor_overwrite(ham_cursor_t *cursor, ham_record_t *record,
  * Cursor to this item. If the item could not be found, the Cursor is
  * not modified.
  *
- * Note that @ref ham_cursor_find can not search for duplicate keys. If @a key 
+ * Note that @ref ham_cursor_find can not search for duplicate keys. If @a key
  * has multiple duplicates, only the first duplicate is returned.
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated of freed. The flag @ref
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
  * When either or both @ref HAM_FIND_LT_MATCH and/or @ref HAM_FIND_GT_MATCH
  * have been specified as flags, the @a key structure will be overwritten
- * when an approximate match was found: the @a key and @a record 
+ * when an approximate match was found: the @a key and @a record
  * structures will then point at the located @a key (and @a record).
  * In this case the caller should ensure @a key points at a structure
  * which must adhere to the same restrictions and conditions as specified
@@ -2486,15 +2486,15 @@ ham_cursor_overwrite(ham_cursor_t *cursor, ham_record_t *record,
  * will be invalidated by subsequent hamsterdb API calls. See
  * @ref HAM_KEY_USER_ALLOC on how to change this behaviour.
  *
- * Further note that the @a key structure must be non-const at all times as its 
- * internal flag bits may be written to. This is done for your benefit, as 
- * you may pass the returned @a key structure to 
- * @ref ham_key_get_approximate_match_type() to retrieve additional info about 
- * the precise nature of the returned key: the sign value produced 
+ * Further note that the @a key structure must be non-const at all times as its
+ * internal flag bits may be written to. This is done for your benefit, as
+ * you may pass the returned @a key structure to
+ * @ref ham_key_get_approximate_match_type() to retrieve additional info about
+ * the precise nature of the returned key: the sign value produced
  * by @ref ham_key_get_approximate_match_type() tells you which kind of match
- * (equal, less than, greater than) occurred. This is very useful to 
- * discern between the various possible successful answers produced by the 
- * combinations of @ref HAM_FIND_LT_MATCH, @ref HAM_FIND_GT_MATCH and/or 
+ * (equal, less than, greater than) occurred. This is very useful to
+ * discern between the various possible successful answers produced by the
+ * combinations of @ref HAM_FIND_LT_MATCH, @ref HAM_FIND_GT_MATCH and/or
  * @ref HAM_FIND_EXACT_MATCH.
  *
  * @param cursor A valid Cursor handle
@@ -2507,36 +2507,36 @@ ham_cursor_overwrite(ham_cursor_t *cursor, ham_record_t *record,
  *        bitwise OR. Possible flags are:
  *      <ul>
  *        <li>@ref HAM_FIND_EXACT_MATCH </li> (default). If the @a key exists,
- *              the cursor is adjusted to reference the record. Otherwise, an 
- *              error is returned. Note that for backwards compatibility 
- *              the value zero (0) can specified as an alternative when this 
+ *              the cursor is adjusted to reference the record. Otherwise, an
+ *              error is returned. Note that for backwards compatibility
+ *              the value zero (0) can specified as an alternative when this
  *              option is not mixed with any of the others in this list.
- *        <li>@ref HAM_FIND_LT_MATCH </li> Cursor 'find' flag 'Less Than': the 
- *              cursor is moved to point at the last record which' key 
- *              is less than the specified key. When such a record cannot 
+ *        <li>@ref HAM_FIND_LT_MATCH </li> Cursor 'find' flag 'Less Than': the
+ *              cursor is moved to point at the last record which' key
+ *              is less than the specified key. When such a record cannot
  *              be located, an error is returned.
- *        <li>@ref HAM_FIND_GT_MATCH </li> Cursor 'find' flag 'Greater Than': 
- *              the cursor is moved to point at the first record which' key is 
- *              larger than the specified key. When such a record cannot be 
+ *        <li>@ref HAM_FIND_GT_MATCH </li> Cursor 'find' flag 'Greater Than':
+ *              the cursor is moved to point at the first record which' key is
+ *              larger than the specified key. When such a record cannot be
  *              located, an error is returned.
- *        <li>@ref HAM_FIND_LEQ_MATCH </li> Cursor 'find' flag 'Less or EQual': 
- *              the cursor is moved to point at the record which' key matches 
- *              the specified key and when such a record is not available 
- *              the cursor is moved to point at the last record which' key 
- *              is less than the specified key. When such a record cannot be 
+ *        <li>@ref HAM_FIND_LEQ_MATCH </li> Cursor 'find' flag 'Less or EQual':
+ *              the cursor is moved to point at the record which' key matches
+ *              the specified key and when such a record is not available
+ *              the cursor is moved to point at the last record which' key
+ *              is less than the specified key. When such a record cannot be
  *              located, an error is returned.
- *        <li>@ref HAM_FIND_GEQ_MATCH </li> Cursor 'find' flag 'Greater or 
- *              Equal': the cursor is moved to point at the record which' key 
- *              matches the specified key and when such a record 
- *              is not available the cursor is moved to point at the first 
+ *        <li>@ref HAM_FIND_GEQ_MATCH </li> Cursor 'find' flag 'Greater or
+ *              Equal': the cursor is moved to point at the record which' key
+ *              matches the specified key and when such a record
+ *              is not available the cursor is moved to point at the first
  *              record which' key is larger than the specified key.
  *              When such a record cannot be located, an error is returned.
- *        <li>@ref HAM_FIND_NEAR_MATCH </li> Cursor 'find' flag 'Any Near Or 
- *              Equal': the cursor is moved to point at the record which' 
- *              key matches the specified key and when such a record is 
- *              not available the cursor is moved to point at either the 
- *              last record which' key is less than the specified key or 
- *              the first record which' key is larger than the specified 
+ *        <li>@ref HAM_FIND_NEAR_MATCH </li> Cursor 'find' flag 'Any Near Or
+ *              Equal': the cursor is moved to point at the record which'
+ *              key matches the specified key and when such a record is
+ *              not available the cursor is moved to point at either the
+ *              last record which' key is less than the specified key or
+ *              the first record which' key is larger than the specified
  *              key, whichever of these records is located first.
  *              When such records cannot be located, an error is returned.
  *        <li>@ref HAM_DIRECT_ACCESS </li> Only for In-Memory Databases!
@@ -2545,36 +2545,36 @@ ham_cursor_overwrite(ham_cursor_t *cursor, ham_record_t *record,
  *              but the data in this memory can be modified.
  *      </ul>
  *
- * <b>Remark</b> 
- * For Approximate Matching the returned match will either match the 
- * key exactly or is either the first key available above or below the 
- * given key when an exact match could not be found; 'find' does NOT 
- * spend any effort, in the sense of determining which of both is the 
- * 'nearest' to the given key, when both a key above and a key below the 
- * one given exist; 'find' will simply return the first of both found. 
- * As such, this flag is the simplest possible combination of the 
+ * <b>Remark</b>
+ * For Approximate Matching the returned match will either match the
+ * key exactly or is either the first key available above or below the
+ * given key when an exact match could not be found; 'find' does NOT
+ * spend any effort, in the sense of determining which of both is the
+ * 'nearest' to the given key, when both a key above and a key below the
+ * one given exist; 'find' will simply return the first of both found.
+ * As such, this flag is the simplest possible combination of the
  * combined @ref HAM_FIND_LEQ_MATCH and @ref HAM_FIND_GEQ_MATCH flags.
  *
  * Note that these flags may be bitwise OR-ed to form functional combinations.
  *
- * @ref HAM_FIND_LEQ_MATCH, @ref HAM_FIND_GEQ_MATCH and 
+ * @ref HAM_FIND_LEQ_MATCH, @ref HAM_FIND_GEQ_MATCH and
  * @ref HAM_FIND_NEAR_MATCH are themselves shorthands created using
  *      the bitwise OR operation like this:
  *      <ul>
- *          <li>@ref HAM_FIND_LEQ_MATCH </li> == (@ref HAM_FIND_LT_MATCH | 
+ *          <li>@ref HAM_FIND_LEQ_MATCH </li> == (@ref HAM_FIND_LT_MATCH |
  *                @ref HAM_FIND_EXACT_MATCH)
- *        <li>@ref HAM_FIND_GEQ_MATCH </li> == (@ref HAM_FIND_GT_MATCH | 
+ *        <li>@ref HAM_FIND_GEQ_MATCH </li> == (@ref HAM_FIND_GT_MATCH |
  *              @ref HAM_FIND_EXACT_MATCH)
- *        <li>@ref HAM_FIND_NEAR_MATCH </li> == (@ref HAM_FIND_LT_MATCH | 
+ *        <li>@ref HAM_FIND_NEAR_MATCH </li> == (@ref HAM_FIND_LT_MATCH |
  *              @ref HAM_FIND_GT_MATCH | @ref HAM_FIND_EXACT_MATCH)
- *        <li>The remaining bit-combination (@ref HAM_FIND_LT_MATCH | 
- *              @ref HAM_FIND_GT_MATCH) has no shorthand, but it will function 
- *              as expected nevertheless: finding only 'neighbouring' records 
+ *        <li>The remaining bit-combination (@ref HAM_FIND_LT_MATCH |
+ *              @ref HAM_FIND_GT_MATCH) has no shorthand, but it will function
+ *              as expected nevertheless: finding only 'neighbouring' records
  *              for the given key.
  *      </ul>
  *
- * @return @ref HAM_SUCCESS upon success. Mind the remarks about the 
- *         @a key flags being adjusted and the useful invocation of 
+ * @return @ref HAM_SUCCESS upon success. Mind the remarks about the
+ *         @a key flags being adjusted and the useful invocation of
  *         @ref ham_key_get_approximate_match_type() afterwards.
  * @return @ref HAM_INV_PARAMETER if @a db, @a key or @a record is NULL
  * @return @ref HAM_CURSOR_IS_NIL if the Cursor does not point to an item
@@ -2589,34 +2589,34 @@ HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
 
 /**
- * Searches with a key and points the Cursor to the key found, retrieves 
+ * Searches with a key and points the Cursor to the key found, retrieves
  * the located record
  *
  * This function is identical to @ref ham_cursor_find, but it immediately
  * retrieves the located record if the lookup operation was successful.
- * 
+ *
  * Searches for an item in the Database and points the
  * Cursor to this item. If the item could not be found, the Cursor is
  * not modified.
  *
- * Note that @ref ham_cursor_find can not search for duplicate keys. If @a key 
+ * Note that @ref ham_cursor_find can not search for duplicate keys. If @a key
  * has multiple duplicates, only the first duplicate is returned.
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated of freed. The flag @ref
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
- * You can read only portions of the record by specifying the flag 
- * @ref HAM_PARTIAL. In this case, hamsterdb will read 
- * <b>record->partial_size</b> bytes of the record data at offset 
- * <b>record->partial_offset</b>. If necessary, the record data will 
+ * You can read only portions of the record by specifying the flag
+ * @ref HAM_PARTIAL. In this case, hamsterdb will read
+ * <b>record->partial_size</b> bytes of the record data at offset
+ * <b>record->partial_offset</b>. If necessary, the record data will
  * be limited to the original record size. The number of actually read
- * bytes is returned in <b>record->size</b>. 
+ * bytes is returned in <b>record->size</b>.
  *
  * When either or both @ref HAM_FIND_LT_MATCH and/or @ref HAM_FIND_GT_MATCH
  * have been specified as flags, the @a key structure will be overwritten
- * when an approximate match was found: the @a key and @a record 
+ * when an approximate match was found: the @a key and @a record
  * structures will then point at the located @a key (and @a record).
  * In this case the caller should ensure @a key points at a structure
  * which must adhere to the same restrictions and conditions as specified
@@ -2625,15 +2625,15 @@ ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
  * will be invalidated by subsequent hamsterdb API calls. See
  * @ref HAM_KEY_USER_ALLOC on how to change this behaviour.
  *
- * Further note that the @a key structure must be non-const at all times as its 
- * internal flag bits may be written to. This is done for your benefit, as 
- * you may pass the returned @a key structure to 
- * @ref ham_key_get_approximate_match_type() to retrieve additional info about 
- * the precise nature of the returned key: the sign value produced 
+ * Further note that the @a key structure must be non-const at all times as its
+ * internal flag bits may be written to. This is done for your benefit, as
+ * you may pass the returned @a key structure to
+ * @ref ham_key_get_approximate_match_type() to retrieve additional info about
+ * the precise nature of the returned key: the sign value produced
  * by @ref ham_key_get_approximate_match_type() tells you which kind of match
- * (equal, less than, greater than) occurred. This is very useful to 
- * discern between the various possible successful answers produced by the 
- * combinations of @ref HAM_FIND_LT_MATCH, @ref HAM_FIND_GT_MATCH and/or 
+ * (equal, less than, greater than) occurred. This is very useful to
+ * discern between the various possible successful answers produced by the
+ * combinations of @ref HAM_FIND_LT_MATCH, @ref HAM_FIND_GT_MATCH and/or
  * @ref HAM_FIND_EXACT_MATCH.
  *
  * @param cursor A valid Cursor handle
@@ -2651,36 +2651,36 @@ ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
  *        bitwise OR. Possible flags are:
  *      <ul>
  *        <li>@ref HAM_FIND_EXACT_MATCH </li> (default). If the @a key exists,
- *              the cursor is adjusted to reference the record. Otherwise, an 
- *              error is returned. Note that for backwards compatibility 
- *              the value zero (0) can specified as an alternative when this 
+ *              the cursor is adjusted to reference the record. Otherwise, an
+ *              error is returned. Note that for backwards compatibility
+ *              the value zero (0) can specified as an alternative when this
  *              option is not mixed with any of the others in this list.
- *        <li>@ref HAM_FIND_LT_MATCH </li> Cursor 'find' flag 'Less Than': the 
- *              cursor is moved to point at the last record which' key 
- *              is less than the specified key. When such a record cannot 
+ *        <li>@ref HAM_FIND_LT_MATCH </li> Cursor 'find' flag 'Less Than': the
+ *              cursor is moved to point at the last record which' key
+ *              is less than the specified key. When such a record cannot
  *              be located, an error is returned.
- *        <li>@ref HAM_FIND_GT_MATCH </li> Cursor 'find' flag 'Greater Than': 
- *              the cursor is moved to point at the first record which' key is 
- *              larger than the specified key. When such a record cannot be 
+ *        <li>@ref HAM_FIND_GT_MATCH </li> Cursor 'find' flag 'Greater Than':
+ *              the cursor is moved to point at the first record which' key is
+ *              larger than the specified key. When such a record cannot be
  *              located, an error is returned.
- *        <li>@ref HAM_FIND_LEQ_MATCH </li> Cursor 'find' flag 'Less or EQual': 
- *              the cursor is moved to point at the record which' key matches 
- *              the specified key and when such a record is not available 
- *              the cursor is moved to point at the last record which' key 
- *              is less than the specified key. When such a record cannot be 
+ *        <li>@ref HAM_FIND_LEQ_MATCH </li> Cursor 'find' flag 'Less or EQual':
+ *              the cursor is moved to point at the record which' key matches
+ *              the specified key and when such a record is not available
+ *              the cursor is moved to point at the last record which' key
+ *              is less than the specified key. When such a record cannot be
  *              located, an error is returned.
- *        <li>@ref HAM_FIND_GEQ_MATCH </li> Cursor 'find' flag 'Greater or 
- *              Equal': the cursor is moved to point at the record which' key 
- *              matches the specified key and when such a record 
- *              is not available the cursor is moved to point at the first 
+ *        <li>@ref HAM_FIND_GEQ_MATCH </li> Cursor 'find' flag 'Greater or
+ *              Equal': the cursor is moved to point at the record which' key
+ *              matches the specified key and when such a record
+ *              is not available the cursor is moved to point at the first
  *              record which' key is larger than the specified key.
  *              When such a record cannot be located, an error is returned.
- *        <li>@ref HAM_FIND_NEAR_MATCH </li> Cursor 'find' flag 'Any Near Or 
- *              Equal': the cursor is moved to point at the record which' 
- *              key matches the specified key and when such a record is 
- *              not available the cursor is moved to point at either the 
- *              last record which' key is less than the specified key or 
- *              the first record which' key is larger than the specified 
+ *        <li>@ref HAM_FIND_NEAR_MATCH </li> Cursor 'find' flag 'Any Near Or
+ *              Equal': the cursor is moved to point at the record which'
+ *              key matches the specified key and when such a record is
+ *              not available the cursor is moved to point at either the
+ *              last record which' key is less than the specified key or
+ *              the first record which' key is larger than the specified
  *              key, whichever of these records is located first.
  *              When such records cannot be located, an error is returned.
  *        <li>@ref HAM_DIRECT_ACCESS </li> Only for In-Memory Databases!
@@ -2689,36 +2689,36 @@ ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
  *              but the data in this memory can be modified.
  *      </ul>
  *
- * <b>Remark</b> 
- * For Approximate Matching the returned match will either match the 
- * key exactly or is either the first key available above or below the 
- * given key when an exact match could not be found; 'find' does NOT 
- * spend any effort, in the sense of determining which of both is the 
- * 'nearest' to the given key, when both a key above and a key below the 
- * one given exist; 'find' will simply return the first of both found. 
- * As such, this flag is the simplest possible combination of the 
+ * <b>Remark</b>
+ * For Approximate Matching the returned match will either match the
+ * key exactly or is either the first key available above or below the
+ * given key when an exact match could not be found; 'find' does NOT
+ * spend any effort, in the sense of determining which of both is the
+ * 'nearest' to the given key, when both a key above and a key below the
+ * one given exist; 'find' will simply return the first of both found.
+ * As such, this flag is the simplest possible combination of the
  * combined @ref HAM_FIND_LEQ_MATCH and @ref HAM_FIND_GEQ_MATCH flags.
  *
  * Note that these flags may be bitwise OR-ed to form functional combinations.
  *
- * @ref HAM_FIND_LEQ_MATCH, @ref HAM_FIND_GEQ_MATCH and 
+ * @ref HAM_FIND_LEQ_MATCH, @ref HAM_FIND_GEQ_MATCH and
  * @ref HAM_FIND_NEAR_MATCH are themselves shorthands created using
  *      the bitwise OR operation like this:
  *      <ul>
- *          <li>@ref HAM_FIND_LEQ_MATCH </li> == (@ref HAM_FIND_LT_MATCH | 
+ *          <li>@ref HAM_FIND_LEQ_MATCH </li> == (@ref HAM_FIND_LT_MATCH |
  *                @ref HAM_FIND_EXACT_MATCH)
- *        <li>@ref HAM_FIND_GEQ_MATCH </li> == (@ref HAM_FIND_GT_MATCH | 
+ *        <li>@ref HAM_FIND_GEQ_MATCH </li> == (@ref HAM_FIND_GT_MATCH |
  *              @ref HAM_FIND_EXACT_MATCH)
- *        <li>@ref HAM_FIND_NEAR_MATCH </li> == (@ref HAM_FIND_LT_MATCH | 
+ *        <li>@ref HAM_FIND_NEAR_MATCH </li> == (@ref HAM_FIND_LT_MATCH |
  *              @ref HAM_FIND_GT_MATCH | @ref HAM_FIND_EXACT_MATCH)
- *        <li>The remaining bit-combination (@ref HAM_FIND_LT_MATCH | 
- *              @ref HAM_FIND_GT_MATCH) has no shorthand, but it will function 
- *              as expected nevertheless: finding only 'neighbouring' records 
+ *        <li>The remaining bit-combination (@ref HAM_FIND_LT_MATCH |
+ *              @ref HAM_FIND_GT_MATCH) has no shorthand, but it will function
+ *              as expected nevertheless: finding only 'neighbouring' records
  *              for the given key.
  *      </ul>
  *
- * @return @ref HAM_SUCCESS upon success. Mind the remarks about the 
- *         @a key flags being adjusted and the useful invocation of 
+ * @return @ref HAM_SUCCESS upon success. Mind the remarks about the
+ *         @a key flags being adjusted and the useful invocation of
  *         @ref ham_key_get_approximate_match_type() afterwards.
  * @return @ref HAM_INV_PARAMETER if @a db, @a key or @a record is NULL
  * @return @ref HAM_CURSOR_IS_NIL if the Cursor does not point to an item
@@ -2732,58 +2732,58 @@ ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
  * @sa ham_record_t
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
-ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key, 
+ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags);
 
 /**
  * Cursor 'find' flag: return an exact match (default).
  *
- * Note: For backwards compatibility, you can specify zero (0) as an 
+ * Note: For backwards compatibility, you can specify zero (0) as an
  * alternative when this flag is used alone.
  */
 #define HAM_FIND_EXACT_MATCH        0x4000
 
 /**
- * Cursor 'find' flag 'Less Than': return the nearest match below the 
+ * Cursor 'find' flag 'Less Than': return the nearest match below the
  * given key, whether an exact match exists or not.
  */
 #define HAM_FIND_LT_MATCH           0x1000
 
 /**
- * Cursor 'find' flag 'Greater Than': return the nearest match above the 
+ * Cursor 'find' flag 'Greater Than': return the nearest match above the
  * given key, whether an exact match exists or not.
  */
 #define HAM_FIND_GT_MATCH           0x2000
 
 /**
- * Cursor 'find' flag 'Less or EQual': return the nearest match below the 
+ * Cursor 'find' flag 'Less or EQual': return the nearest match below the
  * given key, when an exact match does not exist.
  *
- * May be combined with @ref HAM_FIND_GEQ_MATCH to accept any 'near' key, or 
+ * May be combined with @ref HAM_FIND_GEQ_MATCH to accept any 'near' key, or
  * you can use the @ref HAM_FIND_NEAR_MATCH constant as a shorthand for that.
  */
 #define HAM_FIND_LEQ_MATCH          (HAM_FIND_LT_MATCH | HAM_FIND_EXACT_MATCH)
 
 /**
- * Cursor 'find' flag 'Greater or Equal': return the nearest match above 
+ * Cursor 'find' flag 'Greater or Equal': return the nearest match above
  * the given key, when an exact match does not exist.
  *
- * May be combined with @ref HAM_FIND_LEQ_MATCH to accept any 'near' key, 
+ * May be combined with @ref HAM_FIND_LEQ_MATCH to accept any 'near' key,
  * or you can use the @ref HAM_FIND_NEAR_MATCH constant as a shorthand for that.
  */
 #define HAM_FIND_GEQ_MATCH          (HAM_FIND_GT_MATCH | HAM_FIND_EXACT_MATCH)
 
 /**
- * Cursor 'find' flag 'Any Near Or Equal': return a match directly below or 
+ * Cursor 'find' flag 'Any Near Or Equal': return a match directly below or
  * above the given key, when an exact match does not exist.
  *
- * Be aware that the returned match will either match the key exactly or 
- * is either the first key available above or below the given key when an 
- * exact match could not be found; 'find' does NOT spend any effort, in the 
- * sense of determining which of both is the 'nearest' to the given key, 
- * when both a key above and a key below the one given exist; 'find' will 
- * simply return the first of both found. As such, this flag is the simplest 
- * possible combination of the combined @ref HAM_FIND_LEQ_MATCH and 
+ * Be aware that the returned match will either match the key exactly or
+ * is either the first key available above or below the given key when an
+ * exact match could not be found; 'find' does NOT spend any effort, in the
+ * sense of determining which of both is the 'nearest' to the given key,
+ * when both a key above and a key below the one given exist; 'find' will
+ * simply return the first of both found. As such, this flag is the simplest
+ * possible combination of the combined @ref HAM_FIND_LEQ_MATCH and
  * @ref HAM_FIND_GEQ_MATCH flags.
  */
 #define HAM_FIND_NEAR_MATCH         (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH    \
@@ -2794,40 +2794,40 @@ ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
  *
  * This function inserts a key/record pair as a new Database item.
  * If the key already exists in the Database, error @ref HAM_DUPLICATE_KEY
- * is returned. 
+ * is returned.
  *
- * If you wish to overwrite an existing entry specify the 
+ * If you wish to overwrite an existing entry specify the
  * flag @ref HAM_OVERWRITE. The use of this flag is not allowed in combination
  * with @ref HAM_DUPLICATE.
  *
- * If you wish to insert a duplicate key specify the flag @ref HAM_DUPLICATE. 
- * (Note that the Database has to be created with @ref HAM_ENABLE_DUPLICATES, 
+ * If you wish to insert a duplicate key specify the flag @ref HAM_DUPLICATE.
+ * (Note that the Database has to be created with @ref HAM_ENABLE_DUPLICATES,
  * in order to use duplicate keys.)
- * By default, the duplicate key is inserted after all other duplicate keys 
+ * By default, the duplicate key is inserted after all other duplicate keys
  * (see @ref HAM_DUPLICATE_INSERT_LAST). This behaviour can be overwritten by
  * specifying @ref HAM_DUPLICATE_INSERT_FIRST, @ref HAM_DUPLICATE_INSERT_BEFORE
  * or @ref HAM_DUPLICATE_INSERT_AFTER.
  *
- * You can write only portions of the record by specifying the flag 
+ * You can write only portions of the record by specifying the flag
  * @ref HAM_PARTIAL. In this case, hamsterdb will write <b>partial_size</b>
  * bytes of the record data at offset <b>partial_offset</b>. If necessary, the
  * record data will grow. Gaps will be filled with null-bytes, if the record
- * did not yet exist. Using @ref HAM_PARTIAL is not allowed in combination 
+ * did not yet exist. Using @ref HAM_PARTIAL is not allowed in combination
  * with sorted duplicates (@ref HAM_SORT_DUPLICATES).
  *
  * However, if a sort order is specified (see @ref HAM_SORT_DUPLICATES) then
- * the key is inserted in sorted order. In this case, the use of @ref 
+ * the key is inserted in sorted order. In this case, the use of @ref
  * HAM_DUPLICATE_INSERT_FIRST, @ref HAM_DUPLICATE_INSERT_LAST, @ref
  * HAM_DUPLICATE_INSERT_BEFORE and @ref HAM_DUPLICATE_INSERT_AFTER is
  * not allowed and will return @ref HAM_INV_PARAMETER.
  *
- * Specify the flag @ref HAM_HINT_APPEND if you insert sequential data 
+ * Specify the flag @ref HAM_HINT_APPEND if you insert sequential data
  * and the current @a key is higher than any other key in this Database.
  * In this case hamsterdb will optimize the insert algorithm. hamsterdb will
  * verify that this key is the highest; if not, it will perform a normal
  * insert. This is the default for Record Number Databases.
  *
- * Specify the flag @ref HAM_HINT_PREPEND if you insert sequential data 
+ * Specify the flag @ref HAM_HINT_PREPEND if you insert sequential data
  * and the current @a key is lower than any other key in this Database.
  * In this case hamsterdb will optimize the insert algorithm. hamsterdb will
  * verify that this key is the lowest; if not, it will perform a normal
@@ -2836,11 +2836,11 @@ ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
  * After inserting, the Cursor will point to the new item. If inserting
  * the item failed, the Cursor is not modified.
  *
- * Record Number Databases (created with @ref HAM_RECORD_NUMBER) expect 
+ * Record Number Databases (created with @ref HAM_RECORD_NUMBER) expect
  * either an empty @a key (with a size of 0 and data pointing to NULL),
  * or a user-supplied key (with key.flag @ref HAM_KEY_USER_ALLOC, a size
- * of 8 and a valid data pointer). 
- * If key.size is 0 and key.data is NULL, hamsterdb will temporarily 
+ * of 8 and a valid data pointer).
+ * If key.size is 0 and key.data is NULL, hamsterdb will temporarily
  * allocate memory for key->data, which will then point to an 8-byte
  * unsigned integer in host-endian.
  *
@@ -2853,35 +2853,35 @@ ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
  *        <li>@ref HAM_OVERWRITE. If the @a key already exists, the record is
  *              overwritten. Otherwise, the key is inserted. Not allowed in
  *              combination with @ref HAM_DUPLICATE.
- *        <li>@ref HAM_DUPLICATE. If the @a key already exists, a duplicate 
- *              key is inserted. Same as @ref HAM_DUPLICATE_INSERT_LAST. Not 
+ *        <li>@ref HAM_DUPLICATE. If the @a key already exists, a duplicate
+ *              key is inserted. Same as @ref HAM_DUPLICATE_INSERT_LAST. Not
  *              allowed in combination with @ref HAM_DUPLICATE.
- *        <li>@ref HAM_DUPLICATE_INSERT_BEFORE. If the @a key already exists, 
+ *        <li>@ref HAM_DUPLICATE_INSERT_BEFORE. If the @a key already exists,
  *              a duplicate key is inserted before the duplicate pointed
  *              to by the Cursor. Not allowed if duplicate sorting is enabled.
- *        <li>@ref HAM_DUPLICATE_INSERT_AFTER. If the @a key already exists, 
+ *        <li>@ref HAM_DUPLICATE_INSERT_AFTER. If the @a key already exists,
  *              a duplicate key is inserted after the duplicate pointed
  *              to by the Cursor. Not allowed if duplicate sorting is enabled.
- *        <li>@ref HAM_DUPLICATE_INSERT_FIRST. If the @a key already exists, 
- *              a duplicate key is inserted as the first duplicate of 
+ *        <li>@ref HAM_DUPLICATE_INSERT_FIRST. If the @a key already exists,
+ *              a duplicate key is inserted as the first duplicate of
  *              the current key. Not allowed if duplicate sorting is enabled.
- *        <li>@ref HAM_DUPLICATE_INSERT_LAST. If the @a key already exists, 
- *              a duplicate key is inserted as the last duplicate of 
+ *        <li>@ref HAM_DUPLICATE_INSERT_LAST. If the @a key already exists,
+ *              a duplicate key is inserted as the last duplicate of
  *              the current key. Not allowed if duplicate sorting is enabled.
- *        <li>@ref HAM_HINT_APPEND. Hints the hamsterdb engine that the 
- *              current key will compare as @e larger than any key already 
- *              existing in the Database. The hamsterdb engine will verify 
- *              this postulation and when found not to be true, will revert 
- *              to a regular insert operation as if this flag was not 
- *              specified. The incurred cost then is only one additional key 
+ *        <li>@ref HAM_HINT_APPEND. Hints the hamsterdb engine that the
+ *              current key will compare as @e larger than any key already
+ *              existing in the Database. The hamsterdb engine will verify
+ *              this postulation and when found not to be true, will revert
+ *              to a regular insert operation as if this flag was not
+ *              specified. The incurred cost then is only one additional key
  *              comparison. Mutually exclusive with flag @ref HAM_HINT_PREPEND.
  *              This is the default for Record Number Databases.
- *        <li>@ref HAM_HINT_PREPEND. Hints the hamsterdb engine that the 
- *              current key will compare as @e lower than any key already 
- *              existing in the Database. The hamsterdb engine will verify 
- *              this postulation and when found not to be true, will revert 
- *              to a regular insert operation as if this flag was not 
- *              specified. The incurred cost then is only one additional key 
+ *        <li>@ref HAM_HINT_PREPEND. Hints the hamsterdb engine that the
+ *              current key will compare as @e lower than any key already
+ *              existing in the Database. The hamsterdb engine will verify
+ *              this postulation and when found not to be true, will revert
+ *              to a regular insert operation as if this flag was not
+ *              specified. The incurred cost then is only one additional key
  *              comparison. Mutually exclusive with flag @ref HAM_HINT_APPEND.
  *      </ul>
  *
@@ -2896,7 +2896,7 @@ ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
  *              was specified
  * @return @ref HAM_INV_PARAMETER if the flags @ref HAM_OVERWRITE <b>and</b>
  *              @ref HAM_DUPLICATE were specified, or if @ref HAM_DUPLICATE
- *              was specified, but the Database was not created with 
+ *              was specified, but the Database was not created with
  *              flag @ref HAM_ENABLE_DUPLICATES.
  * @return @ref HAM_DB_READ_ONLY if you tried to insert a key to a read-only
  *              Database.
@@ -2953,7 +2953,7 @@ ham_cursor_erase(ham_cursor_t *cursor, ham_u32_t flags);
  * @return @ref HAM_INV_PARAMETER if @a cursor or @a count is NULL
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
-ham_cursor_get_duplicate_count(ham_cursor_t *cursor, 
+ham_cursor_get_duplicate_count(ham_cursor_t *cursor,
         ham_size_t *count, ham_u32_t flags);
 
 /**

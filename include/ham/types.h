@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -21,7 +21,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /*
  * Check the operating system and word size
@@ -32,17 +32,15 @@ extern "C" {
 #   define HAM_OS_WINCE 1
 #endif
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
 #   undef  HAM_OS_WIN32
 #   define HAM_OS_WIN32 1
-#   ifdef WIN64
+#   if defined(WIN64) || defined(_M_IA64) || defined(_M_X64) || defined(_WIN64)
 #       undef  HAM_64BIT
 #       define HAM_64BIT 1
-#   elif WIN32
+#   elif defined(WIN32) || defined(_WIN32)
 #       undef  HAM_32BIT
 #       define HAM_32BIT 1
-#   else
-#       error "Neither WIN32 nor WIN64 defined!"
 #   endif
 #else /* posix? */
 #   undef  HAM_OS_POSIX
@@ -61,7 +59,7 @@ extern "C" {
 #endif
 
 /*
- * windows.h is needed for for HANDLE
+ * windows.h is needed for HANDLE
  */
 #if defined(HAM_OS_WIN32)
 #   define WIN32_MEAN_AND_LEAN
@@ -73,7 +71,7 @@ extern "C" {
  * compiler and debug builds!)
  *
  * make sure crtdbg.h is loaded before malloc.h!
- */ 
+ */
 #if defined(_MSC_VER) && defined(HAM_OS_WIN32)
 #   if (defined(WIN32) || defined(__WIN32)) && !defined(UNDER_CE)
 #      if defined(DEBUG) || defined(_DEBUG)
@@ -82,7 +80,7 @@ extern "C" {
 #         endif
 #      endif
 #      include <crtdbg.h>
-#      include <malloc.h> 
+#      include <malloc.h>
 #   endif
 #endif
 
@@ -123,8 +121,8 @@ typedef signed char        ham_s8_t;
 typedef unsigned char      ham_u8_t;
 #endif
 
-/** 
- * typedefs for 64bit operating systems; on Win64, 
+/**
+ * typedefs for 64bit operating systems; on Win64,
  * longs do not always have 64bit!
  */
 #ifdef HAM_64BIT
@@ -141,7 +139,7 @@ typedef signed short       ham_s16_t;
 typedef unsigned short     ham_u16_t;
 typedef signed char        ham_s8_t;
 typedef unsigned char      ham_u8_t;
-#endif 
+#endif
 
 /*
  * Undefine macros to avoid macro redefinitions
@@ -150,25 +148,25 @@ typedef unsigned char      ham_u8_t;
 #undef HAM_FALSE
 #undef HAM_TRUE
 
-/* 
- * typedefs for posix
+/*
+ * typedefs for POSIX
  */
 #ifdef HAM_OS_POSIX
 typedef int                ham_fd_t;
 #   define HAM_INVALID_FD  (-1)
-#endif 
+#endif
 
-/* 
+/*
  * typedefs for Windows 32- and 64-bit
  */
 #ifdef HAM_OS_WIN32
 #   ifdef CYGWIN
-typedef int                ham_fd_t; 
+typedef int                ham_fd_t;
 #   else
-typedef HANDLE             ham_fd_t; 
+typedef HANDLE             ham_fd_t;
 #   endif
 #   define HAM_INVALID_FD  (0)
-#endif 
+#endif
 
 /**
  * a boolean type
@@ -207,6 +205,6 @@ typedef ham_u32_t          ham_size_t;
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_TYPES_H__ */
