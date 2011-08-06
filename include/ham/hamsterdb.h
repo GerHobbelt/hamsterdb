@@ -160,23 +160,23 @@ typedef struct ham_cursor_t ham_cursor_t;
  */
 typedef struct
 {
-    /** The size of the record data, in bytes */
-    ham_size_t size;
-
     /** Pointer to the record data */
     void *data;
 
+    /** The size of the record data, in bytes */
+    ham_size_t size;
+
     /** The record flags; see @ref HAM_RECORD_USER_ALLOC */
     ham_u32_t flags;
+
+    /** For internal use */
+    ham_u32_t _intflags;
 
     /** Offset for partial reading/writing; see @ref HAM_PARTIAL */
     ham_u32_t partial_offset;
 
     /** Size for partial reading/writing; see @ref HAM_PARTIAL */
     ham_size_t partial_size;
-
-    /** For internal use */
-    ham_u32_t _intflags;
 
     /** For internal use */
     ham_u64_t _rid;
@@ -210,11 +210,11 @@ typedef struct
  */
 typedef struct
 {
-    /** The size of the key, in bytes */
-    ham_u16_t size;
-
     /** The data of the key */
     void *data;
+
+    /** The size of the key, in bytes */
+    ham_u16_t size;
 
     /** The key flags; see @ref HAM_KEY_USER_ALLOC */
     ham_u32_t flags;
@@ -308,6 +308,12 @@ typedef struct {
  */
 
 
+
+
+
+
+
+
 /**
  * @defgroup ham_status_codes hamsterdb Status Codes
  * @{
@@ -368,23 +374,28 @@ typedef struct {
 /** Record filter or file filter not found */
 #define HAM_FILTER_NOT_FOUND         (-30)
 /** Cursor does not point to a valid item */
-#define HAM_CURSOR_IS_NIL           (-100)
+#define HAM_CURSOR_IS_NIL            (-100)
 /** Database not found */
-#define HAM_DATABASE_NOT_FOUND      (-200)
+#define HAM_DATABASE_NOT_FOUND       (-200)
 /** Database name already exists */
-#define HAM_DATABASE_ALREADY_EXISTS (-201)
+#define HAM_DATABASE_ALREADY_EXISTS  (-201)
 /** Database already open, or: Database handle is already initialized */
-#define HAM_DATABASE_ALREADY_OPEN   (-202)
+#define HAM_DATABASE_ALREADY_OPEN    (-202)
 /** Environment already open, or: Environment handle is already initialized */
-#define HAM_ENVIRONMENT_ALREADY_OPEN   (-203)
+#define HAM_ENVIRONMENT_ALREADY_OPEN (-203)
 /** Invalid log file header */
-#define HAM_LOG_INV_FILE_HEADER     (-300)
+#define HAM_LOG_INV_FILE_HEADER      (-300)
 /** Remote I/O error/Network error */
-#define HAM_NETWORK_ERROR           (-400)
+#define HAM_NETWORK_ERROR            (-400)
 
 /**
  * @}
  */
+
+
+
+
+
 
 
 /**
@@ -473,6 +484,12 @@ ham_get_license(const char **licensee, const char **product);
 /**
  * @}
  */
+
+
+
+
+
+
 
 
 /**
@@ -950,24 +967,6 @@ HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_env_erase_db(ham_env_t *env, ham_u16_t name, ham_u32_t flags);
 
 /**
- * Flushes the Environment
- *
- * This function flushes the Environment caches and writes the whole file
- * to disk. All Databases of this Environment are flushed as well.
- *
- * Since In-Memory Databases do not have a file on disk, the
- * function will have no effect and will return @ref HAM_SUCCESS.
- *
- * @param env A valid Environment handle
- * @param flags Optional flags for flushing; unused, set to 0
- *
- * @return @ref HAM_SUCCESS upon success
- * @return @ref HAM_INV_PARAMETER if @a db is NULL
- */
-HAM_EXPORT ham_status_t HAM_CALLCONV
-ham_env_flush(ham_env_t *env, ham_u32_t flags);
-
-/**
  * Enables AES encryption
  *
  * This function enables AES encryption for every Database in the Environment.
@@ -1072,6 +1071,12 @@ ham_env_close(ham_env_t *env, ham_u32_t flags);
 /**
  * @}
  */
+
+
+
+
+
+
 
 
 /**
@@ -1191,6 +1196,14 @@ ham_txn_abort(ham_txn_t *txn, ham_u32_t flags);
 /**
  * @}
  */
+
+
+
+
+
+
+
+
 
 
 /**
@@ -1480,12 +1493,14 @@ ham_open_ex(ham_db_t *db, const char *filename,
 
 /** Flag for @ref ham_open, @ref ham_open_ex, @ref ham_create,
  * @ref ham_create_ex.
+ *
  * This flag is non persistent. */
 #define HAM_WRITE_THROUGH            0x00000001
 
 /* unused                            0x00000002 */
 
 /** Flag for @ref ham_open, @ref ham_open_ex.
+ *
  * This flag is non persistent. */
 #define HAM_READ_ONLY                0x00000004
 
@@ -1561,6 +1576,167 @@ ham_open_ex(ham_db_t *db, const char *filename,
 #define HAM_SORT_DUPLICATES          0x00100000
 
 /* reserved: DB_IS_REMOTE     (not persistent)       0x00200000 */
+/** Parameter name for @ref ham_open_ex, @ref ham_create_ex; sets the cache
+ * size */
+#define HAM_PARAM_CACHESIZE          0x00000100
+
+/** Parameter name for @ref ham_env_create_ex, @ref ham_create_ex; sets the
+ * page size */
+#define HAM_PARAM_PAGESIZE           0x00000101
+
+/** Parameter name for @ref ham_create_ex; sets the key size */
+#define HAM_PARAM_KEYSIZE            0x00000102
+
+/** Parameter name for @ref ham_env_create_ex; sets the number of maximum
+ * Databases */
+#define HAM_PARAM_MAX_ENV_DATABASES  0x00000103
+
+/** Parameter name for @ref ham_create_ex, @ref ham_open_ex; set the
+ * expected access mode.
+ */
+#define HAM_PARAM_DATA_ACCESS_MODE   0x00000104
+
+/**
+ * Retrieve the Database/Environment flags as were specified at the time of
+ * @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open
+ * invocation.
+ */
+#define HAM_PARAM_GET_FLAGS                0x00000200
+
+/**
+ * Retrieve the filesystem file access mode as was specified at the time
+ * of @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open
+ * invocation.
+ */
+#define HAM_PARAM_GET_FILEMODE            0x00000201
+
+/**
+ * Return a <code>const char *</code> pointer to the current
+ * Environment/Database file name in the @ref ham_offset_t value
+ * member, when the Database is actually stored on disc.
+ *
+ * In-memory Databases will return a NULL (0) pointer instead.
+ */
+#define HAM_PARAM_GET_FILENAME            0x00000202
+
+/**
+ * Retrieve the Database 'name' number of this @ref ham_db_t Database within
+ * the current @ref ham_env_t Environment.
+ *
+ * When the Database is not related to an Environment, the reserved 'name'
+ * 0xf001 is used for this Database.
+*/
+#define HAM_PARAM_GET_DATABASE_NAME       0x00000203
+#define HAM_PARAM_DBNAME                  HAM_PARAM_GET_DATABASE_NAME
+
+/**
+ * Retrieve the maximum number of keys per page; this number depends on the
+ * currently active page and key sizes.
+ *
+ * When no Database or Environment is specified with the request, the default
+ * settings for all of these will be assumed in order to produce a viable
+ * ball park value for this one.
+ */
+#define HAM_PARAM_GET_KEYS_PER_PAGE        0x00000204
+
+/**
+ * Retrieve the Data Access mode for the Database
+ */
+#define HAM_PARAM_GET_DATA_ACCESS_MODE     0x00000205
+#define HAM_PARAM_GET_DAM                  HAM_PARAM_GET_DATA_ACCESS_MODE
+
+
+/**
+ * Retrieve the current value for a given Database setting
+ *
+ * Only those values requested by the parameter array will be stored.
+ *
+ * The following parameters are supported:
+ *      <ul>
+ *        <li>HAM_PARAM_CACHESIZE</li> returns the cache size
+ *        <li>HAM_PARAM_PAGESIZE</li> returns the page size
+ *        <li>HAM_PARAM_KEYSIZE</li> returns the key size
+ *        <li>HAM_PARAM_MAX_ENV_DATABASES</li> returns the max. number of
+ *              Databases of this Database's Environment
+ *        <li>HAM_PARAM_GET_FLAGS</li> returns the flags which were used to
+ *              open or create this Database
+ *        <li>HAM_PARAM_GET_FILEMODE</li> returns the @a mode parameter which
+ *              was specified when creating this Database
+ *        <li>HAM_PARAM_GET_FILENAME</li> returns the filename (the @a value
+ *              of this parameter is a const char * pointer casted to a
+ *              ham_u64_t variable)
+ *        <li>HAM_PARAM_GET_DATABASE_NAME</li> returns the Database name
+ *        <li>HAM_PARAM_GET_KEYS_PER_PAGE</li> returns the maximum number
+ *              of keys per page
+ *        <li>HAM_PARAM_GET_DATA_ACCESS_MODE</li> returns the Data Access Mode
+ *      </ul>
+ *
+ * @param db A valid Database handle
+ * @param param An array of ham_parameter_t structures
+ *
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_INV_PARAMETER if the @a db pointer is NULL or
+ *              @a param is NULL
+ */
+HAM_EXPORT ham_status_t HAM_CALLCONV
+ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
+
+/**
+ * Retrieve the flags which were specified when the Database was created
+ * or opened
+ *
+ * @param db A valid Database handle
+ *
+ * @return The Database flags
+ *
+ * @deprecated This function was replaced by @ref ham_get_parameters
+ * and @ref ham_env_get_parameters
+ */
+HAM_EXPORT ham_u32_t HAM_CALLCONV
+ham_get_flags(ham_db_t *db);
+
+/**
+ * Retrieve the Environment handle of a Database
+ *
+ * Every Database belongs to an Environment, even if it was created with
+ * ham_create[_ex] or ham_open[_ex].
+ *
+ * Therefore this function always returns a valid handle, if the Database
+ * handle was also valid and initialized (otherwise it returns NULL).
+ *
+ * @param db A valid Database handle
+ *
+ * @return The Environment handle
+ */
+HAM_EXPORT ham_env_t *HAM_CALLCONV
+ham_get_env(ham_db_t *db);
+
+/**
+ * Returns the kind of key match which produced this key as it was
+ * returned by one of the @ref ham_find(), @ref ham_cursor_find() or
+ * @ref ham_cursor_find_ex() functions
+ *
+ * This routine assumes the key was passed back by one of the @ref ham_find,
+ * @ref ham_cursor_find or @ref ham_cursor_find_ex functions and not used
+ * by any other hamsterdb functions after that.
+ *
+ * As such, this function produces an answer akin to the 'sign' of the
+ * specified key as it was returned by the find operation.
+ *
+ * @param key A valid key
+ *
+ * @return 1 (greater than) or -1 (less than) when the given key is an
+ *      approximate result / zero (0) otherwise. Specifically:
+ *      <ul>
+ *        <li>+1 when the key is greater than the item searched for (key
+ *              was a GT match)
+ *        <li>-1 when the key is less than the item searched for (key was
+ *              a LT match)
+ *        <li>zero (0) otherwise (key was an EQ (EXACT) match)
+ *      </ul>
+ */
+HAM_EXPORT int HAM_CALLCONV
+ham_key_get_approximate_match_type(ham_key_t *key);
 
 /**
  * Returns the last error code
@@ -1952,6 +2128,61 @@ ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  * @ref ham_cursor_find_ex, @ref ham_cursor_move */
 #define HAM_PARTIAL                     0x0080
 
+
+/**
+ * Cursor 'find' flag: return an exact match (default).
+ *
+ * Note: For backwards compatibility, you can specify zero (0) as an
+ * alternative when this flag is used alone.
+ */
+#define HAM_FIND_EXACT_MATCH        0x4000
+
+/**
+ * Cursor 'find' flag 'Less Than': return the nearest match below the
+ * given key, whether an exact match exists or not.
+ */
+#define HAM_FIND_LT_MATCH           0x1000
+
+/**
+ * Cursor 'find' flag 'Greater Than': return the nearest match above the
+ * given key, whether an exact match exists or not.
+ */
+#define HAM_FIND_GT_MATCH           0x2000
+
+/**
+ * Cursor 'find' flag 'Less or EQual': return the nearest match below the
+ * given key, when an exact match does not exist.
+ *
+ * May be combined with @ref HAM_FIND_GEQ_MATCH to accept any 'near' key, or
+ * you can use the @ref HAM_FIND_NEAR_MATCH constant as a shorthand for that.
+ */
+#define HAM_FIND_LEQ_MATCH          (HAM_FIND_LT_MATCH | HAM_FIND_EXACT_MATCH)
+
+/**
+ * Cursor 'find' flag 'Greater or Equal': return the nearest match above
+ * the given key, when an exact match does not exist.
+ *
+ * May be combined with @ref HAM_FIND_LEQ_MATCH to accept any 'near' key,
+ * or you can use the @ref HAM_FIND_NEAR_MATCH constant as a shorthand for that.
+ */
+#define HAM_FIND_GEQ_MATCH          (HAM_FIND_GT_MATCH | HAM_FIND_EXACT_MATCH)
+
+/**
+ * Cursor 'find' flag 'Any Near Or Equal': return a match directly below or
+ * above the given key, when an exact match does not exist.
+ *
+ * Be aware that the returned match will either match the key exactly or
+ * is either the first key available above or below the given key when an
+ * exact match could not be found; 'find' does NOT spend any effort, in the
+ * sense of determining which of both is the 'nearest' to the given key,
+ * when both a key above and a key below the one given exist; 'find' will
+ * simply return the first of both found. As such, this flag is the simplest
+ * possible combination of the combined @ref HAM_FIND_LEQ_MATCH and
+ * @ref HAM_FIND_GEQ_MATCH flags.
+ */
+#define HAM_FIND_NEAR_MATCH         (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH    \
+                                        | HAM_FIND_EXACT_MATCH)
+
 /**
  * Flag for @ref ham_cursor_insert
  *
@@ -2011,6 +2242,24 @@ HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_erase(ham_db_t *db, ham_txn_t *txn, ham_key_t *key, ham_u32_t flags);
 
 /**
+ * Flushes the Environment
+ *
+ * This function flushes the Environment caches and writes the whole file
+ * to disk. All Databases of this Environment are flushed as well.
+ *
+ * Since In-Memory Databases do not have a file on disk, the
+ * function will have no effect and will return @ref HAM_SUCCESS.
+ *
+ * @param env A valid Environment handle
+ * @param flags Optional flags for flushing; unused, set to 0
+ *
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_INV_PARAMETER if @a db is NULL
+ */
+HAM_EXPORT ham_status_t HAM_CALLCONV
+ham_env_flush(ham_env_t *env, ham_u32_t flags);
+
+/**
  * Flushes the Database
  *
  * This function is deprecated. Use @ref ham_env_flush instead.
@@ -2059,167 +2308,6 @@ ham_get_key_count(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
  * Flag for @ref ham_get_key_count
  */
 #define HAM_FAST_ESTIMATE           0x0001
-
-/**
- * Retrieve the current value for a given Database setting
- *
- * Only those values requested by the parameter array will be stored.
- *
- * The following parameters are supported:
- *      <ul>
- *        <li>HAM_PARAM_CACHESIZE</li> returns the cache size
- *        <li>HAM_PARAM_PAGESIZE</li> returns the page size
- *        <li>HAM_PARAM_KEYSIZE</li> returns the key size
- *        <li>HAM_PARAM_MAX_ENV_DATABASES</li> returns the max. number of
- *              Databases of this Database's Environment
- *        <li>HAM_PARAM_GET_FLAGS</li> returns the flags which were used to
- *              open or create this Database
- *        <li>HAM_PARAM_GET_FILEMODE</li> returns the @a mode parameter which
- *              was specified when creating this Database
- *        <li>HAM_PARAM_GET_FILENAME</li> returns the filename (the @a value
- *              of this parameter is a const char * pointer casted to a
- *              ham_u64_t variable)
- *        <li>HAM_PARAM_GET_DATABASE_NAME</li> returns the Database name
- *        <li>HAM_PARAM_GET_KEYS_PER_PAGE</li> returns the maximum number
- *              of keys per page
- *        <li>HAM_PARAM_GET_DATA_ACCESS_MODE</li> returns the Data Access Mode
- *      </ul>
- *
- * @param db A valid Database handle
- * @param param An array of ham_parameter_t structures
- *
- * @return @ref HAM_SUCCESS upon success
- * @return @ref HAM_INV_PARAMETER if the @a db pointer is NULL or
- *              @a param is NULL
- */
-HAM_EXPORT ham_status_t HAM_CALLCONV
-ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
-
-/** Parameter name for @ref ham_open_ex, @ref ham_create_ex; sets the cache
- * size */
-#define HAM_PARAM_CACHESIZE          0x00000100
-
-/** Parameter name for @ref ham_env_create_ex, @ref ham_create_ex; sets the
- * page size */
-#define HAM_PARAM_PAGESIZE           0x00000101
-
-/** Parameter name for @ref ham_create_ex; sets the key size */
-#define HAM_PARAM_KEYSIZE            0x00000102
-
-/** Parameter name for @ref ham_env_create_ex; sets the number of maximum
- * Databases */
-#define HAM_PARAM_MAX_ENV_DATABASES  0x00000103
-
-/** Parameter name for @ref ham_create_ex, @ref ham_open_ex; set the
- * expected access mode.
- */
-#define HAM_PARAM_DATA_ACCESS_MODE   0x00000104
-
-/**
- * Retrieve the Database/Environment flags as were specified at the time of
- * @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open
- * invocation.
- */
-#define HAM_PARAM_GET_FLAGS                0x00000200
-
-/**
- * Retrieve the filesystem file access mode as was specified at the time
- * of @ref ham_create/@ref ham_env_create/@ref ham_open/@ref ham_env_open
- * invocation.
- */
-#define HAM_PARAM_GET_FILEMODE            0x00000201
-
-/**
- * Return a <code>const char *</code> pointer to the current
- * Environment/Database file name in the @ref ham_offset_t value
- * member, when the Database is actually stored on disc.
- *
- * In-memory Databases will return a NULL (0) pointer instead.
- */
-#define HAM_PARAM_GET_FILENAME            0x00000202
-
-/**
- * Retrieve the Database 'name' number of this @ref ham_db_t Database within
- * the current @ref ham_env_t Environment.
- *
- * When the Database is not related to an Environment, the reserved 'name'
- * 0xf001 is used for this Database.
-*/
-#define HAM_PARAM_GET_DATABASE_NAME       0x00000203
-#define HAM_PARAM_DBNAME                  HAM_PARAM_GET_DATABASE_NAME
-
-/**
- * Retrieve the maximum number of keys per page; this number depends on the
- * currently active page and key sizes.
- *
- * When no Database or Environment is specified with the request, the default
- * settings for all of these will be assumed in order to produce a viable
- * ball park value for this one.
- */
-#define HAM_PARAM_GET_KEYS_PER_PAGE        0x00000204
-
-/**
- * Retrieve the Data Access mode for the Database
- */
-#define HAM_PARAM_GET_DATA_ACCESS_MODE     0x00000205
-#define HAM_PARAM_GET_DAM                  HAM_PARAM_GET_DATA_ACCESS_MODE
-
-/**
- * Retrieve the flags which were specified when the Database was created
- * or opened
- *
- * @param db A valid Database handle
- *
- * @return The Database flags
- *
- * @deprecated This function was replaced by @ref ham_get_parameters
- * and @ref ham_env_get_parameters
- */
-HAM_EXPORT ham_u32_t HAM_CALLCONV
-ham_get_flags(ham_db_t *db);
-
-/**
- * Retrieve the Environment handle of a Database
- *
- * Every Database belongs to an Environment, even if it was created with
- * ham_create[_ex] or ham_open[_ex].
- *
- * Therefore this function always returns a valid handle, if the Database
- * handle was also valid and initialized (otherwise it returns NULL).
- *
- * @param db A valid Database handle
- *
- * @return The Environment handle
- */
-HAM_EXPORT ham_env_t *HAM_CALLCONV
-ham_get_env(ham_db_t *db);
-
-/**
- * Returns the kind of key match which produced this key as it was
- * returned by one of the @ref ham_find(), @ref ham_cursor_find() or
- * @ref ham_cursor_find_ex() functions
- *
- * This routine assumes the key was passed back by one of the @ref ham_find,
- * @ref ham_cursor_find or @ref ham_cursor_find_ex functions and not used
- * by any other hamsterdb functions after that.
- *
- * As such, this function produces an answer akin to the 'sign' of the
- * specified key as it was returned by the find operation.
- *
- * @param key A valid key
- *
- * @return 1 (greater than) or -1 (less than) when the given key is an
- *      approximate result / zero (0) otherwise. Specifically:
- *      <ul>
- *        <li>+1 when the key is greater than the item searched for (key
- *              was a GT match)
- *        <li>-1 when the key is less than the item searched for (key was
- *              a LT match)
- *        <li>zero (0) otherwise (key was an EQ (EXACT) match)
- *      </ul>
- */
-HAM_EXPORT int HAM_CALLCONV
-ham_key_get_approximate_match_type(ham_key_t *key);
 
 /**
  * Closes the Database
@@ -2276,6 +2364,15 @@ ham_close(ham_db_t *db, ham_u32_t flags);
 /**
  * @}
  */
+
+
+
+
+
+
+
+
+
 
 /**
  * @defgroup ham_cursor hamsterdb Cursor Functions
@@ -2734,60 +2831,6 @@ ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags);
-
-/**
- * Cursor 'find' flag: return an exact match (default).
- *
- * Note: For backwards compatibility, you can specify zero (0) as an
- * alternative when this flag is used alone.
- */
-#define HAM_FIND_EXACT_MATCH        0x4000
-
-/**
- * Cursor 'find' flag 'Less Than': return the nearest match below the
- * given key, whether an exact match exists or not.
- */
-#define HAM_FIND_LT_MATCH           0x1000
-
-/**
- * Cursor 'find' flag 'Greater Than': return the nearest match above the
- * given key, whether an exact match exists or not.
- */
-#define HAM_FIND_GT_MATCH           0x2000
-
-/**
- * Cursor 'find' flag 'Less or EQual': return the nearest match below the
- * given key, when an exact match does not exist.
- *
- * May be combined with @ref HAM_FIND_GEQ_MATCH to accept any 'near' key, or
- * you can use the @ref HAM_FIND_NEAR_MATCH constant as a shorthand for that.
- */
-#define HAM_FIND_LEQ_MATCH          (HAM_FIND_LT_MATCH | HAM_FIND_EXACT_MATCH)
-
-/**
- * Cursor 'find' flag 'Greater or Equal': return the nearest match above
- * the given key, when an exact match does not exist.
- *
- * May be combined with @ref HAM_FIND_LEQ_MATCH to accept any 'near' key,
- * or you can use the @ref HAM_FIND_NEAR_MATCH constant as a shorthand for that.
- */
-#define HAM_FIND_GEQ_MATCH          (HAM_FIND_GT_MATCH | HAM_FIND_EXACT_MATCH)
-
-/**
- * Cursor 'find' flag 'Any Near Or Equal': return a match directly below or
- * above the given key, when an exact match does not exist.
- *
- * Be aware that the returned match will either match the key exactly or
- * is either the first key available above or below the given key when an
- * exact match could not be found; 'find' does NOT spend any effort, in the
- * sense of determining which of both is the 'nearest' to the given key,
- * when both a key above and a key below the one given exist; 'find' will
- * simply return the first of both found. As such, this flag is the simplest
- * possible combination of the combined @ref HAM_FIND_LEQ_MATCH and
- * @ref HAM_FIND_GEQ_MATCH flags.
- */
-#define HAM_FIND_NEAR_MATCH         (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH    \
-                                        | HAM_FIND_EXACT_MATCH)
 
 /**
  * Inserts a Database item and points the Cursor to the inserted item

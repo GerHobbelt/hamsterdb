@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -22,14 +22,14 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /*
  * function prototypes
  */
 extern void dbg_lock(void);
 extern void dbg_unlock(void);
-extern void dbg_prepare(int level, const char *file, int line, 
+extern void dbg_prepare(int level, const char *file, int line,
         const char *function, const char *expr);
 extern void dbg_log(const char *format, ...);
 extern void dbg_verify_failed(const char *format, ...);
@@ -44,13 +44,13 @@ extern void (*ham_test_abort)(void);
  *    #define __FUNCTION__ 0
  */
 
-/** 
- * in debug mode we write trace()-messages to stderr, and assert() 
+/**
+ * in debug mode we write trace()-messages to stderr, and assert()
  * is enabled.
  *
  * not every preprocessor supports ellipsis as macro-arguments -
  * therefore we have to use brackets, so preprocessors treat multiple
- * arguments like a single argument. and we need to lock the output, 
+ * arguments like a single argument. and we need to lock the output,
  * otherwise we are not thread-safe. this is super-ugly.
  */
 #ifdef HAM_DEBUG
@@ -62,7 +62,7 @@ extern void (*ham_test_abort)(void);
                                 dbg_unlock();                                  \
                              }
 #else /* !HAM_DEBUG */
-#   define ham_assert(e, f)  (void)0 
+#   define ham_assert(e, f)  (void)0
 #endif /* HAM_DEBUG */
 
 /**
@@ -91,6 +91,6 @@ extern void (*ham_test_abort)(void);
                              }
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_ERROR_H__ */

@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -28,7 +28,7 @@ get_descriptor(const void *p)
     return ((memdesc_t *)((char *)p-OFFSETOF(memdesc_t, data)));
 }
 
-static void 
+static void
 verify_mem_desc(memdesc_t *desc)
 {
     unsigned int magic=MAGIC_STOP;
@@ -67,7 +67,7 @@ alloc_impl(mem_allocator_t *self, const char *file, int line, ham_u32_t size)
     return (desc->data);
 }
 
-void 
+void
 free_impl(mem_allocator_t *self, const char *file, int line, const void *ptr)
 {
     memtracker_t *mt=(memtracker_t *)self;
@@ -96,7 +96,7 @@ free_impl(mem_allocator_t *self, const char *file, int line, const void *ptr)
 }
 
 void *
-realloc_impl(mem_allocator_t *self, const char *file, int line, 
+realloc_impl(mem_allocator_t *self, const char *file, int line,
         const void *ptr, ham_size_t size)
 {
     void *newptr=allocator_alloc(self, size);
@@ -117,7 +117,7 @@ realloc_impl(mem_allocator_t *self, const char *file, int line,
     return (newptr);
 }
 
-void 
+void
 close_impl(mem_allocator_t *self)
 {
     memtracker_t *mt=(memtracker_t *)self;

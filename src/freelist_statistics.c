@@ -3,11 +3,10 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -26,7 +25,7 @@
 #include "mem.h"
 #include "util.h"
 
- 
+
 
 
 
@@ -115,14 +114,14 @@
 
 /** scale @a val down by a factor of 256.
 
-Make sure non-zero numbers remain non-zero: roundup(x) 
+Make sure non-zero numbers remain non-zero: roundup(x)
 */
 #define rescale_256(val)                            \
     val = ((val + 256 - 1) >> 8)
 
 /** scale @a val down by a factor of 2.
 
-Make sure non-zero numbers remain non-zero: roundup(x) 
+Make sure non-zero numbers remain non-zero: roundup(x)
 */
 #define rescale_2(val)                            \
     val = ((val + 2 - 1) >> 1)
@@ -138,7 +137,7 @@ Make sure non-zero numbers remain non-zero: roundup(x)
  */
 static __inline ham_u16_t ham_log2(ham_u64_t v)
 {
-    
+
     // which would be faster? Duff style unrolled loop or (CPU cached) loop?
 #if 0
 
@@ -188,7 +187,7 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
         HAM_LOG2_16_STAGES(value, power);
 #endif
     } while (value);
-    
+
     return power;
 
 #else /* if 0 */
@@ -227,7 +226,7 @@ static __inline ham_u16_t ham_log16(ham_size_t v)
 {
     register ham_size_t value = v;
     register ham_u16_t power = !!value;
-    
+
     if (value)
     {
         do
@@ -235,7 +234,7 @@ static __inline ham_u16_t ham_log16(ham_size_t v)
             power++;
         } while (value >>= 4);
     }
-    
+
     return power;
 }
 
@@ -325,7 +324,7 @@ rescale_freelist_page_stats(freelist_cache_t *cache, freelist_entry_t *entry)
 
 void
 db_update_freelist_stats_fail(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
-                    freelist_payload_t *f, 
+                    freelist_payload_t *f,
                     freelist_hints_t *hints)
 {
 	/*
@@ -441,8 +440,8 @@ db_update_freelist_stats_fail(ham_device_t *dev, ham_env_t *env, freelist_entry_
 
 void
 db_update_freelist_stats(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
-                    freelist_payload_t *f, 
-                    ham_u32_t position, 
+                    freelist_payload_t *f,
+                    ham_u32_t position,
                     freelist_hints_t *hints)
 {
 	/*
@@ -510,7 +509,7 @@ db_update_freelist_stats(ham_device_t *dev, ham_env_t *env, freelist_entry_t *en
 		 * offset by size_bits, skipping the current space.
 		 */
 		position += hints->size_bits;
-	    
+
 		for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++)
 		{
 			if (entrystats->per_size[b].first_start < position)
@@ -539,7 +538,7 @@ db_update_freelist_stats(ham_device_t *dev, ham_env_t *env, freelist_entry_t *en
 			}
 			else
 			{
-				/* extra HACKY safety margin */ 
+				/* extra HACKY safety margin */
 				entrystats->persisted_bits = position - hints->size_bits + entry->_allocated_bits;
 			}
 		}
@@ -558,11 +557,11 @@ db_update_freelist_stats(ham_device_t *dev, ham_env_t *env, freelist_entry_t *en
  */
 
 void
-db_update_freelist_stats_edit(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry, 
-                    freelist_payload_t *f, 
-                    ham_u32_t position, 
-                    ham_size_t size_bits, 
-                    ham_bool_t free_these, 
+db_update_freelist_stats_edit(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
+                    freelist_payload_t *f,
+                    ham_u32_t position,
+                    ham_size_t size_bits,
+                    ham_bool_t free_these,
                     freelist_hints_t *hints)
 {
 	/*
@@ -824,8 +823,8 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
         static int c = 0;
         c++;
         if (c % 100000 == 999) {
-            /* 
-             * what is our ratio fail vs. search? 
+            /*
+             * what is our ratio fail vs. search?
              *
              * Since we know search >= fail, we'll calculate the
              * reciprocal in integer arithmetic, as that one will be >= 1.0
@@ -835,7 +834,7 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
                 fail_reciprocal_ratio *= 1000;
                 fail_reciprocal_ratio /= globalstats->fail_count;
 
-                ham_trace(("GLOBAL FAIL/SEARCH ratio: %f", 
+                ham_trace(("GLOBAL FAIL/SEARCH ratio: %f",
                             1000.0/fail_reciprocal_ratio));
             }
             /*
@@ -846,7 +845,7 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
                 cost_per_scan *= 1000;
                 cost_per_scan /= globalstats->scan_count[bucket];
 
-                ham_trace(("GLOBAL COST/SCAN ratio: %f", 
+                ham_trace(("GLOBAL COST/SCAN ratio: %f",
                             cost_per_scan/1000.0));
             }
             if (globalstats->ok_scan_count[bucket]) {
@@ -854,21 +853,21 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
                 ok_cost_per_scan *= 1000;
                 ok_cost_per_scan /= globalstats->ok_scan_count[bucket];
 
-                ham_trace(("GLOBAL 'OK' COST/SCAN ratio: %f", 
+                ham_trace(("GLOBAL 'OK' COST/SCAN ratio: %f",
                             ok_cost_per_scan/1000.0));
             }
             if (globalstats->erase_query_count
                     + globalstats->insert_query_count) {
                 ham_u64_t trials_per_query = 0;
                 int i;
-                
+
                 for (i = 0; i < HAM_FREELIST_SLOT_SPREAD; i++)
                     trials_per_query += globalstats->scan_count[i];
                 trials_per_query *= 1000;
                 trials_per_query /= globalstats->erase_query_count
                                     + globalstats->insert_query_count;
 
-                ham_trace(("GLOBAL TRIALS/QUERY (INSERT + DELETE) ratio: %f", 
+                ham_trace(("GLOBAL TRIALS/QUERY (INSERT + DELETE) ratio: %f",
                             trials_per_query/1000.0));
             }
         }
@@ -876,7 +875,7 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
 #endif
 
 	/*
-	determine where the search range starts; usually this is at the first 
+	determine where the search range starts; usually this is at the first
 	freelist page.
 	*/
 	ham_assert(HAM_MAX_U32 >= dst->lower_bound_address / (DB_CHUNKSIZE * dst->freelist_pagesize_bits), (0));
@@ -897,12 +896,12 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
 	}
 
     /*
-     * if we are looking for space for a 'huge blob', i.e. a size which 
-     * spans multiple pages, we should let the caller know: round up the 
+     * if we are looking for space for a 'huge blob', i.e. a size which
+     * spans multiple pages, we should let the caller know: round up the
      * number of full pages that we'll need for this one.
      */
-    dst->page_span_width = 
-        (dst->size_bits + dst->freelist_pagesize_bits - 1) 
+    dst->page_span_width =
+        (dst->size_bits + dst->freelist_pagesize_bits - 1)
             / dst->freelist_pagesize_bits;
     ham_assert(dst->page_span_width >= 1, (0));
 
@@ -925,8 +924,8 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
     switch (dst->mgt_mode & (HAM_DAM_SEQUENTIAL_INSERT
                             | HAM_DAM_RANDOM_WRITE))
     {
-        /* SEQ+RANDOM_ACCESS: impossible mode; nasty trick for testing 
-         * to help Overflow4 unittest pass: disables global hinting, 
+        /* SEQ+RANDOM_ACCESS: impossible mode; nasty trick for testing
+         * to help Overflow4 unittest pass: disables global hinting,
          * but does do reverse scan for a bit of speed */
     case HAM_DAM_RANDOM_WRITE | HAM_DAM_SEQUENTIAL_INSERT:
         dst->max_rounds = freel_cache_get_count(cache);
@@ -935,7 +934,7 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
         {
     default:
             /* dst->max_rounds = freel_cache_get_count(cache); */
-            dst->max_rounds = 32; /* speed up 'classic' for LARGE 
+            dst->max_rounds = 32; /* speed up 'classic' for LARGE
                                      databases anyhow! */
         }
         if (0)
@@ -986,11 +985,11 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
              * (Incidentally, we say 'multiplier', but we use it really
              * as an adder, which is perfectly fine as any (A+B) MOD C
              * operation will have a cycle of B when the B is mutual
-             * prime to C assuming a constant A; this also means that, as we 
+             * prime to C assuming a constant A; this also means that, as we
              * apply this operation multiple times in sequence, the resulting
              * numbers have a cycle of B and will therefore deliver a
              * rather flat distribution over C when B is suitably large
-             * compared to C. (That last bit is not mandatory, but it generally 
+             * compared to C. (That last bit is not mandatory, but it generally
              * makes for a more semi-random skipping pattern.)
              */
             dst->skip_step=295075153;
@@ -1012,35 +1011,35 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
     }
 
 	/*
-	and it's no use trying more times (and freelist entries) then we 
+	and it's no use trying more times (and freelist entries) then we
 	know we have available within the designated search range.
 	*/
-	if (dst->max_rounds > freel_cache_get_count(cache) - dst->start_entry) 
+	if (dst->max_rounds > freel_cache_get_count(cache) - dst->start_entry)
 	{
         dst->max_rounds = freel_cache_get_count(cache) - dst->start_entry;
     }
 
     /*
-     * To accommodate multi-freelist-entry spanning 'huge blob' free space 
-     * searches, we set up the init and step here to match that of a 
+     * To accommodate multi-freelist-entry spanning 'huge blob' free space
+     * searches, we set up the init and step here to match that of a
      * Boyer-Moore search method.
      *
-     * Yes, this means this code has intimate knowledge of the 'huge blob free 
-     * space search' caller, i.e. the algorithm used when 
-     * 
+     * Yes, this means this code has intimate knowledge of the 'huge blob free
+     * space search' caller, i.e. the algorithm used when
+     *
      *   dst->page_span_width > 1
-     * 
-     * and I agree it's nasty, but this way the outer call's code is more 
-     * straight-forward in handling both the regular, BM-assisted full scan 
-     * of the freelist AND the faster 'skipping' mode(s) possible here (e.g. 
-     * the UBER-FAST search mode where only part of the freelist will be 
+     *
+     * and I agree it's nasty, but this way the outer call's code is more
+     * straight-forward in handling both the regular, BM-assisted full scan
+     * of the freelist AND the faster 'skipping' mode(s) possible here (e.g.
+     * the UBER-FAST search mode where only part of the freelist will be
      * sampled for each request).
      */
     if (dst->skip_step < dst->page_span_width) {
         /*
-         * set up for BM: init = 1 step ahead minus 1, as we check the LAST 
-         * entry instead of the FIRST, and skip=span so we jump over the 
-         * freelist according to the BM plan: no hit on the sample means the 
+         * set up for BM: init = 1 step ahead minus 1, as we check the LAST
+         * entry instead of the FIRST, and skip=span so we jump over the
+         * freelist according to the BM plan: no hit on the sample means the
          * next possible spot will include sample current+span.
          */
         dst->skip_init_offset = dst->page_span_width - 1;
@@ -1056,7 +1055,7 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ha
  * where it deems necessary.
  */
 void
-db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t *env, 
+db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t *env,
         freelist_entry_t *entry)
 {
     freelist_page_statistics_t *entrystats = freel_entry_get_statistics(entry);
@@ -1082,8 +1081,8 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
     ham_runtime_statistics_globdata_t *globalstats=env_get_global_perf_data(env);
     c++;
     if (c % 100000 == 999) {
-        /* 
-         * what is our ratio fail vs. search? 
+        /*
+         * what is our ratio fail vs. search?
          *
          * Since we know search >= fail, we'll calculate the
          * reciprocal in integer arithmetic, as that one will be >= 1.0
@@ -1116,7 +1115,7 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
             + globalstats->insert_query_count) {
             ham_u64_t trials_per_query = 0;
             int i;
-            
+
             for (i = 0; i < HAM_FREELIST_SLOT_SPREAD; i++)
 			{
                 trials_per_query += globalstats->scan_count[i];
@@ -1125,12 +1124,12 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
             trials_per_query /= globalstats->erase_query_count
                                 + globalstats->insert_query_count;
 
-            ham_trace(("TRIALS/QUERY (INSERT + DELETE) ratio: %f", 
+            ham_trace(("TRIALS/QUERY (INSERT + DELETE) ratio: %f",
                         trials_per_query/1000.0));
         }
 
-        /* 
-         * what is our FREELIST PAGE's ratio fail vs. search? 
+        /*
+         * what is our FREELIST PAGE's ratio fail vs. search?
          *
          * Since we know search >= fail, we'll calculate the
          * reciprocal in integer arithmetic, as that one will be >= 1.0
@@ -1140,7 +1139,7 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
             fail_reciprocal_ratio *= 1000;
             fail_reciprocal_ratio /= entrystats->fail_count;
 
-            ham_trace(("PAGE FAIL/SEARCH ratio: %f", 
+            ham_trace(("PAGE FAIL/SEARCH ratio: %f",
                         1000.0/fail_reciprocal_ratio));
         }
         /*
@@ -1154,7 +1153,7 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
             ham_trace(("PAGE COST/SCAN ratio: %f", cost_per_scan/1000.0));
         }
         if (entrystats->per_size[bucket].ok_scan_count) {
-            ham_u64_t ok_cost_per_scan = 
+            ham_u64_t ok_cost_per_scan =
                 entrystats->per_size[bucket].ok_scan_cost;
             ok_cost_per_scan *= 1000;
             ok_cost_per_scan /= entrystats->per_size[bucket].ok_scan_count;
@@ -1166,9 +1165,9 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
     }
 #endif
 
-    ham_assert(entrystats->last_start 
+    ham_assert(entrystats->last_start
             >= entrystats->per_size[bucket].first_start, (0));
-    ham_assert(entrystats->persisted_bits 
+    ham_assert(entrystats->persisted_bits
             >= entrystats->last_start, (0));
 
     /*
@@ -1255,7 +1254,7 @@ db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t 
 
 
 /**
- * copy one internal format freelist statistics record to a public format 
+ * copy one internal format freelist statistics record to a public format
  * record for the same.
 
 Can't use memcpy() because of alignment issues we don't want the hamsterdb API user
@@ -1349,7 +1348,7 @@ stats_fill_freel_statistics_t(ham_env_t *env, ham_statistics_t *dst)
         else
         {
             ham_size_t count = freel_cache_get_count(cache);
-            
+
             if (count > 0)
             {
                 ham_freelist_page_statistics_t *d;
@@ -1387,7 +1386,7 @@ stats_fill_freel_statistics_t(ham_env_t *env, ham_statistics_t *dst)
 
     /* and finally mark which sections have actually been fetched */
     dst->dont_collect_freelist_stats = !collect_freelistdata;
-    
+
     return 0;
 }
 

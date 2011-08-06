@@ -3,11 +3,10 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -93,18 +92,18 @@ DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
 
 /*
  * MS says:
- * 
- * Security Alert   
- * 
- * Using the MultiByteToWideChar function incorrectly can compromise the 
- * security of your application. Calling this function can easily cause a 
- * buffer overrun because the size of the input buffer indicated by 
- * lpMultiByteStr equals the number of bytes in the string, while the size of 
- * the output buffer indicated by lpWideCharStr equals the number of WCHAR 
- * values. 
- *  
- * To avoid a buffer overrun, your application must specify a buffer size 
- * appropriate for the data type the buffer receives. For more information, see 
+ *
+ * Security Alert
+ *
+ * Using the MultiByteToWideChar function incorrectly can compromise the
+ * security of your application. Calling this function can easily cause a
+ * buffer overrun because the size of the input buffer indicated by
+ * lpMultiByteStr equals the number of bytes in the string, while the size of
+ * the output buffer indicated by lpWideCharStr equals the number of WCHAR
+ * values.
+ *
+ * To avoid a buffer overrun, your application must specify a buffer size
+ * appropriate for the data type the buffer receives. For more information, see
  * Security Considerations: International Features.
  */
 static void
@@ -113,11 +112,11 @@ __utf8_string(const char *filename, WCHAR *wfilename, int wlen)
     MultiByteToWideChar(CP_ACP, 0, filename, -1, wfilename, wlen);
 }
 
-static int 
+static int
 calc_wlen4str(const char *str)
 {
     /*
-     * Since we call MultiByteToWideChar with an input length of -1, the 
+     * Since we call MultiByteToWideChar with an input length of -1, the
      * output will include the wchar NUL sentinel as well, so count it
      */
     size_t len = strlen(str) + 1;
@@ -146,7 +145,7 @@ os_get_granularity(void)
 }
 
 ham_status_t
-os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position, 
+os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
         ham_offset_t size, ham_bool_t readonly, ham_u8_t **buffer)
 {
 #ifndef UNDER_CE
@@ -156,12 +155,12 @@ os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
     LARGE_INTEGER i;
     i.QuadPart=position;
 
-    *mmaph=CreateFileMapping(fd, 0, protect, 0, 0, 0); 
+    *mmaph=CreateFileMapping(fd, 0, protect, 0, 0, 0);
     if (!*mmaph) {
         char buf[256];
         *buffer=0;
         st=(ham_status_t)GetLastError();
-        ham_log(("CreateFileMapping failed with OS status %u (%s)", 
+        ham_log(("CreateFileMapping failed with OS status %u (%s)",
                 st, DisplayError(buf, sizeof(buf), st)));
         if (st==ERROR_NOT_ENOUGH_QUOTA) /* not enough resources - fallback to r/w */
             return (HAM_OUT_OF_MEMORY);
@@ -175,7 +174,7 @@ os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
         /* make sure to release the mapping */
         (void)CloseHandle(*mmaph);
         *mmaph=0;
-        ham_log(("MapViewOfFile failed with OS status %u (%s)", 
+        ham_log(("MapViewOfFile failed with OS status %u (%s)",
                 st, DisplayError(buf, sizeof(buf), st)));
         if (st==ERROR_NOT_ENOUGH_QUOTA) /* not enough resources - fallback to r/w */
             return (HAM_OUT_OF_MEMORY);
@@ -275,10 +274,10 @@ os_seek(ham_fd_t fd, ham_offset_t offset, int whence)
     DWORD st;
     LARGE_INTEGER i;
     i.QuadPart=offset;
-    
-    i.LowPart=SetFilePointer((HANDLE)fd, i.LowPart, 
+
+    i.LowPart=SetFilePointer((HANDLE)fd, i.LowPart,
             &i.HighPart, whence);
-    if (i.LowPart==INVALID_SET_FILE_POINTER && 
+    if (i.LowPart==INVALID_SET_FILE_POINTER &&
         (st=GetLastError())!=NO_ERROR) {
         char buf[256];
         ham_log(("SetFilePointer failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
@@ -295,9 +294,9 @@ os_tell(ham_fd_t fd, ham_offset_t *offset)
     LARGE_INTEGER i;
     i.QuadPart=0;
 
-    i.LowPart=SetFilePointer((HANDLE)fd, i.LowPart, 
+    i.LowPart=SetFilePointer((HANDLE)fd, i.LowPart,
             &i.HighPart, HAM_OS_SEEK_CUR);
-    if (i.LowPart==INVALID_SET_FILE_POINTER && 
+    if (i.LowPart==INVALID_SET_FILE_POINTER &&
         (st=GetLastError())!=NO_ERROR) {
         char buf[256];
         ham_log(("SetFilePointer failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
@@ -320,7 +319,7 @@ os_get_filesize(ham_fd_t fd, ham_offset_t *size)
     i.QuadPart=0;
     i.LowPart=GetFileSize(fd, (LPDWORD)&i.HighPart);
 
-    if (i.LowPart == INVALID_FILE_SIZE && 
+    if (i.LowPart == INVALID_FILE_SIZE &&
         (st=GetLastError())!=NO_ERROR) {
         char buf[256];
         ham_log(("GetFileSize failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
@@ -367,11 +366,11 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
 
     /* translate ASCII filename to unicode */
     __utf8_string(filename, wfilename, fnameWlen);
-    *fd=(ham_fd_t)CreateFileW(wfilename, access, 
+    *fd=(ham_fd_t)CreateFileW(wfilename, access,
                 share, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
     free(wfilename);
 #else
-    *fd=(ham_fd_t)CreateFileA(filename, access, 
+    *fd=(ham_fd_t)CreateFileA(filename, access,
                 share, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
 #endif
 
@@ -386,7 +385,7 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
 #endif
         if (st==ERROR_SHARING_VIOLATION)
             return (HAM_WOULD_BLOCK);
-        ham_log(("CreateFile(%s, %x, %x, ...) (create) failed with OS status %u (%s)", 
+        ham_log(("CreateFile(%s, %x, %x, ...) (create) failed with OS status %u (%s)",
             filename, access, share, st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
@@ -430,12 +429,12 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
 
         /* translate ASCII filename to unicode */
         __utf8_string(filename, wfilename, fnameWlen);
-        *fd=(ham_fd_t)CreateFileW(wfilename, access, share, NULL, 
+        *fd=(ham_fd_t)CreateFileW(wfilename, access, share, NULL,
                             dispo, osflags, 0);
         free(wfilename);
     }
 #else
-    *fd=(ham_fd_t)CreateFileA(filename, access, share, NULL, 
+    *fd=(ham_fd_t)CreateFileA(filename, access, share, NULL,
                         dispo, osflags, 0);
 #endif
 
@@ -443,7 +442,7 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
         char buf[256];
         *fd=HAM_INVALID_FD;
         st=(ham_status_t)GetLastError();
-        ham_log(("CreateFile(%s, %x, %x, ...) (open) failed with OS status %u (%s)", 
+        ham_log(("CreateFile(%s, %x, %x, ...) (open) failed with OS status %u (%s)",
             filename, access, share,
             st, DisplayError(buf, sizeof(buf), st)));
         if (st==ERROR_SHARING_VIOLATION)

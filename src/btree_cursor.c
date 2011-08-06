@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -32,7 +32,7 @@
 #include "util.h"
 
 static ham_status_t
-bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record, 
+bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
             ham_u32_t flags);
 
 static ham_status_t
@@ -121,7 +121,7 @@ my_move_next(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
     entry=btree_node_get_key(db, node, bt_cursor_get_coupled_index(c));
 
     /*
-     * if this key has duplicates: get the next duplicate; otherwise 
+     * if this key has duplicates: get the next duplicate; otherwise
      * (and if there's no duplicate): fall through
      */
     if (key_get_flags(entry)&KEY_HAS_DUPLICATES
@@ -211,18 +211,18 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
     entry=btree_node_get_key(db, node, bt_cursor_get_coupled_index(c));
 
     /*
-     * if this key has duplicates: get the previous duplicate; otherwise 
+     * if this key has duplicates: get the previous duplicate; otherwise
      * (and if there's no duplicate): fall through
      */
     if (key_get_flags(entry)&KEY_HAS_DUPLICATES
             && (!(flags&HAM_SKIP_DUPLICATES))
-            && bt_cursor_get_dupe_id(c)>0) 
+            && bt_cursor_get_dupe_id(c)>0)
     {
         ham_status_t st;
         bt_cursor_set_dupe_id(c, bt_cursor_get_dupe_id(c)-1);
         page_add_ref(page);
         st=blob_duplicate_get(env, key_get_ptr(entry),
-                        bt_cursor_get_dupe_id(c), 
+                        bt_cursor_get_dupe_id(c),
                         bt_cursor_get_dupe_cache(c));
         page_release_ref(page);
         if (st) {
@@ -256,7 +256,7 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
             return HAM_KEY_NOT_FOUND;
 
         page_remove_cursor(page, (ham_cursor_t *)c);
-        bt_cursor_set_flags(c, 
+        bt_cursor_set_flags(c,
                 bt_cursor_get_flags(c)&(~BT_CURSOR_FLAG_COUPLED));
 
         st=db_fetch_page(&page, db, btree_node_get_left(node), 0);
@@ -441,7 +441,7 @@ bt_cursor_couple(ham_bt_cursor_t *c)
     }
 
     dupe_id=bt_cursor_get_dupe_id(c);
-    
+
     st=bt_cursor_find(c, &key, NULL, 0);
 
     bt_cursor_set_dupe_id(c, dupe_id);
@@ -512,11 +512,11 @@ bt_cursor_uncouple(ham_bt_cursor_t *c, ham_u32_t flags)
     return (0);
 }
 
-/**                                                                 
- * clone an existing cursor                                         
+/**
+ * clone an existing cursor
 
  @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
 bt_cursor_clone(ham_bt_cursor_t *old, ham_bt_cursor_t **newc)
 {
@@ -542,7 +542,7 @@ bt_cursor_clone(ham_bt_cursor_t *old, ham_bt_cursor_t **newc)
          page_add_cursor(page, (ham_cursor_t *)c);
          bt_cursor_set_coupled_page(c, page);
     }
-    else if (bt_cursor_get_flags(old)&BT_CURSOR_FLAG_UNCOUPLED) 
+    else if (bt_cursor_get_flags(old)&BT_CURSOR_FLAG_UNCOUPLED)
     {
         /*
          * if the old cursor is uncoupled: copy the key
@@ -553,9 +553,9 @@ bt_cursor_clone(ham_bt_cursor_t *old, ham_bt_cursor_t **newc)
         if (!key)
             return HAM_OUT_OF_MEMORY;
 
-        st = util_copy_key(bt_cursor_get_db(c), 
+        st = util_copy_key(bt_cursor_get_db(c),
             bt_cursor_get_uncoupled_key(old), key);
-        if (st) 
+        if (st)
         {
             if (key->data)
                 allocator_free(env_get_allocator(env), key->data);
@@ -572,11 +572,11 @@ bt_cursor_clone(ham_bt_cursor_t *old, ham_bt_cursor_t **newc)
     return (0);
 }
 
-/**                                                                 
- * close an existing cursor                                         
+/**
+ * close an existing cursor
  *
  * @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
 bt_cursor_close(ham_bt_cursor_t *c)
 {
@@ -585,11 +585,11 @@ bt_cursor_close(ham_bt_cursor_t *c)
     return (0);
 }
 
-/**                                                                 
- * overwrite the record of this cursor                              
+/**
+ * overwrite the record of this cursor
 
  @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
 bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
             ham_u32_t flags)
@@ -650,7 +650,7 @@ bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
     /*
      * copy the key flags, and remove all flags concerning the key size
      */
-    st=key_set_record(db, key, record, 
+    st=key_set_record(db, key, record,
             bt_cursor_get_dupe_id(c), flags|HAM_OVERWRITE, 0);
     if (st) {
         page_release_ref(page);
@@ -663,14 +663,14 @@ bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
     return (0);
 }
 
-/**                                                                 
- * move the cursor                                                  
+/**
+ * move the cursor
  *
  * set the cursor to the first item in the database when the cursor has not yet
  * been positioned through a previous find/move/insert/erase operation.
  *
  * @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
 bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags)
@@ -716,7 +716,7 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
         st=my_move_previous(be, c, flags);
     /* no move, but cursor is nil? return error */
     else if (bt_cursor_is_nil(c)) {
-        if (key || record) 
+        if (key || record)
             return (HAM_CURSOR_IS_NIL);
         else
             return (0);
@@ -731,12 +731,12 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
 
     /*
      * during util_read_key and util_read_record, new pages might be needed,
-     * and the page at which we're pointing could be moved out of memory; 
+     * and the page at which we're pointing could be moved out of memory;
      * that would mean that the cursor would be uncoupled, and we're losing
-     * the 'entry'-pointer. therefore we 'lock' the page by incrementing 
+     * the 'entry'-pointer. therefore we 'lock' the page by incrementing
      * the reference counter
      */
-    ham_assert(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED, 
+    ham_assert(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED,
             ("move: cursor is not coupled"));
     page=bt_cursor_get_coupled_page(c);
     page_add_ref(page);
@@ -786,14 +786,14 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
     return (0);
 }
 
-/**                                                                 
- * find a key in the index and positions the cursor                 
- * on this key                                                      
+/**
+ * find a key in the index and positions the cursor
+ * on this key
 
  @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
-bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record, 
+bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
             ham_u32_t flags)
 {
     ham_status_t st;
@@ -816,11 +816,11 @@ bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
     return (0);
 }
 
-/**                                                                 
- * insert (or update) a key in the index                            
+/**
+ * insert (or update) a key in the index
  *
  * @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
 bt_cursor_insert(ham_bt_cursor_t *c, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags)
@@ -844,11 +844,11 @@ bt_cursor_insert(ham_bt_cursor_t *c, ham_key_t *key,
     return (0);
 }
 
-/**                                                                 
+/**
  * erases the key from the index; afterwards, the cursor points to NIL
  *
  * @note This is a B+-tree cursor 'backend' method.
- */                                                                 
+ */
 static ham_status_t
 bt_cursor_erase(ham_bt_cursor_t *c, ham_u32_t flags)
 {
@@ -884,7 +884,7 @@ bt_cursor_erase(ham_bt_cursor_t *c, ham_u32_t flags)
     return (0);
 }
 
-ham_bool_t 
+ham_bool_t
 bt_cursor_points_to(ham_bt_cursor_t *cursor, int_key_t *key)
 {
     ham_status_t st;
@@ -899,7 +899,7 @@ bt_cursor_points_to(ham_bt_cursor_t *cursor, int_key_t *key)
     if (bt_cursor_get_flags(cursor)&BT_CURSOR_FLAG_COUPLED) {
         ham_page_t *page=bt_cursor_get_coupled_page(cursor);
         btree_node_t *node=ham_page_get_btree_node(page);
-        int_key_t *entry=btree_node_get_key(db, node, 
+        int_key_t *entry=btree_node_get_key(db, node,
                         bt_cursor_get_coupled_index(cursor));
 
         if (entry==key)
@@ -909,14 +909,14 @@ bt_cursor_points_to(ham_bt_cursor_t *cursor, int_key_t *key)
     return (0);
 }
 
-/**                                                                    
+/**
  * Count the number of records stored with the referenced key, i.e.
- * count the number of duplicates for the current key.        
+ * count the number of duplicates for the current key.
 
  @note This is a B+-tree cursor 'backend' method.
- */                                                                    
+ */
 static ham_status_t
-bt_cursor_get_duplicate_count(ham_cursor_t *db_cursor, 
+bt_cursor_get_duplicate_count(ham_cursor_t *db_cursor,
                 ham_size_t *count, ham_u32_t flags)
 {
     ham_bt_cursor_t *cursor = (ham_bt_cursor_t *)db_cursor;

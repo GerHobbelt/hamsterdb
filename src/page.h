@@ -3,14 +3,14 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
 
 /**
- * @brief an object which handles a database page 
+ * @brief an object which handles a database page
  *
  */
 
@@ -30,9 +30,9 @@ extern "C" {
 /*
  * indices for page lists
  *
- * each page is a node in several linked lists - via _npers._prev and 
+ * each page is a node in several linked lists - via _npers._prev and
  * _npers._next. both members are arrays of pointers and can be used
- * with _npers._prev[PAGE_LIST_BUCKET] etc. (or with the macros 
+ * with _npers._prev[PAGE_LIST_BUCKET] etc. (or with the macros
  * defined below).
  */
 
@@ -53,7 +53,7 @@ extern "C" {
  * The page header which is persisted on disc
  *
  * This structure definition is present outside of @ref ham_page_t scope to allow
- * compile-time OFFSETOF macros to correctly judge the size, depending 
+ * compile-time OFFSETOF macros to correctly judge the size, depending
  * on platform and compiler settings.
  */
 typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
@@ -61,13 +61,13 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
 
     /*
      * this header is only available if the (non-persistent) flag
-     * NPERS_NO_HEADER is not set! 
+     * NPERS_NO_HEADER is not set!
      *
      * all blob-areas in the file do not have such a header, if they
      * span page-boundaries
      *
      * !!
-     * if this structure is changed, db_get_usable_pagesize has 
+     * if this structure is changed, db_get_usable_pagesize has
      * to be changed as well!
      */
     HAM_PACK_0 struct HAM_PACK_1 page_union_header_t {
@@ -84,7 +84,7 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
         ham_u32_t _reserved2;
 
         /**
-         * this is just a blob - the backend (hashdb, btree etc) 
+         * this is just a blob - the backend (hashdb, btree etc)
          * will use it appropriately
          */
         ham_u8_t _payload[1];
@@ -116,7 +116,7 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
  */
 struct ham_page_t {
     /**
-     * the header is non-persistent and NOT written to disk. 
+     * the header is non-persistent and NOT written to disk.
      * it's caching some run-time values which
      * we don't want to recalculate whenever we need them.
      */
@@ -175,10 +175,10 @@ struct ham_page_t {
         /** the id of the transaction which allocated the image */
         ham_u64_t _alloc_txn_id;
 
-    } _npers; 
+    } _npers;
 
     /**
-     * from here on everything will be written to disk 
+     * from here on everything will be written to disk
      */
     ham_perm_page_union_t *_pers;
 };
@@ -204,17 +204,17 @@ struct ham_page_t {
  */
 #define page_set_self(page, a)       (page)->_npers._self=(a)
 
-/** 
- * get the database object which 0wnz this page 
+/**
+ * get the database object which 0wnz this page
  */
 #define page_get_owner(page)         ((page)->_npers._owner)
 
-/** 
- * set the database object which 0wnz this page 
+/**
+ * set the database object which 0wnz this page
  */
 #define page_set_owner(page, db)     (page)->_npers._owner=(db)
 
-/** 
+/**
  * get the previous page of a linked list
  */
 #ifdef HAM_DEBUG
@@ -224,7 +224,7 @@ page_get_previous(ham_page_t *page, int which);
 #   define page_get_previous(page, which)    ((page)->_npers._prev[(which)])
 #endif /* HAM_DEBUG */
 
-/** 
+/**
  * set the previous page of a linked list
  */
 #ifdef HAM_DEBUG
@@ -234,7 +234,7 @@ page_set_previous(ham_page_t *page, int which, ham_page_t *other);
 #   define page_set_previous(page, which, p) (page)->_npers._prev[(which)]=(p)
 #endif /* HAM_DEBUG */
 
-/** 
+/**
  * get the next page of a linked list
  */
 #ifdef HAM_DEBUG
@@ -244,7 +244,7 @@ page_get_next(ham_page_t *page, int which);
 #   define page_get_next(page, which)        ((page)->_npers._next[(which)])
 #endif /* HAM_DEBUG */
 
-/** 
+/**
  * set the next page of a linked list
  */
 #ifdef HAM_DEBUG
@@ -284,22 +284,22 @@ page_set_next(ham_page_t *page, int which, ham_page_t *other);
  */
 #define page_set_cursors(page, c)        (page)->_npers._cursors=(c)
 
-/** 
- * get the lsn of the last BEFORE-image that was written to the log 
+/**
+ * get the lsn of the last BEFORE-image that was written to the log
  */
 #define page_get_before_img_lsn(page)    (page)->_npers._before_img_lsn
 
-/** 
- * set the lsn of the last BEFORE-image that was written to the log 
+/**
+ * set the lsn of the last BEFORE-image that was written to the log
  */
 #define page_set_before_img_lsn(page, l) (page)->_npers._before_img_lsn=(l)
 
-/** 
+/**
  * get the id of the txn which allocated this page
  */
 #define page_get_alloc_txn_id(page)      (page)->_npers._alloc_txn_id
 
-/** 
+/**
  * set the id of the txn which allocated this page
  */
 #define page_set_alloc_txn_id(page, id)  (page)->_npers._alloc_txn_id=(id)
@@ -353,7 +353,7 @@ page_set_next(ham_page_t *page, int which, ham_page_t *other);
  */
 #define page_set_dirty_txn(page, id)        (page)->_npers._dirty_txn=(id)
 
-/** 
+/**
  * is this page dirty?
  */
 #define page_is_dirty(page)      (page_get_dirty_txn(page)!=0)
@@ -369,22 +369,22 @@ page_set_next(ham_page_t *page, int which, ham_page_t *other);
             ? txn_get_id(env_get_txn(env))                                    \
             : PAGE_DUMMY_TXN_ID))
 
-/** 
+/**
  * page is no longer dirty
  */
 #define page_set_undirty(page)   page_set_dirty_txn(page, 0)
 
-/** 
+/**
  * get the reference counter
  */
 #define page_get_refcount(page) (page)->_npers._refcount
 
-/** 
+/**
  * increment the reference counter
  */
 #define page_add_ref(page)      ++((page)->_npers._refcount)
 
-/** 
+/**
  * decrement the reference counter
  */
 #define page_release_ref(page)  do { ham_assert(page_get_refcount(page)!=0, \
@@ -413,34 +413,34 @@ page_set_next(ham_page_t *page, int which, ham_page_t *other);
 /**
  * @defgroup page_type_codes valid page types
  * @{
- * Each database page is tagged with a type code; these are all 
+ * Each database page is tagged with a type code; these are all
  * known/supported page type codes.
- * 
- * @note When ELBLOBs (Extremely Large BLOBs) are stored in the database, 
- * that is BLOBs which span multiple pages apiece, only their initial page 
- * will have a valid type code; subsequent pages of the ELBLOB will store 
+ *
+ * @note When ELBLOBs (Extremely Large BLOBs) are stored in the database,
+ * that is BLOBs which span multiple pages apiece, only their initial page
+ * will have a valid type code; subsequent pages of the ELBLOB will store
  * the data as-is, so as to provide one continuous storage space per ELBLOB.
- * 
+ *
  * @sa ham_perm_page_union_t::page_union_header_t::_flags
  */
 
 /** unidentified db page type */
-#define PAGE_TYPE_UNKNOWN        0x00000000     
+#define PAGE_TYPE_UNKNOWN        0x00000000
 
 /** the db header page: this is the first page in the database/environment */
-#define PAGE_TYPE_HEADER         0x10000000     
+#define PAGE_TYPE_HEADER         0x10000000
 
 /** the db B+tree root page */
-#define PAGE_TYPE_B_ROOT         0x20000000     
+#define PAGE_TYPE_B_ROOT         0x20000000
 
 /** a B+tree node page, i.e. a page which is part of the database index */
-#define PAGE_TYPE_B_INDEX        0x30000000     
+#define PAGE_TYPE_B_INDEX        0x30000000
 
 /** a freelist management page */
-#define PAGE_TYPE_FREELIST       0x40000000     
+#define PAGE_TYPE_FREELIST       0x40000000
 
 /** a page which stores (the front part of) a BLOB. */
-#define PAGE_TYPE_BLOB           0x50000000     
+#define PAGE_TYPE_BLOB           0x50000000
 
 /**
  * @}
@@ -470,7 +470,7 @@ page_set_next(ham_page_t *page, int which, ham_page_t *other);
  * check if a page is in a linked list
  */
 #if HAM_DEBUG
-extern ham_bool_t 
+extern ham_bool_t
 page_is_in_list(ham_page_t *head, ham_page_t *page, int which);
 #else
 #define page_is_in_list(head, page, which)                          \

@@ -3,14 +3,14 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
 
 /**
- * device management; a device encapsulates the physical device, either a 
+ * device management; a device encapsulates the physical device, either a
  * file or memory chunks (for in-memory-databases)
  *
  */
@@ -23,22 +23,22 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
  * the device structure
  */
 struct ham_device_t {
     /**
-     * create a new device 
+     * create a new device
      */
-    ham_status_t (*create)(ham_device_t *self, const char *fname, 
+    ham_status_t (*create)(ham_device_t *self, const char *fname,
             ham_u32_t flags, ham_u32_t mode);
 
     /**
      * open an existing device
      */
-    ham_status_t (*open)(ham_device_t *self, const char *fname, 
+    ham_status_t (*open)(ham_device_t *self, const char *fname,
             ham_u32_t flags);
 
     /**
@@ -79,14 +79,14 @@ struct ham_device_t {
     /**
      * reads from the device; this function does not use mmap
      */
-    ham_status_t (*read)(ham_device_t *self, 
+    ham_status_t (*read)(ham_device_t *self,
             ham_offset_t offset, void *buffer, ham_offset_t size);
 
     /**
      * writes to the device; this function does not use mmap,
      * the data is run through the file filters
      */
-    ham_status_t (*write)(ham_device_t *self, 
+    ham_status_t (*write)(ham_device_t *self,
             ham_offset_t offset, void *buffer, ham_offset_t size);
 
     /**
@@ -120,18 +120,18 @@ struct ham_device_t {
     ham_u32_t (*get_flags)(ham_device_t *self);
 
     /**
-     * allocate storage from this device; this function 
+     * allocate storage from this device; this function
      * will *NOT* use mmap.
      */
-    ham_status_t (*alloc)(ham_device_t *self, ham_size_t size, 
+    ham_status_t (*alloc)(ham_device_t *self, ham_size_t size,
             ham_offset_t *address);
 
     /**
-     * allocate storage for a page from this device; this function 
+     * allocate storage for a page from this device; this function
      * @e can use mmap.
      *
      * @note
-     * The caller is responsible for flushing the page; the @ref free_page 
+     * The caller is responsible for flushing the page; the @ref free_page
      * function will assert that the page is not dirty.
      */
     ham_status_t (*alloc_page)(ham_device_t *self, ham_page_t *page);
@@ -154,11 +154,11 @@ struct ham_device_t {
     ham_env_t *_env;
 
     /**
-     * Flags of this device. 
+     * Flags of this device.
      *
      * Currently, these flags are used (at leas):
      * - @ref HAM_DISABLE_MMAP do not use mmap but pread/pwrite
-     * - @ref DB_USE_MMAP use memory mapped I/O (this bit is not 
+     * - @ref DB_USE_MMAP use memory mapped I/O (this bit is not
      *      observed through here, though)
      * - @ref HAM_READ_ONLY this is a read-only device
      */
@@ -171,9 +171,9 @@ struct ham_device_t {
     ham_size_t _pagesize;
 
     /**
-     * The freelist cache: the freelist is managed by the device so it 
-     * can be parallelized and/or managed per partition without having to 
-     * feed a lot of unnecessary data into the @ref ham_backend_t 
+     * The freelist cache: the freelist is managed by the device so it
+     * can be parallelized and/or managed per partition without having to
+     * feed a lot of unnecessary data into the @ref ham_backend_t
      * database layer or @ref ham_env_t / @ref ham_db_t containers.
      */
     freelist_cache_t *_freelist_cache;
@@ -240,6 +240,6 @@ ham_device_new(mem_allocator_t *alloc, ham_env_t *env, int devtype);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_DEVICE_H__ */

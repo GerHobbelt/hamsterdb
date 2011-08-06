@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -23,7 +23,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
  * an entry in the freelist cache
@@ -102,7 +102,7 @@ struct freelist_entry_t
 
 /**
  * the freelist class structure - these functions and members are "inherited"
- * by every freelist management class (i.e. oldskool_16, skiplist, etc). 
+ * by every freelist management class (i.e. oldskool_16, skiplist, etc).
  */
 #define FREELIST_DECLARATIONS(clss)                                     \
 	/**                                                                 \
@@ -233,13 +233,13 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
      */
     ham_offset_t _overflow;
 
-	HAM_PACK_0 union HAM_PACK_1 
+	HAM_PACK_0 union HAM_PACK_1
 	{
 		/**
 		 * This structure represents the backwards compatible v1.0.9 freelist
 		 * payload layout, which can cope with up to 65535 chunks per page.
 		 */
-		HAM_PACK_0 struct HAM_PACK_1 
+		HAM_PACK_0 struct HAM_PACK_1
 		{
 			/**
 			 * maximum number of bits for this page
@@ -247,7 +247,7 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
 			ham_u16_t _max_bits;
 
 			/**
-			 * number of already allocated bits in the page 
+			 * number of already allocated bits in the page
 			 */
 			ham_u16_t _allocated_bits;
 
@@ -257,12 +257,12 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
 			ham_u8_t _bitmap[1];
 		} HAM_PACK_2 _s16;
 
-		HAM_PACK_0 struct HAM_PACK_1 
+		HAM_PACK_0 struct HAM_PACK_1
 		{
 			/**
-			 * 'zero': must be 0; serves as a doublecheck we're not 
-			 * processing an old-style 16-bit freelist page, where this 
-			 * spot would have the ham_u16_t _max_bits, which would 
+			 * 'zero': must be 0; serves as a doublecheck we're not
+			 * processing an old-style 16-bit freelist page, where this
+			 * spot would have the ham_u16_t _max_bits, which would
 			 * always != 0 ...
 			 */
 			ham_u16_t _zero;
@@ -275,7 +275,7 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
 			ham_u32_t _max_bits;
 
 			/**
-			 * number of already allocated bits in the page 
+			 * number of already allocated bits in the page
 			 */
 			ham_u32_t _allocated_bits;
 
@@ -286,9 +286,9 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
              * each freelist entry; after all, it's ludicrous to keep
              * the cache clogged with freelist pages which our
              * statistics show are useless given our usage patterns
-             * (determined at run-time; this is meant to help many-insert, 
-             * few-delete usage patterns the most, while many-delete usage 
-             * patterns will benefit most from a good cache page aging system 
+             * (determined at run-time; this is meant to help many-insert,
+             * few-delete usage patterns the most, while many-delete usage
+             * patterns will benefit most from a good cache page aging system
              * (see elsewhere in the code) as that will ensure relevant
              * freelist pages stay in the cache for as long as we need
              * them. Meanwhile, we've complicated things a little here
@@ -405,14 +405,14 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
  * Initialize a v1.1.0+ compatible freelist management object
  */
 extern ham_status_t
-freel_constructor_prepare32(freelist_cache_t **cache_ref, ham_device_t *dev, 
+freel_constructor_prepare32(freelist_cache_t **cache_ref, ham_device_t *dev,
                 ham_env_t *env);
 
 /**
  * Initialize a v1.0.x compatible freelist management object
  */
 extern ham_status_t
-freel_constructor_prepare16(freelist_cache_t **cache_ref, ham_device_t *dev, 
+freel_constructor_prepare16(freelist_cache_t **cache_ref, ham_device_t *dev,
                 ham_env_t *env);
 
 /**
@@ -432,7 +432,7 @@ freel_shutdown(ham_env_t *env);
  * @a db can be NULL
  */
 extern ham_status_t
-freel_mark_free(ham_env_t *env, ham_db_t *db, 
+freel_mark_free(ham_env_t *env, ham_db_t *db,
             ham_offset_t address, ham_size_t size, ham_bool_t overwrite);
 
 /**
@@ -444,7 +444,7 @@ freel_mark_free(ham_env_t *env, ham_db_t *db,
  * will assert that size is DB_CHUNKSIZE-aligned!
  */
 extern ham_status_t
-freel_alloc_area(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db, 
+freel_alloc_area(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
             ham_size_t size);
 
 /**
@@ -457,16 +457,16 @@ freel_alloc_area(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
  * @note
  * will assert that size is DB_CHUNKSIZE-aligned!
  *
- * @note															
- * The lower_bound_address is assumed to be on a DB_CHUNKSIZE		
- * boundary at least. @a aligned space will end up at a             
- * @ref DB_PAGESIZE_MIN_REQD_ALIGNMENT bytes boundary.              
- * Regardless, the lower address bound check will be performed		
- * on a DB_CHUNKSIZE boundary level anyhow.							
+ * @note
+ * The lower_bound_address is assumed to be on a DB_CHUNKSIZE
+ * boundary at least. @a aligned space will end up at a
+ * @ref DB_PAGESIZE_MIN_REQD_ALIGNMENT bytes boundary.
+ * Regardless, the lower address bound check will be performed
+ * on a DB_CHUNKSIZE boundary level anyhow.
  */
 extern ham_status_t
 freel_alloc_area_ex(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
-                ham_size_t size, ham_bool_t aligned, 
+                ham_size_t size, ham_bool_t aligned,
                 ham_offset_t lower_bound_address);
 
 /**
@@ -479,21 +479,21 @@ freel_alloc_area_ex(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
 extern ham_status_t
 freel_alloc_page(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db);
 
-/**																	
+/**
  * check whether the given block is administrated in the freelist.
- * If it isn't yet, make it so.                                 		
- * 
- * @return one of @ref ham_status_codes on error, @ref HAM_SUCCESS	
- *   when the given storage area is within the scope of the		
- *   freelist.													
+ * If it isn't yet, make it so.
+ *
+ * @return one of @ref ham_status_codes on error, @ref HAM_SUCCESS
+ *   when the given storage area is within the scope of the
+ *   freelist.
  */
 extern ham_status_t
-freel_check_area_is_allocated(ham_env_t *env, ham_db_t *db, 
+freel_check_area_is_allocated(ham_env_t *env, ham_db_t *db,
                 ham_offset_t address, ham_size_t size);
 
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_FREELIST_H__ */

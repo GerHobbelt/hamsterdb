@@ -3,11 +3,10 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -23,9 +22,9 @@
 #include "mem.h"
 
 
-/* EXTKEY_CACHE_BUCKETSIZE should be a prime number or similar, as it is
+/** EXTKEY_CACHE_BUCKETSIZE should be a prime number or similar, as it is
  * used in a MODULO hash scheme */
-#define EXTKEY_CACHE_BUCKETSIZE        1021	
+#define EXTKEY_CACHE_BUCKETSIZE        1021
 #define EXTKEY_MAX_AGE                    5
 
 extkey_cache_t *
@@ -84,7 +83,7 @@ extkey_cache_destroy(extkey_cache_t *cache)
         : (((o)%(cache_get_bucketsize(cache))))))
 
 ham_status_t
-extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid, 
+extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid,
             ham_size_t size, const ham_u8_t *data)
 {
     ham_size_t h=my_calc_hash(cache, blobid);
@@ -142,7 +141,7 @@ extkey_cache_remove(extkey_cache_t *cache, ham_offset_t blobid)
     else
         extkey_cache_set_bucket(cache, h, extkey_get_next(e));
 
-    extkey_cache_set_usedsize(cache, 
+    extkey_cache_set_usedsize(cache,
             extkey_cache_get_usedsize(cache)-extkey_get_size(e));
     allocator_free(env_get_allocator(env), e);
 
@@ -150,7 +149,7 @@ extkey_cache_remove(extkey_cache_t *cache, ham_offset_t blobid)
 }
 
 ham_status_t
-extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid, 
+extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid,
             ham_size_t *size, ham_u8_t **data)
 {
     ham_size_t h=my_calc_hash(cache, blobid);
@@ -179,12 +178,12 @@ extkey_cache_purge(extkey_cache_t *cache)
     ham_size_t i;
     extkey_t *e, *n;
     ham_env_t *env;
-	
+
 	ham_assert(extkey_cache_get_db(cache), (0));
 	env = db_get_env(extkey_cache_get_db(cache));
 
     /*
-     * delete all entries which are "too old" (were not 
+     * delete all entries which are "too old" (were not
      * used in the last EXTKEY_MAX_AGE transactions)
      */
     for (i=0; i<extkey_cache_get_bucketsize(cache); i++) {
@@ -215,12 +214,12 @@ extkey_cache_purge_all(extkey_cache_t *cache)
     ham_size_t i;
     extkey_t *e, *n;
     ham_env_t *env;
-	
+
 	ham_assert(extkey_cache_get_db(cache), (0));
 	env = db_get_env(extkey_cache_get_db(cache));
 
     /*
-     * delete all entries 
+     * delete all entries
      */
     for (i=0; i<extkey_cache_get_bucketsize(cache); i++) {
         e=extkey_cache_get_bucket(cache, i);

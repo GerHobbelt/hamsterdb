@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -50,22 +50,22 @@ protected:
     memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         ham_parameter_t p[]={{HAM_PARAM_PAGESIZE, 4096}, {0, 0}};
 
         BFC_ASSERT((m_alloc=memtracker_new())!=0);
         BFC_ASSERT(ham_new(&m_db)==HAM_SUCCESS);
-        BFC_ASSERT(ham_create_ex(m_db, 0, HAM_IN_MEMORY_DB, 0644, 
+        BFC_ASSERT(ham_create_ex(m_db, 0, HAM_IN_MEMORY_DB, 0644,
                         &p[0])==HAM_SUCCESS);
 
         m_env=db_get_env(m_db);
     }
-    
-    virtual void teardown() 
-    { 
+
+    virtual void teardown()
+    {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));

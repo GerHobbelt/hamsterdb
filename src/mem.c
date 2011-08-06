@@ -1,13 +1,12 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -39,7 +38,7 @@ alloc_impl(mem_allocator_t *self, const char *file, int line, ham_u32_t size)
 #endif
 }
 
-void 
+void
 free_impl(mem_allocator_t *self, const char *file, int line, const void *ptr)
 {
     (void)self;
@@ -55,7 +54,7 @@ free_impl(mem_allocator_t *self, const char *file, int line, const void *ptr)
 }
 
 void *
-realloc_impl(mem_allocator_t *self, const char *file, int line, 
+realloc_impl(mem_allocator_t *self, const char *file, int line,
         const void *ptr, ham_size_t size)
 {
     (void)self;
@@ -69,7 +68,7 @@ realloc_impl(mem_allocator_t *self, const char *file, int line,
 #endif
 }
 
-void 
+void
 close_impl(mem_allocator_t *self)
 {
 #if defined(_CRTDBG_MAP_ALLOC)
@@ -98,7 +97,7 @@ _ham_default_allocator_new(const char *fname, const int lineno)
     m->free   =free_impl;
     m->realloc=realloc_impl;
     m->close  =close_impl;
-     
+
     return (m);
 }
 

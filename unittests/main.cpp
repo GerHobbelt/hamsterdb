@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -39,7 +39,7 @@ int trigger_debugger = 0;
  * We'll hook it into the debug reporting
  * process later using _CrtSetReportHook.
  */
-static int 
+static int
 crm_dbg_report_function(int report_type, char *usermsg, int *retval)
 {
     /*
@@ -79,7 +79,7 @@ crm_dbg_report_function(int report_type, char *usermsg, int *retval)
     return TRUE;
 }
 
-static void 
+static void
 crm_report_mem_analysis(void)
 {
     _CrtMemState msNow;
@@ -114,7 +114,7 @@ crm_report_mem_analysis(void)
 
 #endif
 
-int 
+int
 main(int argc, char **argv)
 {
 #if 0
@@ -170,7 +170,7 @@ main(int argc, char **argv)
     // Set the new bits
     _CrtSetDbgFlag(i);
 
-    // set a malloc marker we can use it in the leak dump at the end of 
+    // set a malloc marker we can use it in the leak dump at the end of
     // the program:
 //    (void)_calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
 #endif
@@ -179,7 +179,7 @@ main(int argc, char **argv)
     /*
      * when running in visual studio, the working directory is different
      * from the unix/cygwin environment. this can be changed, but the
-     * working directory setting is not stored in the unittests.vcproj file, 
+     * working directory setting is not stored in the unittests.vcproj file,
      * but in unittests.vcproj.<hostname><username>; and this file is not
      * distributed.
      *
@@ -187,7 +187,7 @@ main(int argc, char **argv)
      * the working directory manually.
      */
 #ifdef VISUAL_STUDIO
-#ifdef UNITTEST_PATH 
+#ifdef UNITTEST_PATH
     SetCurrentDirectoryA(UNITTEST_PATH);
 #else
 #   ifndef UNDER_CE
@@ -197,7 +197,7 @@ main(int argc, char **argv)
 #endif
 
 	// set up the testrunner rig:
-#if 0 // turn this on (--> #if 01) to assist with debugging testcases: 
+#if 0 // turn this on (--> #if 01) to assist with debugging testcases:
     // exceptions, etc. will pass through to your debugger
 	testrunner::get_instance()->catch_coredumps(0);
 	testrunner::get_instance()->catch_exceptions(0);
@@ -291,7 +291,7 @@ main(int argc, char **argv)
 }
 
 #if UNDER_CE
-int 
+int
 _tmain(int argc, _TCHAR* argv[])
 {
 	return (main(0, 0));

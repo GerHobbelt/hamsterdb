@@ -203,16 +203,6 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2
                 ham_page_t *page, ham_u32_t flags);                     \
                                                                         \
     /**                                                                 \
-     * pointer to the database object                                   \
-     */                                                                 \
-    ham_db_t *_db;                                                      \
-                                                                        \
-    /**                                                                 \
-     * the last used record number                                      \
-     */                                                                 \
-    ham_offset_t _recno;                                                \
-                                                                        \
-    /**                                                                 \
      * the keysize of this backend index                                \
      */                                                                 \
     ham_u16_t _keysize;                                                 \
@@ -230,7 +220,17 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2
     /**                                                                 \
      * the persistent flags of this backend index                       \
      */                                                                 \
-    ham_u32_t _flags
+    ham_u32_t _flags;													\
+                                                                        \
+    /**                                                                 \
+     * pointer to the database object                                   \
+     */                                                                 \
+    ham_db_t *_db;                                                      \
+                                                                        \
+    /**                                                                 \
+     * the last used record number                                      \
+     */                                                                 \
+    ham_offset_t _recno
 
 
 #include "packstart.h"

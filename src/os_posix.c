@@ -3,11 +3,10 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -128,7 +127,7 @@ os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size)
 #if HAVE_MUNMAP
     r=munmap(buffer, size);
     if (r) {
-        ham_log(("munmap failed with status %d (%s)", errno, 
+        ham_log(("munmap failed with status %d (%s)", errno,
                     strerror(errno)));
         return (HAM_IO_ERROR);
     }
@@ -159,7 +158,7 @@ my_os_read(ham_fd_t fd, ham_u8_t *buffer, ham_offset_t bufferlen)
 #endif
 
 ham_status_t
-os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer, 
+os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
         ham_offset_t bufferlen)
 {
 #if HAVE_PREAD
@@ -169,7 +168,7 @@ os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
     while (total<bufferlen) {
         r=pread(fd, buffer+total, bufferlen-total, addr+total);
         if (r<0) {
-            ham_log(("os_pread failed with status %u (%s)", 
+            ham_log(("os_pread failed with status %u (%s)",
                     errno, strerror(errno)));
             return (HAM_IO_ERROR);
         }
@@ -210,7 +209,7 @@ os_write(ham_fd_t fd, const void *buffer, ham_offset_t bufferlen)
 }
 
 ham_status_t
-os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer, 
+os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
         ham_offset_t bufferlen)
 {
 #if HAVE_PWRITE

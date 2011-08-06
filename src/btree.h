@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -28,12 +28,12 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
- * the backend structure for a b+tree 
+ * the backend structure for a b+tree
  *
- * @remark doesn't need packing, because it's not persistent; 
+ * @remark doesn't need packing, because it's not persistent;
  * see comment before ham_backend_t for an explanation.
  */
 struct ham_btree_t;
@@ -41,7 +41,7 @@ typedef struct ham_btree_t ham_btree_t;
 
 #include "packstart.h"
 
-HAM_PACK_0 struct HAM_PACK_1 ham_btree_t 
+HAM_PACK_0 struct HAM_PACK_1 ham_btree_t
 {
     /**
      * the common declarations of all backends
@@ -49,18 +49,18 @@ HAM_PACK_0 struct HAM_PACK_1 ham_btree_t
     BACKEND_DECLARATIONS(ham_btree_t);
 
     /**
-     * address of the root-page 
+     * address of the root-page
      */
     ham_offset_t _rootpage;
 
     /**
-     * maximum keys in an internal page 
+     * maximum keys in an internal page
      */
     ham_u16_t _maxkeys;
 
     /**
      * two pointers for managing key data; these pointers are used to
-     * avoid frequent mallocs in key_compare_pub_to_int() etc
+     * avoid frequent mallocs in key_compare_pub_to_int(), etc.
      */
     void *_keydata1;
     void *_keydata2;
@@ -79,13 +79,13 @@ HAM_PACK_0 struct HAM_PACK_1 ham_btree_t
  */
 #define btree_set_rootpage(be, rp)      (be)->_rootpage=ham_h2db_offset(rp)
 
-/** 
- * get maximum number of keys per (internal) node 
+/**
+ * get maximum number of keys per (internal) node
  */
 #define btree_get_maxkeys(be)           (ham_db2h16((be)->_maxkeys))
 
-/** 
- * set maximum number of keys per (internal) node 
+/**
+ * set maximum number of keys per (internal) node
  */
 #define btree_set_maxkeys(be, s)        (be)->_maxkeys=ham_h2db16(s)
 
@@ -146,8 +146,8 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
     ham_offset_t _right;
 
     /**
-     * address of child node whose items are smaller than all items 
-     * in this node 
+     * address of child node whose items are smaller than all items
+     * in this node
      */
     ham_offset_t _ptr_left;
 
@@ -213,7 +213,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 /**
  * "constructor" - initializes a new ham_btree_t object
  *
- * @return a pointer to a new created B+-tree backend 
+ * @return a pointer to a new created B+-tree backend
  *         instance in @a backend_ref
  *
  * @remark flags are from @ref ham_env_open_db() or @ref ham_env_create_db()
@@ -224,35 +224,35 @@ btree_create(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t flags);
 /**
  * search the btree structures for a record
  *
- * @remark this function returns HAM_SUCCESS and returns 
- * the record ID @a rid, if the @a key was found; otherwise 
- * an error code is returned 
+ * @remark this function returns HAM_SUCCESS and returns
+ * the record ID @a rid, if the @a key was found; otherwise
+ * an error code is returned
  *
  * @remark this function is exported through the backend structure.
  */
-extern ham_status_t 
+extern ham_status_t
 btree_find(ham_btree_t *be, ham_key_t *key,
            ham_record_t *record, ham_u32_t flags);
 
 /**
  * same as above, but sets the cursor to the position
  */
-extern ham_status_t 
-btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor, 
+extern ham_status_t
+btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor,
            ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
 /**
  * insert a new tuple (key/record) in the tree
  */
 extern ham_status_t
-btree_insert(ham_btree_t *be, ham_key_t *key, 
+btree_insert(ham_btree_t *be, ham_key_t *key,
         ham_record_t *record, ham_u32_t flags);
 
 /**
  * same as above, but sets the cursor position to the new item
  */
 extern ham_status_t
-btree_insert_cursor(ham_btree_t *be, ham_key_t *key, 
+btree_insert_cursor(ham_btree_t *be, ham_key_t *key,
         ham_record_t *record, ham_bt_cursor_t *cursor, ham_u32_t flags);
 
 /**
@@ -265,7 +265,7 @@ btree_erase(ham_btree_t *be, ham_key_t *key, ham_u32_t flags);
  * same as above, but with a coupled cursor
  */
 extern ham_status_t
-btree_erase_cursor(ham_btree_t *be, ham_key_t *key, ham_bt_cursor_t *cursor, 
+btree_erase_cursor(ham_btree_t *be, ham_key_t *key, ham_bt_cursor_t *cursor,
         ham_u32_t flags);
 
 /**
@@ -275,11 +275,11 @@ extern ham_status_t
 btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb,
         void *context);
 
-/**                                                                 
- * verify the whole tree                                            
- *                                                                  
+/**
+ * verify the whole tree
+ *
  * @note This is a B+-tree 'backend' method.
- */                                                                 
+ */
 extern ham_status_t
 btree_check_integrity(ham_btree_t *be);
 
@@ -288,11 +288,11 @@ btree_check_integrity(ham_btree_t *be);
  *
  * @return returns the child page in @a page_ref
  *
- * @remark if @a idxptr is a valid pointer, it will store the anchor index of the 
+ * @remark if @a idxptr is a valid pointer, it will store the anchor index of the
  *      loaded page
  */
 extern ham_status_t
-btree_traverse_tree(ham_page_t **page_ref, ham_s32_t *idxptr, 
+btree_traverse_tree(ham_page_t **page_ref, ham_s32_t *idxptr,
 					ham_db_t *db, ham_page_t *page, ham_key_t *key);
 
 /**
@@ -301,12 +301,12 @@ btree_traverse_tree(ham_page_t **page_ref, ham_s32_t *idxptr,
  * !!!
  * only works with leaf nodes!!
  *
- * @return returns the index of the key, or -1 if the key was not found, or 
- *         another negative @ref ham_status_codes value when an 
+ * @return returns the index of the key, or -1 if the key was not found, or
+ *         another negative @ref ham_status_codes value when an
  *         unexpected error occurred.
  */
-extern ham_s32_t 
-btree_node_search_by_key(ham_db_t *db, ham_page_t *page, ham_key_t *key, 
+extern ham_s32_t
+btree_node_search_by_key(ham_db_t *db, ham_page_t *page, ham_key_t *key,
                 ham_u32_t flags);
 
 /**
@@ -329,19 +329,19 @@ btree_node_search_by_key(ham_db_t *db, ham_page_t *page, ham_key_t *key,
 /*
  * get the slot of an element in the page
  */
-extern ham_status_t 
-btree_get_slot(ham_db_t *db, ham_page_t *page, 
+extern ham_status_t
+btree_get_slot(ham_db_t *db, ham_page_t *page,
         ham_key_t *key, ham_s32_t *slot, int *cmp);
 
 extern ham_size_t
 btree_calc_maxkeys(ham_size_t pagesize, ham_u16_t keysize);
 
-extern ham_status_t 
+extern ham_status_t
 btree_close_cursors(ham_db_t *db, ham_u32_t flags);
 
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_BTREE_H__ */

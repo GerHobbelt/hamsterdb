@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -25,7 +25,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
  * the cursor structure for a b+tree
@@ -227,7 +227,7 @@ bt_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
 /**
  * returns true if a cursor points to this key, otherwise false
  */
-ham_bool_t 
+ham_bool_t
 bt_cursor_points_to(ham_bt_cursor_t *cursor, int_key_t *key);
 
 /**
@@ -240,6 +240,6 @@ bt_uncouple_all_cursors(ham_page_t *page, ham_size_t start);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_BT_CURSORS_H__ */

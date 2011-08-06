@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -22,7 +22,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
 #include "packstart.h"
@@ -63,7 +63,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_entry_t
     /** the transaction id */
     ham_u64_t _txn_id;
 
-    /** the flags of this entry; the lowest 8 bits are the 
+    /** the flags of this entry; the lowest 8 bits are the
      * type of this entry, see below */
     ham_u32_t _flags;
 
@@ -80,31 +80,31 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_entry_t
 
 #include "packstop.h"
 
-/** 
+/**
 * @defgroup log_entry_type_set the different types of log entries
 * @{
 */
 
 /** mark the start of a new transaction */
-#define LOG_ENTRY_TYPE_TXN_BEGIN                1 
+#define LOG_ENTRY_TYPE_TXN_BEGIN                1
 /** mark the end of an aborted transaction */
-#define LOG_ENTRY_TYPE_TXN_ABORT                2 
+#define LOG_ENTRY_TYPE_TXN_ABORT                2
 /** mark the end of an committed transaction */
-#define LOG_ENTRY_TYPE_TXN_COMMIT               3 
+#define LOG_ENTRY_TYPE_TXN_COMMIT               3
 /** save the original page data, before it is modified */
-#define LOG_ENTRY_TYPE_PREWRITE                 4 
-/** save the new, modified page data. The page is not yet written to disk; 
+#define LOG_ENTRY_TYPE_PREWRITE                 4
+/** save the new, modified page data. The page is not yet written to disk;
  * that will only happen once a @ref LOG_ENTRY_TYPE_FLUSH_PAGE happens. */
-#define LOG_ENTRY_TYPE_WRITE                    5 
+#define LOG_ENTRY_TYPE_WRITE                    5
 /** set a checkpoint: a point where we will be sure the entire database is flushed to disk */
-#define LOG_ENTRY_TYPE_CHECKPOINT               7 
-/** mark a page being flushed from the page cache; as this will be a 
- * modified page (otherwise the explicit flush would not occur), we can be 
- * sure to find a @ref LOG_ENTRY_TYPE_WRITE entry in the log history and, 
- * maybe, a @ref LOG_ENTRY_TYPE_PREWRITE before that (new pages obtained 
- * by expanding the database file are generally not 'prewritten' as they will 
+#define LOG_ENTRY_TYPE_CHECKPOINT               7
+/** mark a page being flushed from the page cache; as this will be a
+ * modified page (otherwise the explicit flush would not occur), we can be
+ * sure to find a @ref LOG_ENTRY_TYPE_WRITE entry in the log history and,
+ * maybe, a @ref LOG_ENTRY_TYPE_PREWRITE before that (new pages obtained
+ * by expanding the database file are generally not 'prewritten' as they will
  * contain arbitrary garbage before first use. */
-#define LOG_ENTRY_TYPE_FLUSH_PAGE               8 
+#define LOG_ENTRY_TYPE_FLUSH_PAGE               8
 
 /**
  * @}
@@ -150,7 +150,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_entry_t
 /**
  * a Log object
  */
-struct ham_log_t 
+struct ham_log_t
 {
     /** the allocator object */
     mem_allocator_t *_alloc;
@@ -179,7 +179,7 @@ struct ham_log_t
     /** the lsn of the previous checkpoint */
     ham_u64_t _last_cp_lsn;
 
-    /** when having more than these transactions in one logfile, we 
+    /** when having more than these transactions in one logfile, we
      * swap the files */
     ham_size_t _threshold;
 
@@ -287,15 +287,15 @@ struct ham_log_t
  */
 extern ham_status_t
 ham_log_create(mem_allocator_t *alloc, ham_env_t *env,
-		const char *dbpath, 
+		const char *dbpath,
         ham_u32_t mode, ham_u32_t flags, ham_log_t **log);
 
 /**
  * this function opens an existing log
  */
 extern ham_status_t
-ham_log_open(mem_allocator_t *alloc, ham_env_t *env, 
-		const char *dbpath, 
+ham_log_open(mem_allocator_t *alloc, ham_env_t *env,
+		const char *dbpath,
 		ham_u32_t flags, ham_log_t **log);
 
 /**
@@ -308,7 +308,7 @@ ham_log_is_empty(ham_log_t *log, ham_bool_t *isempty);
  * appends an entry to the log
  */
 extern ham_status_t
-ham_log_append_entry(ham_log_t *log, int fdidx, log_entry_t *entry, 
+ham_log_append_entry(ham_log_t *log, int fdidx, log_entry_t *entry,
         ham_size_t size);
 
 /**
@@ -405,7 +405,7 @@ typedef struct {
  *
  * iter must be initialized with zeroes for the first call
  *
- * 'data' returns the data of the entry, or NULL if there is no data. 
+ * 'data' returns the data of the entry, or NULL if there is no data.
  * The memory has to be freed by the caller.
  *
  * returns SUCCESS and an empty entry (lsn is zero) after the last element.
@@ -422,6 +422,7 @@ ham_log_close(ham_log_t *log, ham_bool_t noclear);
 
 /**
  * adds a BEFORE-image of a page (if necessary)
+ *
  * @sa ham_log_append_prewrite
  */
 extern ham_status_t
@@ -440,7 +441,7 @@ extern ham_status_t
 ham_log_recover(ham_log_t *log, ham_device_t *device, ham_env_t *env);
 
 /**
- * recreate the page and remove all uncommitted changes 
+ * recreate the page and remove all uncommitted changes
  */
 extern ham_status_t
 ham_log_recreate(ham_log_t *log, ham_page_t *page);
@@ -458,7 +459,7 @@ extern void
 ham_log_mark_db_expansion_start(ham_env_t *env);
 
 /**
-Mark the end of a database storage expansion phase which was initiated 
+Mark the end of a database storage expansion phase which was initiated
 when @ref ham_log_mark_db_expansion_start had been invoked before.
 
 @sa env_reserve_space
@@ -470,14 +471,14 @@ ham_log_mark_db_expansion_end(ham_env_t *env);
 
 /**
 Check whether we are currently in the database storage expansion state:
-when we are, certain page operations can be simplified as we are merely 
+when we are, certain page operations can be simplified as we are merely
 adding free storage pages.
 
 Nevertheless, this state can occur as part of a larger transaction, which
 complicates matters a tad when said transaction is aborted: the file
 resize operations performed as part of the storage expansion operation
 <em>can not be undone</em>. To ensure the log processing will be aware
-at the time of recovery, we must log the storage expansion separately 
+at the time of recovery, we must log the storage expansion separately
 from the coordinating transaction itself.
 
 @sa env_reserve_space
@@ -489,6 +490,6 @@ ham_log_is_db_expansion(ham_env_t *env);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_LOG_H__ */

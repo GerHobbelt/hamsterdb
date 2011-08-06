@@ -3,11 +3,10 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -22,18 +21,18 @@
 #include "page.h"
 #include "env.h"
 
-typedef struct 
+typedef struct
 {
     ham_bool_t is_open;
 } dev_inmem_t;
 
-typedef struct 
+typedef struct
 {
     ham_fd_t fd;
 } dev_file_t;
 
-static ham_status_t 
-__f_create(ham_device_t *self, const char *fname, ham_u32_t flags, 
+static ham_status_t
+__f_create(ham_device_t *self, const char *fname, ham_u32_t flags,
             ham_u32_t mode)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -43,7 +42,7 @@ __f_create(ham_device_t *self, const char *fname, ham_u32_t flags,
     return (os_create(fname, flags, mode, &t->fd));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_open(ham_device_t *self, const char *fname, ham_u32_t flags)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -65,7 +64,7 @@ __f_close(ham_device_t *self)
     return (st);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_flush(ham_device_t *self)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -73,7 +72,7 @@ __f_flush(ham_device_t *self)
     return (os_flush(t->fd));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_truncate(ham_device_t *self, ham_offset_t newsize)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -81,14 +80,14 @@ __f_truncate(ham_device_t *self, ham_offset_t newsize)
     return (os_truncate(t->fd, newsize));
 }
 
-static ham_bool_t 
+static ham_bool_t
 __f_is_open(ham_device_t *self)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
     return (HAM_INVALID_FD!=t->fd);
 }
 
-static ham_size_t 
+static ham_size_t
 __f_get_pagesize(ham_device_t *self)
 {
     if (!self->_pagesize)
@@ -96,29 +95,29 @@ __f_get_pagesize(ham_device_t *self)
     return (self->_pagesize);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_set_pagesize(ham_device_t *self, ham_size_t pagesize)
 {
     self->_pagesize=pagesize;
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_seek(ham_device_t *self, ham_offset_t offset, int whence)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
 	return os_seek(t->fd, offset, whence);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_tell(ham_device_t *self, ham_offset_t *offset)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
 	return (os_tell(t->fd, offset));
 }
 
-static ham_status_t 
-__f_read(ham_device_t *self, ham_offset_t offset, 
+static ham_status_t
+__f_read(ham_device_t *self, ham_offset_t offset,
         void *buffer, ham_offset_t size)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -162,21 +161,21 @@ __f_read_page(ham_device_t *self, ham_page_t *page)
     ham_db_t *db=page_get_owner(page);
     ham_file_filter_t *head=0;
     ham_size_t size=self->get_pagesize(self);
-    
+
     if (db && db_get_env(db))
         head=env_get_file_filter(db_get_env(db));
 
     /*
-     * first, try to mmap the file (if mmap is available/enabled). 
+     * first, try to mmap the file (if mmap is available/enabled).
      *
      * however, if a LOT of mmapped pages are held in memory, then mmap
-     * fails. This happens on win32 but i also saw it on linux 64bit. 
+     * fails. This happens on win32 but i also saw it on linux 64bit.
      * in such a case, the os_mmap function will return HAM_OUT_OF_MEMORY
      * and we force a fallback to read/write.
      */
     if (!(device_get_flags(self)&HAM_DISABLE_MMAP)) {
-        st=os_mmap(t->fd, page_get_mmap_handle_ptr(page), 
-                page_get_self(page), size, 
+        st=os_mmap(t->fd, page_get_mmap_handle_ptr(page),
+                page_get_self(page), size,
                 device_get_flags(self)&HAM_READ_ONLY, &buffer);
         if (st && st!=HAM_OUT_OF_MEMORY)
             return (st);
@@ -192,13 +191,13 @@ fallback_rw:
             if (!buffer)
                 return (HAM_OUT_OF_MEMORY);
             page_set_pers(page, (ham_perm_page_union_t *)buffer);
-            page_set_npers_flags(page, 
+            page_set_npers_flags(page,
                 page_get_npers_flags(page)|PAGE_NPERS_MALLOC);
         }
         else
             ham_assert(!(page_get_npers_flags(page)&PAGE_NPERS_MALLOC), (0));
 
-        st=__f_read(self, page_get_self(page), 
+        st=__f_read(self, page_get_self(page),
                     page_get_pers(page), size);
         if (st)
             return (st);
@@ -229,7 +228,7 @@ fallback_rw:
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address)
 {
     ham_status_t st;
@@ -245,7 +244,7 @@ __f_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address)
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_alloc_page(ham_device_t *self, ham_page_t *page)
 {
     ham_status_t st;
@@ -265,7 +264,7 @@ __f_alloc_page(ham_device_t *self, ham_page_t *page)
     return (__f_read_page(self, page));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_get_filesize(ham_device_t *self, ham_offset_t *length)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -275,8 +274,8 @@ __f_get_filesize(ham_device_t *self, ham_offset_t *length)
     return (os_get_filesize(t->fd, length));
 }
 
-static ham_status_t 
-__f_write(ham_device_t *self, ham_offset_t offset, void *buffer, 
+static ham_status_t
+__f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
             ham_offset_t size)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -286,7 +285,7 @@ __f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
     ham_file_filter_t *head=0;
 
     /*
-     * run page through page-level filters, but not for the 
+     * run page through page-level filters, but not for the
      * root-page!
      */
     head=env_get_file_filter(env);
@@ -296,7 +295,7 @@ __f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
     /*
      * don't modify the data in-place!
      */
-    tempdata=(ham_u8_t *)allocator_alloc(env_get_allocator(env), 
+    tempdata=(ham_u8_t *)allocator_alloc(env_get_allocator(env),
                                (ham_size_t)size);
     if (!tempdata)
         return (HAM_OUT_OF_MEMORY);
@@ -305,7 +304,7 @@ __f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
     while (head) {
         if (head->before_write_cb) {
             st=head->before_write_cb(env, head, tempdata, (ham_size_t)size);
-            if (st) 
+            if (st)
                 break;
         }
         head=head->_next;
@@ -318,14 +317,14 @@ __f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
     return (st);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_write_page(ham_device_t *self, ham_page_t *page)
 {
-    return (__f_write(self, page_get_self(page), 
+    return (__f_write(self, page_get_self(page),
                 page_get_pers(page), self->get_pagesize(self)));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_free_page(ham_device_t *self, ham_page_t *page)
 {
     ham_status_t st;
@@ -333,11 +332,11 @@ __f_free_page(ham_device_t *self, ham_page_t *page)
     if (page_get_pers(page)) {
         if (page_get_npers_flags(page)&PAGE_NPERS_MALLOC) {
             allocator_free(device_get_allocator(self), page_get_pers(page));
-            page_set_npers_flags(page, 
+            page_set_npers_flags(page,
                 page_get_npers_flags(page)&~PAGE_NPERS_MALLOC);
         }
         else {
-            st=os_munmap(page_get_mmap_handle_ptr(page), 
+            st=os_munmap(page_get_mmap_handle_ptr(page),
                     page_get_pers(page), self->get_pagesize(self));
             if (st)
                 return (st);
@@ -348,7 +347,7 @@ __f_free_page(ham_device_t *self, ham_page_t *page)
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_destroy(ham_device_t *self)
 {
     ham_assert(!__f_is_open(self), ("destroying a device which is open"));
@@ -358,8 +357,8 @@ __f_destroy(ham_device_t *self)
     return (0);
 }
 
-static ham_status_t 
-__m_create(ham_device_t *self, const char *fname, ham_u32_t flags, 
+static ham_status_t
+__m_create(ham_device_t *self, const char *fname, ham_u32_t flags,
             ham_u32_t mode)
 {
     dev_inmem_t *t=(dev_inmem_t *)device_get_private(self);
@@ -373,7 +372,7 @@ __m_create(ham_device_t *self, const char *fname, ham_u32_t flags,
     return (0);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_open(ham_device_t *self, const char *fname, ham_u32_t flags)
 {
     (void)fname;
@@ -391,14 +390,14 @@ __m_close(ham_device_t *self)
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_flush(ham_device_t *self)
 {
     (void)self;
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_truncate(ham_device_t *self, ham_offset_t newsize)
 {
     (void)self;
@@ -406,28 +405,28 @@ __m_truncate(ham_device_t *self, ham_offset_t newsize)
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_seek(ham_device_t *self, ham_offset_t offset, int whence)
 {
     ham_assert(!"can't seek an in-memory-device", (0));
 	return (HAM_NOT_IMPLEMENTED);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_tell(ham_device_t *self, ham_offset_t *offset)
 {
     ham_assert(!"can't seek an in-memory-device", (0));
 	return (HAM_NOT_IMPLEMENTED);
 }
 
-static ham_bool_t 
+static ham_bool_t
 __m_is_open(ham_device_t *self)
 {
     dev_inmem_t *t=(dev_inmem_t *)device_get_private(self);
     return (t->is_open);
 }
 
-static ham_size_t 
+static ham_size_t
 __m_get_pagesize(ham_device_t *self)
 {
     if (!self->_pagesize)
@@ -435,7 +434,7 @@ __m_get_pagesize(ham_device_t *self)
     return (self->_pagesize);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address)
 {
     (void)self;
@@ -445,7 +444,7 @@ __m_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address)
     return (HAM_NOT_IMPLEMENTED);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_alloc_page(ham_device_t *self, ham_page_t *page)
 {
     ham_u8_t *buffer;
@@ -457,14 +456,14 @@ __m_alloc_page(ham_device_t *self, ham_page_t *page)
     if (!buffer)
         return (HAM_OUT_OF_MEMORY);
     page_set_pers(page, (ham_perm_page_union_t *)buffer);
-    page_set_npers_flags(page, 
+    page_set_npers_flags(page,
         page_get_npers_flags(page)|PAGE_NPERS_MALLOC);
     page_set_self(page, (ham_offset_t)PTR_TO_U64(buffer));
 
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_get_filesize(ham_device_t *self, ham_offset_t *size)
 {
     (void)self;
@@ -473,8 +472,8 @@ __m_get_filesize(ham_device_t *self, ham_offset_t *size)
     return (HAM_NOT_IMPLEMENTED);
 }
 
-static ham_status_t 
-__m_read(ham_device_t *self, ham_offset_t offset, 
+static ham_status_t
+__m_read(ham_device_t *self, ham_offset_t offset,
         void *buffer, ham_offset_t size)
 {
     (void)self;
@@ -486,8 +485,8 @@ __m_read(ham_device_t *self, ham_offset_t offset,
 }
 
 
-static ham_status_t 
-__m_write(ham_device_t *self, ham_offset_t offset, void *buffer, 
+static ham_status_t
+__m_write(ham_device_t *self, ham_offset_t offset, void *buffer,
             ham_offset_t size)
 {
     (void)self;
@@ -507,7 +506,7 @@ __m_read_page(ham_device_t *self, ham_page_t *page)
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_write_page(ham_device_t *self, ham_page_t *page)
 {
     (void)self;
@@ -516,7 +515,7 @@ __m_write_page(ham_device_t *self, ham_page_t *page)
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_free_page(ham_device_t *self, ham_page_t *page)
 {
     ham_assert(page_get_pers(page)!=0, (0));
@@ -524,13 +523,13 @@ __m_free_page(ham_device_t *self, ham_page_t *page)
 
     allocator_free(device_get_allocator(self), page_get_pers(page));
     page_set_pers(page, 0);
-    page_set_npers_flags(page, 
+    page_set_npers_flags(page,
         page_get_npers_flags(page)&~PAGE_NPERS_MALLOC);
 
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __m_destroy(ham_device_t *self)
 {
     ham_assert(!__m_is_open(self), ("destroying a device which is open"));
@@ -540,13 +539,13 @@ __m_destroy(ham_device_t *self)
     return (HAM_SUCCESS);
 }
 
-static void 
+static void
 __set_flags(ham_device_t *self, ham_u32_t flags)
 {
     device_set_flags(self, flags);
 }
 
-static ham_u32_t 
+static ham_u32_t
 __get_flags(ham_device_t *self)
 {
     return (device_get_flags(self));
@@ -626,7 +625,7 @@ ham_device_new(mem_allocator_t *alloc, ham_env_t *env, int devtype)
 
     /*
      * initialize the pagesize with a default value - this will be
-     * overwritten i.e. by ham_open, ham_create when the pagesize 
+     * overwritten i.e. by ham_open, ham_create when the pagesize
      * of the file is known
      */
     dev->set_pagesize(dev, dev->get_pagesize(dev));

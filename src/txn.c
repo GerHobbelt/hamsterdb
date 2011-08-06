@@ -3,11 +3,10 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
 #include "config.h"
@@ -37,10 +36,10 @@ txn_add_page(ham_txn_t *txn, ham_page_t *page, ham_bool_t ignore_if_inserted)
 
 #ifdef HAM_DEBUG
     /*
-     * check if the page is already in the transaction's pagelist - 
+     * check if the page is already in the transaction's pagelist -
      * that would be a bug
      */
-    ham_assert(txn_get_page(txn, page_get_self(page))==0, 
+    ham_assert(txn_get_page(txn, page_get_self(page))==0,
             ("page 0x%llx is already in the txn", page_get_self(page)));
 #endif
 
@@ -50,7 +49,7 @@ txn_add_page(ham_txn_t *txn, ham_page_t *page, ham_bool_t ignore_if_inserted)
     page_add_ref(page);
 
     ham_assert(!page_is_in_list(txn_get_pagelist(txn), page, PAGE_LIST_TXN), (0));
-    txn_set_pagelist(txn, page_list_insert(txn_get_pagelist(txn), 
+    txn_set_pagelist(txn, page_list_insert(txn_get_pagelist(txn),
             PAGE_LIST_TXN, page));
 
     return (HAM_SUCCESS);
@@ -72,7 +71,7 @@ ham_status_t
 txn_remove_page(ham_txn_t *txn, struct ham_page_t *page)
 {
     ham_assert(page_is_in_list(txn_get_pagelist(txn), page, PAGE_LIST_TXN), (0));
-    txn_set_pagelist(txn, page_list_remove(txn_get_pagelist(txn), 
+    txn_set_pagelist(txn, page_list_remove(txn_get_pagelist(txn),
             PAGE_LIST_TXN, page));
 
     page_release_ref(page);
@@ -100,7 +99,7 @@ txn_get_page(ham_txn_t *txn, ham_offset_t address)
     return (0);
 }
 
-/*
+/**
 BIG FAT WARNING:
 
 This routine should NEVER be used like this:
@@ -176,17 +175,17 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
             ham_page_t *next;
 
             next=page_get_next(head, PAGE_LIST_TXN);
-            if (page_get_dirty_txn(head)==txn_get_id(txn) 
+            if (page_get_dirty_txn(head)==txn_get_id(txn)
                     || page_get_dirty_txn(head)==PAGE_DUMMY_TXN_ID) {
                 st=ham_log_add_page_after(head);
-                if (st) 
+                if (st)
                     return st;
             }
             head=next;
         }
 
         st=ham_log_append_txn_commit(env_get_log(env), txn);
-        if (st) 
+        if (st)
             return st;
     }
 
@@ -199,19 +198,19 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
      */
     while (txn_get_pagelist(txn)) {
         ham_page_t *head = txn_get_pagelist(txn);
-        
+
         txn_get_pagelist(txn) = page_list_remove(head, PAGE_LIST_TXN, head);
 
         /* page is no longer in use */
         page_release_ref(head);
 
-        /* 
-         * delete the page? 
+        /*
+         * delete the page?
          */
         if (page_get_npers_flags(head)&PAGE_NPERS_DELETE_PENDING) {
             /* remove page from cache, add it to garbage list */
             page_set_undirty(head);
-        
+
             st=db_free_page(head, DB_MOVE_TO_FREELIST);
             if (st)
                 return (st);
@@ -250,7 +249,7 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
 
     if (env_get_log(env) && !(txn_get_flags(txn)&HAM_TXN_READ_ONLY)) {
         st=ham_log_append_txn_abort(env_get_log(env), txn);
-        if (st) 
+        if (st)
             return (st);
     }
 
@@ -258,43 +257,43 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
 
     /*
      * undo all operations from this transaction
-     * 
-     * this includes allocated pages (they're moved to the freelist), 
+     *
+     * this includes allocated pages (they're moved to the freelist),
      * deleted pages (they're un-deleted) and other modifications (will
      * re-create the original page from the logfile)
      *
-     * keep txn_get_pagelist(txn) intact during every round, so no 
+     * keep txn_get_pagelist(txn) intact during every round, so no
      * local var for this one.
      */
     while (txn_get_pagelist(txn)) {
         ham_page_t *head = txn_get_pagelist(txn);
 
         if (!(flags & DO_NOT_NUKE_PAGE_STATS)) {
-            /* 
+            /*
              * nuke critical statistics, such as tracked outer bounds; imagine,
-             * for example, a failing erase transaction which, through erasing 
-             * the top-most key, lowers the actual upper bound, after which 
-             * the transaction fails at some later point in life. Now if we 
-             * wouldn't 'rewind' our bounds-statistics, we would have a 
-             * situation where a subsequent out-of-bounds insert (~ append) 
-             * would possibly FAIL due to the hinter using incorrect bounds 
+             * for example, a failing erase transaction which, through erasing
+             * the top-most key, lowers the actual upper bound, after which
+             * the transaction fails at some later point in life. Now if we
+             * wouldn't 'rewind' our bounds-statistics, we would have a
+             * situation where a subsequent out-of-bounds insert (~ append)
+             * would possibly FAIL due to the hinter using incorrect bounds
              * information then!
              *
-             * Hence we 'reverse' our statistics here and the easiest route 
-             * is to just nuke the critical bits; subsequent find/insert/erase 
-             * operations will ensure that the stats will get updated again, 
-             * anyhow. All we loose then is a few subsequent operations, which 
-             * might have been hinted if we had played a smarter game of 
+             * Hence we 'reverse' our statistics here and the easiest route
+             * is to just nuke the critical bits; subsequent find/insert/erase
+             * operations will ensure that the stats will get updated again,
+             * anyhow. All we loose then is a few subsequent operations, which
+             * might have been hinted if we had played a smarter game of
              * statistics 'reversal'. Soit.
              */
             ham_db_t *db = page_get_owner(head);
 
             /*
-             * only need to do this for index pages anyhow, and those are the 
+             * only need to do this for index pages anyhow, and those are the
              * ones which have their 'ownership' set.
              */
             if (db)
-                stats_page_is_nuked(db, head, HAM_FALSE); 
+                stats_page_is_nuked(db, head, HAM_FALSE);
         }
 
         ham_assert(page_is_in_list(txn_get_pagelist(txn), head, PAGE_LIST_TXN),
@@ -304,12 +303,12 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
         /* if this page was allocated by this transaction, then we can
          * move the whole page to the freelist */
         if (page_get_alloc_txn_id(head)==txn_get_id(txn)) {
-            (void)freel_mark_free(env, 0, page_get_self(head), 
+            (void)freel_mark_free(env, 0, page_get_self(head),
                     env_get_pagesize(env), HAM_TRUE);
         }
         else {
             /* remove the 'delete pending' flag */
-            page_set_npers_flags(head, 
+            page_set_npers_flags(head,
                     page_get_npers_flags(head)&~PAGE_NPERS_DELETE_PENDING);
 
             /* if the page is dirty, and RECOVERY is enabled: recreate

@@ -3,15 +3,15 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
 
 /**
- * this file describes the configuration of hamster - serial number, 
- * enabled features etc. 
+ * this file describes the configuration of hamster - serial number,
+ * enabled features etc.
  *
  */
 
@@ -49,9 +49,9 @@
 #   endif
 #endif
 
-/* 
- * the endian-architecture of the host computer; set this to 
- * HAM_LITTLE_ENDIAN or HAM_BIG_ENDIAN 
+/*
+ * the endian-architecture of the host computer; set this to
+ * HAM_LITTLE_ENDIAN or HAM_BIG_ENDIAN
  */
 #ifndef HAM_LITTLE_ENDIAN
 #   ifndef HAM_BIG_ENDIAN

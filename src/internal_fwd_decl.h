@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -12,19 +12,19 @@
 /**
  * @brief provides forward declarations of internally used types
  *
- * This header file provides these forward declarations to prevent several 
- * cyclic dependencies; in particular, the @ref ham_page_t is a type used 
- * throughout, but a @ref ham_page_t contains several other types, which 
+ * This header file provides these forward declarations to prevent several
+ * cyclic dependencies; in particular, the @ref ham_page_t is a type used
+ * throughout, but a @ref ham_page_t contains several other types, which
  * again reference @ref ham_page_t pointers either directly or indirectly.
  *
- * To solve this self-referential issue once and for all, all major hamster 
- * internal types are forward declared here; when the code requires the actual 
- * implementation of a type it can include the related header file any time it 
+ * To solve this self-referential issue once and for all, all major hamster
+ * internal types are forward declared here; when the code requires the actual
+ * implementation of a type it can include the related header file any time it
  * wishes.
  *
  * @remark This way of solving the cyclic dependency conundrum has the added
- *     benefit of having a single, well known spot where the actual
- *     'typedef' lines reside, so there's zero risk of 'double defined types'.
+ *         benefit of having a single, well known spot where the actual
+ *         'typedef' lines reside, so there's zero risk of 'double defined types'.
  */
 
 #ifndef HAM_FWD_DECL_CMN_TYPES_H__
@@ -38,7 +38,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 struct ham_page_t;
 typedef struct ham_page_t ham_page_t;
@@ -102,6 +102,6 @@ typedef struct int_key_t int_key_t;
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif

@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -31,9 +31,9 @@ class PageTest : public hamsterDB_fixture
 	define_super(hamsterDB_fixture);
 
 public:
-    PageTest(ham_bool_t inmemorydb=HAM_FALSE, ham_bool_t mmap=HAM_TRUE, 
+    PageTest(ham_bool_t inmemorydb=HAM_FALSE, ham_bool_t mmap=HAM_TRUE,
             const char *name="PageTest")
-    :   hamsterDB_fixture(name), 
+    :   hamsterDB_fixture(name),
         m_db(0), m_inmemory(inmemorydb), m_usemmap(mmap), m_dev(0), m_alloc(0)
     {
         testrunner::get_instance()->register_fixture(this);
@@ -52,8 +52,8 @@ protected:
     memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-	{ 
+    virtual void setup()
+	{
         ham_u32_t flags=0;
 
 		__super::setup();
@@ -65,14 +65,14 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT((m_alloc=memtracker_new())!=0);
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(m_db, BFC_OPATH(".test"),
                                 flags, 0644, 0));
         m_env=db_get_env(m_db);
     }
-    
-    virtual void teardown() 
-	{ 
+
+    virtual void teardown()
+	{
 		__super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
@@ -130,7 +130,7 @@ public:
         BFC_ASSERT_EQUAL(0, page_alloc(page));
         BFC_ASSERT_EQUAL(ps*2, page_get_self(page));
         BFC_ASSERT_EQUAL(0, page_free(page));
-        
+
         BFC_ASSERT_EQUAL(0, page_fetch(page));
         memset(page_get_pers(page), 0x13, ps);
         page_set_dirty(page, m_env);
@@ -139,7 +139,7 @@ public:
         BFC_ASSERT_EQUAL(false, page_is_dirty(page));
         page_set_self(temp, ps*2);
         BFC_ASSERT_EQUAL(0, page_fetch(temp));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 memcmp(page_get_pers(page), page_get_pers(temp), ps));
 
         BFC_ASSERT_EQUAL(0, page_free(page));

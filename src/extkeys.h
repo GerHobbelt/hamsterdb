@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -22,7 +22,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
  * an extended key
@@ -32,7 +32,7 @@ struct extkey_t
     /** the blobid of this key */
     ham_offset_t _blobid;
 
-    /** the current transaction, which created this extkey; used to 
+    /** the current transaction, which created this extkey; used to
      * get the age of the extkey */
     ham_u64_t _txn_id;
 
@@ -53,32 +53,32 @@ struct extkey_t
 #define SIZEOF_EXTKEY_T                     (sizeof(extkey_t)-1)
 
 /**
- * get the blobid 
+ * get the blobid
  */
 #define extkey_get_blobid(e)                (e)->_blobid
 
 /**
- * set the blobid 
+ * set the blobid
  */
 #define extkey_set_blobid(e, id)             (e)->_blobid=(id)
 
 /**
- * get the txn id 
+ * get the txn id
  */
 #define extkey_get_txn_id(e)                 (e)->_txn_id
 
 /**
- * set the txn id 
+ * set the txn id
  */
 #define extkey_set_txn_id(e, id)             (e)->_txn_id=(id)
 
 /**
- * get the next-pointer 
+ * get the next-pointer
  */
 #define extkey_get_next(e)                   (e)->_next
 
 /**
- * set the next-pointer 
+ * set the next-pointer
  */
 #define extkey_set_next(e, next)             (e)->_next=(next)
 
@@ -170,10 +170,10 @@ extkey_cache_destroy(extkey_cache_t *cache);
 
 /**
  * insert a new extended key in the cache
- * will assert that there's no duplicate key! 
+ * will assert that there's no duplicate key!
  */
 extern ham_status_t
-extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid, 
+extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid,
             ham_size_t size, const ham_u8_t *data);
 
 /**
@@ -188,7 +188,7 @@ extkey_cache_remove(extkey_cache_t *cache, ham_offset_t blobid);
  * returns HAM_KEY_NOT_FOUND if the extkey was not found
  */
 extern ham_status_t
-extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid, 
+extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid,
             ham_size_t *size, ham_u8_t **data);
 
 /**
@@ -211,6 +211,6 @@ extkey_remove(ham_db_t *db, ham_offset_t blobid);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_EXTKEYS_H__ */

@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -11,7 +11,7 @@
 
 /**
  * this file contains macros for little endian/big endian byte swapping.
- * the database is always in little-endian. 
+ * the database is always in little-endian.
  *
  */
 
@@ -20,10 +20,10 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
-/** 
+/**
  * byte swapping macros - we use little endian
  */
 #ifdef HAM_BIG_ENDIAN
@@ -73,6 +73,6 @@ extern "C" {
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_ENDIANSWAP_H__ */

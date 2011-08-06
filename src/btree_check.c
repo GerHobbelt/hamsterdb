@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -38,7 +38,7 @@ typedef struct
      */
     ham_btree_t *be;
 
-    /**   
+    /**
      * the flags of the ham_check_integrity()-call
      */
     ham_u32_t flags;
@@ -49,26 +49,26 @@ typedef struct
  * verify a whole level in the tree - start with "page" and traverse
  * the linked list of all the siblings
  */
-static ham_status_t 
-__verify_level(ham_page_t *parent, ham_page_t *page, 
+static ham_status_t
+__verify_level(ham_page_t *parent, ham_page_t *page,
         ham_u32_t level, check_scratchpad_t *scratchpad);
 
 /**
  * verify a single page
  */
 static ham_status_t
-__verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page, 
+__verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
         ham_u32_t level, ham_u32_t count, check_scratchpad_t *scratchpad);
-    
-/**                                                                 
- * verify the whole tree                                            
- *                                                                  
+
+/**
+ * verify the whole tree
+ *
  * @note This is a B+-tree 'backend' method.
- */                                                                 
-ham_status_t 
+ */
+ham_status_t
 btree_check_integrity(ham_btree_t *be)
 {
-    ham_page_t *page, *parent=0; 
+    ham_page_t *page, *parent=0;
     ham_u32_t level=0;
     btree_node_t *node;
     ham_status_t st=0;
@@ -118,8 +118,8 @@ btree_check_integrity(ham_btree_t *be)
     return (st);
 }
 
-static ham_status_t 
-__verify_level(ham_page_t *parent, ham_page_t *page, 
+static ham_status_t
+__verify_level(ham_page_t *parent, ham_page_t *page,
         ham_u32_t level, check_scratchpad_t *scratchpad)
 {
     int cmp;
@@ -129,7 +129,7 @@ __verify_level(ham_page_t *parent, ham_page_t *page,
     btree_node_t *node=ham_page_get_btree_node(page);
     ham_db_t *db=page_get_owner(page);
 
-    /* 
+    /*
      * assert that the parent page's smallest item (item 0) is bigger
      * than the largest item in this page
      */
@@ -142,7 +142,7 @@ __verify_level(ham_page_t *parent, ham_page_t *page,
             return (ham_status_t)cmp;
         if (cmp<0) {
             ham_log(("integrity check failed in page 0x%llx: parent item #0 "
-                    "< item #%d\n", page_get_self(page), 
+                    "< item #%d\n", page_get_self(page),
                     btree_node_get_count(cnode)-1));
             return (HAM_INTEGRITY_VIOLATED);
         }
@@ -156,7 +156,7 @@ __verify_level(ham_page_t *parent, ham_page_t *page,
         if (st)
             break;
 
-        /* 
+        /*
          * get the right sibling
          */
         node=ham_page_get_btree_node(page);
@@ -179,7 +179,7 @@ __verify_level(ham_page_t *parent, ham_page_t *page,
 }
 
 static ham_status_t
-__verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page, 
+__verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
         ham_u32_t level, ham_u32_t sibcount, check_scratchpad_t *scratchpad)
 {
     int cmp;
@@ -195,7 +195,7 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
 
     if (count==0) {
         /*
-         * a rootpage can be empty! check if this page is the 
+         * a rootpage can be empty! check if this page is the
          * rootpage.
          */
         ham_btree_t *be=(ham_btree_t *)db_get_backend(db);
@@ -209,9 +209,9 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
 
     /*
      * previous hamsterdb versions verified that at least "minkeys" keys
-     * are in the page. newer hamsterdb versions relaxed these rules and 
-     * performed late splits and maybe will even avoid merges if pages 
-     * underflow. 
+     * are in the page. newer hamsterdb versions relaxed these rules and
+     * performed late splits and maybe will even avoid merges if pages
+     * underflow.
      */
 
     /*
@@ -220,16 +220,16 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
      */
     if (leftsib) {
         btree_node_t *sibnode=ham_page_get_btree_node(leftsib);
-        int_key_t *sibentry=btree_node_get_key(db, sibnode, 
+        int_key_t *sibentry=btree_node_get_key(db, sibnode,
                 btree_node_get_count(sibnode)-1);
 
         bte=btree_node_get_key(db, node, 0);
 
-        if ((key_get_flags(bte)!=0 && key_get_flags(bte)!=KEY_IS_EXTENDED) 
-                && !btree_node_is_leaf(node)) 
+        if ((key_get_flags(bte)!=0 && key_get_flags(bte)!=KEY_IS_EXTENDED)
+                && !btree_node_is_leaf(node))
         {
             ham_log(("integrity check failed in page 0x%llx: item #0 "
-                    "has flags, but it's not a leaf page", 
+                    "has flags, but it's not a leaf page",
                     page_get_self(page), i));
             return (HAM_INTEGRITY_VIOLATED);
         }
@@ -252,7 +252,7 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
 
         if (cmp >= 0) {
             ham_log(("integrity check failed in page 0x%llx: item #0 "
-                    "< left sibling item #%d\n", page_get_self(page), 
+                    "< left sibling item #%d\n", page_get_self(page),
                     btree_node_get_count(sibnode)-1));
             return (HAM_INTEGRITY_VIOLATED);
         }
@@ -262,7 +262,7 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
         return (0);
 
     for (i=0; i<count-1; i++) {
-        /* 
+        /*
          * if this is an extended key: check for a blob-id
          */
         bte=btree_node_get_key(db, node, i);
@@ -270,12 +270,12 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
             ham_offset_t blobid=key_get_extended_rid(db, bte);
             if (!blobid) {
                 ham_log(("integrity check failed in page 0x%llx: item #%d "
-                        "is extended, but has no blob", 
+                        "is extended, but has no blob",
                         page_get_self(page), i));
                 return (HAM_INTEGRITY_VIOLATED);
             }
         }
-        
+
         cmp=key_compare_int_to_int(db, page, (ham_u16_t)i, (ham_u16_t)(i+1));
 
         if (cmp < -1)

@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -32,8 +32,8 @@
 static option_t opts[]={
     {
         ARG_HELP,               // symbolic name of this option
-        "h",                    // short option 
-        "help",                 // long option 
+        "h",                    // short option
+        "help",                 // long option
         "this help screen",     // help string
         0 },                    // no flags
     {
@@ -51,7 +51,7 @@ static option_t opts[]={
     { 0, 0, 0, 0, 0 } /* terminating element */
 };
 
-static void 
+static void
 error(const char *foo, ham_status_t st)
 {
     printf("%s() returned error %d: %s\n", foo, st, ham_strerror(st));
@@ -77,7 +77,7 @@ print_environment(ham_env_t *env)
 
     printf("environment\n");
     printf("    pagesize:                   %u\n", env_get_pagesize(env));
-    printf("    version:                    %u.%u.%u.%u\n", 
+    printf("    version:                    %u.%u.%u.%u\n",
             env_get_version(env, 0),
             env_get_version(env, 1),
             env_get_version(env, 2),
@@ -99,7 +99,7 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
     ham_status_t st;
     ham_key_t key;
     ham_record_t rec;
-    unsigned num_items=0, ext_keys=0, min_key_size=0xffffffff, 
+    unsigned num_items=0, ext_keys=0, min_key_size=0xffffffff,
              max_key_size=0, min_rec_size=0xffffffff, max_rec_size=0,
             total_key_size=0, total_rec_size=0;
 
@@ -110,13 +110,13 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
 
     printf("\n");
     printf("    database %d (0x%x)\n", (int)dbname, (int)dbname);
-    printf("        max key size:           %u\n", 
+    printf("        max key size:           %u\n",
             be_get_keysize(be));
-    printf("        max keys per page:      %u\n", 
+    printf("        max keys per page:      %u\n",
             btree_get_maxkeys(be));
-    printf("        address of root page:   %llu\n", 
+    printf("        address of root page:   %llu\n",
             (long long unsigned int)btree_get_rootpage(be));
-    printf("        flags:                  0x%04x\n", 
+    printf("        flags:                  0x%04x\n",
             db_get_rt_flags(db));
 
     if (!full)
@@ -132,7 +132,7 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
             /* reached end of the database? */
             if (st==HAM_KEY_NOT_FOUND)
                 break;
-            else 
+            else
                 error("ham_cursor_next", st);
         }
 
@@ -288,7 +288,7 @@ main(int argc, char **argv)
         st=ham_new(&db);
         if (st)
             error("ham_new", st);
-    
+
         st=ham_env_open_db(env, db, dbname, 0, 0);
         if (st==HAM_DATABASE_NOT_FOUND) {
             printf("Database %u (0x%x) not found\n", dbname, dbname);
@@ -296,9 +296,9 @@ main(int argc, char **argv)
         }
         else if (st)
             error("ham_env_open_db", st);
-    
+
         print_database(db, dbname, full);
-    
+
         st=ham_close(db, 0);
         if (st)
             error("ham_close", st);
@@ -312,19 +312,19 @@ main(int argc, char **argv)
             st=ham_new(&db);
             if (st)
                 error("ham_new", st);
-    
+
             st=ham_env_open_db(env, db, names[i], 0, 0);
             if (st)
                 error("ham_env_open_db", st);
-    
+
             print_database(db, names[i], full);
-    
+
             st=ham_close(db, 0);
             if (st)
                 error("ham_close", st);
             ham_delete(db);
         }
-    } 
+    }
     /*
      * clean up
      */

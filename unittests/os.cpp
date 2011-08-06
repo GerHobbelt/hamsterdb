@@ -1,9 +1,9 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -59,8 +59,8 @@ public:
     }
 
 public:
-    virtual void teardown() 
-    { 
+    virtual void teardown()
+    {
         __super::teardown();
 
         (void)os::unlink(BFC_OPATH(".test"));
@@ -145,16 +145,16 @@ public:
 #ifndef __CYGWIN__
         ham_fd_t fd, fd2;
 
-        BFC_ASSERT_EQUAL(0, os_create(BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0, os_create(BFC_OPATH(".test"),
                     HAM_LOCK_EXCLUSIVE, 0664, &fd));
         BFC_ASSERT_EQUAL(0, os_close(fd, HAM_LOCK_EXCLUSIVE));
-        
-        BFC_ASSERT_EQUAL(0, 
+
+        BFC_ASSERT_EQUAL(0,
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd));
-        BFC_ASSERT_EQUAL(HAM_WOULD_BLOCK, 
+        BFC_ASSERT_EQUAL(HAM_WOULD_BLOCK,
                 os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
         BFC_ASSERT_EQUAL(0, os_close(fd, HAM_LOCK_EXCLUSIVE));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
         BFC_ASSERT_EQUAL(0, os_close(fd2, HAM_LOCK_EXCLUSIVE));
         BFC_ASSERT_EQUAL(0, os_open(BFC_OPATH(".test"), 0, &fd2));
@@ -244,7 +244,7 @@ public:
         BFC_ASSERT_EQUAL(0, os_pread(fd, 0, page, ps));
         /* compare */
         BFC_ASSERT_EQUAL(0x13, page[0]);
-		
+
 		BFC_ASSERT_EQUAL(0, os_close(fd, 0));
         free(page);
     }
@@ -267,7 +267,7 @@ public:
         BFC_ASSERT_EQUAL(0, os_open(BFC_OPATH(".test"), HAM_READ_ONLY, &fd));
         for (i=0; i<10; i++) {
             memset(p1, i, ps);
-            BFC_ASSERT_EQUAL(0, os_mmap(fd, &mmaph, i*ps, ps, 
+            BFC_ASSERT_EQUAL(0, os_mmap(fd, &mmaph, i*ps, ps,
                     HAM_READ_ONLY, &p2));
             BFC_ASSERT_EQUAL(0, memcmp(p1, p2, ps));
             BFC_ASSERT_EQUAL(0, os_munmap(&mmaph, p2, ps));
@@ -325,7 +325,7 @@ public:
         // bad address && page size! - i don't know why this succeeds
         // on MacOS...
 #ifndef __MACH__
-        BFC_ASSERT_EQUAL(HAM_IO_ERROR, 
+        BFC_ASSERT_EQUAL(HAM_IO_ERROR,
                 os_mmap(fd, &mmaph, 33, 66, 0, &page));
 #endif
         BFC_ASSERT_EQUAL(0, os_close(fd, 0));

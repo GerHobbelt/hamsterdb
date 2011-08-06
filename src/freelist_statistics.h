@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -26,14 +26,14 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
 
 #include "packstart.h"
 
 /**
-We keep track of VERY first free slot index + free slot index 
+We keep track of VERY first free slot index + free slot index
 pointing at last (~ supposed largest) free range + 'utilization' of the
 range between FIRST and LAST as a ratio of number of free slots in
 there vs. total number of slots in that range (giving us a 'fill'
@@ -46,7 +46,7 @@ without finding anything suitably large).
 
 Note that the free_fill in here is AN ESTIMATE.
  */
-typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t 
+typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
 {
 	ham_u32_t first_start;
 	/* reserved: */
@@ -59,7 +59,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
 	 */
 	ham_u32_t scan_count;
 	ham_u32_t ok_scan_count;
-	
+
     /**
      * summed cost ('duration') of all scans per size range.
      */
@@ -91,11 +91,11 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
 	which partition the statistical info across the entire space request range
 	by using a logarithmic partitioning function.
 
-	That way, very accurate, independent statistics can be stores for both 
+	That way, very accurate, independent statistics can be stores for both
 	small, medium and large sized space requests, so that the freelist hinter
 	can deliver a high quality search hint for various requests.
 	*/
-	freelist_slotsize_stats_t per_size[HAM_FREELIST_SLOT_SPREAD]; 
+	freelist_slotsize_stats_t per_size[HAM_FREELIST_SLOT_SPREAD];
 
     /**
      * (bit) offset which tells us which free slot is the EVER LAST
@@ -153,7 +153,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
 	ham_u32_t search_count;
 
 	/**
-	Tracks the ascent of the various statistical counters in here in order to prevent 
+	Tracks the ascent of the various statistical counters in here in order to prevent
 	integer overflow.
 
 	This is accomplished by tracking the summed hinting costs over time in this variable
@@ -193,9 +193,9 @@ struct runtime_statistics_pagedata_t
 struct freelist_hints_t
 {
 	/** [in/out] INCLUSIVE bound: where free slots start */
-	ham_u32_t startpos; 
+	ham_u32_t startpos;
 	/** [in/out] EXCLUSIVE bound: where free slots end */
-	ham_u32_t endpos;	
+	ham_u32_t endpos;
 	/** [in/out] suggested search/skip probe distance */
 	ham_u32_t skip_distance;
 	/** [in/out] suggested DAM mgt_mode for the remainder of this request */
@@ -208,16 +208,16 @@ struct freelist_hints_t
 	ham_size_t size_bits;
 	/** [input] the size of a freelist page (in chunks) */
 	ham_size_t freelist_pagesize_bits;
-    /** 
+    /**
 	[input] the number of (rounded up) pages we need to fulfill the request; 1 for
-			 'regular' (non-huge) requests. 
-			 
+			 'regular' (non-huge) requests.
+
 			 Cannot be 0, as that is only correct for a zero-length request.
 	*/
     ham_size_t page_span_width;
 
 	/** [feedback] cost tracking for our statistics */
-	ham_size_t cost; 
+	ham_size_t cost;
 };
 
 
@@ -225,7 +225,7 @@ struct freelist_global_hints_t
 {
     /**
 	[in/out] INCLUSIVE bound: at which freelist page entry to start
-             looking 
+             looking
 	*/
     ham_u32_t start_entry;
 
@@ -248,19 +248,19 @@ struct freelist_global_hints_t
 
     /**
 	[in/out] upper bound on number of rounds ~ entries to scan: when
-     to stop looking 
+     to stop looking
 	 */
     ham_u32_t max_rounds;
 
 	/** [in/out] suggested DAM mgt_mode for the remainder of this request */
     ham_u16_t mgt_mode;
 
-    /** 
-	[output] whether or not we are looking for a chunk of storage 
-	         spanning multiple pages ('huge blobs'): lists the number 
+    /**
+	[output] whether or not we are looking for a chunk of storage
+	         spanning multiple pages ('huge blobs'): lists the number
 			 of (rounded up) pages we need to fulfill the request; 1 for
-			 'regular' (non-huge) requests. 
-			 
+			 'regular' (non-huge) requests.
+
 			 Cannot be 0, as that is only correct for a zero-length request.
 	*/
     ham_size_t page_span_width;
@@ -291,32 +291,32 @@ struct freelist_global_hints_t
 
 
 extern void
-db_update_freelist_globalhints_no_hit(ham_device_t *dev, ham_env_t *env, 
+db_update_freelist_globalhints_no_hit(ham_device_t *dev, ham_env_t *env,
 					freelist_entry_t *entry, freelist_hints_t *hints);
 
 
 
 extern void
-db_update_freelist_stats_edit(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry, 
-					freelist_payload_t *f, 
-					ham_u32_t position, 
-					ham_size_t size_bits, 
-					ham_bool_t free_these, 
+db_update_freelist_stats_edit(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
+					freelist_payload_t *f,
+					ham_u32_t position,
+					ham_size_t size_bits,
+					ham_bool_t free_these,
 					freelist_hints_t *hints);
 
 extern void
 db_update_freelist_stats_fail(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
-					freelist_payload_t *f, 
+					freelist_payload_t *f,
 					freelist_hints_t *hints);
 
 extern void
 db_update_freelist_stats(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
-					freelist_payload_t *f, 
-					ham_u32_t position, 
+					freelist_payload_t *f,
+					ham_u32_t position,
 					freelist_hints_t *hints);
 
 extern void
-db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t *env, 
+db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t *env,
 						freelist_entry_t *entry);
 
 extern void
@@ -335,6 +335,6 @@ stats_fill_freel_statistics_t(ham_env_t *env, ham_statistics_t *dst);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_FREELIST_H__ */
