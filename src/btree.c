@@ -163,7 +163,7 @@ my_fun_calc_keycount_per_page(ham_btree_t *be, ham_size_t *maxkeys,
          */
         *maxkeys=btree_calc_maxkeys(env_get_pagesize(db_get_env(db)), keysize);
         if (*maxkeys>MAX_KEYS_PER_NODE) {
-            ham_trace(("keysize/pagesize ratio too high"));
+            ham_trace(("pagesize/keysize ratio too high"));
             return HAM_INV_KEYSIZE;
         }
         else if (*maxkeys==0) {
