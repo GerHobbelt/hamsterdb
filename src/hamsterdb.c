@@ -18,7 +18,7 @@
 #endif
 #include <string.h>
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
 #  define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
 #  include <curl/curl.h>
 #  include <curl/easy.h>
@@ -1107,7 +1107,7 @@ ham_env_delete(ham_env_t *env)
     }
 
     /* avoid memory leaks by releasing static libcurl and libprotocol data */
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     /* TODO curl_global_cleanup is not threadsafe! currently, hamsterdb
      * does not have support for critical sections or mutexes etc. Therefore
      * we just use a static variable. This is still not safe, but it should

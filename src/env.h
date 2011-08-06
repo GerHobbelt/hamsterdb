@@ -152,7 +152,7 @@ struct ham_env_t
     /** the cachesize which was specified when the env was created/opened */
     ham_size_t _cachesize;
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     /** libcurl remote handle */
     void *_curl;
 #endif

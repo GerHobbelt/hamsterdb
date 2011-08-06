@@ -166,11 +166,11 @@ __f_read_page(ham_device_t *self, ham_page_t *page)
         head=env_get_file_filter(db_get_env(db));
 
     /*
-     * first, try to mmap the file (if mmap is available/enabled).
+     * First, try to mmap the file (if mmap is available/enabled).
      *
-     * however, if a LOT of mmapped pages are held in memory, then mmap
+     * However, if a LOT of mmapped pages are held in memory, then mmap
      * fails. This happens on win32 but i also saw it on linux 64bit.
-     * in such a case, the os_mmap function will return HAM_OUT_OF_MEMORY
+     * In such a case, the os_mmap function will return HAM_OUT_OF_MEMORY
      * and we force a fallback to read/write.
      */
     if (!(device_get_flags(self)&HAM_DISABLE_MMAP)) {

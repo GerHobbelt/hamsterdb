@@ -212,7 +212,7 @@ struct ham_db_t
     /** some database specific run-time data */
     ham_runtime_statistics_dbdata_t _db_perf_data;
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     /** the remote database handle */
     ham_u64_t _remote_handle;
 #endif

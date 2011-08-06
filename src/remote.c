@@ -20,7 +20,7 @@
 #include "mem.h"
 #include "cursor.h"
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
 
 #define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
 #include <curl/curl.h>
@@ -1452,7 +1452,7 @@ bail:
 ham_status_t
 env_initialize_remote(ham_env_t *env)
 {
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     env->_fun_create             =_remote_fun_create;
     env->_fun_open               =_remote_fun_open;
     env->_fun_rename_db          =_remote_fun_rename_db;
@@ -1478,7 +1478,7 @@ env_initialize_remote(ham_env_t *env)
 ham_status_t
 db_initialize_remote(ham_db_t *db)
 {
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     db->_fun_close          =_remote_fun_close;
     db->_fun_get_parameters =_remote_fun_get_parameters;
     db->_fun_check_integrity=_remote_fun_check_integrity;

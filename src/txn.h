@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -23,7 +23,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
 /**
@@ -37,7 +37,7 @@ struct ham_txn_t
     ham_u64_t _id;
 
     /**
-     * owner of this transaction 
+     * owner of this transaction
      */
     ham_env_t *_env;
 
@@ -53,11 +53,11 @@ struct ham_txn_t
     ham_u32_t _cursor_refcount;
 
     /**
-     * index of the log file descriptor for this transaction [0..1] 
+     * index of the log file descriptor for this transaction [0..1]
      */
     int _log_desc;
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
     /** the remote database handle */
     ham_u64_t _remote_handle;
 #endif
@@ -100,7 +100,7 @@ struct ham_txn_t
 #define txn_get_flags(txn)                      (txn)->_flags
 
 /**
- * set the flags 
+ * set the flags
  */
 #define txn_set_flags(txn, f)                   (txn)->_flags=(f)
 
@@ -110,7 +110,7 @@ struct ham_txn_t
 #define txn_get_cursor_refcount(txn)            (txn)->_cursor_refcount
 
 /**
- * set the cursor refcount 
+ * set the cursor refcount
  */
 #define txn_set_cursor_refcount(txn, cfc)       (txn)->_cursor_refcount=(cfc)
 
@@ -168,7 +168,7 @@ struct ham_txn_t
  * add a page to the transaction's pagelist
  */
 extern ham_status_t
-txn_add_page(ham_txn_t *txn, ham_page_t *page, 
+txn_add_page(ham_txn_t *txn, ham_page_t *page,
         ham_bool_t ignore_if_inserted);
 
 /**
@@ -215,17 +215,17 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags);
 extern ham_status_t
 txn_abort(ham_txn_t *txn, ham_u32_t flags);
 
-/** 
+/**
 internal flags: signal that a transaction ABORT should NOT nuke the page statistics.
 
 This is relevant for find operations where an internal (local) transaction is used
 and the find fails: as this is a read-only operation, aborting or commiting such
 a local transaction does not result in necessary different statistics.
 */
-#define DO_NOT_NUKE_PAGE_STATS		0x0001 
+#define DO_NOT_NUKE_PAGE_STATS		0x0001
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_TXN_H__ */

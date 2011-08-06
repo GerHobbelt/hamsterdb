@@ -220,7 +220,7 @@ cache_remove_page(ham_cache_t *cache, ham_page_t *page);
  */
 #define cache_too_big(c)                                                      \
     ((cache_get_cur_elements(c)*env_get_pagesize(cache_get_env(c))            \
-            >cache_get_capacity(cache)) ? HAM_TRUE : HAM_FALSE)
+            >cache_get_capacity(c)) ? HAM_TRUE : HAM_FALSE)
 
 /**
  * check the cache integrity
