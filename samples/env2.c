@@ -19,7 +19,7 @@
 #include <string.h>
 #include <stdlib.h> /* for exit() */
 #if UNDER_CE
-#	include <windows.h>
+#   include <windows.h>
 #endif
 #include <ham/hamsterdb.h>
 
@@ -27,15 +27,15 @@ void
 error(const char *foo, ham_status_t st)
 {
 #if UNDER_CE
-	wchar_t title[1024];
-	wchar_t text[1024];
+    wchar_t title[1024];
+    wchar_t text[1024];
 
-	MultiByteToWideChar(CP_ACP, 0, foo, -1, title,
+    MultiByteToWideChar(CP_ACP, 0, foo, -1, title,
             sizeof(title)/sizeof(wchar_t));
-	MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text,
+    MultiByteToWideChar(CP_ACP, 0, ham_strerror(st), -1, text,
             sizeof(text)/sizeof(wchar_t));
 
-	MessageBox(0, title, text, 0);
+    MessageBox(0, title, text, 0);
 #endif
     printf("%s() returned error %d: %s\n", foo, st, ham_strerror(st));
     exit(-1);
@@ -181,7 +181,7 @@ main(int argc, char **argv)
         /* note: the second parameter of ham_insert() is reserved; set it to
          * NULL */
         st=ham_insert(db[0], 0, &key, &record, 0);
-		if (st!=HAM_SUCCESS)
+        if (st!=HAM_SUCCESS)
             error("ham_insert (customer)", st);
     }
 
@@ -202,7 +202,7 @@ main(int argc, char **argv)
         /* note: the second parameter of ham_insert() is reserved; set it to
          * NULL */
         st=ham_insert(db[1], 0, &key, &record, 0);
-		if (st!=HAM_SUCCESS)
+        if (st!=HAM_SUCCESS)
             error("ham_insert (order)", st);
     }
 
@@ -224,7 +224,7 @@ main(int argc, char **argv)
         /* note: the second parameter of ham_insert() is reserved; set it to
          * NULL */
         st=ham_insert(db[2], 0, &key, &record, HAM_DUPLICATE);
-		if (st!=HAM_SUCCESS)
+        if (st!=HAM_SUCCESS)
             error("ham_insert(c2o)", st);
     }
 
@@ -331,13 +331,13 @@ main(int argc, char **argv)
     error("success", 0);
 #endif
     printf("success!\n");
-	return (0);
+    return (0);
 }
 
 #if UNDER_CE
 int
 _tmain(int argc, _TCHAR* argv[])
 {
-	return (main(0, 0));
+    return (main(0, 0));
 }
 #endif

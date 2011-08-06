@@ -32,7 +32,7 @@
 #define MAX_ENVIRONMENTS    128
 #define MAX_DATABASES       512
 
-static const char *standard_reply =	"HTTP/1.1 200 OK\r\n"
+static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
                                     "Content-Type: text/plain\r\n"
                                     "Connection: close\r\n\r\n";
 
@@ -128,7 +128,7 @@ send_wrapper(ham_env_t *env, struct mg_connection *conn,
 
     ham_trace(("type %u: sending %d bytes",
                 proto_get_type(wrapper), data_size));
-	mg_printf(conn, "%s", standard_reply);
+    mg_printf(conn, "%s", standard_reply);
     mg_write(conn, data, data_size);
 
     allocator_free(env_get_allocator(env), data);
@@ -1226,7 +1226,7 @@ request_handler(struct mg_connection *conn, const struct mg_request_info *ri,
     proto_wrapper_t *wrapper;
     struct env_t *env=(struct env_t *)user_data;
 
-	mg_authorize(conn);
+    mg_authorize(conn);
 
     os_critsec_enter(&env->cs);
 
@@ -1351,25 +1351,25 @@ request_handler(struct mg_connection *conn, const struct mg_request_info *ri,
     }
 
 #if 0
-	printf("Method: [%s]\n", ri->request_method);
-	printf("URI: [%s]\n", ri->uri);
-	printf("HTTP version: [%d.%d]\n", ri->http_version_major,
+    printf("Method: [%s]\n", ri->request_method);
+    printf("URI: [%s]\n", ri->uri);
+    printf("HTTP version: [%d.%d]\n", ri->http_version_major,
             ri->http_version_minor);
 
-	for (i = 0; i < ri->num_headers; i++)
-		printf("HTTP header [%s]: [%s]\n",
-			 ri->http_headers[i].name,
-			 ri->http_headers[i].value);
+    for (i = 0; i < ri->num_headers; i++)
+        printf("HTTP header [%s]: [%s]\n",
+             ri->http_headers[i].name,
+             ri->http_headers[i].value);
 
-	printf("Query string: [%s]\n",
-			ri->query_string ? ri->query_string: "");
-	printf("POST data: [%.*s]\n",
-			ri->post_data_len, ri->post_data);
-	printf("Remote IP: [%lu]\n", ri->remote_ip);
-	printf("Remote port: [%d]\n", ri->remote_port);
-	printf("Remote user: [%s]\n",
-			ri->remote_user ? ri->remote_user : "");
-	printf("Hamsterdb url: [%s]\n", env->urlname);
+    printf("Query string: [%s]\n",
+            ri->query_string ? ri->query_string: "");
+    printf("POST data: [%.*s]\n",
+            ri->post_data_len, ri->post_data);
+    printf("Remote IP: [%lu]\n", ri->remote_ip);
+    printf("Remote port: [%d]\n", ri->remote_port);
+    printf("Remote user: [%s]\n",
+            ri->remote_user ? ri->remote_user : "");
+    printf("Hamsterdb url: [%s]\n", env->urlname);
 #endif
 
 bail:

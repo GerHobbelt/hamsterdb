@@ -280,7 +280,8 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
      * if duplicates are enabled: move to the end of the duplicate-list
      */
     if (key_get_flags(entry)&KEY_HAS_DUPLICATES
-            && !(flags&HAM_SKIP_DUPLICATES)) {
+            && !(flags&HAM_SKIP_DUPLICATES))
+	{
         ham_size_t count;
         ham_status_t st;
         page_add_ref(page);

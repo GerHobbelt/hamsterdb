@@ -149,7 +149,7 @@ __write_chunks(ham_env_t *env, ham_page_t *page, ham_offset_t addr,
                 ham_bool_t cacheonly = (!at_blob_edge
                                     && (!env_get_log(env)
                                         || freshly_created));
-				//ham_assert(db_get_txn(db) ? !!env_get_log(env) : 1, (0));
+                //ham_assert(db_get_txn(db) ? !!env_get_log(env) : 1, (0));
 
                 st=env_fetch_page(&page, env, pageid,
                         cacheonly ? DB_ONLY_FROM_CACHE :
@@ -226,7 +226,7 @@ __read_chunk(ham_env_t *env, ham_page_t *page, ham_page_t **fpage,
          * get the page-ID from this chunk
          */
         ham_offset_t pageid;
-		pageid = addr - (addr % env_get_pagesize(env));
+        pageid = addr - (addr % env_get_pagesize(env));
 
         if (page) {
             if (page_get_self(page)!=pageid)
@@ -346,7 +346,7 @@ __get_duplicate_table(dupe_table_t **table_ref, ham_page_t **page, ham_env_t *en
     }
 
     *table_ref = table;
-	return HAM_SUCCESS;
+    return HAM_SUCCESS;
 }
 
 /**
@@ -1263,9 +1263,9 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
         page_set_dirty(page, env);
     }
     else
-	{
+    {
         ham_assert(!"shouldn't be here", (0));
-	}
+    }
 
     if (alloc_table)
         allocator_free(env_get_allocator(env), table);
@@ -1381,15 +1381,15 @@ ham_status_t
 blob_duplicate_get_count(ham_env_t *env, ham_offset_t table_id,
         ham_size_t *count, dupe_entry_t *entry)
 {
-	ham_status_t st;
+    ham_status_t st;
     dupe_table_t *table;
     ham_page_t *page=0;
 
     st=__get_duplicate_table(&table, &page, env, table_id);
-	ham_assert(st ? table == NULL : 1, (0));
-	ham_assert(st ? page == NULL : 1, (0));
+    ham_assert(st ? table == NULL : 1, (0));
+    ham_assert(st ? page == NULL : 1, (0));
     if (!table)
-		return st ? st : HAM_INTERNAL_ERROR;
+        return st ? st : HAM_INTERNAL_ERROR;
 
     *count=dupe_table_get_count(table);
     if (entry)
@@ -1407,15 +1407,15 @@ ham_status_t
 blob_duplicate_get(ham_env_t *env, ham_offset_t table_id,
         ham_size_t position, dupe_entry_t *entry)
 {
-	ham_status_t st;
+    ham_status_t st;
     dupe_table_t *table;
     ham_page_t *page=0;
 
     st = __get_duplicate_table(&table, &page, env, table_id);
-	ham_assert(st ? table == NULL : 1, (0));
-	ham_assert(st ? page == NULL : 1, (0));
+    ham_assert(st ? table == NULL : 1, (0));
+    ham_assert(st ? page == NULL : 1, (0));
     if (!table)
-		return st ? st : HAM_INTERNAL_ERROR;
+        return st ? st : HAM_INTERNAL_ERROR;
 
     if (position>=dupe_table_get_count(table))
 	{

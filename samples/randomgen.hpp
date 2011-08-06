@@ -41,71 +41,71 @@ derived from the randomc package by Agner Fog, available at:
 class random_generator
 {
 private:
-	ham_u32_t rand_store[5];
+    ham_u32_t rand_store[5];
 
 public:
-	random_generator()
-	{
+    random_generator()
+    {
         init((ham_u32_t)time(NULL));
-	}
-	random_generator(ham_u32_t seed)
-	{
+    }
+    random_generator(ham_u32_t seed)
+    {
         init(seed);
-	}
+    }
 
-	~random_generator()
-	{
-	}
+    ~random_generator()
+    {
+    }
 
 
-	/**
-	Output 32 random bits
-	*/
-	ham_u32_t rand32(void)
-	{
-		ham_u64_t sum;
+    /**
+    Output 32 random bits
+    */
+    ham_u32_t rand32(void)
+    {
+        ham_u64_t sum;
 
-		sum = (ham_u64_t)2111111111UL * (ham_u64_t)rand_store[3]
-			  + (ham_u64_t)1492 * (ham_u64_t)(rand_store[2])
-			  + (ham_u64_t)1776 * (ham_u64_t)(rand_store[1])
-			  + (ham_u64_t)5115 * (ham_u64_t)(rand_store[0])
-			  + (ham_u64_t)rand_store[4];
-		rand_store[3] = rand_store[2];
-		rand_store[2] = rand_store[1];
-		rand_store[1] = rand_store[0];
-		rand_store[4] = (ham_u32_t)(sum >> 32);          // Carry
-		rand_store[0] = (ham_u32_t)(sum);                // Low 32 bits of sum
-		return rand_store[0];
-	}
+        sum = (ham_u64_t)2111111111UL * (ham_u64_t)rand_store[3]
+              + (ham_u64_t)1492 * (ham_u64_t)(rand_store[2])
+              + (ham_u64_t)1776 * (ham_u64_t)(rand_store[1])
+              + (ham_u64_t)5115 * (ham_u64_t)(rand_store[0])
+              + (ham_u64_t)rand_store[4];
+        rand_store[3] = rand_store[2];
+        rand_store[2] = rand_store[1];
+        rand_store[1] = rand_store[0];
+        rand_store[4] = (ham_u32_t)(sum >> 32);          // Carry
+        rand_store[0] = (ham_u32_t)(sum);                // Low 32 bits of sum
+        return rand_store[0];
+    }
 
-	/**
-	returns a random number between 0 and 1
-	*/
-	double frand(void)
-	{
-		return (double)rand32() * (1. / (65536. * 65536.));
-	}
+    /**
+    returns a random number between 0 and 1
+    */
+    double frand(void)
+    {
+        return (double)rand32() * (1. / (65536. * 65536.));
+    }
 
-	/**
-	initializes the random number generator
-	*/
-	void init(ham_u32_t seed)
-	{
-		int i;
-		ham_u32_t s = seed;
+    /**
+    initializes the random number generator
+    */
+    void init(ham_u32_t seed)
+    {
+        int i;
+        ham_u32_t s = seed;
 
-		// make random numbers and put them into the buffer
-		for (i = 0; i < 5; i++)
-		{
-			s = s * 29943829 - 1;
-			rand_store[i] = s;
-		}
-		// randomize some more
-		for (i = 0; i < 19; i++)
-		{
-			rand32();
-		}
-	}
+        // make random numbers and put them into the buffer
+        for (i = 0; i < 5; i++)
+        {
+            s = s * 29943829 - 1;
+            rand_store[i] = s;
+        }
+        // randomize some more
+        for (i = 0; i < 19; i++)
+        {
+            rand32();
+        }
+    }
 };
 
 

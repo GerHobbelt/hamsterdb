@@ -121,7 +121,7 @@ typedef struct ham_freelist_slotsize_stats_t
  */
 typedef struct ham_freelist_page_statistics_t
 {
-	ham_freelist_slotsize_stats_t per_size[HAM_FREELIST_SLOT_SPREAD];
+    ham_freelist_slotsize_stats_t per_size[HAM_FREELIST_SLOT_SPREAD];
 
     /**
      * (bit) offset which tells us which free slot is the EVER LAST

@@ -92,7 +92,7 @@ public:
         m_key.data=data;
         m_key.size=(ham_u16_t)size;
         m_key.flags=flags;
-		if (m_key.size != size) // check for overflow
+        if (m_key.size != size) // check for overflow
             throw error(HAM_INV_KEYSIZE);
     }
 
@@ -102,12 +102,12 @@ public:
 
     /** Assignment operator. */
     key &operator=(const key &other)
-	{
-		/* TODO -- [i_a] copy key data; same for record; depends on USER_ALLOC flags, etc. */
-		if (&other != this)
-		{
-			m_key=other.m_key;
-		}
+    {
+        /* TODO -- [i_a] copy key data; same for record; depends on USER_ALLOC flags, etc. */
+        if (&other != this)
+        {
+            m_key=other.m_key;
+        }
         return (*this);
     }
 
@@ -129,7 +129,7 @@ public:
     /** Sets the size of the key. */
     void set_size(ham_size_t size) {
         m_key.size=(ham_u16_t)size;
-		if (m_key.size != size)
+        if (m_key.size != size)
             throw error(HAM_INV_KEYSIZE);
     }
 
@@ -220,39 +220,39 @@ public:
         m_rec.flags=flags;
     }
 
-	/** Returns the 'partial size' of the record.
+    /** Returns the 'partial size' of the record.
 
-	@sa HAM_PARTIAL
-	*/
-	ham_size_t get_partial_size() const {
-		return (m_rec.partial_size);
-	}
+    @sa HAM_PARTIAL
+    */
+    ham_size_t get_partial_size() const {
+        return (m_rec.partial_size);
+    }
 
-	/** Sets the 'partial size' of the record.
+    /** Sets the 'partial size' of the record.
 
-	@sa HAM_PARTIAL
-		*/
-	void set_partial_size(ham_size_t size) {
-		m_rec.partial_size=size;
-		m_rec.flags |= HAM_PARTIAL;
-	}
+    @sa HAM_PARTIAL
+        */
+    void set_partial_size(ham_size_t size) {
+        m_rec.partial_size=size;
+        m_rec.flags |= HAM_PARTIAL;
+    }
 
-	/** Returns the 'partial offset' of the record.
+    /** Returns the 'partial offset' of the record.
 
-	@sa HAM_PARTIAL
-	*/
-	ham_size_t get_partial_offset() const {
-		return (m_rec.partial_offset);
-	}
+    @sa HAM_PARTIAL
+    */
+    ham_size_t get_partial_offset() const {
+        return (m_rec.partial_offset);
+    }
 
-	/** Sets the 'partial offset' of the record.
+    /** Sets the 'partial offset' of the record.
 
-	@sa HAM_PARTIAL
-	*/
-	void set_partial_offset(ham_size_t size) {
-		m_rec.partial_size=size;
-		m_rec.flags |= HAM_PARTIAL;
-	}
+    @sa HAM_PARTIAL
+    */
+    void set_partial_offset(ham_size_t size) {
+        m_rec.partial_size=size;
+        m_rec.flags |= HAM_PARTIAL;
+    }
 
     /** Returns a pointer to the internal ham_record_t structure. */
     ham_record_t *get_handle() {
@@ -341,14 +341,14 @@ public:
      * Database handle.
      */
     db &operator=(const db &other) {
-		db &rhs=(db &)other;
+        db &rhs=(db &)other;
         if (this==&other)
             return (*this);
         close();
         m_db=rhs.m_db;
-		m_env=rhs.m_env;
+        m_env=rhs.m_env;
         rhs.m_db=0;
-		rhs.m_env=0;
+        rhs.m_env=0;
         return (*this);
     }
 
@@ -383,7 +383,7 @@ public:
     /** Returns the last Database error. */
     ham_status_t get_error() {
         if (!m_db) {
-			return (HAM_NOT_INITIALIZED);
+            return (HAM_NOT_INITIALIZED);
         }
         return (ham_get_error(m_db));
     }
@@ -514,7 +514,7 @@ protected:
 
 private:
     ham_db_t *m_db;
-	class env *m_env;
+    class env *m_env;
 };
 
 
@@ -720,7 +720,7 @@ public:
             throw error(st);
         }
 
-		return (ham::db(dbh, this));
+        return (ham::db(dbh, this));
     }
 
     /** Opens an existing Database in the Environment. */
@@ -738,7 +738,7 @@ public:
             throw error(st);
         }
 
-		return (ham::db(dbh, this));
+        return (ham::db(dbh, this));
     }
 
     /** Renames an existing Database in the Environment. */

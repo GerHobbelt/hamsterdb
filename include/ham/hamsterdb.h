@@ -555,7 +555,7 @@ ham_env_create(ham_env_t *env, const char *filename,
  * @param flags Optional flags for opening the Environment, combined with
  *          bitwise OR. Possible flags are:
  *      <ul>
- *       <li>@ref HAM_WRITE_THROUGH </li> Flushes all file handles after
+ *       <li>@ref HAM_WRITE_THROUGH Flushes all file handles after
  *            committing or aborting a Transaction using fsync(), fdatasync()
  *            or FlushFileBuffers(). This flag has no effect
  *            if Transactions are disabled. Slows down performance but makes

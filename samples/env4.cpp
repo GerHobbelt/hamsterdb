@@ -48,15 +48,15 @@
 #include <iostream>
 #include <stdlib.h> /* for exit() */
 
-#define ASSERT(e)		 env4_assert(bool(e), #e)
+#define ASSERT(e)        env4_assert(bool(e), #e)
 
 static __inline void env4_assert(bool e, const char *txt)
 {
-	if (!e)
-	{
-		std::cerr << "ENV4 ASSERTION FAILED: " << txt << std::endl;
-		throw ham_ex::error(+1, txt);
-	}
+    if (!e)
+    {
+        std::cerr << "ENV4 ASSERTION FAILED: " << txt << std::endl;
+        throw ham_ex::error(+1, txt);
+    }
 }
 
 
@@ -287,7 +287,7 @@ run_demo(void)
      */
 
     std::cout << "success!" << std::endl;
-	return (0);
+    return (0);
 }
 
 #endif
@@ -297,35 +297,35 @@ int
 main(int argc, char **argv)
 {
     try
-	{
-		env store;
-		store.create("stockdata");
+    {
+        env store;
+        store.create("stockdata");
 
-		Monte_Carlo_simulator::model_argument_cfg args[3];
-		args[0] = Monte_Carlo_simulator::model_argument_cfg(0, 100);
-		args[1] = Monte_Carlo_simulator::model_argument_cfg(1, 2);
-		args[2] = Monte_Carlo_simulator::model_argument_cfg(2, 3);
+        Monte_Carlo_simulator::model_argument_cfg args[3];
+        args[0] = Monte_Carlo_simulator::model_argument_cfg(0, 100);
+        args[1] = Monte_Carlo_simulator::model_argument_cfg(1, 2);
+        args[2] = Monte_Carlo_simulator::model_argument_cfg(2, 3);
 
-		Monte_Carlo_simulator::argument_cfg tstart(0, 0);
-		Monte_Carlo_simulator::argument_cfg tend(1000000, 0);
-		Monte_Carlo_simulator::configuration mc_cfg(100, 60, tstart, tend, 3, args);
+        Monte_Carlo_simulator::argument_cfg tstart(0, 0);
+        Monte_Carlo_simulator::argument_cfg tend(1000000, 0);
+        Monte_Carlo_simulator::configuration mc_cfg(100, 60, tstart, tend, 3, args);
 
-		StockTradeModel mut(store);
+        StockTradeModel mut(store);
 
-		Monte_Carlo_simulator rig(777, mut, mc_cfg);
+        Monte_Carlo_simulator rig(777, mut, mc_cfg);
 
-		rig.execute();
-		rig.munch_collected_data();
-		rig.generate_report();
+        rig.execute();
+        rig.munch_collected_data();
+        rig.generate_report();
     }
     catch (ham::error &e)
-	{
+    {
         std::cerr << argv[0]
-				  << " failed with unexpected error "
+                  << " failed with unexpected error "
                   << e.get_errno() << " ('"
                   << e.get_string() << "')" << std::endl;
         return EXIT_FAILURE;
     }
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 

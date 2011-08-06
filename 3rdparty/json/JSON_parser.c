@@ -94,13 +94,13 @@ struct JSON_parser_struct {
     JSON_parser_callback callback;
     void* ctx;
     signed char state;
-	signed char before_comment_state;
-	signed char type;
-	signed char escaped;
-	signed char comment;
-	signed char allow_comments;
-	signed char handle_floats_manually;
-	signed char handle_ints_manually;
+    signed char before_comment_state;
+    signed char type;
+    signed char escaped;
+    signed char comment;
+    signed char allow_comments;
+    signed char handle_floats_manually;
+    signed char handle_ints_manually;
     UTF16 utf16_high_surrogate;
     long depth;
     long top;
@@ -233,7 +233,7 @@ enum states {
 
 enum actions
 {
-	XC = -9, /* empty } */
+    XC = -9, /* empty } */
     OC = -8, /* } */
     AC = -7, /* ] */
     OO = -6, /* { */
@@ -241,7 +241,7 @@ enum actions
     CQ = -4, /* string end " */
     CM = -3, /* , */
     CL = -2, /* : */
-	CB = -10, /* comment begin */
+    CB = -10, /* comment begin */
     CE = -11, /* comment end */
     FA = -12, /* false */
     TR = -13, /* false */
@@ -507,10 +507,9 @@ static int parse_parse_buffer(JSON_parser jc)
                         value.vu.str.value = jc->parse_buffer;
                         value.vu.str.length = jc->parse_buffer_count;
                     } else {
-						if (1 != sscanf(jc->parse_buffer, JSON_PARSER_FLOAT_SSCANF_TOKEN, &value.vu.float_value))
-						{
-							return false;
-						}
+                        if (1 != sscanf(jc->parse_buffer, JSON_PARSER_FLOAT_SSCANF_TOKEN, &value.vu.float_value)) {
+                            return false;
+                        }
                     }
                     break;
                 case JSON_T_INTEGER:
@@ -519,12 +518,11 @@ static int parse_parse_buffer(JSON_parser jc)
                         value.vu.str.value = jc->parse_buffer;
                         value.vu.str.length = jc->parse_buffer_count;
                     } else {
-						if (1 != sscanf(jc->parse_buffer, JSON_PARSER_INTEGER_SSCANF_TOKEN, &value.vu.integer_value))
-						{
-							return false;
-						}
-					}
-					break;
+                        if (1 != sscanf(jc->parse_buffer, JSON_PARSER_INTEGER_SSCANF_TOKEN, &value.vu.integer_value)) {
+                            return false;
+                        }
+                    }
+                    break;
                 case JSON_T_STRING:
                     arg = &value;
                     value.vu.str.value = jc->parse_buffer;
@@ -688,7 +686,7 @@ JSON_parser_char(JSON_parser jc, int next_char)
     text, it returns false.
 */
     signed char next_class;
-	signed char next_state;
+    signed char next_state;
 
 /*
     Determine the character's class.
@@ -765,12 +763,12 @@ JSON_parser_char(JSON_parser jc, int next_char)
         case DF:
             assert_type_isnt_string_null_or_bool(jc);
             if (!jc->handle_floats_manually) {
-				/*
-					Some versions of strtod (which underlies sscanf) don't support converting
-					C-locale formatted floating point values.
+                /*
+                    Some versions of strtod (which underlies sscanf) don't support converting
+                    C-locale formatted floating point values.
 
-					Besides, JSON requires a decimal POINT regardless of locale.
-				*/
+                    Besides, JSON requires a decimal POINT regardless of locale.
+                */
                 assert(jc->parse_buffer[jc->parse_buffer_count-1] == '.');
                 jc->parse_buffer[jc->parse_buffer_count-1] = jc->decimal_point;
             }

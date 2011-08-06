@@ -24,7 +24,7 @@
  */
 
 #if defined(_WIN32)
-#define _CRT_SECURE_NO_WARNINGS	/* Disable deprecation warning in VS2005 */
+#define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005 */
 #endif /* _WIN32 */
 
 #ifndef _WIN32_WCE /* Some ANSI #includes are not available on Windows CE */
@@ -885,7 +885,7 @@ pthread_cond_timedwait(pthread_cond_t *cv, pthread_mutex_t *mutex,
 	DWORD	status;
 	DWORD	msec = INFINITE;
 	time_t	now;
-	
+
 	if (ts != NULL) {
 		now = time(NULL);
 		msec = 1000 * (now > ts->tv_sec ? 0 : ts->tv_sec - now);
@@ -894,7 +894,7 @@ pthread_cond_timedwait(pthread_cond_t *cv, pthread_mutex_t *mutex,
 	(void) ReleaseMutex(*mutex);
 	status = WaitForSingleObject(*cv, msec);
 	(void) WaitForSingleObject(*mutex, INFINITE);
-	
+
 	return (status == WAIT_OBJECT_0 ? 0 : -1);
 }
 
@@ -1046,7 +1046,7 @@ strftime(char *dst, size_t dst_size, const char *fmt, const struct tm *tm)
 {
 	(void) snprintf(dst, dst_size, "implement strftime() for WinCE");
 	return (0);
-}	
+}
 #endif
 
 static int
@@ -1220,7 +1220,7 @@ start_thread(struct mg_context *ctx, mg_thread_func_t func, void *param)
 	HANDLE	hThread;
 
 	ctx = NULL;	/* Unused */
-	
+
 	hThread = CreateThread(NULL, 0,
 	    (LPTHREAD_START_ROUTINE) func, param, 0, NULL);
 
@@ -4539,8 +4539,8 @@ worker_thread(struct mg_context *ctx)
 		close_connection(&conn);
 	}
 
-    /* prevent a segfault - sometimes, conn.ctx is NULL (but will be 
-     * dereferenced later); this is fixed in the HEAD of mongoose, but not in 
+    /* prevent a segfault - sometimes, conn.ctx is NULL (but will be
+     * dereferenced later); this is fixed in the HEAD of mongoose, but not in
      * our version */
     if (!conn.ctx)
 		conn.ctx = ctx;

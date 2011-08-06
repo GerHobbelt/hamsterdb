@@ -25,66 +25,66 @@
 
 typedef struct approx_key
 {
-	unsigned int lineno;
-	unsigned int wordno;
-	char fluff[(8000*8)/5];
+    unsigned int lineno;
+    unsigned int wordno;
+    char fluff[(8000*8)/5];
 } approx_key;
 
 
 
 void show_params(const ham_parameter_t *db_params_out)
 {
-	int i;
+    int i;
 
-	puts("\n\n-----------\nParameters:\n\n");
-	for (i = 0; db_params_out[i].name; i++)
-	{
-		const char *desc;
+    puts("\n\n-----------\nParameters:\n\n");
+    for (i = 0; db_params_out[i].name; i++)
+    {
+        const char *desc;
 
-		switch (db_params_out[i].name)
-		{
-		case HAM_PARAM_CACHESIZE:
-			desc = "HAM_PARAM_CACHESIZE: sets the cache size (%u bytes)";
-			break;
+        switch (db_params_out[i].name)
+        {
+        case HAM_PARAM_CACHESIZE:
+            desc = "HAM_PARAM_CACHESIZE: sets the cache size (%u bytes)";
+            break;
 
-		case HAM_PARAM_PAGESIZE:
-			desc = "HAM_PARAM_PAGESIZE: sets the page size (%u bytes)";
-			break;
+        case HAM_PARAM_PAGESIZE:
+            desc = "HAM_PARAM_PAGESIZE: sets the page size (%u bytes)";
+            break;
 
-		case HAM_PARAM_KEYSIZE:
-			desc = "HAM_PARAM_KEYSIZE: sets the key size (%u bytes)";
-			break;
+        case HAM_PARAM_KEYSIZE:
+            desc = "HAM_PARAM_KEYSIZE: sets the key size (%u bytes)";
+            break;
 
-		case HAM_PARAM_MAX_ENV_DATABASES:
-			desc = "HAM_PARAM_MAX_ENV_DATABASES: sets the number of maximum Databases (%u)";
-			break;
+        case HAM_PARAM_MAX_ENV_DATABASES:
+            desc = "HAM_PARAM_MAX_ENV_DATABASES: sets the number of maximum Databases (%u)";
+            break;
 
-		case HAM_PARAM_DBNAME:
-			desc = "HAM_PARAM_DBNAME: db ID in database environment (%u)";
-			break;
+        case HAM_PARAM_DBNAME:
+            desc = "HAM_PARAM_DBNAME: db ID in database environment (%u)";
+            break;
 
-		case HAM_PARAM_GET_FLAGS:
-			desc = "HAM_PARAM_GET_FLAGS: %08x";
-			break;
+        case HAM_PARAM_GET_FLAGS:
+            desc = "HAM_PARAM_GET_FLAGS: %08x";
+            break;
 
-		case HAM_PARAM_GET_FILEMODE:
-			desc = "HAM_PARAM_GET_FILEMODE: %04o";
-			break;
+        case HAM_PARAM_GET_FILEMODE:
+            desc = "HAM_PARAM_GET_FILEMODE: %04o";
+            break;
 
-		case HAM_PARAM_GET_FILENAME:
-			printf("HAM_PARAM_GET_FILENAME: %s\n", (const char *)db_params_out[i].value);
-			continue;
+        case HAM_PARAM_GET_FILENAME:
+            printf("HAM_PARAM_GET_FILENAME: %s\n", (const char *)db_params_out[i].value);
+            continue;
 
-		case HAM_PARAM_GET_KEYS_PER_PAGE:
-			desc = "HAM_PARAM_GET_KEYS_PER_PAGE: MAX_KEYSIZE: maximum allowed keysize (unless you change your pagesize) = %u bytes";
-			break;
+        case HAM_PARAM_GET_KEYS_PER_PAGE:
+            desc = "HAM_PARAM_GET_KEYS_PER_PAGE: MAX_KEYSIZE: maximum allowed keysize (unless you change your pagesize) = %u bytes";
+            break;
 
-		default:
-			continue;
-		}
-		printf(desc, (unsigned int)db_params_out[i].value);
-		puts("");
-	}
+        default:
+            continue;
+        }
+        printf(desc, (unsigned int)db_params_out[i].value);
+        puts("");
+    }
 }
 
 
@@ -94,43 +94,43 @@ main(int argc, char **argv)
     ham_status_t st;      /* status variable */
     ham_db_t *db;         /* hamsterdb database object */
     ham_cursor_t *cursor; /* a database cursor */
-	ham_size_t maxkeys = 0;
-	const ham_parameter_t db_params_in[] =
-	{
+    ham_size_t maxkeys = 0;
+    const ham_parameter_t db_params_in[] =
+    {
         { HAM_PARAM_PAGESIZE, 64*1024 },
-		{ HAM_PARAM_KEYSIZE, sizeof(approx_key) },
-		{0,0},
-	};
-	ham_parameter_t db_params_out[] =
-	{
+        { HAM_PARAM_KEYSIZE, sizeof(approx_key) },
+        {0,0},
+    };
+    ham_parameter_t db_params_out[] =
+    {
         { HAM_PARAM_PAGESIZE, 0 },
-		{ HAM_PARAM_KEYSIZE, 0 },
-		{ HAM_PARAM_CACHESIZE, 0 },
-		{ HAM_PARAM_MAX_ENV_DATABASES, 0 },
-		{ HAM_PARAM_DBNAME, 0 },
-		{ HAM_PARAM_GET_FLAGS, 0 },
-		{ HAM_PARAM_GET_FILEMODE, 0 },
-		{ HAM_PARAM_GET_FILENAME, 0 },
-		{ HAM_PARAM_GET_KEYS_PER_PAGE, 0 },
-		{0,0},
-	};
+        { HAM_PARAM_KEYSIZE, 0 },
+        { HAM_PARAM_CACHESIZE, 0 },
+        { HAM_PARAM_MAX_ENV_DATABASES, 0 },
+        { HAM_PARAM_DBNAME, 0 },
+        { HAM_PARAM_GET_FLAGS, 0 },
+        { HAM_PARAM_GET_FILEMODE, 0 },
+        { HAM_PARAM_GET_FILENAME, 0 },
+        { HAM_PARAM_GET_KEYS_PER_PAGE, 0 },
+        {0,0},
+    };
     char line[1024*4];    /* a buffer for reading lines */
     unsigned lineno=0;    /* the current line number */
-	const char *lines[] =
-	{
-		"a1 a2 a3 a4\n",
-		"b1 b2\n",
-		"c1\n",
-		"d1\n",
-		"e1 e2 e3 e4\n"
-	};
+    const char *lines[] =
+    {
+        "a1 a2 a3 a4\n",
+        "b1 b2\n",
+        "c1\n",
+        "d1\n",
+        "e1 e2 e3 e4\n"
+    };
 
 
     printf("This sample uses hamsterdb and approximate keys to list all words "
             "in the\noriginal order, together with their line number.\n");
     printf("Reading from stdin... (stop by entering a dot on a line)\n");
 
-	/*
+    /*
      * first step: create a new hamsterdb object
      */
     st=ham_new(&db);
@@ -139,17 +139,17 @@ main(int argc, char **argv)
         return (-1);
     }
 
-	{
-		ham_env_t *env;
+    {
+        ham_env_t *env;
 
-		ham_env_new(&env);
-		st=ham_env_get_parameters(env, db_params_out);
-		if (st!=HAM_SUCCESS) {
-			printf("ham_get_env_params() failed with error %d\n", st);
-			return (-1);
-		}
-		show_params(db_params_out);
-	}
+        ham_env_new(&env);
+        st=ham_env_get_parameters(env, db_params_out);
+        if (st!=HAM_SUCCESS) {
+            printf("ham_get_env_params() failed with error %d\n", st);
+            return (-1);
+        }
+        show_params(db_params_out);
+    }
 
 
     st=ham_get_parameters(db, db_params_out);
@@ -177,13 +177,13 @@ main(int argc, char **argv)
     }
     show_params(db_params_out);
 
-	st=ham_calc_maxkeys_per_page(db, &maxkeys, sizeof(approx_key));
+    st=ham_calc_maxkeys_per_page(db, &maxkeys, sizeof(approx_key));
     printf("ham_calc_maxkeys_per_page(keysize=%u) reported a keycount of %u, while producing error %d (%s)\n",
-		(unsigned int)sizeof(approx_key), (unsigned int)maxkeys, st, ham_strerror(st));
+        (unsigned int)sizeof(approx_key), (unsigned int)maxkeys, st, ham_strerror(st));
 
-	st=ham_calc_maxkeys_per_page(db, &maxkeys, 0);
+    st=ham_calc_maxkeys_per_page(db, &maxkeys, 0);
     printf("ham_calc_maxkeys_per_page(keysize=%u) reported a keycount of %u, while producing error %d (%s)\n",
-		0, (unsigned int)maxkeys, st, ham_strerror(st));
+        0, (unsigned int)maxkeys, st, ham_strerror(st));
 
 
     /*
@@ -191,21 +191,21 @@ main(int argc, char **argv)
      * word is inserted into the database
      */
 #if 01
-	for(;lineno < sizeof(lines)/sizeof(lines[0]);) {
+    for(;lineno < sizeof(lines)/sizeof(lines[0]);) {
         char *start=line;
-		char *p;
-		unsigned wordno = 0;
+        char *p;
+        unsigned wordno = 0;
 
-		strcpy(line, lines[lineno]);
+        strcpy(line, lines[lineno]);
 #else
     while (fgets(line, sizeof(line), stdin)) {
         char *start=line;
-		char *p;
-		unsigned wordno = 0;
+        char *p;
+        unsigned wordno = 0;
 #endif
 
-		if (strcmp(line, ".\r\n") == 0 || strcmp(line, ".\n") == 0)
-			break;
+        if (strcmp(line, ".\r\n") == 0 || strcmp(line, ".\n") == 0)
+            break;
 
         lineno++;
 
@@ -214,17 +214,17 @@ main(int argc, char **argv)
          * and not flexible, but it's good enough for this example.
          */
         while ((p=strtok(start, " \t\r\n"))) {
-			ham_key_t key = {0};
-			ham_record_t record = {0};
-			approx_key k = {0};
+            ham_key_t key = {0};
+            ham_record_t record = {0};
+            approx_key k = {0};
 
-			k.lineno = lineno;
-			k.wordno = ++wordno;
+            k.lineno = lineno;
+            k.wordno = ++wordno;
 
-			key.data = &k;
-			key.size = sizeof(k);
+            key.data = &k;
+            key.size = sizeof(k);
 
-			record.data=p;
+            record.data=p;
             record.size=(ham_size_t)strlen(p)+1; /* also store the terminating
                                                  0-byte */
 
@@ -249,143 +249,143 @@ main(int argc, char **argv)
         printf("ham_cursor_create() failed with error %d\n", st);
         return (-1);
     }
-	else
-	{
-		ham_key_t key = {0};
-		ham_record_t record = {0};
-		approx_key k = {0};
-		unsigned int l;
+    else
+    {
+        ham_key_t key = {0};
+        ham_record_t record = {0};
+        approx_key k = {0};
+        unsigned int l;
 
-		/* approximate key: there is no wordno==0 in there! */
-		for (l = 0; l <= lineno + 1; l++)
-		{
-			printf("\nSTART @ lineno == %u\n", l);
+        /* approximate key: there is no wordno==0 in there! */
+        for (l = 0; l <= lineno + 1; l++)
+        {
+            printf("\nSTART @ lineno == %u\n", l);
 
-			k.lineno = l;
-			k.wordno = 0;
+            k.lineno = l;
+            k.wordno = 0;
 
-			key.data = &k;
-			key.size = sizeof(k);
+            key.data = &k;
+            key.size = sizeof(k);
 
-			/*
-			 * iterate over all items and print them
-			 */
-			st=ham_cursor_find_ex(cursor, &key, &record, HAM_FIND_GEQ_MATCH);
+            /*
+             * iterate over all items and print them
+             */
+            st=ham_cursor_find_ex(cursor, &key, &record, HAM_FIND_GEQ_MATCH);
 #if 0
-			st=ham_cursor_move(cursor, &key, &record, 0);
+            st=ham_cursor_move(cursor, &key, &record, 0);
 #endif
-			/*
-			   ham_cursor_find positions the cursor, but you'll need cursor_move(FIRST)
-			   to grab the record data, which is equivalent to first-time cursor_move(NEXT) by
-			   definition:
-			 */
-			for(;;) {
-				if (st!=HAM_SUCCESS) {
-					/* reached end of the database? */
-					if (st==HAM_KEY_NOT_FOUND)
-						break;
-					else {
-						printf("ham_cursor_next() failed with error %d (%s)\n", st, ham_strerror(st));
-						break;
-					}
-				}
-				k = *(approx_key *)key.data;
+            /*
+               ham_cursor_find positions the cursor, but you'll need cursor_move(FIRST)
+               to grab the record data, which is equivalent to first-time cursor_move(NEXT) by
+               definition:
+             */
+            for(;;) {
+                if (st!=HAM_SUCCESS) {
+                    /* reached end of the database? */
+                    if (st==HAM_KEY_NOT_FOUND)
+                        break;
+                    else {
+                        printf("ham_cursor_next() failed with error %d (%s)\n", st, ham_strerror(st));
+                        break;
+                    }
+                }
+                k = *(approx_key *)key.data;
 
-				/*
-				 * print the word and the line number
-				 */
-				printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
-						k.lineno, k.wordno);
+                /*
+                 * print the word and the line number
+                 */
+                printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
+                        k.lineno, k.wordno);
 
-				st=ham_cursor_move(cursor, &key, &record, HAM_CURSOR_NEXT);
-			}
+                st=ham_cursor_move(cursor, &key, &record, HAM_CURSOR_NEXT);
+            }
 
 
-			/*
-			   And now also check the cursor-less find() operation:
-		     */
-			printf("\nSTART for CURSOR-LESS FIND(GT) @ lineno == %u\n", l);
+            /*
+               And now also check the cursor-less find() operation:
+             */
+            printf("\nSTART for CURSOR-LESS FIND(GT) @ lineno == %u\n", l);
 
-			k.lineno = l;
-			k.wordno = 0;
+            k.lineno = l;
+            k.wordno = 0;
 
-			key.data = &k;
-			key.size = sizeof(k);
+            key.data = &k;
+            key.size = sizeof(k);
 
-			/*
-			 * iterate over all items and print them
-			 */
-			st=ham_find(db, NULL, &key, &record, HAM_FIND_GEQ_MATCH);
-			if (st!=HAM_SUCCESS)
-			{
-				printf("ham_find(GT) failed with error %d (%s)\n", st, ham_strerror(st));
-			}
-			else
-			{
-				k = *(approx_key *)key.data;
+            /*
+             * iterate over all items and print them
+             */
+            st=ham_find(db, NULL, &key, &record, HAM_FIND_GEQ_MATCH);
+            if (st!=HAM_SUCCESS)
+            {
+                printf("ham_find(GT) failed with error %d (%s)\n", st, ham_strerror(st));
+            }
+            else
+            {
+                k = *(approx_key *)key.data;
 
-				/*
-				 * print the word and the line number
-				 */
-				printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
-						k.lineno, k.wordno);
-			}
+                /*
+                 * print the word and the line number
+                 */
+                printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
+                        k.lineno, k.wordno);
+            }
 
-			printf("\nSTART for CURSOR-LESS FIND(LT) @ lineno == %u\n", l);
+            printf("\nSTART for CURSOR-LESS FIND(LT) @ lineno == %u\n", l);
 
-			k.lineno = l;
-			k.wordno = 0;
+            k.lineno = l;
+            k.wordno = 0;
 
-			key.data = &k;
-			key.size = sizeof(k);
+            key.data = &k;
+            key.size = sizeof(k);
 
-			/*
-			 * iterate over all items and print them
-			 */
-			st=ham_find(db, NULL, &key, &record, HAM_FIND_LEQ_MATCH);
-			if (st!=HAM_SUCCESS)
-			{
-				printf("ham_find(LT) failed with error %d (%s)\n", st, ham_strerror(st));
-			}
-			else
-			{
-				k = *(approx_key *)key.data;
+            /*
+             * iterate over all items and print them
+             */
+            st=ham_find(db, NULL, &key, &record, HAM_FIND_LEQ_MATCH);
+            if (st!=HAM_SUCCESS)
+            {
+                printf("ham_find(LT) failed with error %d (%s)\n", st, ham_strerror(st));
+            }
+            else
+            {
+                k = *(approx_key *)key.data;
 
-				/*
-				 * print the word and the line number
-				 */
-				printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
-						k.lineno, k.wordno);
-			}
+                /*
+                 * print the word and the line number
+                 */
+                printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
+                        k.lineno, k.wordno);
+            }
 
-			printf("\nSTART for CURSOR-LESS FIND(GT+LT) @ lineno == %u\n", l);
+            printf("\nSTART for CURSOR-LESS FIND(GT+LT) @ lineno == %u\n", l);
 
-			k.lineno = l;
-			k.wordno = 0;
+            k.lineno = l;
+            k.wordno = 0;
 
-			key.data = &k;
-			key.size = sizeof(k);
+            key.data = &k;
+            key.size = sizeof(k);
 
-			/*
-			 * iterate over all items and print them
-			 */
-			st=ham_find(db, NULL, &key, &record, HAM_FIND_NEAR_MATCH);
-			if (st!=HAM_SUCCESS)
-			{
-				printf("ham_find(GT+LT) failed with error %d (%s)\n", st, ham_strerror(st));
-			}
-			else
-			{
-				k = *(approx_key *)key.data;
+            /*
+             * iterate over all items and print them
+             */
+            st=ham_find(db, NULL, &key, &record, HAM_FIND_NEAR_MATCH);
+            if (st!=HAM_SUCCESS)
+            {
+                printf("ham_find(GT+LT) failed with error %d (%s)\n", st, ham_strerror(st));
+            }
+            else
+            {
+                k = *(approx_key *)key.data;
 
-				/*
-				 * print the word and the line number
-				 */
-				printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
-						k.lineno, k.wordno);
-			}
-		}
-	}
+                /*
+                 * print the word and the line number
+                 */
+                printf("%s: appeared in line %u @ %u\n", (const char *)record.data,
+                        k.lineno, k.wordno);
+            }
+        }
+    }
 
     /*
      * then close the database handle; the flag

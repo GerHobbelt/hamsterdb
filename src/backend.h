@@ -35,11 +35,11 @@ extern "C" {
 */
 
 /** continue with the traversal */
-#define CB_CONTINUE			0
+#define CB_CONTINUE         0
 /** do not not descend another level (or descend from page to key traversal) */
-#define CB_DO_NOT_DESCEND	1
+#define CB_DO_NOT_DESCEND   1
 /** stop the traversal entirely */
-#define CB_STOP				2
+#define CB_STOP             2
 
 /**
  * @}
@@ -257,7 +257,7 @@ HAM_PACK_0 struct HAM_PACK_1 ham_backend_t
 /**
  * convenience macro to get the database pointer of a ham_backend_t-structure
  */
-#define be_get_db(be)                        (be)->_db
+#define be_get_db(be)                       (be)->_db
 
 /**
  * get the keysize

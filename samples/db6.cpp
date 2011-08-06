@@ -113,7 +113,7 @@ run_demo(void)
      */
 
     std::cout << "success!" << std::endl;
-	return (0);
+    return (0);
 }
 
 int

@@ -8,13 +8,13 @@
 
 /* Windows DLL stuff */
 #if defined(_WIN32) && 0
-#	ifdef JSON_PARSER_DLL_EXPORTS
-#		define JSON_PARSER_DLL_API __declspec(dllexport)
-#	else
-#		define JSON_PARSER_DLL_API __declspec(dllimport)
+#   ifdef JSON_PARSER_DLL_EXPORTS
+#       define JSON_PARSER_DLL_API __declspec(dllexport)
+#   else
+#       define JSON_PARSER_DLL_API __declspec(dllimport)
 #   endif
 #else
-#	define JSON_PARSER_DLL_API
+#   define JSON_PARSER_DLL_API
 #endif
 
 /* Determine the integer type use to parse non-floating point numbers */
@@ -93,7 +93,7 @@ typedef int (*JSON_parser_callback)(void* ctx, int type, const struct JSON_value
 /*! \brief The structure used to configure a JSON parser object
 
     \param depth Specifies the levels of nested JSON to allow.
-	    If negative, the parser can parse arbitrary levels of JSON, otherwise
+        If negative, the parser can parse arbitrary levels of JSON, otherwise
         the depth is the limit
     \param callback Pointer to a callback. This parameter may be NULL. In this case the input is merely checked for validity.
     \param callback_ctx Callback context. This parameter may be NULL.
@@ -109,8 +109,8 @@ typedef struct {
     void*                    callback_ctx;
     int                      depth;
     int                      allow_comments;
-    int						 handle_floats_manually;
-    int						 handle_ints_manually;
+    int                      handle_floats_manually;
+    int                      handle_ints_manually;
 } JSON_config;
 
 

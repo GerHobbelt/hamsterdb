@@ -38,7 +38,7 @@ main(int argc, char **argv)
             "in the\noriginal order, together with their line number.\n");
     printf("Reading from stdin...\n");
 
-	/*
+    /*
      * first step: create a new hamsterdb object
      */
     st=ham_new(&db);

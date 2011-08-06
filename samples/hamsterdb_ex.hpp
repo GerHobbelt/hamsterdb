@@ -73,50 +73,50 @@ class error
 public:
     /** Constructor */
     error(ham_status_t st) : m_errno(st), m_descr(0), m_full_message(0)
-	{
+    {
     }
     error(ham_status_t st, const char *msg) : m_errno(st), m_full_message(0)
-	{
-		m_descr = ::strdup(msg);
+    {
+        m_descr = ::strdup(msg);
     }
-	~error()
-	{
-		if (m_descr)
-			::free((void *)m_descr);
-		if (m_full_message)
-			::free((void *)m_full_message);
-	}
+    ~error()
+    {
+        if (m_descr)
+            ::free((void *)m_descr);
+        if (m_full_message)
+            ::free((void *)m_full_message);
+    }
 
     /** Returns the error code. */
     ham_status_t get_errno() const
-	{
+    {
         return (m_errno);
     }
 
     /** Returns an English error description. */
     const char *get_string() const
-	{
-		if (!m_full_message)
-		{
-			const char * se = ::ham_strerror(m_errno);
-			size_t tl = strlen(se ? se : "???") + strlen(m_descr ? m_descr : "") + 3;
-			m_full_message = (char *)::malloc(tl);
-			::strcpy(m_full_message, se ? se : "???");
-			if (m_descr)
-			{
-				::strcat(m_full_message, ": ");
-				::strcat(m_full_message, m_descr);
-				::free((void *)m_descr);
-				m_descr = NULL;
-			}
-		}
-		return m_full_message;
+    {
+        if (!m_full_message)
+        {
+            const char * se = ::ham_strerror(m_errno);
+            size_t tl = strlen(se ? se : "???") + strlen(m_descr ? m_descr : "") + 3;
+            m_full_message = (char *)::malloc(tl);
+            ::strcpy(m_full_message, se ? se : "???");
+            if (m_descr)
+            {
+                ::strcat(m_full_message, ": ");
+                ::strcat(m_full_message, m_descr);
+                ::free((void *)m_descr);
+                m_descr = NULL;
+            }
+        }
+        return m_full_message;
     }
 
 private:
     ham_status_t m_errno;
-	mutable char *m_descr;
-	mutable char *m_full_message;
+    mutable char *m_descr;
+    mutable char *m_full_message;
 };
 
 
@@ -127,7 +127,7 @@ private:
 class error_handler_base
 {
 public:
-	virtual ham_status_t handle(ham_status_t st) = 0;
+    virtual ham_status_t handle(ham_status_t st) = 0;
 };
 
 
@@ -143,10 +143,10 @@ public:
 class throwing_error_handler : public error_handler_base
 {
 public:
-	virtual ham_status_t handle(ham_status_t st)
-	{
-		throw error(st);
-	}
+    virtual ham_status_t handle(ham_status_t st)
+    {
+        throw error(st);
+    }
 };
 
 #endif
@@ -155,10 +155,10 @@ public:
 class retcode_error_handler : public error_handler_base
 {
 public:
-	virtual ham_status_t handle(ham_status_t st)
-	{
-		return st;
-	}
+    virtual ham_status_t handle(ham_status_t st)
+    {
+        return st;
+    }
 };
 
 
@@ -176,7 +176,7 @@ class key {
 public:
     /** Constructor */
     key(void *data=0, ham_size_t size=0, ham_u16_t flags=0)
-	{
+    {
         memset(&m_key, 0, sizeof(m_key));
         m_key.data=data;
         m_key.size=size;
@@ -185,44 +185,44 @@ public:
 
     /** Copy constructor. */
     key(const key &other)
-	{
-		if (&other != this)
-		{
-			m_key=other.m_key;
-		}
+    {
+        if (&other != this)
+        {
+            m_key=other.m_key;
+        }
     }
 
     /** Assignment operator. */
     key &operator=(const key &other)
-	{
-		if (&other != this)
-		{
-			m_key=other.m_key;
-		}
+    {
+        if (&other != this)
+        {
+            m_key=other.m_key;
+        }
         return (*this);
     }
 
     /** Returns the key data. */
     void *get_data() const
-	{
+    {
         return (m_key.data);
     }
 
     /** Sets the key data. */
     void set_data(void *data)
-	{
+    {
         m_key.data=data;
     }
 
     /** Returns the size of the key. */
     ham_size_t get_size() const
-	{
+    {
         return (m_key.size);
     }
 
     /** Sets the size of the key. */
     void set_size(ham_size_t size)
-	{
+    {
         m_key.size=size;
     }
 
@@ -401,7 +401,7 @@ public:
      * Database handle.
      */
     db &operator=(const db &other) {
-		db &rhs=(db &)other;
+        db &rhs=(db &)other;
         if (this==&other)
             return (*this);
         close();
@@ -442,8 +442,8 @@ public:
     ham_status_t get_error() {
         if (!m_db) {
             //throw error(HAM_NOT_INITIALIZED);
-			// uncomment the above to see the BFC augmented exception handling happening in unittests
-			return (HAM_NOT_INITIALIZED);
+            // uncomment the above to see the BFC augmented exception handling happening in unittests
+            return (HAM_NOT_INITIALIZED);
         }
         return (ham_get_error(m_db));
     }
@@ -779,7 +779,7 @@ public:
             throw error(st);
         }
 
-		return (ham_ex::db(dbh));
+        return (ham_ex::db(dbh));
     }
 
     /** Opens an existing Database in the Environment. */
@@ -797,7 +797,7 @@ public:
             throw error(st);
         }
 
-		return (ham_ex::db(dbh));
+        return (ham_ex::db(dbh));
     }
 
     /** Renames an existing Database in the Environment. */
