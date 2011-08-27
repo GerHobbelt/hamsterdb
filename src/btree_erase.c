@@ -35,29 +35,21 @@
 typedef struct erase_scratchpad_t
 {
     /**
-     * the backend pointer
+     * the common input datums
      */
-    ham_btree_t *be;
-
-    /**
-     * the flags of the ham_erase()-call
-     */
-    ham_u32_t flags;
-
-    /**
-     * the key which will be deleted
-     */
-    ham_key_t *key;
+    common_btree_datums_t *btdata;
 
     /**
      * a page which needs rebalancing
      */
     ham_page_t *mergepage;
 
+#if 0
     /**
      * a coupled cursor (can be NULL)
      */
     ham_bt_cursor_t *cursor;
+#endif
 
 } erase_scratchpad_t;
 
@@ -68,16 +60,15 @@ typedef struct erase_scratchpad_t
  * returns the page which is deleted, if available
  */
 static ham_status_t
-my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left,
-                ham_offset_t right, ham_offset_t lanchor, ham_offset_t ranchor,
-                ham_page_t *parent, erase_scratchpad_t *scratchpad,
-                erase_hints_t *hints);
+my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_offset_t left, ham_offset_t right,
+                   ham_offset_t lanchor, ham_offset_t ranchor, ham_page_t * const parent,
+                   erase_scratchpad_t * const scratchpad);
 
 /**
  * collapse the root node
  */
 static ham_status_t
-__collapse_root(ham_page_t *root, erase_scratchpad_t *scratchpad);
+my_collapse_root(ham_page_t *root, erase_scratchpad_t *scratchpad);
 
 /**
  * rebalance a page - either shifts elements to a sibling, or merges
@@ -86,14 +77,14 @@ __collapse_root(ham_page_t *root, erase_scratchpad_t *scratchpad);
 static ham_status_t
 my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_offset_t right,
              ham_offset_t lanchor, ham_offset_t ranchor, ham_page_t *parent,
-             erase_scratchpad_t *scratchpad, erase_hints_t *hints);
+             erase_scratchpad_t *scratchpad);
 
 /**
  * merge two pages
  */
 static ham_status_t
 my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibling, ham_offset_t anchor,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints);
+        erase_scratchpad_t *scratchpad);
 
 /**
  * shift items from a sibling to this page, till both pages have an equal
@@ -107,13 +98,13 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibling, 
  */
 static ham_status_t
 my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, ham_offset_t anchor,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints);
+        erase_scratchpad_t *scratchpad);
 
 /**
  * copy a key
  */
 static ham_status_t
-my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs);
+my_copy_key(common_btree_datums_t *btdata, int_key_t *dst, int_key_t *src);
 
 /**
  * replace the key in a page at index @a slot with the key referenced by @a newentry .
@@ -128,14 +119,14 @@ my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs);
  */
 static ham_status_t
 my_replace_key(ham_page_t *page, ham_s32_t slot,
-        int_key_t *newentry, ham_u32_t flags, erase_hints_t *hints);
+        int_key_t *newentry, ham_u32_t flags, common_btree_datums_t *btdata);
 
 /**
  * remove an item from a page
  */
 static ham_status_t
 my_remove_entry(ham_page_t *page, ham_s32_t slot,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints);
+        erase_scratchpad_t *scratchpad);
 
 /*
  * flags for my_replace_key
@@ -150,43 +141,41 @@ my_remove_entry(ham_page_t *page, ham_s32_t slot,
  * @note This is a B+-tree 'backend' method.
  */
 ham_status_t
-btree_erase(ham_btree_t *be, ham_key_t *key, ham_u32_t flags)
-{
-    return (btree_erase_cursor(be, key, 0, flags));
-}
-
-ham_status_t
-btree_erase_cursor(ham_btree_t *be, ham_key_t *key,
-        ham_bt_cursor_t *cursor, ham_u32_t flags)
+btree_erase_cursor(common_btree_datums_t *btdata, ham_key_t * const key)
 {
     ham_status_t st;
     ham_page_t *root;
     ham_page_t *p;
     ham_offset_t rootaddr;
-    ham_db_t *db=be_get_db(be);
-    ham_env_t *env = db_get_env(db);
-    erase_scratchpad_t scratchpad;
-    erase_hints_t hints = {flags, flags, (ham_cursor_t *)cursor, 0, HAM_FALSE, HAM_FALSE, 0,
-                            NULL, -1};
 
-    /*
-     * initialize the scratchpad
-     */
-    memset(&scratchpad, 0, sizeof(scratchpad));
-    scratchpad.be=be;
-    scratchpad.key=key;
-    scratchpad.flags=flags;
-    scratchpad.cursor=cursor;
+    common_hints_t * const hints = &btdata->hints;
+    ham_btree_t * const be = btdata->be;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    ham_bt_cursor_t * const cursor = btdata->cursor;
+	const ham_u32_t flags = btdata->flags;
 
-    btree_erase_get_hints(&hints, db, key);
-
-    if (hints.key_is_out_of_bounds)
+    erase_scratchpad_t scratchpad =
     {
-        stats_update_erase_fail_oob(db, &hints);
-        return (HAM_KEY_NOT_FOUND);
+        btdata,
+        NULL
+    };
+
+    ham_assert(cursor ? (bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_UNCOUPLED) : 1, (0));
+
+    ham_assert(scratchpad.btdata->in_key, (0));
+
+    db_update_global_stats_erase_query(btdata, key->size);
+
+    btree_erase_get_hints(btdata);
+
+    if (hints->key_is_out_of_bounds)
+    {
+        stats_update_erase_fail_oob(btdata);
+        return HAM_KEY_NOT_FOUND;
     }
 
-    if (hints.try_fast_track)
+    if (hints->try_fast_track)
     {
         /* TODO */
         ham_assert(1,(0));
@@ -198,118 +187,118 @@ btree_erase_cursor(ham_btree_t *be, ham_key_t *key,
     rootaddr = btree_get_rootpage(be);
     if (!rootaddr)
     {
-        stats_update_erase_fail(db, &hints);
+        stats_update_erase_fail(btdata);
         return HAM_KEY_NOT_FOUND;
     }
-    st=db_fetch_page(&root, db, rootaddr, flags);
-    ham_assert(st ? !root : 1, (0));
+    st=db_fetch_page(&root, env, rootaddr, flags);
+    ham_assert(st ? root == NULL : 1, (0));
     if (!root)
     {
-        stats_update_erase_fail(db, &hints);
+        stats_update_erase_fail(btdata);
         return st ? st : HAM_INTERNAL_ERROR;
     }
+    ham_assert(!st, (0));
+    ham_assert(db, (0));
+    page_set_owner(root, db);
 
     /*
      * ... and start the recursion
      */
-    st=my_erase_recursive(&p, root, 0, 0, 0, 0, 0, &scratchpad, &hints);
+    st = my_erase_recursive(&p, root, 0, 0, 0, 0, 0, &scratchpad);
     if (st)
     {
-        stats_update_erase_fail(db, &hints);
-        return (st);
+        stats_update_erase_fail(btdata);
+        return st;
     }
 
     if (p)
     {
-        ham_status_t st;
-
         /*
          * delete the old root page
          */
         st = bt_uncouple_all_cursors(root, 0);
         if (st)
         {
-            stats_update_erase_fail(db, &hints);
+            stats_update_erase_fail(btdata);
             return (st);
         }
 
-        st=__collapse_root(p, &scratchpad);
+        st=my_collapse_root(p, &scratchpad);
         if (st)
-		{
-            stats_update_erase_fail(db, &hints);
+        {
+            stats_update_erase_fail(btdata);
             return (st);
         }
 
-        stats_page_is_nuked(db, root, HAM_FALSE);
+        stats_page_is_nuked(btdata, root, REASON_ERASE);
 
         st=txn_free_page(env_get_txn(env), root);
         if (st)
         {
-            stats_update_erase_fail(db, &hints);
+            stats_update_erase_fail(btdata);
             return (st);
         }
     }
 
-    stats_update_erase(db, hints.processed_leaf_page, &hints);
-    stats_update_any_bound(HAM_OPERATION_STATS_ERASE, db,
-                    hints.processed_leaf_page, key, hints.flags,
-                    hints.processed_slot);
+    stats_update_erase(btdata, hints->processed_leaf_page);
+    stats_update_any_bound(btdata, hints->processed_leaf_page, key, hints->flags,
+                    hints->processed_slot);
+
     return HAM_SUCCESS;
 }
 
 static ham_status_t
-my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left, ham_offset_t right,
-        ham_offset_t lanchor, ham_offset_t ranchor, ham_page_t *parent,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints)
+my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_offset_t left, ham_offset_t right,
+        ham_offset_t lanchor, ham_offset_t ranchor, ham_page_t * const parent,
+        erase_scratchpad_t * const scratchpad)
 {
     ham_s32_t slot;
     ham_bool_t isfew;
     ham_status_t st;
     ham_page_t *newme;
-    ham_page_t *child;
-    ham_page_t *tempp=0;
-    ham_db_t *db=page_get_owner(page);
-    btree_node_t *node=ham_page_get_btree_node(page);
-    ham_size_t maxkeys=btree_get_maxkeys(scratchpad->be);
+    btree_node_t *node = ham_page_get_btree_node(page);
+    ham_u16_t node_keycount = btree_node_get_count(node);
+
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    const ham_size_t maxkeys = btdata->maxkeys;
+    const ham_size_t minkeys = (maxkeys * btdata->merge_ratio + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1; // round position value
+    //const ham_size_t keywidth = btdata->keywidth;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+    common_hints_t * const hints = &btdata->hints;
+    ham_key_t * const key = btdata->in_key;
+
+    ham_assert(page_get_owner(page) == scratchpad->btdata->db, (0));
 
     *page_ref = 0;
 
     /*
      * empty node? then most likely we're in the empty root page.
      */
-    if (btree_node_get_count(node)==0) {
+    if (node_keycount == 0)
+    {
         return HAM_KEY_NOT_FOUND;
     }
 
     /*
-     * mark the nodes which may need rebalancing
+     * mark the nodes which may need rebalancing.
+	 *
+     * Always trigger rebalancing when the page contains 1 key (or rather: 'minkeys').
      */
-    if (btree_get_rootpage(scratchpad->be)==page_get_self(page))
-        isfew=(btree_node_get_count(node)<=1);
+#if 0
+    if (btree_get_rootpage(be) == page_get_self(page))
+        isfew = (btree_node_get_count(node) <= 1);
     else
-        isfew=(btree_node_get_count(node)<btree_get_minkeys(maxkeys));
+        isfew = (btree_node_get_count(node) < minkeys);
+#else
+    isfew = (node_keycount < minkeys);
+#endif
 
     if (!isfew) /* [i_a] name does not represent value; cf. code in btree_check */
         scratchpad->mergepage = 0;
     else if (!scratchpad->mergepage)
         scratchpad->mergepage = page;
-
-    if (!btree_node_is_leaf(node))
-    {
-        st=btree_traverse_tree(&child, &slot, db, page, scratchpad->key);
-        ham_assert(child!=0, ("guru meditation error"));
-        if (!child)
-            return st ? st : HAM_INTERNAL_ERROR;
-    }
-    else
-    {
-        hints->cost++;
-        st=btree_get_slot(db, page, scratchpad->key, &slot, 0);
-        if (st) {
-            return st;
-        }
-        child=0;
-    }
 
     /*
      * if this page is not a leaf: recursively descend down the tree
@@ -320,6 +309,14 @@ my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left, h
         ham_offset_t next_ranchor;
         ham_offset_t next_left;
         ham_offset_t next_right;
+	    ham_page_t *child;
+
+        st = btree_traverse_tree(&child, &slot, btdata, page, key);
+        ham_assert(child != 0, ("guru meditation error"));
+        if (!child)
+        {
+            return st ? st : HAM_INTERNAL_ERROR;
+        }
 
         /*
          * calculate neighbor and anchor nodes
@@ -328,13 +325,22 @@ my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left, h
             if (!left)
                 next_left=0;
             else {
+                //int_key_t *keyarr;
                 int_key_t *bte;
                 btree_node_t *n;
-                st=db_fetch_page(&tempp, db, left, 0);
-                if (!tempp)
+			    ham_page_t *tempp;
+
+                st=db_fetch_page(&tempp, env, left, 0);
+                ham_assert(st ? tempp == NULL : tempp != NULL, (0));
+                if (!page)
+                {
                     return st ? st : HAM_INTERNAL_ERROR;
+                }
+                ham_assert(!st, (0));
+                ham_assert(db, (0));
+                page_set_owner(tempp, db);
                 n = ham_page_get_btree_node(tempp);
-                bte=btree_node_get_key(db, n, btree_node_get_count(n)-1);
+                bte = btree_in_node_get_key_ref(btdata, page, btree_node_get_count(n) - 1);
                 next_left = key_get_ptr(bte);
             }
             next_lanchor=lanchor;
@@ -343,44 +349,61 @@ my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left, h
             if (slot==0)
                 next_left=btree_node_get_ptr_left(node);
             else {
+                //int_key_t *keyarr;
                 int_key_t *bte;
-                bte=btree_node_get_key(db, node, slot-1);
+
+				ham_assert(slot > 0, (0));
+                bte = btree_in_node_get_key_ref(btdata, page, (ham_u16_t)(slot - 1));
                 next_left=key_get_ptr(bte);
             }
             next_lanchor=page_get_self(page);
         }
 
-        if (slot==btree_node_get_count(node)-1) {
+        ham_assert(node_keycount == btree_node_get_count(node), (0));
+		ham_assert(node_keycount > 0, (0));
+        if (slot == node_keycount - 1)
+        {
             if (!right)
             {
                 next_right = 0;
             }
             else
             {
+                //int_key_t *keyarr;
                 int_key_t *bte;
                 btree_node_t *n;
-                st=db_fetch_page(&tempp, db, right, 0);
-                ham_assert(st ? !tempp : 1, (0));
-                if (!tempp)
+			    ham_page_t *tempp;
+
+                st=db_fetch_page(&tempp, env, right, 0);
+                ham_assert(st ? tempp == NULL : tempp != NULL, (0));
+                if (!page)
+                {
                     return st ? st : HAM_INTERNAL_ERROR;
-                n=ham_page_get_btree_node(tempp);
-                bte=btree_node_get_key(db, n, 0);
+                }
+                ham_assert(!st, (0));
+                ham_assert(db, (0));
+                page_set_owner(tempp, db);
+                n = ham_page_get_btree_node(tempp);
+                bte = btree_in_node_get_key_ref(btdata, tempp, 0);
                 next_right=key_get_ptr(bte);
             }
             next_ranchor=ranchor;
         }
         else
         {
+            //int_key_t *keyarr;
             int_key_t *bte;
-            bte=btree_node_get_key(db, node, slot+1);
-            next_right=key_get_ptr(bte);
-            next_ranchor=page_get_self(page);
+
+            bte = btree_in_node_get_key_ref(btdata, page, slot + 1);
+            next_right = key_get_ptr(bte);
+            next_ranchor = page_get_self(page);
         }
 
-        st=my_erase_recursive(&newme, child, next_left, next_right, next_lanchor,
-                    next_ranchor, page, scratchpad, hints);
+        st = my_erase_recursive(&newme, child, next_left, next_right, next_lanchor,
+                    next_ranchor, page, scratchpad);
         if (st)
             return st;
+		ham_assert(newme ? newme == child : 1, (0));
     }
     else
     {
@@ -389,10 +412,29 @@ my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left, h
          *
          * first, check if this entry really exists
          */
+        st=btree_get_slot(btdata, page, key, &slot, 0);
+        if (st) {
+            return st;
+        }
+
         newme = 0;
         if (slot != -1)
         {
-            int cmp=key_compare_pub_to_int(db, page, scratchpad->key, slot);
+            int cmp;
+            //int_key_t *keyarr;
+            int_key_t *bte;
+            ham_key_t rhs;
+
+			ham_assert(slot >= 0, (0));
+            bte = btree_in_node_get_key_ref(btdata, page, (ham_u16_t)slot);
+
+            st = db_prepare_ham_key_for_compare(db, 1, bte, &rhs);
+            if (st)
+                return st;
+
+            ham_assert(!(ham_key_get_intflags(key) & KEY_IS_EXTENDED), (0));
+            cmp = db_compare_keys(db, key, &rhs, NULL, page);
+
             if (cmp < -1)
                 return (ham_status_t)cmp;
 
@@ -417,78 +459,144 @@ my_erase_recursive(ham_page_t **page_ref, ham_page_t *page, ham_offset_t left, h
      */
     if (newme)
     {
+        ham_assert(slot != -1, (0)); /* [i_a] shouldn't ever happen, right? */
+
         if (slot==-1)
             slot=0;
-        st=my_remove_entry(page, slot, scratchpad, hints);
+        st=my_remove_entry(page, slot, scratchpad);
         if (st)
             return st;
     }
 
     /*
-     * no need to rebalance in case of an error
+     * No need to rebalance in case of an error.
+	 *
+	 * Nor do we rebalance when we're in the middle of an 'uber fast' erase operation:
+	 * that'll save us time NOW (and possibly bite us in the ass later on, but alas...)
+	 *
+	 * Note that we MUST rebalance -- in order to prevent /serious/ trouble later on -- when
+	 * the node has become close to empty.
+	 *
+	 * Also note that we don't have to rebalance anything when all the erase did was
+	 * remove one of the duplicates for a given key, i.e. when the key count of the node
+	 * remains unchanged (after all, that count does not count duplicate keys).
      */
     ham_assert(!st, (0));
-    return my_rebalance(page_ref, page, left, right, lanchor, ranchor, parent,
-                scratchpad, hints);
+
+	if (hints->flags & (HAM_HINT_SEQUENTIAL | HAM_HINT_UBER_FAST_ACCESS))
+	{
+	    ham_u16_t node_keycount_new = btree_node_get_count(node);
+
+		/*
+		heuristic:
+
+		1) allow non-leaf pages to 'deteriorate' while their key count is still above 1/4 MAX.
+
+		2) allow leaf pages to stay as is while their key count is >= 3, unless the hints are
+		   NOT 'super fast' in which case we allow a dip down to 1/4 MAX.
+
+		3) as mentioned in the notes above: do not rebalance when only a duplicate was removed.
+
+		Basically this means we're very aggressive in 'super fast' mode where it comes to
+		leaf pages: having those remain almost completely empty is considered 'okay', but we
+		are a little more conservative, i.e. desire a situation that's closer to maintaining
+		a fully balanced tree, where non-leaf (branch) nodes are concerned.
+		*/
+		if (node_keycount_new == node_keycount)
+		{
+			*page_ref = 0;
+			scratchpad->mergepage = 0;
+			return HAM_SUCCESS; /* case #3 */
+		}
+		else
+		{
+			const ham_size_t minkeys_quart = ((!btree_node_is_leaf(node) || (hints->flags & HAM_HINT_UBER_FAST_ACCESS) == 0)
+											? (maxkeys * MK_HAM_FLOAT(0.25) + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1		// round position value
+											: 3 - 1); // case #1
+
+			/* keep in mind that the hinter might have produced a skewed merge_split ratio! */
+			if ((minkeys_quart < minkeys ? node_keycount_new > minkeys_quart : node_keycount_new > minkeys)
+				&& node_keycount_new >= 3)
+			{
+				*page_ref = 0;
+				scratchpad->mergepage = 0;
+				return HAM_SUCCESS; /* case #1+#2('unless ...') */
+			}
+		}
+	}
+
+    return my_rebalance(page_ref, page, left, right, lanchor, ranchor, parent, scratchpad);
 }
 
 static ham_status_t
-__collapse_root(ham_page_t *newroot, erase_scratchpad_t *scratchpad)
+my_collapse_root(ham_page_t *newroot, erase_scratchpad_t *scratchpad)
 {
-    ham_env_t *env;
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    //const ham_size_t maxkeys = btdata->maxkeys;
+    //const ham_size_t keywidth = btdata->keywidth;
+    //ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    ham_btree_t * const be = btdata->be;
 
-    btree_set_rootpage(scratchpad->be, page_get_self(newroot));
-    be_set_dirty(scratchpad->be, HAM_TRUE);
-    scratchpad->be->_fun_flush(scratchpad->be);
+    btree_set_rootpage(be, page_get_self(newroot));
+    be_set_dirty(be, HAM_TRUE);
+
+    be->_fun_flush(be);
 
     ham_assert(page_get_owner(newroot), (0));
-
-    env = db_get_env(page_get_owner(newroot));
-    ham_assert(env!=0, (""));
+    //env = db_get_env(page_get_owner(newroot));
     env_set_dirty(env);
 
     /* the root page was modified (btree_set_rootpage) - make sure that
      * it's logged */
-    if (env_get_rt_flags(env)&HAM_ENABLE_RECOVERY) {
+    if (env_get_rt_flags(env) & HAM_ENABLE_RECOVERY) {
         ham_status_t st=txn_add_page(env_get_txn(env), env_get_header_page(env),
                 HAM_TRUE);
         if (st)
             return (st);
     }
 
-    /*
-     * As we re-purpose a page, we will reset its pagecounter as
-     * well to signal its first use as the new type assigned here.
-     */
-    if (env_get_cache(env) && (page_get_type(newroot) != PAGE_TYPE_B_ROOT)) {
+    if (env_get_cache(env) && (page_get_pers_type(newroot) != PAGE_TYPE_B_ROOT))
+    {
         ham_cache_t *cache = env_get_cache(env);
+        /*
+         * As we re-purpose a page, we will reset its pagecounter as
+         * well to signal its first use as the new type assigned here.
+         */
         ham_assert(cache, (0));
-        cache_update_page_access_counter(newroot, cache, 0);
+        //page_set_cache_cntr(newroot, cache->_timeslot++);
+        cache_update_page_access_counter(newroot, cache); /* bump up */
     }
-
-    page_set_type(newroot, PAGE_TYPE_B_ROOT);
-
+    page_set_pers_type(newroot, PAGE_TYPE_B_ROOT);
     return HAM_SUCCESS;
 }
 
 static ham_status_t
 my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_offset_t right,
         ham_offset_t lanchor, ham_offset_t ranchor, ham_page_t *parent,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints)
+        erase_scratchpad_t *scratchpad)
 {
     ham_status_t st;
-    btree_node_t *node=ham_page_get_btree_node(page);
-    ham_page_t *leftpage=0;
-    ham_page_t *rightpage=0;
-    btree_node_t *leftnode=0;
-    btree_node_t *rightnode=0;
-    ham_bool_t fewleft=HAM_FALSE;
-    ham_bool_t fewright=HAM_FALSE;
-    ham_size_t maxkeys=btree_get_maxkeys(scratchpad->be);
-    ham_size_t minkeys=btree_get_minkeys(maxkeys);
+    btree_node_t *node = ham_page_get_btree_node(page);
+    ham_page_t *leftpage;
+    ham_page_t *rightpage;
+    btree_node_t *leftnode = NULL;
+    btree_node_t *rightnode = NULL;
+    ham_bool_t fewleft = HAM_FALSE;
+    ham_bool_t fewright = HAM_FALSE;
 
-    ham_assert(page_get_owner(page), (0));
-    ham_assert(page_get_owner(page) ? device_get_env(page_get_device(page)) == db_get_env(page_get_owner(page)) : 1, (0));
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    const ham_size_t maxkeys = btdata->maxkeys;
+    const ham_size_t minkeys = (maxkeys * btdata->merge_ratio + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1; // round position value
+    //const ham_size_t keywidth = btdata->keywidth;
+    ham_device_t * const dev = btdata->dev;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+
+    ham_assert(page_get_owner(page) == db, (0));
+    ham_assert(dev == page_get_device(page), (0));
+    ham_assert(page_get_owner(page) ? device_get_env(dev) == db_get_env(page_get_owner(page)) : 1, (0));
 
     *newpage_ref = 0;
     if (!scratchpad->mergepage)
@@ -496,30 +604,54 @@ my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_
         return HAM_SUCCESS;
     }
 
+    ham_assert(device_get_env(dev) == env, (0));
+
     /*
      * get the left and the right sibling of this page
      */
     if (left)
     {
-        st = db_fetch_page(&leftpage, page_get_owner(page),
+        st = db_fetch_page(&leftpage, env,
                         btree_node_get_left(node), 0);
-        if (st)
-            return st;
-        if (leftpage) {
-            leftnode =ham_page_get_btree_node(leftpage);
-            fewleft  =(btree_node_get_count(leftnode)<=minkeys);
+        ham_assert(st ? leftpage == NULL : leftpage != NULL, (0));
+        if (!leftpage)
+        {
+            return st ? st : HAM_INTERNAL_ERROR;
         }
+        ham_assert(!st, (0));
+        ham_assert(db, (0));
+        page_set_owner(leftpage, db);
+        if (leftpage)
+        {
+            leftnode = ham_page_get_btree_node(leftpage);
+            fewleft = (btree_node_get_count(leftnode) <= minkeys);
+        }
+    }
+    else
+    {
+        leftpage = NULL;
     }
     if (right)
     {
-        st = db_fetch_page(&rightpage, page_get_owner(page),
+        st = db_fetch_page(&rightpage, env,
                         btree_node_get_right(node), 0);
-        if (st)
-            return st;
-        if (rightpage) {
-            rightnode=ham_page_get_btree_node(rightpage);
-            fewright =(btree_node_get_count(rightnode)<=minkeys);
+        ham_assert(st ? rightpage == NULL : rightpage != NULL, (0));
+        if (!rightpage)
+        {
+            return st ? st : HAM_INTERNAL_ERROR;
         }
+        ham_assert(!st, (0));
+        ham_assert(db, (0));
+        page_set_owner(rightpage, db);
+        if (rightpage)
+        {
+            rightnode = ham_page_get_btree_node(rightpage);
+            fewright = (btree_node_get_count(rightnode) <= minkeys);
+        }
+    }
+    else
+    {
+        rightpage = NULL;
     }
 
     /*
@@ -533,9 +665,17 @@ my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_
         }
         else
         {
-            return (db_fetch_page(newpage_ref,
-                        page_get_owner(page),
-                        btree_node_get_ptr_left(node), 0));
+            st = db_fetch_page(newpage_ref, env,
+                        btree_node_get_ptr_left(node), 0);
+            ham_assert(st ? *newpage_ref == NULL : *newpage_ref != NULL, (0));
+            if (!*newpage_ref)
+            {
+                return st ? st : HAM_INTERNAL_ERROR;
+            }
+            ham_assert(!st, (0));
+            ham_assert(db, (0));
+            page_set_owner(*newpage_ref, db);
+            return HAM_SUCCESS;
         }
     }
 
@@ -547,13 +687,11 @@ my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_
     {
         if (parent && lanchor != page_get_self(parent))
         {
-            return (my_merge_pages(newpage_ref, page, rightpage, ranchor,
-                        scratchpad, hints));
+            return my_merge_pages(newpage_ref, page, rightpage, ranchor, scratchpad);
         }
         else
         {
-            return (my_merge_pages(newpage_ref, leftpage, page, lanchor,
-                        scratchpad, hints));
+            return my_merge_pages(newpage_ref, leftpage, page, lanchor, scratchpad);
         }
     }
 
@@ -565,13 +703,11 @@ my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_
         if (parent && (!(ranchor == page_get_self(parent)) &&
                 (page_get_self(page) == page_get_self(scratchpad->mergepage))))
         {
-            return (my_merge_pages(newpage_ref, leftpage, page, lanchor,
-                        scratchpad, hints));
+            return my_merge_pages(newpage_ref, leftpage, page, lanchor, scratchpad);
         }
         else
         {
-            return (my_shift_pages(newpage_ref, page, rightpage, ranchor,
-                        scratchpad, hints));
+            return my_shift_pages(newpage_ref, page, rightpage, ranchor, scratchpad);
         }
     }
 
@@ -583,32 +719,26 @@ my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_
         if (parent && (!(lanchor == page_get_self(parent)) &&
                 (page_get_self(page) == page_get_self(scratchpad->mergepage))))
         {
-            return (my_merge_pages(newpage_ref, page, rightpage, ranchor,
-                        scratchpad, hints));
+            return my_merge_pages(newpage_ref, page, rightpage, ranchor, scratchpad);
         }
         else
         {
-            return (my_shift_pages(newpage_ref, leftpage, page, lanchor,
-                        scratchpad, hints));
+            return my_shift_pages(newpage_ref, leftpage, page, lanchor, scratchpad);
         }
     }
 
     /*
      * choose the more effective of two shifts
      */
-    if (lanchor==ranchor)
-	{
-        if (leftnode!=0 && rightnode!=0
-                && btree_node_get_count(leftnode)
-                    <=btree_node_get_count(rightnode))
-		{
-            return (my_shift_pages(newpage_ref, page, rightpage,
-                        ranchor, scratchpad, hints));
+    if (lanchor == ranchor)
+    {
+        if (btree_node_get_count(leftnode) <= btree_node_get_count(rightnode))
+        {
+            return my_shift_pages(newpage_ref, page, rightpage, ranchor, scratchpad);
         }
         else
         {
-            return (my_shift_pages(newpage_ref, leftpage, page,
-                        lanchor, scratchpad, hints));
+            return my_shift_pages(newpage_ref, leftpage, page, lanchor, scratchpad);
         }
     }
 
@@ -617,43 +747,63 @@ my_rebalance(ham_page_t **newpage_ref, ham_page_t *page, ham_offset_t left, ham_
      */
     if (parent && lanchor == page_get_self(parent))
     {
-        return (my_shift_pages(newpage_ref, leftpage, page, lanchor,
-                        scratchpad, hints));
+        return my_shift_pages(newpage_ref, leftpage, page, lanchor, scratchpad);
     }
     else
     {
-        return (my_shift_pages(newpage_ref, page, rightpage, ranchor,
-                        scratchpad, hints));
+        return my_shift_pages(newpage_ref, page, rightpage, ranchor, scratchpad);
     }
 }
 
 static ham_status_t
-my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage,
-            ham_offset_t anchor, erase_scratchpad_t *scratchpad,
-            erase_hints_t *hints)
+my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, ham_offset_t anchor,
+        erase_scratchpad_t *scratchpad)
 {
     ham_status_t st;
-    ham_s32_t slot;
-    ham_size_t c, keysize;
-    ham_db_t *db=page_get_owner(page);
+    ham_size_t c;
+    //ham_size_t keysize;
+    //ham_db_t *db = page_get_owner(page);
+    //ham_btree_t *be = be;
     ham_page_t *ancpage;
-    btree_node_t *node, *sibnode, *ancnode;
-    int_key_t *bte_lhs, *bte_rhs;
-    ham_env_t *env;
+    btree_node_t *node;
+    btree_node_t *sibnode;
+    btree_node_t *ancnode;
+    int_key_t *bte_lhs;
+    int_key_t *bte_rhs;
+    //int_key_t *sibkeyarr;
+    //int_key_t *keyarr;
+    //int_key_t *anckeyarr;
+    ham_size_t sibnode_keycount;
+    ham_size_t node_keycount;
+
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    //const ham_size_t maxkeys = btdata->maxkeys;
+    //const ham_size_t keywidth = btdata->keywidth;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+    common_hints_t * const hints = &btdata->hints;
 
     ham_assert(db, (0));
-    env = db_get_env(db);
+    //env = env;
 
-    keysize=db_get_keysize(db);
-    node   =ham_page_get_btree_node(page);
-    sibnode=ham_page_get_btree_node(sibpage);
+    node = ham_page_get_btree_node(page);
+    sibnode = ham_page_get_btree_node(sibpage);
+
+    sibnode_keycount = btree_node_get_count(sibnode);
+    node_keycount = btree_node_get_count(node);
 
     if (anchor)
     {
-        st=db_fetch_page(&ancpage, page_get_owner(page), anchor, 0);
-        ham_assert(st ? !ancpage : 1, (0));
+        st=db_fetch_page(&ancpage, env, anchor, 0);
+        ham_assert(st ? ancpage == NULL : ancpage != NULL, (0));
         if (!ancpage)
+        {
             return st ? st : HAM_INTERNAL_ERROR;
+        }
+        ham_assert(!st, (0));
+        ham_assert(db, (0));
+        page_set_owner(ancpage, db);
         ancnode = ham_page_get_btree_node(ancpage);
     }
     else
@@ -704,58 +854,63 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage,
     {
         int_key_t *bte;
         ham_key_t key;
+	    ham_s32_t slot;
 
-        bte =btree_node_get_key(db, sibnode, 0);
+        bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
         memset(&key, 0, sizeof(key));
         key._flags = key_get_flags(bte);
         key.data = key_get_key(bte);
         key.size = key_get_size(bte);
 
-        hints->cost++;
-        st=btree_get_slot(db, ancpage, &key, &slot, 0);
+        st=btree_get_slot(btdata, ancpage, &key, &slot, 0);
         if (st) {
             return st;
         }
 
-        bte_lhs=btree_node_get_key(db, node,
-            btree_node_get_count(node));
-        bte_rhs=btree_node_get_key(db, ancnode, slot);
+		ham_assert(slot >= 0, (0));
+        ham_assert(node_keycount == btree_node_get_count(node), (0));
+        bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount);
+        bte_rhs = btree_in_node_get_key_ref(btdata, ancpage, slot);
 
-        hints->cost++;
-        st=my_copy_key(db, bte_lhs, bte_rhs);
+        st=my_copy_key(btdata, bte_lhs, bte_rhs);
         if (st) {
             return st;
         }
         key_set_ptr(bte_lhs, btree_node_get_ptr_left(sibnode));
-        btree_node_set_count(node, btree_node_get_count(node)+1);
+        node_keycount++;
+        btree_node_set_count(node, node_keycount);
     }
 
-    c=btree_node_get_count(sibnode);
-    bte_lhs=btree_node_get_key(db, node, btree_node_get_count(node));
-    bte_rhs=btree_node_get_key(db, sibnode, 0);
+    ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+    c = sibnode_keycount;
+    ham_assert(node_keycount == btree_node_get_count(node), (0));
+    bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount);
+    bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
 
     /*
      * shift items from the sibling to this page
      */
-    hints->cost += stats_memmove_cost((db_get_int_key_header_size()+keysize)*c);
-    memcpy(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*c);
+    btree_move_key_series(btdata, page, sibpage, bte_lhs, bte_rhs, c); // memcpy(bte_lhs, bte_rhs, keywidth * c);
 
     /*
      * as sibnode is merged into node, we will also need to ensure that our
-     * statistics node/page tracking is corrected accordingly: what was in
-     * sibnode, is now in node. And sibnode will be destroyed at the end.
+     * statistics node/page tracking is corrected accordingly: what was in sibnode, is now in
+     * node. And sibnode will be destroyed at the end.
      */
-    if (sibpage == hints->processed_leaf_page) {
+    if (sibpage == hints->processed_leaf_page)
+    {
         /* sibnode slot 0 has become node slot 'bte_lhs' */
-        hints->processed_slot += btree_node_get_count(node);
+        ham_assert(node_keycount == btree_node_get_count(node), (0));
+        hints->processed_slot += node_keycount;
         hints->processed_leaf_page = page;
     }
 
     page_set_dirty(page, env);
     page_set_dirty(sibpage, env);
-    ham_assert(btree_node_get_count(node)+c <= 0xFFFF, (0));
-    btree_node_set_count(node, btree_node_get_count(node)+c);
-    btree_node_set_count(sibnode, 0);
+    ham_assert(node_keycount == btree_node_get_count(node), (0));
+    ham_assert(node_keycount + c <= MAX_KEYS_PER_NODE, (0));
+    ham_assert(btree_node_get_count(node) == node_keycount + c, (0));
+    ham_assert(btree_node_get_count(sibnode) == 0, (0));
 
     /*
      * update the linked list of pages
@@ -767,28 +922,44 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage,
             ham_page_t *p;
             btree_node_t *n;
 
-            st=db_fetch_page(&p, page_get_owner(page),
+            st=db_fetch_page(&p, env,
                     btree_node_get_left(sibnode), 0);
+            ham_assert(st ? p == NULL : p != NULL, (0));
             if (!p)
+            {
                 return st ? st : HAM_INTERNAL_ERROR;
+            }
+            ham_assert(!st, (0));
+            ham_assert(db, (0));
+            page_set_owner(p, db);
             n=ham_page_get_btree_node(p);
             btree_node_set_right(n, btree_node_get_right(sibnode));
             btree_node_set_left(node, btree_node_get_left(sibnode));
             page_set_dirty(p, env);
         }
         else
+        {
             btree_node_set_left(node, 0);
+        }
     }
-    else if (btree_node_get_right(node)==page_get_self(sibpage)) {
-        if (btree_node_get_right(sibnode)) {
+    else if (btree_node_get_right(node) == page_get_self(sibpage))
+    {
+        if (btree_node_get_right(sibnode))
+        {
             ham_page_t *p;
             btree_node_t *n;
 
-            st=db_fetch_page(&p, page_get_owner(page),
+            st=db_fetch_page(&p, env,
                     btree_node_get_right(sibnode), 0);
+            ham_assert(st ? p == NULL : p != NULL, (0));
             if (!p)
+            {
                 return st ? st : HAM_INTERNAL_ERROR;
-            n=ham_page_get_btree_node(p);
+            }
+            ham_assert(!st, (0));
+            ham_assert(db, (0));
+            page_set_owner(p, db);
+            n = ham_page_get_btree_node(p);
 
             btree_node_set_right(node, btree_node_get_right(sibnode));
             btree_node_set_left(n, btree_node_get_left(sibnode));
@@ -810,13 +981,12 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage,
         scratchpad->mergepage=0;
     }
 
-    stats_page_is_nuked(db, sibpage, HAM_FALSE);
+    stats_page_is_nuked(btdata, sibpage, REASON_MERGE);
 
     /*
      * delete the page
      */
     ham_assert(hints->processed_leaf_page != sibpage, (0));
-    ham_assert(env_get_txn(env)!=0, (""));
     st=txn_free_page(env_get_txn(env), sibpage);
     if (st) {
         return st;
@@ -828,32 +998,52 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage,
 
 static ham_status_t
 my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, ham_offset_t anchor,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints)
+        erase_scratchpad_t *scratchpad)
 {
     ham_s32_t slot = 0;
     ham_status_t st;
     ham_bool_t intern;
     ham_size_t s;
     ham_size_t c;
-    ham_size_t keysize;
-    ham_db_t *db=page_get_owner(page);
-    ham_env_t *env = db_get_env(db);
     ham_page_t *ancpage;
-    btree_node_t *node, *sibnode, *ancnode;
-    int_key_t *bte_lhs, *bte_rhs;
+    btree_node_t *node;
+    btree_node_t *sibnode;
+    btree_node_t *ancnode;
+    int_key_t *bte_lhs;
+    int_key_t *bte_rhs;
+    //int_key_t *sibkeyarr;
+    //int_key_t *keyarr;
+    //int_key_t *anckeyarr;
+    ham_size_t node_keycount;
+    ham_size_t sibnode_keycount;
 
-    node   =ham_page_get_btree_node(page);
-    sibnode=ham_page_get_btree_node(sibpage);
-    keysize=db_get_keysize(db);
-    intern =!btree_node_is_leaf(node);
-    st=db_fetch_page(&ancpage, db, anchor, 0);
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    //const ham_size_t maxkeys = btdata->maxkeys;
+    //const ham_size_t keywidth = btdata->keywidth;
+    //const ham_size_t keysize = btdata->keysize;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+    //common_hints_t * const hints = &btdata->hints;
+
+    node = ham_page_get_btree_node(page);
+    node_keycount = btree_node_get_count(node);
+    sibnode = ham_page_get_btree_node(sibpage);
+    sibnode_keycount = btree_node_get_count(sibnode);
+
+    intern = !btree_node_is_leaf(node);
+    st = db_fetch_page(&ancpage, env, anchor, 0);
+    ham_assert(st ? ancpage == NULL : ancpage != NULL, (0));
     if (!ancpage)
     {
         return st ? st : HAM_INTERNAL_ERROR;
-	}
-    ancnode=ham_page_get_btree_node(ancpage);
+    }
+    ham_assert(!st, (0));
+    ham_assert(db, (0));
+    page_set_owner(ancpage, db);
+    ancnode = ham_page_get_btree_node(ancpage);
 
-    ham_assert(btree_node_get_count(node)!=btree_node_get_count(sibnode), (0));
+    ham_assert(node_keycount != sibnode_keycount, (0));
 
     *newpage_ref = 0;
 
@@ -892,7 +1082,8 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
     /*
      * shift from sibling to this node
      */
-    if (btree_node_get_count(sibnode)>=btree_node_get_count(node))
+    ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+    if (sibnode_keycount >= node_keycount)
     {
         /*
          * internal node: insert the anchornode separator value to
@@ -903,13 +1094,12 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             int_key_t *bte;
             ham_key_t key;
 
-            bte=btree_node_get_key(db, sibnode, 0);
+            bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
             memset(&key, 0, sizeof(key));
             key._flags = key_get_flags(bte);
             key.data = key_get_key(bte);
             key.size = key_get_size(bte);
-            hints->cost++;
-            st=btree_get_slot(db, ancpage, &key, &slot, 0);
+            st=btree_get_slot(btdata, ancpage, &key, &slot, 0);
             if (st) {
                 return st;
             }
@@ -917,12 +1107,11 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * append the anchor node to the page
              */
-            bte_rhs=btree_node_get_key(db, ancnode, slot);
-            bte_lhs=btree_node_get_key(db, node,
-                btree_node_get_count(node));
+            bte_rhs = btree_in_node_get_key_ref(btdata, ancpage, slot);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount);
 
-            hints->cost++;
-            st=my_copy_key(db, bte_lhs, bte_rhs);
+            st=my_copy_key(btdata, bte_lhs, bte_rhs);
             if (st) {
                 return st;
             }
@@ -940,26 +1129,35 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * update the anchor node with sibling[0]
              */
-            (void)my_replace_key(ancpage, slot, bte, INTERNAL_KEY, hints);
+            (void)my_replace_key(ancpage, slot, bte, INTERNAL_KEY, btdata);
 
             /*
              * shift the remainder of sibling to the left
              */
-            hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                        + keysize) * (btree_node_get_count(sibnode)-1));
-            bte_lhs=btree_node_get_key(db, sibnode, 0);
-            bte_rhs=btree_node_get_key(db, sibnode, 1);
-            memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)
-                    * (btree_node_get_count(sibnode)-1));
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+            ham_assert(sibnode_keycount > 0, (0));
+
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 1);
+            btree_move_key_series(btdata, sibpage, sibpage, bte_lhs, bte_rhs, sibnode_keycount - 1); // memmove(bte_lhs, bte_rhs, keywidth * (sibnode_keycount-1));
 
             /*
              * adjust counters
              */
-            btree_node_set_count(node, btree_node_get_count(node)+1);
-            btree_node_set_count(sibnode, btree_node_get_count(sibnode)-1);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+            node_keycount++;
+            btree_node_set_count(node, node_keycount);
+            sibnode_keycount--;
+            btree_node_set_count(sibnode, sibnode_keycount);
         }
 
-        c=(btree_node_get_count(sibnode)-btree_node_get_count(node))/2;
+        // split_ratio ???
+		//
+		// Hm, this is part of the rebalancing act, where keys are equally distributed among both pages.
+		// Question is: do we still want 'equally distributed' here when we've got hints/statistics?
+        ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+        c = (sibnode_keycount - node_keycount) / 2;
         if (c==0)
             goto cleanup;
         if (intern)
@@ -972,37 +1170,34 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
          */
         if (intern)
         {
-            bte_lhs=btree_node_get_key(db, node,
-                    btree_node_get_count(node));
-            bte_rhs=btree_node_get_key(db, ancnode, slot);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount);
+            bte_rhs = btree_in_node_get_key_ref(btdata, ancpage, slot);
 
-            hints->cost++;
-            st=my_copy_key(db, bte_lhs, bte_rhs);
+            st=my_copy_key(btdata, bte_lhs, bte_rhs);
             if (st) {
                 return st;
             }
 
             key_set_ptr(bte_lhs, btree_node_get_ptr_left(sibnode));
-            btree_node_set_count(node, btree_node_get_count(node)+1);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            node_keycount++;
+            btree_node_set_count(node, node_keycount);
         }
 
         /*
          * shift items from the sibling to this page, then
          * delete the shifted items
          */
-        hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                + keysize)*(btree_node_get_count(sibnode) + c));
+        ham_assert(node_keycount == btree_node_get_count(node), (0));
+        bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount);
+        bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
 
-        bte_lhs=btree_node_get_key(db, node,
-                btree_node_get_count(node));
-        bte_rhs=btree_node_get_key(db, sibnode, 0);
+        btree_move_key_series(btdata, page, sibpage, bte_lhs, bte_rhs, c); // memmove(bte_lhs, bte_rhs, keywidth * c);
 
-        memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*c);
-
-        bte_lhs=btree_node_get_key(db, sibnode, 0);
-        bte_rhs=btree_node_get_key(db, sibnode, c);
-        memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*
-                (btree_node_get_count(sibnode)-c));
+        bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+        bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, c);
+        btree_move_key_series(btdata, sibpage, sibpage, bte_lhs, bte_rhs, sibnode_keycount - c); // memmove(bte_lhs, bte_rhs, keywidth * (sibnode_keycount - c));
 
         /*
          * internal nodes: don't forget to set ptr_left of the sibling, and
@@ -1011,22 +1206,21 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
         if (intern)
         {
             int_key_t *bte;
-            bte=btree_node_get_key(db, sibnode, 0);
+            bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
             btree_node_set_ptr_left(sibnode, key_get_ptr(bte));
             if (anchor)
             {
-                ham_key_t key;
-                memset(&key, 0, sizeof(key));
-                key._flags=key_get_flags(bte);
-                key.data  =key_get_key(bte);
-                key.size  =key_get_size(bte);
-                hints->cost++;
-                st=btree_get_slot(db, ancpage, &key, &slot, 0);
+                ham_key_t key = {0};
+                //memset(&key, 0, sizeof(key));
+                key._flags = key_get_flags(bte);
+                key.data = key_get_key(bte);
+                key.size = key_get_size(bte);
+                st=btree_get_slot(btdata, ancpage, &key, &slot, 0);
                 if (st) {
                     return st;
                 }
                 /* replace the key */
-                st=my_replace_key(ancpage, slot, bte, INTERNAL_KEY, hints);
+                st=my_replace_key(ancpage, slot, bte, INTERNAL_KEY, btdata);
                 if (st) {
                     return st;
                 }
@@ -1034,32 +1228,38 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * shift once more
              */
-            hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                    + keysize)*(btree_node_get_count(sibnode)-1));
-            bte_lhs=btree_node_get_key(db, sibnode, 0);
-            bte_rhs=btree_node_get_key(db, sibnode, 1);
-            memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*
-                    (btree_node_get_count(sibnode)-1));
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+#if 0
+            bte_lhs = sibkeyarr + 0;
+            bte_rhs = sibkeyarr + 1;
+#else
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, 1);
+#endif
+            btree_move_key_series(btdata, sibpage, sibpage, bte_lhs, bte_rhs, sibnode_keycount - 1); // memmove(bte_lhs, bte_rhs, keywidth * (sibnode_keycount - 1));
         }
         else
         {
             /*
              * in a leaf - update the anchor
              */
-            ham_key_t key;
+            ham_key_t key = {0};
             int_key_t *bte;
-            bte=btree_node_get_key(db, sibnode, 0);
-            memset(&key, 0, sizeof(key));
-            key._flags=key_get_flags(bte);
-            key.data  =key_get_key(bte);
-            key.size  =key_get_size(bte);
-            hints->cost++;
-            st=btree_get_slot(db, ancpage, &key, &slot, 0);
+#if 0
+            bte = sibkeyarr + 0;
+#else
+            bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
+#endif
+            //memset(&key, 0, sizeof(key));
+            key._flags = key_get_flags(bte);
+            key.data = key_get_key(bte);
+            key.size = key_get_size(bte);
+            st=btree_get_slot(btdata, ancpage, &key, &slot, 0);
             if (st) {
                 return st;
             }
             /* replace the key */
-            st=my_replace_key(ancpage, slot, bte, INTERNAL_KEY, hints);
+            st=my_replace_key(ancpage, slot, bte, INTERNAL_KEY, btdata);
             if (st) {
                 return st;
             }
@@ -1068,12 +1268,14 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
         /*
          * update the page counter
          */
-        ham_assert(btree_node_get_count(node)+c <= 0xFFFF, (0));
-        ham_assert(btree_node_get_count(sibnode)-c-(intern ? 1 : 0) <= 0xFFFF, (0));
-        btree_node_set_count(node,
-                btree_node_get_count(node)+c);
-        btree_node_set_count(sibnode,
-                btree_node_get_count(sibnode)-c-(intern ? 1 : 0));
+        ham_assert(node_keycount == btree_node_get_count(node), (0));
+        ham_assert(node_keycount + c <= MAX_KEYS_PER_NODE, (0));
+        ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+        ham_assert(sibnode_keycount - c - (intern ? 1 : 0) <= MAX_KEYS_PER_NODE, (0));
+        node_keycount += c;
+        btree_node_set_count(node, node_keycount);
+        sibnode_keycount -= c + (intern ? 1 : 0);
+        btree_node_set_count(sibnode, sibnode_keycount);
     }
     else
     {
@@ -1088,15 +1290,14 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
         if (intern)
         {
             int_key_t *bte;
-            ham_key_t key;
+            ham_key_t key = {0};
 
-            bte =btree_node_get_key(db, sibnode, 0);
-            memset(&key, 0, sizeof(key));
-            key._flags=key_get_flags(bte);
-            key.data  =key_get_key(bte);
-            key.size  =key_get_size(bte);
-            hints->cost++;
-            st=btree_get_slot(db, ancpage, &key, &slot, 0);
+            bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            //memset(&key, 0, sizeof(key));
+            key._flags = key_get_flags(bte);
+            key.data = key_get_key(bte);
+            key.size = key_get_size(bte);
+            st=btree_get_slot(btdata, ancpage, &key, &slot, 0);
             if (st) {
                 return st;
             }
@@ -1104,21 +1305,18 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * shift entire sibling by 1 to the right
              */
-            hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                    + keysize) * (btree_node_get_count(sibnode)));
-            bte_lhs=btree_node_get_key(db, sibnode, 1);
-            bte_rhs=btree_node_get_key(db, sibnode, 0);
-            memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)
-                    * (btree_node_get_count(sibnode)));
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 1);
+            bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            btree_move_key_series(btdata, sibpage, sibpage, bte_lhs, bte_rhs, sibnode_keycount); // memmove(bte_lhs, bte_rhs, keywidth * (sibnode_keycount));
 
             /*
              * copy the old anchor element to sibling[0]
              */
-            bte_lhs=btree_node_get_key(db, sibnode, 0);
-            bte_rhs=btree_node_get_key(db, ancnode, slot);
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            bte_rhs = btree_in_node_get_key_ref(btdata, ancpage, slot);
 
-            hints->cost++;
-            st=my_copy_key(db, bte_lhs, bte_rhs);
+            st=my_copy_key(btdata, bte_lhs, bte_rhs);
             if (st) {
                 return st;
             }
@@ -1131,14 +1329,14 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * sibling.ptr_left = node[node.count-1].ptr
              */
-            bte_lhs=btree_node_get_key(db, node,
-            btree_node_get_count(node)-1);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount - 1);
             btree_node_set_ptr_left(sibnode, key_get_ptr(bte_lhs));
 
             /*
              * new anchor element is node[node.count-1].key
              */
-            st=my_replace_key(ancpage, slot, bte_lhs, INTERNAL_KEY, hints);
+            st=my_replace_key(ancpage, slot, bte_lhs, INTERNAL_KEY, btdata);
             if (st) {
                 return st;
             }
@@ -1146,11 +1344,20 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * page: one item less; sibling: one item more
              */
-            btree_node_set_count(node, btree_node_get_count(node)-1);
-            btree_node_set_count(sibnode, btree_node_get_count(sibnode)+1);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+            node_keycount--;
+            btree_node_set_count(node, node_keycount);
+            sibnode_keycount++;
+            btree_node_set_count(sibnode, sibnode_keycount);
         }
 
-        c=(btree_node_get_count(node)-btree_node_get_count(sibnode))/2;
+        // split_ratio ???
+		//
+		// Hm, this is part of the rebalancing act, where keys are equally distributed among both pages.
+		// Question is: do we still want 'equally distributed' here when we've got hints/statistics?
+        ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+        c = (node_keycount - sibnode_keycount)/2;
         if (c==0)
             goto cleanup;
         if (intern)
@@ -1166,15 +1373,15 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             /*
              * shift entire sibling by 1 to the right
              */
-            hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                    + keysize) * (btree_node_get_count(sibnode)));
-            bte_lhs=btree_node_get_key(db, sibnode, 1);
-            bte_rhs=btree_node_get_key(db, sibnode, 0);
-            memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)
-                    * (btree_node_get_count(sibnode)));
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
 
-            bte_lhs=btree_node_get_key(db, sibnode, 0);
-            bte_rhs=btree_node_get_key(db, ancnode, slot);
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 1);
+            bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+            btree_move_key_series(btdata, sibpage, sibpage, bte_lhs, bte_rhs, sibnode_keycount); // memmove(bte_lhs, bte_rhs, keywidth * sibnode_keycount);
+
+            bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            bte_rhs = btree_in_node_get_key_ref(btdata, ancpage, slot);
 
             /* clear the key - we don't want my_replace_key to free
              * an extended block which is still used by sibnode[1] */
@@ -1182,38 +1389,41 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
 
             st=my_replace_key(sibpage, 0, bte_rhs,
                     (btree_node_is_leaf(node) ? 0 : INTERNAL_KEY),
-                    hints);
+                    btdata);
             if (st) {
                 return st;
             }
 
             key_set_ptr(bte_lhs, btree_node_get_ptr_left(sibnode));
-            btree_node_set_count(sibnode, btree_node_get_count(sibnode)+1);
+            ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+            sibnode_keycount++;
+            btree_node_set_count(sibnode, sibnode_keycount);
         }
 
-        s=btree_node_get_count(node)-c-1;
+        s = node_keycount - c - 1;
 
         /*
          * shift items from this page to the sibling, then delete the
          * items from this page
          */
-        hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                + keysize)*(btree_node_get_count(sibnode)+c));
-        bte_lhs=btree_node_get_key(db, sibnode, c);
-        bte_rhs=btree_node_get_key(db, sibnode, 0);
-        memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*
-                btree_node_get_count(sibnode));
+        ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+        bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, c);
+        bte_rhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+        ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+        btree_move_key_series(btdata, sibpage, sibpage, bte_lhs, bte_rhs, sibnode_keycount); // memmove(bte_lhs, bte_rhs, keywidth * sibnode_keycount);
 
-        bte_lhs=btree_node_get_key(db, sibnode, 0);
-        bte_rhs=btree_node_get_key(db, node, s+1);
-        memmove(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*c);
+        bte_lhs = btree_in_node_get_key_ref(btdata, sibpage, 0);
+        bte_rhs = btree_in_node_get_key_ref(btdata, page, s + 1);
+        btree_move_key_series(btdata, sibpage, page, bte_lhs, bte_rhs, c); // memmove(bte_lhs, bte_rhs, keywidth * c);
 
-        ham_assert(btree_node_get_count(node)-c <= 0xFFFF, (0));
-        ham_assert(btree_node_get_count(sibnode)+c <= 0xFFFF, (0));
-        btree_node_set_count(node,
-                btree_node_get_count(node)-c);
-        btree_node_set_count(sibnode,
-                btree_node_get_count(sibnode)+c);
+        ham_assert(node_keycount == btree_node_get_count(node), (0));
+        ham_assert(node_keycount - c <= MAX_KEYS_PER_NODE, (0));
+        ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
+        ham_assert(sibnode_keycount + c <= MAX_KEYS_PER_NODE, (0));
+        node_keycount -= c;
+        btree_node_set_count(node, node_keycount);
+        sibnode_keycount += c;
+        btree_node_set_count(sibnode, sibnode_keycount);
 
         /*
          * internal nodes: the pointer of the highest item
@@ -1221,8 +1431,8 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
          */
         if (intern)
         {
-            bte_lhs=btree_node_get_key(db, node,
-                    btree_node_get_count(node)-1);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount - 1);
             btree_node_set_ptr_left(sibnode, key_get_ptr(bte_lhs));
 
             /*
@@ -1236,7 +1446,9 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
                 if (st)
                     return st;
             }
-            btree_node_set_count(node, btree_node_get_count(node)-1);
+            ham_assert(node_keycount == btree_node_get_count(node), (0));
+            node_keycount--;
+            btree_node_set_count(node, node_keycount);
         }
 
         /*
@@ -1245,25 +1457,28 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
         if (anchor)
         {
             int_key_t *bte;
-            ham_key_t key;
-            memset(&key, 0, sizeof(key));
+            ham_key_t key = {0};
+            //memset(&key, 0, sizeof(key));
 
             if (intern)
-                bte =btree_node_get_key(db, node, s);
+            {
+                bte = btree_in_node_get_key_ref(btdata, page, s);
+            }
             else
-                bte =btree_node_get_key(db, sibnode, 0);
+            {
+                bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
+            }
 
             key._flags = key_get_flags(bte);
             key.data = key_get_key(bte);
             key.size = key_get_size(bte);
 
-            hints->cost++;
-            st=btree_get_slot(db, ancpage, &key, &slot, 0);
+            st=btree_get_slot(btdata, ancpage, &key, &slot, 0);
             if (st) {
                 return st;
             }
 
-            st=my_replace_key(ancpage, slot+1, bte, INTERNAL_KEY, hints);
+            st=my_replace_key(ancpage, slot+1, bte, INTERNAL_KEY, btdata);
             if (st) {
                 return st;
             }
@@ -1284,9 +1499,18 @@ cleanup:
 }
 
 static ham_status_t
-my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs)
+my_copy_key(common_btree_datums_t *btdata, int_key_t *lhs, int_key_t *rhs)
 {
-    memcpy(lhs, rhs, db_get_int_key_header_size()+db_get_keysize(db));
+    //ham_backend_t *be = db_get_backend(db);
+
+    //const ham_size_t maxkeys = btdata->maxkeys;
+    const ham_size_t keywidth = btdata->keywidth;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+    //common_hints_t * const hints = &btdata->hints;
+
+    memcpy(lhs, rhs, keywidth);
 
     /*
      * if the key is extended, we copy the extended blob; otherwise, we'd
@@ -1325,20 +1549,36 @@ my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs)
     if (key_get_flags(rhs) & KEY_IS_EXTENDED)
     {
         ham_status_t st;
-        ham_record_t record;
-        ham_offset_t rhsblobid, lhsblobid;
+        ham_record_t record = {0};
+        ham_offset_t rhsblobid;
+        ham_offset_t lhsblobid;
+        dev_alloc_request_info_ex_t info = {0};
+        ham_key_t key_for_info;
 
-        memset(&record, 0, sizeof(record));
+        info.db = db;
+        info.env = env;
+        info.dam = db_get_data_access_mode(db);
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_EXTKEYSPACE; // PAGE_TYPE_BLOB;
+        info.int_key = rhs;
 
-        rhsblobid=key_get_extended_rid(db, rhs);
+        //memset(&record, 0, sizeof(record));
+
+        rhsblobid = key_get_extended_rid(db, rhs);
         st=blob_read(db, rhsblobid, &record, 0);
         if (st)
             return (st);
 
-        st=blob_allocate(db_get_env(db), db, &record, 0, &lhsblobid);
+        key_for_info.data = record.data;
+        key_for_info.size = record.size;
+        key_for_info.flags = HAM_KEY_USER_ALLOC;
+        info.key = &key_for_info;
+
+        st = blob_allocate(env, &record, 0, &info, NULL, &lhsblobid);
         if (st)
             return (st);
         key_set_extended_rid(db, lhs, lhsblobid);
+		ham_nuke_stack_space(record);
     }
 
     return HAM_SUCCESS;
@@ -1346,14 +1586,20 @@ my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs)
 
 static ham_status_t
 my_replace_key(ham_page_t *page, ham_s32_t slot,
-        int_key_t *rhs, ham_u32_t flags, erase_hints_t *hints)
+        int_key_t *rhs, ham_u32_t flags, common_btree_datums_t *btdata)
 {
     int_key_t *lhs;
+    //int_key_t *keyarr;
     ham_status_t st;
-    ham_db_t *db=page_get_owner(page);
-    btree_node_t *node=ham_page_get_btree_node(page);
+    //btree_node_t *node = ham_page_get_btree_node(page);
 
-    hints->cost++;
+    //const ham_size_t maxkeys = btdata->maxkeys;
+    //const ham_size_t keywidth = btdata->keywidth;
+    const ham_size_t keysize = btdata->keysize;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+    //common_hints_t * const hints = &btdata->hints;
 
     /*
      * prepare page for the log
@@ -1369,7 +1615,7 @@ my_replace_key(ham_page_t *page, ham_s32_t slot,
     if (st)
         return st;
 
-    lhs=btree_node_get_key(db, node, slot);
+    lhs = btree_in_node_get_key_ref(btdata, page, slot);
 
     /*
      * if we overwrite an extended key: delete the existing extended blob
@@ -1385,7 +1631,7 @@ my_replace_key(ham_page_t *page, ham_s32_t slot,
     }
 
     key_set_flags(lhs, key_get_flags(rhs));
-    memcpy(key_get_key(lhs), key_get_key(rhs), db_get_keysize(db));
+    memcpy(key_get_key(lhs), key_get_key(rhs), keysize /* key_get_size(rhs) */ );
 
     /*
      * internal keys are not allowed to have blob-flags, because only the
@@ -1409,50 +1655,82 @@ my_replace_key(ham_page_t *page, ham_s32_t slot,
     if (key_get_flags(rhs) & KEY_IS_EXTENDED)
     {
         ham_status_t st;
-        ham_record_t record;
-        ham_offset_t rhsblobid, lhsblobid;
+        ham_record_t record = {0};
+        ham_offset_t rhsblobid;
+        ham_offset_t lhsblobid;
+        dev_alloc_request_info_ex_t info = {0};
+        ham_key_t key_for_info;
 
-        memset(&record, 0, sizeof(record));
+        info.db = db;
+        info.env = env;
+        info.dam = db_get_data_access_mode(db);
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_EXTKEYSPACE; // PAGE_TYPE_BLOB;
+        info.int_key = rhs;
+
+        //memset(&record, 0, sizeof(record));
 
         rhsblobid=key_get_extended_rid(db, rhs);
         st=blob_read(db, rhsblobid, &record, 0);
         if (st)
             return (st);
 
-        st=blob_allocate(db_get_env(db), db, &record, 0, &lhsblobid);
+        key_for_info.data = record.data;
+        key_for_info.size = record.size;
+        key_for_info.flags = HAM_KEY_USER_ALLOC;
+        info.key = &key_for_info;
+
+        st = blob_allocate(env, &record, 0, &info, NULL, &lhsblobid);
         if (st)
             return (st);
         key_set_extended_rid(db, lhs, lhsblobid);
+		ham_nuke_stack_space(record);
     }
 
     key_set_size(lhs, key_get_size(rhs));
 
-    page_set_dirty(page, db_get_env(db));
+    page_set_dirty(page, env);
 
     return (HAM_SUCCESS);
 }
 
 static ham_status_t
 my_remove_entry(ham_page_t *page, ham_s32_t slot,
-        erase_scratchpad_t *scratchpad, erase_hints_t *hints)
+        erase_scratchpad_t *scratchpad)
 {
     ham_status_t st;
-    int_key_t *bte_lhs, *bte_rhs, *bte;
+    int_key_t *bte_lhs;
+    int_key_t *bte_rhs;
+    int_key_t *bte;
+    //int_key_t *keyarr;
     btree_node_t *node;
-    ham_size_t keysize;
-    ham_db_t *db;
+    //ham_db_t *db;
+    //ham_btree_t *be;
+    //ham_size_t keywidth;
+    ham_size_t node_keycount;
 
-    db=page_get_owner(page);
-    node=ham_page_get_btree_node(page);
-    keysize=db_get_keysize(db);
-    bte=btree_node_get_key(db, node, slot);
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    //const ham_size_t maxkeys = btdata->maxkeys;
+    //const ham_size_t minkeys = (maxkeys * btdata->merge_ratio + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1; // round position value
+    //const ham_size_t keywidth = btdata->keywidth;
+    //const ham_size_t keysize = btdata->keysize;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_btree_t * const be = btdata->be;
+    common_hints_t * const hints = &btdata->hints;
+    //const ham_key_t * const key = btdata->in_key;
 
-    hints->cost++;
+    //db = page_get_owner(page);
+    node = ham_page_get_btree_node(page);
+    node_keycount = btree_node_get_count(node);
+
+    bte = btree_in_node_get_key_ref(btdata, page, slot);
 
     /*
      * prepare page for the log
      */
-    if ((st=ham_log_add_page_before(page)))
+    st = ham_log_add_page_before(page);
+    if (st)
         return (st);
 
     /*
@@ -1462,8 +1740,9 @@ my_remove_entry(ham_page_t *page, ham_s32_t slot,
     if (st)
         return st;
 
-    ham_assert(slot>=0, ("invalid slot %ld", slot));
-    ham_assert(slot<btree_node_get_count(node), ("invalid slot %ld", slot));
+    ham_assert(slot >= 0, ("invalid slot %ld", (long)slot));
+    ham_assert(node_keycount == btree_node_get_count(node), (0));
+    ham_assert(slot < (ham_s32_t)node_keycount, ("invalid slot %ld", (long)slot));
 
     /*
      * leaf page: get rid of the record
@@ -1474,13 +1753,13 @@ my_remove_entry(ham_page_t *page, ham_s32_t slot,
      */
     if (btree_node_is_leaf(node))
     {
-        ham_bt_cursor_t *c=(ham_bt_cursor_t *)db_get_cursors(db);
-        ham_bt_cursor_t *cursor=(ham_bt_cursor_t *)scratchpad->cursor;
+        ham_bt_cursor_t *c = (ham_bt_cursor_t *)db_get_cursors(db);
+        const ham_bt_cursor_t *cursor = btdata->cursor;
 
         hints->processed_leaf_page = page;
         hints->processed_slot = slot;
 
-        if (key_get_flags(bte)&KEY_HAS_DUPLICATES && scratchpad->cursor)
+        if (key_get_flags(bte) & KEY_HAS_DUPLICATES && cursor)
         {
             st = key_erase_record(db, bte, bt_cursor_get_dupe_id(cursor), 0);
             if (st)
@@ -1497,20 +1776,29 @@ my_remove_entry(ham_page_t *page, ham_s32_t slot,
              * make sure that no cursor is pointing to this dupe, and shift
              * all other cursors
              */
-            while (c && cursor) {
-                ham_bt_cursor_t *next=(ham_bt_cursor_t *)cursor_get_next(c);
-                if (c!=cursor) {
-                    if (bt_cursor_get_dupe_id(c)
-                            ==bt_cursor_get_dupe_id(cursor)) {
-                        if (bt_cursor_points_to(c, bte))
-                            bt_cursor_set_to_nil((ham_bt_cursor_t *)c);
+            while (c && cursor)
+            {
+                ham_bt_cursor_t *next = (ham_bt_cursor_t *)cursor_get_next(c);
+                if (c != cursor)
+                {
+                    if (bt_cursor_get_dupe_id(c) == bt_cursor_get_dupe_id(cursor))
+                    {
+                        st = bt_cursor_points_to(btdata, c, bte);
+                        if (st == HAM_TRUE)
+                        {
+                            st = bt_cursor_set_to_nil(c);
+                            if (st)
+                                return st;
+                        }
+                        else if (st)
+                        {
+                            return st;
+                        }
                     }
-                    else if (bt_cursor_get_dupe_id(c)>
-                            bt_cursor_get_dupe_id(cursor)) {
-                        bt_cursor_set_dupe_id(c,
-                                bt_cursor_get_dupe_id(c)-1);
-                        memset(bt_cursor_get_dupe_cache(c), 0,
-                                sizeof(dupe_entry_t));
+                    else if (bt_cursor_get_dupe_id(c) > bt_cursor_get_dupe_id(cursor))
+                    {
+                        bt_cursor_set_dupe_id(c, bt_cursor_get_dupe_id(c) - 1);
+                        memset(bt_cursor_get_dupe_cache(c), 0, sizeof(dupe_entry_t));
                     }
                 }
                 c = next;
@@ -1540,8 +1828,17 @@ free_all:
                 ham_bt_cursor_t *next = (ham_bt_cursor_t *)cursor_get_next(c);
                 if (c != cursor)
                 {
-                    if (bt_cursor_points_to(c, bte))
-                        bt_cursor_set_to_nil((ham_bt_cursor_t *)c);
+                    st = bt_cursor_points_to(btdata, c, bte);
+                    if (st == HAM_TRUE)
+                    {
+                        st = bt_cursor_set_to_nil(c);
+                        if (st)
+                            return st;
+                    }
+                    else if (st)
+                    {
+                        return st;
+                    }
                 }
                 c = next;
             }
@@ -1567,19 +1864,19 @@ free_all:
      * if we delete the last item, it's enough to decrement the item
      * counter and return...
      */
-    if (slot != btree_node_get_count(node)-1)
+    ham_assert(node_keycount == btree_node_get_count(node), (0));
+    if (slot != node_keycount - 1)
     {
-        hints->cost += stats_memmove_cost((db_get_int_key_header_size()
-                + keysize)*(btree_node_get_count(node)-slot-1));
-        bte_lhs=btree_node_get_key(db, node, slot);
-        bte_rhs=btree_node_get_key(db, node, slot+1);
-        memmove(bte_lhs, bte_rhs, ((db_get_int_key_header_size()+keysize))*
-                (btree_node_get_count(node)-slot-1));
+        bte_lhs = btree_in_node_get_key_ref(btdata, page, slot);
+        bte_rhs = btree_in_node_get_key_ref(btdata, page, slot + 1);
+        btree_move_key_series(btdata, page, page, bte_lhs, bte_rhs, (node_keycount - slot - 1)); // memmove(bte_lhs, bte_rhs, (keywidth) * (node_keycount - slot - 1));
     }
 
-    btree_node_set_count(node, btree_node_get_count(node)-1);
+    ham_assert(node_keycount == btree_node_get_count(node), (0));
+    node_keycount--;
+    btree_node_set_count(node, node_keycount);
 
-    page_set_dirty(page, db_get_env(db));
+    page_set_dirty(page, env);
 
     return HAM_SUCCESS;
 }
