@@ -23,3 +23,13 @@
 #if defined(_NEWMSC_) && !defined(_WIN32_WCE)
 #  pragma pack(pop)
 #endif
+
+
+/*
+ * enable structure padding warnings at all times!
+ */
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+

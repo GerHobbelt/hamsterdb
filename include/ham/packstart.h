@@ -31,7 +31,23 @@
  */
 
 
-#ifdef __GNUC__
+/*
+ * enable structure padding warnings at all times!
+ */
+#ifdef _MSC_VER
+#pragma warning(disable: 4103) /* shut up compiler about: alignment changed after including header, may be due to missing #pragma pack(pop) <-- that's intentional! And do this outside the push/pop as we still need it when we come out of <packstop.h> */
+
+#pragma warning(push)
+#pragma warning(error: 4820) /* compiler errors out when there'll be implicit padding bytes in any struct */
+#endif
+
+
+#undef HAM_PACK_0
+#undef HAM_PACK_1
+#undef HAM_PACK_2
+
+
+#if defined(__GNUC__) && !defined(_NEWGNUC_)
 #  if (((__GNUC__==2) && (__GNUC_MINOR__>=7)) || (__GNUC__>2))
 #  define HAM_PACK_2 __attribute__ ((packed))
 #  define _NEWGNUC_
@@ -42,8 +58,10 @@
 #  define HAM_PACK_0 _Packed
 #endif
 
-#if (defined(_MSC_VER) && (_MSC_VER >= 900)) || defined(__BORLANDC__)
+#if !defined(_NEWMSC_)
+# if (defined(_MSC_VER) && (_MSC_VER >= 900)) || defined(__BORLANDC__)
 #  define _NEWMSC_
+# endif
 #endif
 #if !defined(_NEWGNUC_) && !defined(__WATCOMC__) && !defined(_NEWMSC_)
 #  pragma pack(1)
