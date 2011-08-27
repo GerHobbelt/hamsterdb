@@ -39,7 +39,7 @@ struct extkey_t
 
     /** the current transaction, which created this extkey; used to
      * get the age of the extkey */
-    ham_u64_t _txn_id;
+    ham_txn_id_t _txn_id;
 
     /** pointer to the next key in the linked list */
     extkey_t *_next;

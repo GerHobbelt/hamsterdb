@@ -18,18 +18,10 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-#include <stdio.h>
+#include "internal_preparation.h"
 
 #include "btree.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "keys.h"
-#include "mem.h"
-#include "page.h"
+#include "btree_classic.h"
 
 /**
  * the check_scratchpad_t structure helps us to propagate return values

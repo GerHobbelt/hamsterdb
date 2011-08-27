@@ -11,10 +11,14 @@
 
 #include "../src/config.h"
 
+#include "../src/env.h"
+
+#include "memtracker.h"
+
 #include <stdexcept>
 #include <cstdlib>
 #include <cstring>
-#include "memtracker.h"
+
 
 #define MAGIC_START 0x12345678
 

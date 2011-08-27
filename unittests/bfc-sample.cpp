@@ -10,9 +10,9 @@
  */
 
 
-#include <stdexcept>
-
 #include "bfc-testsuite.hpp"
+
+#include <stdexcept>
 
 #ifdef _MSC_VER
 #include <windows.h>
@@ -26,7 +26,7 @@ using namespace bfc;
 
 
 #if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) \
-	&& defined(_DEBUG)
+    && defined(_DEBUG) && !defined(UNDER_CE)
 
 _CrtMemState crm_memdbg_state_snapshot1;
 int trigger_memdump = 0;

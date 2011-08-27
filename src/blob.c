@@ -10,26 +10,23 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "blob.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "keys.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "txn.h"
+/**
+* @cond ham_internals
+*/
 
 
-#define SMALLEST_CHUNK_SIZE  (sizeof(ham_offset_t)+sizeof(blob_t)+1)
+#include "internal_preparation.h"
 
-/*
+
+
+
+
+
+
+
+#define SMALLEST_CHUNK_SIZE  (sizeof(ham_pers_rid_t)+sizeof(blob_t)+1)
+
+/**
  * if the blob is small enough (or if logging is enabled) then go through
  * the cache. otherwise use direct I/O
  */

@@ -13,17 +13,17 @@
 * @cond ham_internals
 */
 
-#include "config.h"
+#include "internal_preparation.h"
 
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
 
-#include "error.h"
-#include "os.h"
+
+
+
 
 
 static const char *

@@ -11,14 +11,17 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <ham/hamsterdb.h>
-#include "../src/db.h"
-#include "../src/env.h"
+
 #include "../src/backend.h"
 #include "../src/btree.h"
+#include "../src/btree_classic.h"
+#include "../src/db.h"
+#include "../src/env.h"
+#include "../src/mem.h"
 
 #include "getopts.h"
 

@@ -51,8 +51,8 @@ to go.
 
 class EmptyTest : public fixture
 {
-	// call this macro here to define __super for all compilers:
-	define_super(fixture);
+    // call this macro here to define __super for all compilers:
+    define_super(fixture);
 
 public:
     EmptyTest(const char *name="EmptyTest")

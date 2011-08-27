@@ -13,25 +13,22 @@
 * @cond ham_internals
 */
 
-#include "config.h"
-
-#include <string.h>
-#include <stdio.h>
-
-#include <ham/hamsterdb_stats.h>
+#include "internal_preparation.h"
 
 #include "btree.h"
-#include "btree_cursor.h"
-#include "cache.h"
-#include "db.h"
-#include "endianswap.h"
-#include "env.h"
-#include "error.h"
-#include "freelist_statistics.h"
-#include "mem.h"
-#include "page.h"
-#include "statistics.h"
-#include "util.h"
+#include "btree_classic.h"
+
+
+
+
+#if HAM_DEBUG
+static void cache_init_history(void);
+#else
+#define cache_init_history() /**/
+#endif
+
+
+
 
 /**
  * statistics gatherer/hinter:

@@ -49,8 +49,28 @@ extern "C" {
 struct ham_page_t;
 typedef struct ham_page_t ham_page_t;
 
-struct ham_backend_t;
-typedef struct ham_backend_t ham_backend_t;
+struct mem_allocator_t;
+typedef struct mem_allocator_t mem_allocator_t;
+
+//struct ham_cursor_t;
+//typedef struct ham_cursor_t ham_cursor_t;
+
+struct ham_bt_cursor_t;
+typedef struct ham_bt_cursor_t ham_bt_cursor_t;
+
+//struct ham_backend_t;
+//typedef struct ham_backend_t ham_backend_t;
+
+//struct ham_device_t;
+//typedef struct ham_device_t ham_device_t;
+
+//ham_txn_t
+
+struct freelist_cache_t;
+typedef struct freelist_cache_t freelist_cache_t;
+
+struct freelist_common_datums_t;
+typedef struct freelist_common_datums_t freelist_common_datums_t;
 
 struct ham_cache_t;
 typedef struct ham_cache_t ham_cache_t;
@@ -64,14 +84,16 @@ typedef struct extkey_t extkey_t;
 struct extkey_cache_t;
 typedef struct extkey_cache_t extkey_cache_t;
 
+
 struct freelist_entry_t;
 typedef struct freelist_entry_t freelist_entry_t;
 
-struct freelist_cache_t;
-typedef struct freelist_cache_t freelist_cache_t;
+//struct freelist_cache_t;
+//typedef struct freelist_cache_t freelist_cache_t;
 
 struct freelist_hints_t;
 typedef struct freelist_hints_t freelist_hints_t;
+
 
 struct runtime_statistics_pagedata_t;
 typedef struct runtime_statistics_pagedata_t runtime_statistics_pagedata_t;
@@ -79,31 +101,88 @@ typedef struct runtime_statistics_pagedata_t runtime_statistics_pagedata_t;
 struct freelist_global_hints_t;
 typedef struct freelist_global_hints_t freelist_global_hints_t;
 
-struct find_hints_t;
-typedef struct find_hints_t find_hints_t;
 
-struct insert_hints_t;
-typedef struct insert_hints_t insert_hints_t;
 
-struct erase_hints_t;
-typedef struct erase_hints_t erase_hints_t;
+struct common_hints_t;
+typedef struct common_hints_t common_hints_t;
 
 
 
-#include "packstart.h"
-
-struct freelist_payload_t;
-typedef struct freelist_payload_t freelist_payload_t;
-
-#include "packstop.h"
+/* dummy decl for the backend 'abstract class' definition */
+struct common_backend_datums_t;
+typedef struct common_backend_datums_t common_backend_datums_t;
 
 
-#include "packstart.h"
 
-struct int_key_t;
-typedef struct int_key_t int_key_t;
 
-#include "packstop.h"
+struct common_btree_datums_t;
+typedef struct common_btree_datums_t common_btree_datums_t;
+
+
+
+
+struct dev_alloc_request_info_ex_t;
+typedef struct dev_alloc_request_info_ex_t dev_alloc_request_info_ex_t;
+
+
+
+#include <ham/packstart.h>
+
+HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t HAM_PACK_2;
+typedef /* HAM_PACK_0 */ struct /* HAM_PACK_1 */ freelist_payload_t /* HAM_PACK_2 */ freelist_payload_t;
+
+#include <ham/packstop.h>
+
+
+#include <ham/packstart.h>
+
+HAM_PACK_0 struct HAM_PACK_1 int_key_t HAM_PACK_2;
+typedef /* HAM_PACK_0 */ struct /* HAM_PACK_1 */ int_key_t /* HAM_PACK_2 */ int_key_t;
+
+#include <ham/packstop.h>
+
+
+#include <ham/packstart.h>
+
+struct ham_btree_t;
+typedef struct ham_btree_t ham_btree_t;
+
+#include <ham/packstop.h>
+
+
+#include <ham/packstart.h>
+
+HAM_PACK_0 struct HAM_PACK_1 btree_node_t HAM_PACK_2;
+typedef /* HAM_PACK_0 */ struct /* HAM_PACK_1 */ btree_node_t /* HAM_PACK_2 */ btree_node_t;
+
+#include <ham/packstop.h>
+
+
+
+
+
+struct ham_spiral_hashtable_t;
+typedef struct ham_spiral_hashtable_t ham_spiral_hashtable_t;
+
+struct common_hashtable_datums_t;
+typedef struct common_hashtable_datums_t common_hashtable_datums_t;
+
+struct ham_ch_cursor_t;
+typedef struct ham_ch_cursor_t ham_ch_cursor_t;
+
+struct ham_cuckoo_hash_t;
+typedef struct ham_cuckoo_hash_t ham_cuckoo_hash_t;
+
+
+#include <ham/packstart.h>
+
+HAM_PACK_0 struct HAM_PACK_1 hashed_key_t HAM_PACK_2;
+typedef /* HAM_PACK_0 */ struct /* HAM_PACK_1 */ hashed_key_t /* HAM_PACK_2 */ hashed_key_t;
+
+#include <ham/packstop.h>
+
+
+
 
 
 #ifdef __cplusplus

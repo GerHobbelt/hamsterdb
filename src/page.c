@@ -13,24 +13,13 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
-#include "config.h"
 
-#include <string.h>
 
-#include "cache.h"
-#include "cursor.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
 
-#ifdef HAM_DEBUG
+#if defined(HAM_DEBUG) && (HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL < 1)
+
 static ham_bool_t
 my_is_in_list(ham_page_t *p, int which)
 {
@@ -79,6 +68,14 @@ my_validate_page(ham_page_t *p)
                my_is_in_list(p, PAGE_LIST_GARBAGE)),
             ("cached and in garbage bin"));
 }
+
+#else
+
+#define my_validate_page(p)     (void)0
+
+#endif
+
+#if defined(HAM_DEBUG) && (HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL < 2)
 
 ham_page_t *
 page_get_next(ham_page_t *page, int which)

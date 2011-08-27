@@ -9,22 +9,24 @@
  * See files COPYING.* for License information.
  */
 
-#include "../src/config.h"
+#include <ham/hamsterdb.h>
 
 #include <stdexcept>
 #include <cstring>
 #include <time.h>
-
-#include <ham/hamsterdb.h>
-#include "memtracker.h"
+#include "../src/config.h"
+#include "../src/mem.h"
 #include "../src/db.h"
 #include "../src/env.h"
+#include "../src/device.h"
+#include "../src/os.h"
 #include "../src/version.h"
 #include "../src/serial.h"
 #include "../src/btree.h"
 #include "../src/statistics.h"
-#include "../src/os.h"
+#include "memtracker.h"
 #include "os.hpp"
+
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
 

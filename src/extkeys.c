@@ -13,18 +13,9 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
-#include "config.h"
 
-#include <string.h>
-
-#include "blob.h"
-#include "cache.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "extkeys.h"
-#include "mem.h"
 
 
 /** EXTKEY_CACHE_BUCKETSIZE should be a prime number or similar, as it is

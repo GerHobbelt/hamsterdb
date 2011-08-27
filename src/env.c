@@ -9,26 +9,7 @@
  * See files COPYING.* for License information.
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "db.h"
-#include "env.h"
-#include "statistics.h"
-#include "device.h"
-#include "version.h"
-#include "serial.h"
-#include "txn.h"
-#include "mem.h"
-#include "freelist.h"
-#include "extkeys.h"
-#include "backend.h"
-#include "cache.h"
-#include "log.h"
-#include "keys.h"
-#include "os.h"
-#include "blob.h"
+#include "internal_preparation.h"
 
 typedef struct free_cb_context_t
 {

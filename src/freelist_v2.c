@@ -13,6 +13,9 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
+
+
 #define IMPLEMENT_MODERN_FREELIST32
 
 #include "freelist.c"

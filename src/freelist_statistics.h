@@ -34,7 +34,7 @@ extern "C" {
 
 
 
-#include "packstart.h"
+#include <ham/packstart.h>
 
 /**
 We keep track of VERY first free slot index + free slot index
@@ -72,10 +72,10 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
 
 } HAM_PACK_2 freelist_slotsize_stats_t;
 
-#include "packstop.h"
+#include <ham/packstop.h>
 
 
-#include "packstart.h"
+#include <ham/packstart.h>
 
 /**
  * freelist statistics as they are persisted on disc.
@@ -173,7 +173,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
 
 } HAM_PACK_2 freelist_page_statistics_t;
 
-#include "packstop.h"
+#include <ham/packstop.h>
 
 
 

@@ -11,14 +11,19 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
 #include "../src/mem.h"
 #include "memtracker.h"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
 
+#include <stdexcept>
+
+
 using namespace bfc;
+
+#undef free
+#undef realloc
 
 class MemoryTest : public hamsterDB_fixture
 {

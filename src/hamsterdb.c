@@ -13,15 +13,8 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
-#include "config.h"
-
-#ifdef HAVE_MALLOC_H
-#  include <malloc.h>
-#else
-#  include <stdlib.h>
-#endif
-#include <string.h>
 
 #ifdef HAM_ENABLE_REMOTE
 #  define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
@@ -29,28 +22,6 @@
 #  include <curl/easy.h>
 #  include "protocol/protocol.h"
 #endif
-
-#include "blob.h"
-#include "btree.h"
-#include "btree_cursor.h"
-#include "cache.h"
-#include "cursor.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "extkeys.h"
-#include "freelist.h"
-#include "keys.h"
-#include "log.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
-#include "serial.h"
-#include "statistics.h"
-#include "txn.h"
-#include "util.h"
-#include "version.h"
 
 #ifndef HAM_DISABLE_ENCRYPTION
 #  include "../3rdparty/aes/aes.h"
@@ -64,7 +35,21 @@
 #endif
 
 
-/*
+
+#include "btree.h"
+#include "btree_classic.h"
+#include "btree_cursor.h"
+
+
+
+typedef struct free_cb_context_t
+{
+    ham_db_t *db;
+
+} free_cb_context_t;
+
+
+/**
  * return true if the filename is for a local file
  */
 static ham_bool_t

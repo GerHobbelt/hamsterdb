@@ -11,17 +11,22 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <string.h>
 #include <ham/hamsterdb.h>
+#include "../src/btree.h"
+#include "../src/btree_classic.h"
 #include "../src/db.h"
 #include "../src/env.h"
-#include "../src/btree.h"
+#include "../src/mem.h"
 #include "memtracker.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <errno.h>
+#include <string.h>
+
 
 using namespace bfc;
 

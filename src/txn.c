@@ -13,21 +13,7 @@
 * @cond ham_internals
 */
 
-
-#include "config.h"
-
-#include <string.h>
-
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "device.h"
-#include "statistics.h"
-#include "txn.h"
+#include "internal_preparation.h"
 
 
 ham_status_t

@@ -13,21 +13,9 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
 
-#include "config.h"
-
-#include <string.h>
-
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "log.h"
-#include "mem.h"
-#include "os.h"
-#include "txn.h"
-#include "util.h"
 
 #define LOG_DEFAULT_THRESHOLD   64
 

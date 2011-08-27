@@ -11,13 +11,10 @@
 
 /* #include "../src/config.h"    - not an integral part of hamster but rather the, ah, 'platform independent' BFC */
 
-#include <stdexcept>
-
 #include "bfc-testsuite.hpp"
 
 #if defined(_MSC_VER) && !defined(UNDER_CE)
 #   include <windows.h>
-#   include <crtdbg.h>
 #endif
 #ifndef UNDER_CE
 #   include <signal.h> /* the signal catching / hardware exception
@@ -26,6 +23,7 @@
 #endif
 #include <string.h>
 #include <assert.h>
+#include <stdexcept>
 
 #include "bfc-signal.h"
 

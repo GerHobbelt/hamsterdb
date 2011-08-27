@@ -23,6 +23,8 @@
 
 #include "internal_fwd_decl.h"
 
+#include <ham/hamsterdb_stats.h>
+
 
 #ifdef __cplusplus
 extern "C" {

@@ -11,11 +11,13 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
 #include <ham/hamsterdb.hpp>
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+
 
 using namespace bfc;
 

@@ -13,20 +13,9 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
-#include "config.h"
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <ham/hamsterdb.h>
-
-#include "db.h"
-#include "error.h"
-#include "mem.h"
-#include "util.h"
 
 static int         g_level   =0;
 static const char *g_file    =0;

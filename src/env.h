@@ -24,7 +24,6 @@
 #include "internal_fwd_decl.h"
 
 #include <ham/hamsterdb_stats.h>
-#include <ham/hamsterdb.h>
 
 #include "db.h"
 #include "endianswap.h"
@@ -56,15 +55,15 @@ means your pagesize minimum required alignment/size is 8*32 = 256 bytes.
 */
 #define DB_PAGESIZE_MIN_REQD_ALIGNMENT      (8 * DB_CHUNKSIZE)
 
-#include "packstart.h"
+#include <ham/packstart.h>
 
 /**
 * the persistent database header
 */
 typedef HAM_PACK_0 struct HAM_PACK_1
 {
-	/** magic cookie - always "ham\0" */
-	ham_u8_t  _magic[4];
+    /** magic cookie - always "ham\0" */
+    ham_u8_t  _magic[4];
 
     /** version information - major, minor, rev, reserved */
     ham_u8_t  _version[4];
@@ -103,7 +102,8 @@ typedef HAM_PACK_0 struct HAM_PACK_1
 
 } HAM_PACK_2 env_header_t;
 
-#include "packstop.h"
+#include <ham/packstop.h>
+
 
 
 /**
@@ -112,7 +112,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1
 struct ham_env_t
 {
     /** the current transaction ID */
-    ham_u64_t _txn_id;
+    ham_txn_id_t _txn_id;
 
     /** the filename of the environment file */
     const char *_filename;
@@ -141,6 +141,11 @@ struct ham_env_t
     /** the log object */
     ham_log_t *_log;
 
+#if 0 /* [i_a] a bottleneck on env's which have multiple dbs open at the same time; keep this a per-db item */
+    /* the cache for extended keys */
+    extkey_cache_t *_extkey_cache;
+#endif
+
     /** the Environment flags - a combination of the persistent flags
      * and runtime flags */
     ham_u32_t _rt_flags;
@@ -161,19 +166,20 @@ struct ham_env_t
 
     /** the max. number of databases which was specified when the env
      * was created */
-	ham_u16_t _max_databases;
+    ham_u16_t  _max_databases;
+    ham_u16_t  _data_access_mode;
 
     /**
      * non-zero after this item has been opened/created.
      * Indicates whether this environment is 'active', i.e. between
      * a create/open and matching close API call.
      */
-	unsigned _is_active: 1;
+    unsigned short _is_active: 1;
 
     /**
      * non-zero if this Environment is pre-1.1.0 format
      */
-	unsigned _is_legacy: 1;
+    unsigned short _is_legacy: 1;
 
     /* linked list of all file-level filters */
     ham_file_filter_t *_file_filters;
@@ -192,8 +198,8 @@ struct ham_env_t
      * and ham_env_open_ex after the ham_env_t handle was initialized and
      * an allocator was created.
      *
-     * @see env_initialize_local
-     * @see env_initialize_remote
+     * @sa env_initialize_local
+     * @sa env_initialize_remote
      */
 
     /**
@@ -388,6 +394,7 @@ env_get_header(ham_env_t *env);
 * get the dirty-flag
 */
 #define env_is_dirty(env)                page_is_dirty(env_get_header_page(env))
+
 
 /**
  * Get a reference to the array of database-specific private data;

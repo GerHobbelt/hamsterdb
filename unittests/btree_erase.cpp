@@ -11,16 +11,19 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
 #include <ham/hamsterdb.h>
 #include "memtracker.h"
+#include "../src/mem.h"
 #include "../src/db.h"
 #include "../src/version.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+
 
 using namespace bfc;
 

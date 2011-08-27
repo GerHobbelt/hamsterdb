@@ -53,7 +53,8 @@ extern "C" {
 /* array limit */
 #define MAX_PAGE_LISTS             4
 
-#include "packstart.h"
+
+#include <ham/packstart.h>
 
 /**
  * The page header which is persisted on disc
@@ -109,7 +110,8 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
 
 } HAM_PACK_2 ham_perm_page_union_t;
 
-#include "packstop.h"
+#include <ham/packstop.h>
+
 
 /**
 * get the size of the persistent header of a page

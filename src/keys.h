@@ -23,12 +23,17 @@
 
 #include "internal_fwd_decl.h"
 
+#include "db.h"
+#include "backend.h"
+
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "packstart.h"
+
+
+#include <ham/packstart.h>
 
 /**
  * the internal representation of a key
@@ -63,7 +68,7 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
 
 } HAM_PACK_2;
 
-#include "packstop.h"
+#include <ham/packstop.h>
 
 /**
  * get the size of the internal key representation header

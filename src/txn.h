@@ -23,6 +23,7 @@
 
 #include "internal_fwd_decl.h"
 
+#include "page.h"
 
 
 #ifdef __cplusplus

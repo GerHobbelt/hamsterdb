@@ -13,18 +13,7 @@
 * @cond ham_internals
 */
 
-
-#include "config.h"
-
-#include <string.h>
-
-#include "db.h"
-#include "device.h"
-#include "error.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
-#include "env.h"
+#include "internal_preparation.h"
 
 
 

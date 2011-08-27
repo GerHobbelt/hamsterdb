@@ -30,7 +30,8 @@ extern "C" {
 #endif
 
 
-#include "packstart.h"
+
+#include <ham/packstart.h>
 
 /**
  * the header structure of a log file
@@ -49,7 +50,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_header_t
 
 } HAM_PACK_2 log_header_t;
 
-#include "packstop.h"
+#include <ham/packstop.h>
 
 /**
  * The magic identification header code for HamsterDB logfiles.
@@ -65,7 +66,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_header_t
 /** set the log header magic */
 #define log_header_set_magic(l, m)              (l)->_magic=m
 
-#include "packstart.h"
+#include <ham/packstart.h>
 
 /**
  * a log file entry
@@ -93,7 +94,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_entry_t
 
 } HAM_PACK_2 log_entry_t;
 
-#include "packstop.h"
+#include <ham/packstop.h>
 
 /**
 * @defgroup log_entry_type_set the different types of log entries

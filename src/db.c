@@ -13,30 +13,13 @@
 * @cond ham_internals
 */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-#include <math.h>
-#include <float.h>
 
-#include "blob.h"
-#include "btree.h"
-#include "btree_cursor.h"
-#include "cache.h"
-#include "cursor.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "extkeys.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
-#include "statistics.h"
-#include "txn.h"
-#include "version.h"
+#include "btree.h" /* btree_create() method */
+#include "btree_classic.h"
+#include "cuckoo_hash.h"
+
 
 
 #define PURGE_THRESHOLD  (500 * 1024 * 1024) /* 500 mb */

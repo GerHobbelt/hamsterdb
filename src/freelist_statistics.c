@@ -13,22 +13,8 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
-#include "config.h"
-
-#include <string.h>
-
-#include "btree.h"
-#include "btree_cursor.h"
-#include "db.h"
-#include "device.h"
-#include "endianswap.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "freelist_statistics.h"
-#include "mem.h"
-#include "util.h"
 
 
 

@@ -11,8 +11,6 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
 #include <ham/hamsterdb.h>
 #include "../src/db.h"
 #include "../src/blob.h"
@@ -25,6 +23,10 @@
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+
 
 using namespace bfc;
 

@@ -11,13 +11,15 @@
 
 #include "../src/config.h"
 
-#include <cstring>
 #include <ham/hamsterdb.h>
 #include "../src/os.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <cstring>
+
 
 using namespace bfc;
 

@@ -18,16 +18,12 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
 
-#include "cache.h"
-#include "env.h"
-#include "error.h"
-#include "mem.h"
-#include "page.h"
-#include "statistics.h"
+
+
+//#define CACHE_PURGE_THRESHOLD  (450 * 1024 * 1024) /* 500 mb */
 
 
 #define __calc_hash(cache, o)      ((o)%(cache_get_bucketsize(cache)))

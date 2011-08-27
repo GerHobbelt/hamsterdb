@@ -9,15 +9,19 @@
  * See files COPYING.* for License information.
  */
 
-#include <stdexcept>
-#include <cstring>
-#include <cassert>
+#include "../src/config.h"
+
 #include <ham/hamsterdb_int.h>
 #include "memtracker.h"
 #include "../src/error.h"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+#include <cassert>
+
 
 using namespace bfc;
 

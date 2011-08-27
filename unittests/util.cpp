@@ -11,18 +11,21 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <string.h> // [i_a] strlen, memcmp, etc.
 #include <ham/hamsterdb.h>
 #include "../src/db.h"
-#include "../src/page.h"
-#include "../src/util.h"
 #include "../src/env.h"
 #include "../src/keys.h"
+#include "../src/mem.h"
+#include "../src/page.h"
+#include "../src/util.h"
 #include "memtracker.h"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <string.h> // [i_a] strlen, memcmp, etc.
+
 
 using namespace bfc;
 

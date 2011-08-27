@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,24 +11,27 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
 #include <ham/hamsterdb.hpp>
 
 #include "bfc-testsuite.hpp"
 
-#if defined(VISUAL_STUDIO) && !defined(UNDER_CE)
-#include <windows.h>
-#include <crtdbg.h>
+#include "../src/error.h"
+
+#include <stdexcept>
+
+#if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
+#include <io.h>   // access()
 #endif
 
-#include "../src/error.h"
 
 
 using namespace bfc;
 
 
+
+
 #if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) \
-	&& defined(_DEBUG) && !defined(UNDER_CE)
+    && defined(_DEBUG) && !defined(UNDER_CE)
 
 _CrtMemState crm_memdbg_state_snapshot1;
 int trigger_memdump = 0;

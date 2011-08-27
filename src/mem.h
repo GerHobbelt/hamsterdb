@@ -23,7 +23,8 @@
 
 #include "internal_fwd_decl.h"
 
-#include <string.h>
+#include "error.h"
+
 
 #ifdef __cplusplus
 extern "C" {

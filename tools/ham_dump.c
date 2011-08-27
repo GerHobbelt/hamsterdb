@@ -13,8 +13,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <assert.h>
+#include <locale.h>
+
+#include "../3rdparty/json/JSON_parser.h"
+
 
 #include <ham/hamsterdb.h>
+#include <ham/hamsterdb_int.h> /* HAM_DEFAULT_DATABASE_NAME */
+
 
 #include "getopts.h"
 

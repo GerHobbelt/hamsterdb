@@ -18,26 +18,16 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "internal_fwd_decl.h"
-#include "blob.h"
 #include "btree.h"
+#include "btree_classic.h"
 #include "btree_cursor.h"
-#include "cache.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "keys.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "statistics.h"
-#include "txn.h"
-#include "util.h"
+
+
+
+
+
 
 /**
  * the insert_scratchpad_t structure helps us to propagate return values

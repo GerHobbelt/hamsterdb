@@ -13,21 +13,10 @@
 * @cond ham_internals
 */
 
+#include "internal_preparation.h"
 
 
-#include "config.h"
 
-#include <string.h>
-
-#ifdef HAVE_MALLOC_H
-#  include <malloc.h>
-#else
-#  include <stdlib.h>
-#endif
-
-#include "db.h"
-#include "error.h"
-#include "mem.h"
 
 
 void *

@@ -18,26 +18,18 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "blob.h"
 #include "btree.h"
+#include "btree_classic.h"
 #include "btree_cursor.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "keys.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "txn.h"
-#include "util.h"
+
+
 
 static ham_status_t
 bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
             ham_u32_t flags);
+
 
 static ham_status_t
 my_move_first(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
