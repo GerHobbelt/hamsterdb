@@ -268,6 +268,12 @@ typedef struct
 #define HAM_KEY_USER_ALLOC      1
 
 /**
+ Function prototype for functions which can be passed as argument (parameter value) for parameters such as
+ @ref HAM_PARAM_CUSTOM_DEVICE
+*/
+typedef void *ham_parameter_function_t(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
+
+/**
  * A named parameter.
  *
  * These parameter structures are used for functions like @ref ham_open_ex,
@@ -289,7 +295,12 @@ struct ham_parameter_t {
     ham_u32_t name;
 
     /** The value of the parameter. */
-    ham_u64_t value;
+    union
+    {
+        ham_offset_t n;
+        void *p;
+        ham_parameter_function_t *fn;
+    } value;
 
 };
 
