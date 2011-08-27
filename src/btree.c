@@ -474,7 +474,7 @@ my_fun_free_page_extkeys(ham_btree_t *be, ham_page_t *page, ham_u32_t flags)
             extkey_cache_t *c;
 
             ham_assert(db, ("Must be set as page owner when this is a Btree page"));
-        ham_assert(db=page_get_owner(page), (""));
+            ham_assert(db == page_get_owner(page), (0));
             c = db_get_extkey_cache(db);
 
         for (i=0; i<btree_node_get_count(node); i++)
