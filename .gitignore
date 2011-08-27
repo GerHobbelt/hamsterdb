@@ -16,7 +16,6 @@ config.status
 configure
 libtool
 stamp-h1
-m4
 *.o
 *.lo
 *.la
