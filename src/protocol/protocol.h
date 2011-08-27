@@ -369,7 +369,7 @@ proto_env_create_db_request_get_param_names(proto_wrapper_t *wrapper);
 extern ham_u32_t *
 proto_env_create_db_request_get_param_values(proto_wrapper_t *wrapper);
 
-extern ham_u32_t
+extern ham_u16_t
 proto_env_create_db_request_get_dbname(proto_wrapper_t *wrapper);
 
 extern ham_u32_t
@@ -770,7 +770,7 @@ proto_db_insert_request_get_key_flags(proto_wrapper_t *wrapper);
 extern void *
 proto_db_insert_request_get_key_data(proto_wrapper_t *wrapper);
 
-extern ham_size_t
+extern ham_u16_t
 proto_db_insert_request_get_key_size(proto_wrapper_t *wrapper);
 
 extern ham_bool_t
@@ -837,7 +837,7 @@ proto_db_find_request_get_key_flags(proto_wrapper_t *wrapper);
 extern void *
 proto_db_find_request_get_key_data(proto_wrapper_t *wrapper);
 
-extern ham_size_t
+extern ham_u16_t
 proto_db_find_request_get_key_size(proto_wrapper_t *wrapper);
 
 extern ham_u32_t
@@ -914,7 +914,7 @@ proto_db_erase_request_get_key_data(proto_wrapper_t *wrapper);
 extern ham_u32_t
 proto_db_erase_request_get_key_flags(proto_wrapper_t *wrapper);
 
-extern ham_size_t
+extern ham_u16_t
 proto_db_erase_request_get_key_size(proto_wrapper_t *wrapper);
 
 /*
