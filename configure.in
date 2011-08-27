@@ -1,86 +1,370 @@
 dnl
 dnl configuration script for hamsterdb
 dnl
-dnl Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+dnl Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
 dnl All rights reserved. See file LICENSE for licence and copyright
 dnl information
 dnl
 
 dnl Initialize autoconf/automake
-AC_INIT(hamsterdb, 1.1.13)
-AC_CONFIG_SRCDIR(src/hamsterdb.c)
-AC_CONFIG_AUX_DIR(build/scripts)
-AM_INIT_AUTOMAKE(hamsterdb, 1.1.13)
+AC_INIT([hamsterdb], [1.1.13])
 
-AM_CONFIG_HEADER(config.h)
+AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
+AC_CONFIG_SRCDIR([src/hamsterdb.c])
+#AC_CONFIG_AUX_DIR([build/scripts])
+AC_CONFIG_MACRO_DIR([m4])
+
+AM_INIT_AUTOMAKE([1.10 check-news dist-bzip2 dist-zip dist-tarZ]) 
+
+# Minimum Autoconf version required.
+AC_PREREQ([2.62])
+
+AC_CONFIG_HEADERS([config.h])
+
+
+
+
+
+# #########################################################################
+#
+# Construct a build number to go with the major.minor release version.
+#
+
+# one build every three hours is the fastest I can do... I guess ;-)
+# At least this'll give me at least 3 years of build numbering before I run out of
+# the 4 digit set. And then who cares when a fifth digit is required, eh?
+
+let "buildnumber=(`date +%s` - 1185402255) / 10800"
+
+TAR_FILENAME_POSTFIX=Ger-$buildnumber
+AC_DEFINE_UNQUOTED(TAR_FILENAME_POSTFIX, "$TAR_FILENAME_POSTFIX", [distribution archive filename postfix code of the software])
+AC_SUBST(TAR_FILENAME_POSTFIX)
+
+#REVISION=`date +%Y%m%dT%H%M`
+REVISION=$buildnumber
+AC_DEFINE_UNQUOTED(REVISION, ["$REVISION"], [revision number of software])
+AC_SUBST(REVISION)
+
+# VER_SUFFIX=Ger-`date +%m%dT%H`
+VER_SUFFIX=
+AC_DEFINE_UNQUOTED(VER_SUFFIX, "$VER_SUFFIX", [version suffix code of the software])
+AC_SUBST(VER_SUFFIX)
+
+VERSION_TIMESTAMP=`echo $PACKAGE_VERSION | sed -e 's/-.*//'`
+VERSION_TAG=`echo $PACKAGE_VERSION | sed -e 's/.*-//'`
+
+AC_DEFINE_UNQUOTED(VERSION_TIMESTAMP, "$VERSION_TIMESTAMP", [version timestamp (YYYYMMDD) of the software])
+AC_SUBST(VERSION_TIMESTAMP)
+
+AC_DEFINE_UNQUOTED(VERSION_TAG, "$VERSION_TAG", [version tag (BlameSomebody) of the software])
+AC_SUBST(VERSION_TAG)
+
+
+
+
+AC_PREFIX_DEFAULT([/usr/local])
+
+
+
+AC_COPYRIGHT([
+Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de)
+])
+
+
+
+
+
+
+
+# local use only (no caching)
+#
+# AX_ADD_OPTION(<var>, <option>)
+#
+# Only add option $2 to var $1 if it's not already in there.
+#
+# Note that the new option-to-be-added is added AT THE FRONT.
+# Sometimes it doesn't matter, but it MIGHT make a difference
+# for particular items, such as -I include paths and such...
+#
+AC_DEFUN([AX_ADD_OPTION],
+  [
+    # split option list up into separate part; then check each item
+    # once done, append AT FRONT of $1, but the order within $2 is
+    # kept intact!
+    ax_ao_list="$2"
+    ax_ao_accepted_set=""
+    for ax_ao_e in ${ax_ao_list}
+    do
+      case " [$]{$1} " in
+        *" ${ax_ao_e} "* )
+                   ;;
+        *        )
+                   if test -z "${ax_ao_accepted_set}" ; then
+                     ax_ao_accepted_set="${ax_ao_e}"
+                   else
+                     ax_ao_accepted_set="${ax_ao_accepted_set} ${ax_ao_e}"
+                   fi
+                   ;;
+      esac
+    done
+    $1="${ax_ao_accepted_set} [$]{$1}"
+  ])
+
+
+
+
+
+
+
+
+# ##################################################################
+#
+# Checks for programs.
+#
 
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_RANLIB
+AC_PROG_CC_STDC   # check for ISO/C99 options for the compilers, if available. Be hip, don't be square.
+AC_USE_SYSTEM_EXTENSIONS
+
+# AC_PROG_RANLIB  -- rendered obsolete by LT_INIT
+LT_INIT
+
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
+AC_PROG_SED
 AC_PROG_INSTALL
-AC_HEADER_STDC
-AC_C_CONST
-AC_TYPE_SIZE_T
-AC_CHECK_FUNCS(mmap munmap getpagesize fdatasync fsync)
-AC_CHECK_HEADERS(fcntl.h unistd.h malloc.h)
-AC_TYPE_OFF_T
-AC_FUNC_MMAP
-AC_CANONICAL_SYSTEM
+AC_PROG_CPP
+AC_PROG_CPP_WERROR
 
-# ARM emulators w/ qemu: disable pread/pwrite; the functions exist, but
-# seem to be buggy
-case $host in
-    arm-*-linux-gnu)
-        ;;
-    *)
-        AC_CHECK_FUNCS(pread pwrite)
-        ;;
-esac
+AC_PATH_PROG([SEVEN_ZIP], [7z], [])
+AC_PATH_PROG([LZMA], [lzma], [])
+AC_PATH_PROG([ZIP], [zip], [])
+AC_PATH_PROG([TAR], [tar], [])
+AC_PATH_PROG([COMPRESS], [compress], [])
+AC_PATH_PROG([SHAR], [shar], [])
+AC_PATH_PROG([BZIP2], [bzip2], [])
+AC_PATH_PROG([GZIP], [gzip], [gzip])
+
+
+
+
+
+
+
+
+
+
+AM_CONDITIONAL([OS_HAS_SEVEN_ZIP], [test -n "$SEVEN_ZIP"])
+AM_CONDITIONAL([OS_HAS_LZMA], [test -n "$LZMA"])
+AM_CONDITIONAL([OS_HAS_ZIP], [test -n "$ZIP"])
+AM_CONDITIONAL([OS_HAS_TAR], [test -n "$TAR"])
+AM_CONDITIONAL([OS_HAS_COMPRESS], [test -n "$COMPRESS"])
+AM_CONDITIONAL([OS_HAS_SHAR], [test -n "$SHAR"])
+AM_CONDITIONAL([OS_HAS_GZIP], [test -n "$GZIP"])
+AM_CONDITIONAL([OS_HAS_BZIP2], [test -n "$BZIP2"])
+
+
+
+
+
+
+
+
+
+
+
+#
+# no multithreading support for now; that's for later
+#
+WITH_THREADS=no
+
 
 # A string describing all enabled/disabled settings
 settings=""
 
-# Default settings: -Wall
-CFLAGS="${CFLAGS} -Wall"
 
 #
-# Debug mode
+# debug or release build of the binary?
 #
-AC_ARG_ENABLE(debug,
-    AC_HELP_STRING([--enable-debug],
-        [Build with diagnostics and debug symbols (slow!)]))
-if test "$enable_debug" = "yes"
-then
-    CFLAGS=`echo "$CFLAGS" | sed 's/-O. / /g'`
-    CFLAGS="${CFLAGS} -g -DHAM_DEBUG"
-    settings="$settings (debug)"
-fi
+AC_MSG_CHECKING([if we want a debug or release build])
+AC_ARG_ENABLE([debug], AC_HELP_STRING([--disable-debug],
+  [Specify to create a so-called 'production' or 'release build'.
+You can explicitly specify '--enable-debug' to create a standard
+HAMSTERDB (debuggable) build. (default: debugging turned OFF)]),
+  [
+   #
+   # since AC_PROG_CC sets '-O2' in CFLAGS by default, while _we_'d like
+   # to have '-O3', we override the operation (for gcc only) right here.
+   # Of course, this is rather hackish, so if anyone knows about a cleaner
+   # solution, I'm all for it!
+   #                                               Ger Hobbelt
+   if test ! -z "$SED"; then
+     CFLAGS=`echo " $CFLAGS " | $SED -e 's:-O[[0-3]] : :' -e 's:-g : :' -e 's:  : :g'`
+     CXXFLAGS=`echo " $CXXFLAGS " | $SED -e 's:-O[[0-3]] : :' -e 's:-g : :' -e 's:  : :g'`
+   fi
+   if eval "test x$enable_debug = xyes"; then
+     AC_MSG_RESULT([debug])
+     AX_CFLAGS_GCC_OPTION([-O0])
+     AX_CFLAGS_GCC_OPTION([-g3],
+       [],
+       [],
+       [AX_CFLAGS_GCC_OPTION([-g])]) # symbolic debugging
+     AX_CXXFLAGS_GCC_OPTION([-O0])
+     AX_CXXFLAGS_GCC_OPTION([-g3],
+       [],
+       [],
+       [AX_CXXFLAGS_GCC_OPTION([-g])]) # symbolic debugging
+     WITH_BUILD="debug"
+     WITH_DEBUGGING=yes
+   else
+     AC_MSG_RESULT([release])
+     AX_CFLAGS_GCC_OPTION([-O3],
+       [],
+       [],
+       [AX_CFLAGS_GCC_OPTION([-O2])])
+     AX_CXXFLAGS_GCC_OPTION([-O3],
+       [],
+       [],
+       [AX_CXXFLAGS_GCC_OPTION([-O2])])
+     WITH_BUILD="release (maximum optimizations)"
+     WITH_DEBUGGING=no
+   fi
+  ],
+  [
+   AC_MSG_RESULT([default])
+   if test ! -z "$SED"; then
+     if test -z `echo " $CFLAGS " | $SED -e 's:.* \(-O[[0-3]]\) .*:\1:'`; then
+       # only add '-O2' if there's no '-O expression custom defined yet (by the user before [s]he started ./configure)
+       AX_CFLAGS_GCC_OPTION([-O2])
+     fi
+     if test -z `echo " $CXXFLAGS " | $SED -e 's:.* \(-O[[0-3]]\) .*:\1:'`; then
+       # only add '-O2' if there's no '-O expression custom defined yet (by the user before [s]he started ./configure)
+       AX_CXXFLAGS_GCC_OPTION([-O2])
+     fi
+   fi
+   WITH_BUILD="release (default optimizations)"
+   WITH_DEBUGGING=no
+  ])
+
+
 
 #
-# Profiling mode
+# include run-time profiling support (requires the use of specific development tools: prof/gprof)
 #
-AC_ARG_ENABLE(profile,
-    AC_HELP_STRING([--enable-profile],
-        [Build with profiling information (gprof)]))
-if test "$enable_profile" = "yes"
-then
-    CFLAGS="${CFLAGS} -pg"
-    settings="$settings (profile)"
-fi
+WITH_GPROFILING="no"
+WITH_PROFILING="no"
+
+AC_MSG_CHECKING([if we want to instrument the build for profiling])
+AC_ARG_ENABLE([profiling], AC_HELP_STRING([--enable-profiling],
+  [You can explicitly specify '--enable-profiling' to
+create a HAMSTERDB build which can be profiled with, for 
+example, gprof. (default: profiling turned OFF)]),
+  [
+   AC_MSG_RESULT([$enable_profiling])
+   ac_profiling_cc_flags=""
+   AX_CFLAGS_GCC_OPTION([-pg], [ac_profiling_cc_flags],
+    	[
+         WITH_GPROFILING="yes"
+         AC_MSG_RESULT([$enable_profiling (gprof)])
+        ],
+   	[
+   	 AX_CFLAGS_GCC_OPTION([-p], [ac_profiling_cc_flags],
+   		[
+   		WITH_PROFILING="yes"
+   		AC_MSG_RESULT([$enable_profiling (prof)])
+   		])
+       ])
+   AX_CXXFLAGS_GCC_OPTION([-pg], [ac_profiling_cc_flags],
+    	[
+         WITH_GPROFILING="yes"
+         AC_MSG_RESULT([$enable_profiling (gprof)])
+        ],
+   	[
+   	 AX_CXXFLAGS_GCC_OPTION([-p], [ac_profiling_cc_flags],
+   		[
+   		WITH_PROFILING="yes"
+   		AC_MSG_RESULT([$enable_profiling (prof)])
+   		])
+       ])
+   # delay copying into CFLAGS/CXXFLAGS/LDFLAGS; we don't want to influence the cc used to test stuff in this configure script
+  ],
+  [AC_MSG_RESULT([no])])
+
+#
+# maximum warning level for neurotic developers? (default = yes)
+#
+AC_MSG_CHECKING([if we want maximum compiler warnings])
+AC_ARG_ENABLE([extended-compile-warnings],
+  AC_HELP_STRING([--disable-extended-compile-warnings],
+    [turn maximum compiler/linker warnings level off
+(default: turn on all warnings)]),
+  [
+   AC_MSG_RESULT([$enable_extended_compile_warnings])
+   if eval "test x$enable_extended_compile_warnings = xyes"; then
+     AX_CFLAGS_WARN_ALL([])
+     AX_CXXFLAGS_WARN_ALL([])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([yes])
+   AX_CFLAGS_WARN_ALL([])
+   AX_CXXFLAGS_WARN_ALL([])
+  ])
 
 #
 # track test coverage
 #
-AC_ARG_ENABLE(gcov,
+WITH_GCOV="no"
+AC_MSG_CHECKING([if we want test coverage tracking])
+AC_ARG_ENABLE([gcov],
     AC_HELP_STRING([--enable-gcov],
-        [Build with test coverage information (gconf)]))
-if test "$enable_gcov" = "yes"
-then
-    CFLAGS="${CFLAGS} -fprofile-arcs -ftest-coverage"
-    settings="$settings (test-coverage)"
-fi
+        [Build with test coverage information (gcov)]),
+  [
+   ac_coverage_cc_flags=""
+   AX_CFLAGS_GCC_OPTION([-fprofile-arcs -ftest-coverage], [ac_coverage_cc_flags],
+    	[
+         WITH_GCOV="yes"
+         AC_MSG_RESULT([$enable_gcov (gcov)])
+        ],
+   	[
+         AC_MSG_RESULT([no])
+       ])
+   AX_CXXFLAGS_GCC_OPTION([-fprofile-arcs -ftest-coverage], [ac_coverage_cc_flags],
+    	[
+         WITH_GCOV="yes"
+         AC_MSG_RESULT([$enable_gcov (gcov)])
+        ],
+   	[
+         AC_MSG_RESULT([no])
+       ])
+   # delay copying into CFLAGS/CXXFLAGS/LDFLAGS; we don't want to influence the cc used to test stuff in this configure script
+  ],
+  [AC_MSG_RESULT([no])])
+
+
+#
+# Do you want those HAM_ASSERT() calls active in your run-time or removed by the compiler?
+#
+AC_MSG_CHECKING([if we want run-time assertions])
+AC_ARG_ENABLE([assertions],
+  AC_HELP_STRING([--disable-assertions],
+    [turn assertion checks off.
+This will produce a faster running executable but such at the cost
+of lacking a specific type of 'developer' checks. These SHOULD not
+get triggered EVER, so you MAY assume specifying this option is
+a 'free speedup'. (default: assertions are ENABLED)]),
+  [
+   AC_MSG_RESULT($enable_assertions)
+   if eval "test x$enable_assertions = xno"; then
+     AC_DEFINE_UNQUOTED(HAM_DONT_ASSERT, 1, [DISable ASSERT/VERIFY checks])
+   fi
+  ],
+  [
+   AC_MSG_RESULT([yes])
+  ])
+
 
 #
 # Enable internal functions (obsolete)
@@ -137,6 +421,50 @@ then
 fi
 AM_CONDITIONAL(SYSTEM_ZLIB, test "x$enable_system_zlib" == "xyes")
 
+
+
+
+
+
+
+# Checks for header files.
+
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h unistd.h malloc.h)
+
+
+# Checks for typedefs, structures, and compiler characteristics.
+AX_C_PREDEF___FUNCTION__
+AC_C_CONST
+AC_C_INLINE
+AX_CC_PRAGMA_PACK
+AC_TYPE_LONG_LONG_INT
+AC_C_STRINGIZE
+AC_CHECK_SIZEOF([long int])
+AC_CHECK_SIZEOF([int])
+if test $ac_cv_type_long_long_int = yes; then
+  AC_CHECK_SIZEOF([long long int])
+fi
+AC_TYPE_INT16_T
+AC_TYPE_INT32_T
+AC_TYPE_INT64_T
+AC_TYPE_INT8_T
+AC_TYPE_SIZE_T
+AC_TYPE_OFF_T
+AC_CHECK_FUNCS(getpagesize fdatasync fsync)
+AC_FUNC_MMAP
+
+
+# ARM emulators w/ qemu: disable pread/pwrite; the functions exist, but
+# seem to be buggy
+case $host in
+    arm-*-linux-gnu)
+        ;;
+    *)
+        AC_CHECK_FUNCS(pread pwrite)
+        ;;
+esac
+
 #
 # Check for little endian/big endian
 #
@@ -164,22 +492,6 @@ int main(void) {
 }],ac_cv_FUNCTION1=yes,ac_cv_FUNCTION1=no,ac_cv_FUNCTION1=no)])
 if test $ac_cv_FUNCTION1 = yes; then
     AC_DEFINE(HAVE_FUNCTION_MACRO,1,[__FUNCTION__ is supported])
-fi
-
-#
-# Check if we use gcc > 4.4 - if yes, disable some optimizations
-#
-AC_CACHE_CHECK(whether we need -fno-tree-vectorize,
-               ac_cv_FUNCTION2,
-    [AC_TRY_RUN([
-int main(void) {
-#if !(__GNUC__ == 4 && __GNUC_MINOR__ >= 4)
-#error "this gcc is ok"
-#endif
-    return 0;
-}],ac_cv_FUNCTION2=yes,ac_cv_FUNCTION2=no,ac_cv_FUNCTION2=no)])
-if test $ac_cv_FUNCTION2 = yes; then
-    CFLAGS="${CFLAGS} -fno-tree-vectorize"
 fi
 
 #
@@ -274,25 +586,78 @@ case $host in
         ;;
 esac
 
-CXXFLAGS="${CFLAGS}"
+
+
+
+
+# write delayed options into CFLAGS/LDFLAGS:
+AX_ADD_OPTION([CFLAGS], [$ac_profiling_cc_flags])
+AX_ADD_OPTION([CXXFLAGS], [$ac_profiling_cc_flags])
+AX_ADD_OPTION([LDFLAGS], [$ac_profiling_cc_flags])
+
+
 
 AC_CONFIG_FILES(Makefile src/Makefile src/protocol/Makefile include/Makefile include/ham/Makefile samples/Makefile unittests/Makefile 3rdparty/Makefile 3rdparty/aes/Makefile 3rdparty/zlib/Makefile 3rdparty/json/Makefile 3rdparty/mongoose/Makefile tools/Makefile src/server/Makefile)
 AC_OUTPUT
 
-# Messages
-printf '#================================================================\n'
-printf "# Configuring hamsterdb version $PACKAGE_VERSION\n"
-printf "# Settings:$settings\n"
-if test "x$enable_remote" = "xno"; then
-printf "#\n"
-printf "# The remote functionality is disabled because you specified\n"
-printf "# --disable-remote or because of missing dependencies!\n"
-fi
-printf '#================================================================\n'
 
-# build protobuf files
-if test "x$enable_remote" != "xno"; then
-cd src/protocol && make proto
-fi
 
+dnl Print configuration summary
+
+my_installpath=`eval echo $exec_prefix`
+
+cat <<EOF
+
+Configuration summary
+=====================
+
+$PACKAGE_NAME (version $PACKAGE_VERSION) is now configured as follows:
+
+* Compilation environment
+
+  CC           = $CC
+  CFLAGS       = $CFLAGS
+  CPP          = $CPP
+  CPPFLAGS     = $CPPFLAGS
+  CXX          = $CXX
+  CXXFLAGS     = $CXXFLAGS
+  LD           = $LD
+  LDFLAGS      = $LDFLAGS
+  LIBS         = $LIBS
+  INSTALLFLAGS = $INSTALLFLAGS
+  BINDIR       = $BIN_PATH
+
+* $PACKAGE_NAME options
+
+  Development-time debugging:               $WITH_DEBUGGING
+  Allow profiling using gprof:              $WITH_GPROFILING
+  Allow profiling using prof:               $WITH_PROFILING
+  Allow test coverage analysis using gcov:  $WITH_GCOV
+  Include remote features:                  $enable_remote
+  Build:                                    $WITH_BUILD
+
+  Settings:                                 $settings
+
+  multithreading support:                   $WITH_THREADS
+
+  regular expressions library in use:       $WITH_REGEX ($WITH_SELECTED_REGEX)
+
+-----------------------------------------------------------------------
+
+Congratulations, your $PACKAGE_NAME $PACKAGE_VERSION is configured now.
+You can now build and install $PACKAGE_NAME using the Makefile, by calling
+
+  \$ make
+
+Before running 
+
+  \$ make install
+
+you may wish to test the newly built binary by running
+
+  \$ make check
+
+Any unacceptable mistakes will be reported and cause the 'check' run to abort.
+
+EOF
 
