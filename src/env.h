@@ -667,17 +667,22 @@ extern ham_status_t
 env_alloc_page(ham_page_t **page_ref, ham_env_t *env,
                 ham_u32_t type, ham_u32_t flags);
 
-/*
+/**
  * create a env_backend_t structure for accessing local files
  */
 extern ham_status_t
 env_initialize_local(ham_env_t *env);
 
-/*
+/**
  * create a env_backend_t structure for accessing remote server
  */
 extern ham_status_t
 env_initialize_remote(ham_env_t *env);
+
+
+
+
+
 
 /**
  * Ensure that the environment occupies a minimum number of pages.
