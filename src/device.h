@@ -27,9 +27,53 @@
 #include "internal_fwd_decl.h"
 
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ Contains additional space allocation request attributes.
+
+ This info can be used by partitioners and other devices to determine which
+ child device is going to service the request, i.e. in which partition the
+ requested space will be allocated.
+*/
+struct dev_alloc_request_info_ex_t
+{
+    /** [input] the type of space requested. One of the @ref page_type_codes */
+    ham_u32_t space_type;
+    /** [input] whether the request is for an entire page or just some chunks */
+    ham_bool_t entire_page;
+    /** [input] DAM (Data Access Mode hint flags */
+    ham_u16_t dam;
+    /** [input] the Database requesting the space */
+    ham_db_t *db;
+    /** [input] the Environment */
+    ham_env_t *env;
+    /** [input] the Key which triggered this request */
+    const ham_key_t *key;
+    const int_key_t *int_key;
+    /** [input] the Record which triggered this request */
+    const ham_record_t *record;
+    /** [input] the related 'rid' which is managed by the freelist to pick; used with @ref PAGE_TYPE_FREELIST type requests */
+    ham_offset_t related_address;
+    /** [input] the master request of which this request is a part */
+    dev_alloc_request_info_ex_t *master;
+    /** [input */
+    ham_u32_t insert_flags;
+
+    /** [output] the device which serviced the request */
+    ham_device_t *dev_servicer;
+    /** [output] the freelist which serviced the request */
+    freelist_cache_t *freelist_servicer;
+    /** [output] the base rid/offset of the space range managed by the servicing device */
+    ham_offset_t dev_base_addr;
+    /** [output] the absolute maximum range of the space managed by the servicing device */
+    ham_offset_t dev_addr_range;
+};
+
+
 
 /**
  * the device structure
@@ -110,7 +154,8 @@ struct ham_device_t {
      *
      * @sa page_fetch
      */
-    ham_status_t (*read_page)(ham_device_t *self, ham_page_t *page);
+    ham_status_t (*read_page)(ham_device_t *self, ham_page_t *page,
+            ham_size_t size);
 
     /**
      * writes a page to the device/store
@@ -138,11 +183,29 @@ struct ham_device_t {
     ham_u32_t (*get_flags)(ham_device_t *self);
 
     /**
+     Retrieve the device/store info (with or without the underlying devices taken into account:
+     when @a inclusive is set to 'true', the device graph below the specified device will
+     be traversed to determine the aggregated info values).
+
+     @note The @ref ham_device_info_t @a info struct must be initialized before invoking this
+     method, preferably with all zeroes.
+     */
+    ham_status_t (*get_device_info)(ham_device_t *self, ham_device_info_t *pinfo, ham_bool_t inclusive);
+
+	/**
+     Retrieve device class info, i.e. info which is common for all device instances of this device type.
+
+     @note The @ref ham_device_class_info_t @a info struct must be initialized before invoking this
+     method, preferably with all zeroes.
+     */
+    ham_status_t (*get_device_class_info)(ham_device_t *self, ham_device_class_info_t *pinfo);
+
+    /**
      * allocate storage space from this device/store; this function
      * will *NOT* use mmap.
      */
     ham_status_t (*alloc)(ham_device_t *self, ham_size_t size,
-            ham_offset_t *address);
+            ham_offset_t *address, dev_alloc_request_info_ex_t *extra_dev_alloc_info);
 
     /**
      * allocate storage space for a page from this device/store; this function
@@ -168,7 +231,8 @@ struct ham_device_t {
      *
      * @sa page_alloc
      */
-    ham_status_t (*alloc_page)(ham_device_t *self, ham_page_t *page);
+    ham_status_t (*alloc_page)(ham_device_t *self, ham_page_t *page,
+            ham_size_t size, dev_alloc_request_info_ex_t *extra_dev_alloc_info);
 
     /**
      * frees a page on the device/store; plays counterpoint to @ref alloc_page.
@@ -182,15 +246,55 @@ struct ham_device_t {
     /**
      * destroy the device object, free all memory
      */
-    ham_status_t (*destroy)(ham_device_t *self);
+    ham_status_t (*destroy)(ham_device_t **self_reference);
 
-    /* the memory allocator */
+    /**
+     * register another @a target device; adds an outgoing edge to the device
+     * graph of which the current device is a part.
+     *
+     * @param partition_index is zero or higher and indicates which partition must be forwarded
+     *        to the specified device. For non-partitioning devices, the @a partition_index
+     *        should be set to zero(0).
+     */
+    ham_status_t (*add_outgoing)(ham_device_t *self, ham_u32_t partition_index, ham_device_t *target);
+
+    /**
+     * register another @a source device; adds an incoming edge to the device
+     * graph of which the current device is a part.
+     */
+    ham_status_t (*add_incoming)(ham_device_t *self, ham_device_t *source);
+
+    /**
+     * the memory allocator
+     */
     mem_allocator_t *_malloc;
 
     /**
     * the environment which employs this device
     */
     ham_env_t *_env;
+
+    /**
+     stores the device class common info, e.g.:
+
+     <ul>
+     <li>the class descriptive name,</li>
+     <li>the size ranges for page headers and footers</li>
+     </ul>
+    */
+    ham_device_class_info_t *_class_info;
+
+    /**
+     stores the device/store info, e.g.:
+
+     <ul>
+     <li>the pagesize on disc,</li>
+     <li>the pagesize as conceived by the user of this device, i.e. after the environment
+     filters and device chain are through with the 'raw' page, and</li>
+     <li>the surplus head and tail space required by the page filter chain</li>
+     </ul>
+    */
+    ham_device_info_t _info;
 
     /**
      * Flags of this device.
@@ -207,17 +311,20 @@ struct ham_device_t {
      */
     void *_private;
 
-    /** the pagesize */
-    ham_size_t _pagesize;
+    /**
+     * device graph links
+     */
+    ham_device_graph_connection_t in;
+    ham_device_graph_connection_t out;
 
     /**
-     * The freelist cache: the freelist is managed by the device so it
-     * can be parallelized and/or managed per partition without having to
-     * feed a lot of unnecessary data into the @ref ham_backend_t
-     * database layer or @ref ham_env_t / @ref ham_db_t containers.
-     */
+    The freelist cache: the freelist is managed by the device so it can be parallelized
+    and/or managed per partition without having to feed a lot of unnecessary data into
+    the @ref ham_backend_t database layer or @ref ham_env_t / @ref ham_db_t containers.
+    */
     freelist_cache_t *_freelist_cache;
 };
+
 
 /*
  * get the allocator of this device
@@ -261,21 +368,75 @@ struct ham_device_t {
 
 #define device_set_freelist_cache(dev, cache) (dev)->_freelist_cache=(cache)
 
-#define device_get_freelist_cache(dev)       (dev)->_freelist_cache
+#define device_get_freelist_cache(dev)     (dev)->_freelist_cache
 
-
-/*
- * create a new device structure; either for in-memory or file-based
- */
-extern ham_device_t *
-ham_device_new(mem_allocator_t *alloc, ham_env_t *env, int devtype);
 
 /**
- Devices: device type IDs
+ * Create a new device structure of the specified type.
+ * These types are known, though some may not (yet) be supported in
+ * the implementation):
+ *
+ *<dl>
+ *<dt>single file</dt>
+    <dd>The classic single file HamsterDB database. The default.</dd>
+
+  <dt>in-memory database</dt>
+    <dd>The classic nonpersistent in-memory HamsterDB database. Will be
+        instantiated when you specify the @ref HAM_IN_MEMORY_DB flag
+        in @a flags and no custom device override has been specified
+        in @a param.</dd>
+
+  <dt>custom database storage device</dt>
+    <dd>May be anything from Flash Memory to network storage. Will
+        be instantiated when you specify the @ref HAM_PARAM_CUSTOM_DEVICE
+        @a param parameter. The value must be function reference to
+        a function which can create a @ref ham_device_t instance.
+
+        These custom device generator functions are available:
+
+        <ul>
+          <li>@ref ham_device_mallocmem_new - identical to the 'in-memory database' type above.</li>
+
+          <li>@ref ham_device_flatfile_new - identical to the 'single file' type above.</li>
+
+          <li>@ref ham_device_flashfile_new - offers a basic 'flat memory' store, which
+                                              is, for instance, suitable to address a
+                                              Flash Memory chip in embedded environments.
+          </li>
+        </ul>
+
+        See also @ref ham_parameter_function_t
+    </dd>
+  </dl>
+ */
+extern ham_device_t *
+ham_device_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
+
+
+/* forward decl so struct can self-reference */
+struct ham_device_invocation_t;
+typedef struct ham_device_invocation_t ham_device_invocation_t;
+
+/**
+ Keeps track of which device invoked whom; this way any device can
+ traverse up the call tree in a portable and deterministic fashion.
 */
-#define HAM_DEVTYPE_FILE     0
-#define HAM_DEVTYPE_MEMORY   1
-#define HAM_DEVTYPE_CUSTOM   2
+struct ham_device_invocation_t
+{
+    ham_device_t *me;
+    ham_device_invocation_t *parent;
+};
+
+
+
+ham_device_t *
+ham_device_mallocmem_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
+
+ham_device_t *
+ham_device_flatfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
+
+ham_device_t *
+ham_device_flashfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
 
 
 #ifdef __cplusplus
