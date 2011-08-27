@@ -16,79 +16,9 @@
 #include "internal_preparation.h"
 
 
-ham_status_t
-txn_add_page(ham_txn_t *txn, ham_page_t *page, ham_bool_t ignore_if_inserted)
-{
-    /*
-     * don't re-insert, if 'ignore_if_inserted' is true
-     */
-    if (ignore_if_inserted && txn_get_page(txn, page_get_self(page)))
-        return (0);
 
-#ifdef HAM_DEBUG
-    /*
-     * check if the page is already in the transaction's pagelist -
-     * that would be a bug
-     */
-    ham_assert(txn_get_page(txn, page_get_self(page))==0,
-            ("page 0x%llx is already in the txn", page_get_self(page)));
-#endif
 
-    /*
-     * not found? add the page
-     */
-    page_add_ref(page);
 
-    ham_assert(!page_is_in_list(txn_get_pagelist(txn), page, PAGE_LIST_TXN), (0));
-    txn_set_pagelist(txn, page_list_insert(txn_get_pagelist(txn),
-            PAGE_LIST_TXN, page));
-
-    return (HAM_SUCCESS);
-}
-
-ham_status_t
-txn_free_page(ham_txn_t *txn, ham_page_t *page)
-{
-    ham_assert(!(page_get_npers_flags(page)&PAGE_NPERS_DELETE_PENDING), (0));
-    ham_assert(page_get_cursors(page)==0, (0));
-
-    page_set_npers_flags(page,
-            page_get_npers_flags(page)|PAGE_NPERS_DELETE_PENDING);
-
-    return (HAM_SUCCESS);
-}
-
-ham_status_t
-txn_remove_page(ham_txn_t *txn, struct ham_page_t *page)
-{
-    ham_assert(page_is_in_list(txn_get_pagelist(txn), page, PAGE_LIST_TXN), (0));
-    txn_set_pagelist(txn, page_list_remove(txn_get_pagelist(txn),
-            PAGE_LIST_TXN, page));
-
-    page_release_ref(page);
-
-    return (0);
-}
-
-ham_page_t *
-txn_get_page(ham_txn_t *txn, ham_offset_t address)
-{
-    ham_page_t *p=txn_get_pagelist(txn);
-
-#ifdef HAM_DEBUG
-    ham_page_t *start=p;
-#endif
-
-    while (p) {
-        ham_offset_t o=page_get_self(p);
-        if (o==address)
-            return (p);
-        p=page_get_next(p, PAGE_LIST_TXN);
-        ham_assert(start!=p, ("circular reference in page-list"));
-    }
-
-    return (0);
-}
 
 /**
 BIG FAT WARNING:
@@ -118,7 +48,9 @@ will be your share.
 ham_status_t
 txn_begin(ham_txn_t *txn, ham_env_t *env, ham_u32_t flags)
 {
-    ham_status_t st=0;
+    ham_status_t st = HAM_SUCCESS;
+
+    memset(txn, 0, sizeof(*txn));
 
     /* for hamsterdb 1.0.4 - only support one transaction */
     if (env_get_txn(env)) {
@@ -126,12 +58,11 @@ txn_begin(ham_txn_t *txn, ham_env_t *env, ham_u32_t flags)
         return (HAM_LIMITS_REACHED);
     }
 
-    memset(txn, 0, sizeof(*txn));
     txn_set_env(txn, env);
     txn_set_id(txn, env_get_txn_id(env)+1);
     txn_set_flags(txn, flags);
-    env_set_txn_id(env, txn_get_id(txn));
     env_set_txn(env, txn);
+    env_set_txn_id(env, txn_get_id(txn));
 
     if (env_get_log(env) && !(flags&HAM_TXN_READ_ONLY))
         st=ham_log_append_txn_begin(env_get_log(env), txn);
@@ -143,7 +74,7 @@ ham_status_t
 txn_commit(ham_txn_t *txn, ham_u32_t flags)
 {
     ham_status_t st;
-    ham_env_t *env=txn_get_env(txn);
+    ham_env_t *env = txn_get_env(txn);
     ham_device_t *device=env_get_device(env);
 
     /*
@@ -152,7 +83,7 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
     if (txn_get_cursor_refcount(txn)) {
         ham_trace(("transaction cannot be committed till all attached "
                     "cursors are closed"));
-        return (HAM_CURSOR_STILL_OPEN);
+        return HAM_CURSOR_STILL_OPEN;
     }
 
     /*
@@ -160,14 +91,16 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
      * if they were modified by this transaction;
      * then write the transaction boundary
      */
-    if (env_get_log(env) && !(txn_get_flags(txn)&HAM_TXN_READ_ONLY)) {
+    if (env_get_log(env) && !(txn_get_flags(txn)&HAM_TXN_READ_ONLY))
+    {
         ham_page_t *head=txn_get_pagelist(txn);
         while (head) {
             ham_page_t *next;
 
             next=page_get_next(head, PAGE_LIST_TXN);
             if (page_get_dirty_txn(head)==txn_get_id(txn)
-                    || page_get_dirty_txn(head)==PAGE_DUMMY_TXN_ID) {
+                    || page_get_dirty_txn(head)==PAGE_DUMMY_TXN_ID)
+            {
                 st=ham_log_add_page_after(head);
                 if (st)
                     return st;
@@ -187,10 +120,11 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
      * txn_get_pagelist(txn) should be kept up to date and correctly
      * formatted while we call db_free_page() et al.
      */
-    while (txn_get_pagelist(txn)) {
+    while (txn_get_pagelist(txn))
+    {
         ham_page_t *head = txn_get_pagelist(txn);
 
-        txn_get_pagelist(txn) = page_list_remove(head, PAGE_LIST_TXN, head);
+        txn_set_pagelist(txn, page_list_remove(head, PAGE_LIST_TXN, head));
 
         /* page is no longer in use */
         page_release_ref(head);
@@ -198,7 +132,7 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
         /*
          * delete the page?
          */
-        if (page_get_npers_flags(head)&PAGE_NPERS_DELETE_PENDING) {
+        if (page_get_npers_flags(head) & PAGE_NPERS_DELETE_PENDING) {
             /* remove page from cache, add it to garbage list */
             page_set_undirty(head);
 
@@ -208,18 +142,19 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
         }
     }
 
+    ham_assert(txn_get_pagelist(txn)==0, (0));
     txn_set_env(txn, 0);
     txn_set_pagelist(txn, 0);
     env_set_txn(env, 0);
 
     /* flush the file handle */
-    if (env_get_rt_flags(env)&HAM_WRITE_THROUGH)
-        return (device->flush(device));
+    if (env_get_rt_flags(env) & HAM_WRITE_THROUGH)
+		return device->flush(device);
 
     /* now it's the time to purge caches */
-    env_purge_cache(env);
+    env_purge_cache(env, cache_get_cur_elements(env_get_cache(env)) / 2);
 
-    return (HAM_SUCCESS);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -235,13 +170,13 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
     if (txn_get_cursor_refcount(txn)) {
         ham_trace(("transaction cannot be aborted till all attached "
                     "cursors are closed"));
-        return (HAM_CURSOR_STILL_OPEN);
+        return HAM_CURSOR_STILL_OPEN;
     }
 
     if (env_get_log(env) && !(txn_get_flags(txn)&HAM_TXN_READ_ONLY)) {
         st=ham_log_append_txn_abort(env_get_log(env), txn);
         if (st)
-            return (st);
+            return st;
     }
 
     /*
@@ -254,10 +189,12 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
      * keep txn_get_pagelist(txn) intact during every round, so no
      * local var for this one.
      */
-    while (txn_get_pagelist(txn)) {
+    while (txn_get_pagelist(txn))
+    {
         ham_page_t *head = txn_get_pagelist(txn);
 
-        if (!(flags & DO_NOT_NUKE_PAGE_STATS)) {
+        if (!(flags & DO_NOT_NUKE_PAGE_STATS))
+        {
             /*
              * nuke critical statistics, such as tracked outer bounds; imagine,
              * for example, a failing erase transaction which, through erasing
@@ -282,27 +219,35 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
              * ones which have their 'ownership' set.
              */
             if (db)
-                stats_page_is_nuked(db, head, HAM_FALSE);
+            {
+                ham_backend_t *be = db_get_backend(db);
+
+                be->_fun_nuke_statistics(be, head, REASON_ABORT);
+            }
         }
 
         ham_assert(page_is_in_list(txn_get_pagelist(txn), head, PAGE_LIST_TXN),
                              (0));
-        txn_get_pagelist(txn) = page_list_remove(head, PAGE_LIST_TXN, head);
+        txn_set_pagelist(txn, page_list_remove(head, PAGE_LIST_TXN, head));
 
         /* if this page was allocated by this transaction, then we can
          * move the whole page to the freelist */
-        if (page_get_alloc_txn_id(head)==txn_get_id(txn)) {
-            (void)freel_mark_free(env, 0, page_get_self(head),
+        if (page_get_alloc_txn_id(head)==txn_get_id(txn))
+        {
+            st = freel_mark_free(env, page_get_self(head),
                     env_get_pagesize(env), HAM_TRUE);
+            if (st)
+                return st;
         }
-        else if (page_get_dirty_txn(head)==txn_get_id(txn)) {
+        else if (page_get_dirty_txn(head) == txn_get_id(txn))
+		{
             /* remove the 'delete pending' flag */
-            page_set_npers_flags(head,
-                    page_get_npers_flags(head)&~PAGE_NPERS_DELETE_PENDING);
+            page_remove_npers_flags(head, PAGE_NPERS_DELETE_PENDING);
 
             /* if the page is dirty and was modified in this transaction:
              * recreate the original, unmodified page from the log */
-            if (env_get_log(env) && page_is_dirty(head)) {
+            if (env_get_log(env) && page_is_dirty(head))
+            {
                 st=ham_log_recreate(env_get_log(env), head);
                 if (st)
                     return (st);
@@ -318,13 +263,13 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
     env_set_txn(env, 0);
 
     /* now it's the time to purge caches */
-    env_purge_cache(env);
+    env_purge_cache(env, cache_get_cur_elements(env_get_cache(env)) / 2);
 
     /* flush the file handle */
-    if (env_get_rt_flags(env)&HAM_WRITE_THROUGH)
+    if (env_get_rt_flags(env) & HAM_WRITE_THROUGH)
         return (device->flush(device));
 
-    return (HAM_SUCCESS);
+    return HAM_SUCCESS;
 }
 
 
