@@ -838,7 +838,8 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
     /*
      * update the btree node-header
      */
-    btree_node_set_count(node, count+1);
+    count++;
+    btree_node_set_count(node, count);
 
     return HAM_SUCCESS;
 }
