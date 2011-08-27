@@ -36,8 +36,6 @@ extern "C" {
 /**
  * The cursor structure for a B+tree.
  */
-struct ham_bt_cursor_t;
-typedef struct ham_bt_cursor_t ham_bt_cursor_t;
 struct ham_bt_cursor_t
 {
     /**
@@ -234,8 +232,8 @@ bt_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
  * Returns @ref HAM_TRUE if a cursor points to this key, @ref HAM_FALSE if it is not
  * an an negative error code when an error occurred.
  */
-ham_bool_t
-bt_cursor_points_to(ham_bt_cursor_t *cursor, int_key_t *key);
+ham_status_t
+bt_cursor_points_to(common_btree_datums_t *btdata, ham_bt_cursor_t *cursor, int_key_t *key);
 
 /**
 * Uncouple all cursors from a page.

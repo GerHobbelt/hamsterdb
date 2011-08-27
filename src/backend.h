@@ -47,54 +47,96 @@ extern "C" {
 
 
 /**
-* @defgroup ham_cb_event hamsterdb Backend Node/Page Enumerator State Codes
-* @{
-*/
+ * hamsterdb Backend Node/Page Enumerator State Codes
+ *
+ * @sa ham_cb_enum_data_t
+ */
+typedef enum ham_cb_event_t
+{
+	/**
+	 * descend one level;
+	 * @ref ham_cb_enum_data_t.level is an integer value with the new level,
+	 * while @ref ham_cb_enum_data_t.node_count contains the number of keys stored
+	 * in the current node, which is located in the given @ref ham_cb_enum_data_t.page
+	 */
+	ENUM_EVENT_DESCEND      = 1,
 
-/** descend one level; param1 is an integer value with the new level */
-#define ENUM_EVENT_DESCEND      1
+	/** start of a new page; @ref ham_cb_enum_data_t.page points to the page */
+	ENUM_EVENT_PAGE_START   = 2,
 
-/** start of a new page; param1 points to the page */
-#define ENUM_EVENT_PAGE_START   2
+	/** end of a new page; @ref ham_cb_enum_data_t.page points to the page */
+	ENUM_EVENT_PAGE_STOP    = 3,
 
-/** end of a new page; param1 points to the page */
-#define ENUM_EVENT_PAGE_STOP    3
+	/** an item in the page; @ref ham_cb_enum_data_t.key points to the key; @ref ham_cb_enum_data_t.key_index is the index
+	 * of the key in the page */
+	ENUM_EVENT_ITEM         = 4
+} ham_cb_event_t;
 
-/** an item in the page; param1 points to the key; param2 is the index
- * of the key in the page */
-#define ENUM_EVENT_ITEM         4
 
 /**
-* @}
-*/
+ * Structure which contains the datums which are passed on to the callback by the backend enumerator.
+ *
+ * @sa ham_cb_event_t
+ * @sa ham_enumerate_cb_t
+ */
+typedef struct ham_cb_enum_data_t
+{
+	ham_u32_t level;
 
+	/** one of the @ref ham_cb_event_t state codes */
+	ham_cb_event_t event_code;
 
+	ham_bool_t node_is_leaf;
+	ham_u16_t _alignment_padding_dummy1;
+	ham_size_t node_count;
+	ham_size_t page_level_sibling_index;
+	ham_page_t *page;
 
+	int_key_t *key;
+	ham_size_t key_index;
 
+	/** equals the context pointer passed by the caller of the _fun_enumerate backend method. */
+	void *context;
+} ham_cb_enum_data_t;
 
 /**
  * a callback function for enumerating the index nodes/pages using the
  * @ref ham_backend_t::_fun_enumerate callback/method.
  *
- * @param event one of the @ref ham_cb_event state codes
- *
- * @param param1
- * @param param2
- * @param context
+ * @param data
  *
  * @return one of the @ref ham_cb_status values or a @ref ham_status_codes
  *         error code when an error occurred.
  */
-typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2,
-        void *context);
+typedef ham_status_t (*ham_enumerate_cb_t)(ham_cb_enum_data_t *data);
+
+
+
+/**
+ * A single cache slot for managing key data; these slots (pointers) are used to
+ * avoid frequent malloc/free cycles in @ref key_compare_pub_to_int(), etc.
+ *
+ * @sa db_prepare_ham_key_for_compare
+ */
+typedef struct
+{
+    void *data_ptr;
+    ham_size_t alloc_size;
+} ham_backend_key_cmp_cache_elem_t;
 
 
 
 /**
  * the backend structure - these functions and members are "inherited"
  * by every other backend (i.e. btree, hashdb etc).
+ *
+ * @remark To prevent the need for structure packing, the order of the elements
+ * in this definition is critical: the @a _recno element <em>must</em> be the
+ * last element in this definition as that is the largest type available on
+ * any machine: with Microsoft Visual C++ 8, alignment issues would otherwise exist with
+ * several backend structures which use this definition as a 'base class' template.
  */
-#define BACKEND_DECLARATIONS(clss)                                      \
+#define BACKEND_DECLARATIONS(clss, int_clss)                            \
     /**                                                                 \
      * create and initialize a new backend                              \
      *                                                                  \
@@ -203,6 +245,19 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2
                 ham_page_t *page, ham_u32_t flags);                     \
                                                                         \
     /**                                                                 \
+    Nuke the given page's statistics for the given @a reason.           \
+    */                                                                  \
+    void (*_fun_nuke_statistics)(clss *be,                              \
+                ham_page_t *page, ham_u32_t reason);                    \
+                                                                        \
+    /**                                                                 \
+     * enumerate a single page                                          \
+     */                                                                 \
+    ham_status_t (*_fun_in_node_enumerate)(int_clss *btdata,            \
+                ham_cb_enum_data_t *cb_data,							\
+                ham_enumerate_cb_t cb);									\
+                                                                        \
+    /**                                                                 \
      * the keysize of this backend index                                \
      */                                                                 \
     ham_u16_t _keysize;                                                 \
@@ -210,17 +265,25 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2
     /**                                                                 \
      * flag if this backend has to be written to disk                   \
      */                                                                 \
-    unsigned _dirty: 1;                                                 \
+    unsigned short _dirty: 1;                                           \
                                                                         \
     /**                                                                 \
      * flag if this backend has been fully initialized                  \
      */                                                                 \
-    unsigned _is_active: 1;                                             \
+    unsigned short _is_active: 1;                                       \
                                                                         \
     /**                                                                 \
      * the persistent flags of this backend index                       \
      */                                                                 \
-    ham_u32_t _flags;													\
+    ham_u32_t _flags;                                                   \
+                                                                        \
+    /**                                                                 \
+     * two pointers for managing key data; these pointers are used to   \
+     * avoid frequent mallocs in key_compare_pub_to_int(), etc.         \
+     *                                                                  \
+     * @sa db_prepare_ham_key_for_compare                               \
+     */                                                                 \
+    ham_backend_key_cmp_cache_elem_t _keydata[2];                       \
                                                                         \
     /**                                                                 \
      * pointer to the database object                                   \
@@ -230,10 +293,8 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2
     /**                                                                 \
      * the last used record number                                      \
      */                                                                 \
-    ham_offset_t _recno
+    ham_recno_t _recno
 
-
-#include "packstart.h"
 
 /**
 * A generic backend structure, which has the same memory layout as
@@ -241,18 +302,11 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, void *param2
 *
 * @remark We're pre-declaring struct ham_backend_t and the typedef
 * to avoid syntax errors in @ref BACKEND_DECLARATIONS .
-*
-* @remark Since this structure is not persistent, we don't really
-* need packing; however, with Microsoft Visual C++ 8, the
-* offset of ham_backend_t::_flags (the last member) is not the same
-* as the offset of ham_btree_t::_flags, unless packing is enabled.
 */
-HAM_PACK_0 struct HAM_PACK_1 ham_backend_t
+struct ham_backend_t
 {
-    BACKEND_DECLARATIONS(ham_backend_t);
-} HAM_PACK_2;
-
-#include "packstop.h"
+    BACKEND_DECLARATIONS(ham_backend_t, common_backend_datums_t);
+};
 
 /**
  * convenience macro to get the database pointer of a ham_backend_t-structure
@@ -290,6 +344,11 @@ HAM_PACK_0 struct HAM_PACK_1 ham_backend_t
 #define be_set_recno(be, rn)                (be)->_recno=(rn)
 
 /**
+* increment the last recno value
+*/
+#define be_inc_recno(be)                    (be)->_recno++
+
+/**
  * get the dirty-flag
  */
 #define be_is_dirty(be)                     (be)->_dirty
@@ -308,6 +367,12 @@ HAM_PACK_0 struct HAM_PACK_1 ham_backend_t
  * set the active-flag
  */
 #define be_set_active(be, d)                (be)->_is_active=!!(d)
+
+/**
+ * getter/setter for keydata
+ */
+#define be_get_keydata(be, idx)             (&(be)->_keydata[idx])
+
 
 
 #ifdef __cplusplus

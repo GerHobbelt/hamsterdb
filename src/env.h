@@ -679,14 +679,17 @@ env_initialize_remote(ham_env_t *env);
  * fragmentation.
  *
  * @param env the environment reference.
+ *
  * @param minimum_page_count The desired minimum number of storage pages
-        * available to the environment/database.
+ *        available to the environment/database.
  *
  * process:
  *
  * <ol>
  * <li> detect how many pages we already have in the environment
+ *
  * <li> calculate how many pages we should have
+ *
  * <li> when this is more than what we've got so far, tell
  *      the device driver to allocate the remainder and mark
  *      them all as 'free'.
@@ -699,7 +702,8 @@ env_initialize_remote(ham_env_t *env);
  *    extended freelist.
  */
 extern ham_status_t
-env_reserve_space(ham_env_t *env, ham_offset_t minimum_page_count);
+env_reserve_space(ham_offset_t minimum_page_count,
+                  dev_alloc_request_info_ex_t *extra_dev_alloc_info);
 
 /*
  * purge the cache if the limits are exceeded

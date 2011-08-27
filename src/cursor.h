@@ -148,12 +148,12 @@ struct ham_cursor_t
 /**
  * set the 'next' pointer of the linked list
  */
-#define cursor_set_next_in_page(c, n)										\
-	{																		\
-		if (n)																\
-			ham_assert((c)->_previous_in_page!=(n), (0));					\
-		(c)->_next_in_page=(n);												\
-	}
+#define cursor_set_next_in_page(c, n)                                       \
+    do {                                                                    \
+        if (n)                                                              \
+            ham_assert((c)->_previous_in_page!=(n), (0));                   \
+        (c)->_next_in_page=(n);                                             \
+    } while (0)
 
 /**
  * get the 'previous' pointer of the linked list
@@ -163,17 +163,12 @@ struct ham_cursor_t
 /**
  * set the 'previous' pointer of the linked list
  */
-#define cursor_set_previous_in_page(c, p)									\
-	{																		\
-		if (p)																\
-			ham_assert((c)->_next_in_page!=(p), (0));						\
-		(c)->_previous_in_page=(p);											\
-	}
-
-/**
- * set the database pointer
- */
-#define cursor_set_db(c, db)            (c)->_db=db
+#define cursor_set_previous_in_page(c, p)                                   \
+    do {                                                                    \
+        if (p)                                                              \
+            ham_assert((c)->_next_in_page!=(p), (0));                       \
+        (c)->_previous_in_page=(p);                                         \
+    } while (0)
 
 /**
  * get the database pointer
