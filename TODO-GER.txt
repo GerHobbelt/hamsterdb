@@ -1,0 +1,81 @@
+ 
+I Am Legend:
+
+Items are sorted by priority (highest on top).
+o a pending  TODO item (for the current release)
+. a pending  TODO item (for future releases)
+x a finished TODO item
+
+-----------------------------------------------------------------------------
+
+. KEY_IS_DELETED: delay key erasure to later: this is an extremely fast way to
+  erase keys, but it leaves the B-tree cluttered with keys which are marked
+  but not yet removed.
+
+o check if HAM_ENABLE_RECOVERY is allowed with HAM_WRITE_THROUGH. My docs say no, Christoph's say yes (or rather are silent on this issue)
+
+. remove the requirement to have an even number of keys in a page!
+
+    /*
+     * make sure that MAX is an even number, otherwise we can't calculate
+     * MIN (which is MAX/2)
+     */
+    max = p / k;
+    max = (max & 1 ? max-1 : max);
+
+. use ham_check_integrity (in 'fast mode'?) or another API call to rebalance the B-tree 
+  after serious fast/uber-fast insert and/or erase activity. (Might want to specify a
+  'max depth' with that one to limit the run time when there is a LOT of rebalancing 
+  to be done.)
+
+o review DB_NEW_PAGE_DOES_THRASH_CACHE - the cache age is not really used,
+    therefore this flag is most likely not required 
+
+o review statistics - the "cost" management; is this really in use? where?
+    -> leave it as is - Ger might need it again
+
+. remove HAM_HINT_UBER_FAST_ACCESS, HAM_HINT_RANDOM_ACCESS, 
+	HAM_HINT_SEQUENTIAL?
+
+  No!
+
+=======================================================================
+
+o how can we support the following environments
+	o threadx
+	o vxworks
+	o qnx
+	o opencl
+	o montavista
+	o nokia/intel embedded linux
+	. openwrt
+	. tron
+	. itron
+	. microitron
+	. android
+	x wince
+	-> and how can we automatically test them? 
+
+  --> 1) Code includes support for environs which have slow 64-bit int or no 64-bit int type at all.
+   
+	  2) using alternative device (flash?) one could go and support deep embedded systems which do not
+	     even have a file system (e.g. RTKernel without RTFiles).
+
+o need tool to upgrade databases from 1.0.x to 1.1.x!
+
+  --> might be nice as an example: 'clone_env' or some such.
+  
+. ham_get_parameter: could return VERSION of the database
+
+. approx. matching: need a sample
+
+. Ger: can specify an initial file size
+
+. HighLevelTxnTest::rollbackHugeBlobTest is inactive because huge blobs are
+    directly written to disk instead of going through the cache -> in case of
+    a txn_abort, these blobs are not reallocated
+
+  --> I thought I had that one covered. :-S   Re-investigate
+
+. win32: check Ger's solution - he can handle multiple msvc versions
+
