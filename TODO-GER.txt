@@ -12,6 +12,8 @@ x a finished TODO item
   erase keys, but it leaves the B-tree cluttered with keys which are marked
   but not yet removed.
 
+o bree_cursor.c : WARNING: not sure whether my /* fix the linked list of cursors */ code chunks are regressions or still real bug fixes today. VERIFY by inspecting Christoph's edits from 1.1.5 onwards!
+
 o check if HAM_ENABLE_RECOVERY is allowed with HAM_WRITE_THROUGH. My docs say no, Christoph's say yes (or rather are silent on this issue)
 
 . remove the requirement to have an even number of keys in a page!
