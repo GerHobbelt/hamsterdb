@@ -46,40 +46,24 @@ extern "C" {
  * user specified Database names as passed to @a ham_env_create_db
  * or @a ham_env_open_db.
  */
-#define HAM_DEFAULT_DATABASE_NAME     (0xf000)
+#define HAM_DEFAULT_DATABASE_NAME     0xf000u
 
 /**
  * A reserved Database name which automatically picks the first Database
  * in an Environment
  */
-#define HAM_FIRST_DATABASE_NAME       (0xf001)
+#define HAM_FIRST_DATABASE_NAME       0xf001u
 
 /**
  * A reserved Database name for a dummy Database which only reads/writes
  * the header page
  */
-#define HAM_DUMMY_DATABASE_NAME       (0xf002)
+#define HAM_DUMMY_DATABASE_NAME       0xf002u
 
 /**
 @}
 */
 
-/**
- * Retrieve a @ref ham_statistics_t structure with the current statistics.
- *
- * @warning
- * Please, heed the warnings and notes listed in the @ref ham_statistics_t
- * documentation section and follow the advice given there to the letter.
- * Not adhering to these adminishions introduces the risk of hamsterdb
- * becoming unstable and exhibiting unreliable and downright faulty
- * behaviour over time. This includes, but is not limited to, core dumps or
- * comparable system crashes.
- *
- * @sa ham_statistics_t
- * @sa ham_get_parameters
- * @sa ham_env_get_parameters
- */
-#define HAM_PARAM_GET_STATISTICS        0x00000206
 
 /**
  * Verifies the integrity of the Database
@@ -228,9 +212,9 @@ ham_env_add_file_filter(ham_env_t *env, ham_file_filter_t *filter);
  * @param env A valid Environment handle
  * @param filter A pointer to a ham_file_filter_t structure
  *
- * @return @a HAM_SUCCESS upon success
- * @return @a HAM_INV_PARAMETER if @a env or @a filter is NULL
- * @return @a HAM_FILTER_NOT_FOUND if @a filter was not registered
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_INV_PARAMETER if @a env or @a filter is NULL
+ * @return @ref HAM_FILTER_NOT_FOUND if @a filter was not registered
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_env_remove_file_filter(ham_env_t *env, ham_file_filter_t *filter);
@@ -299,13 +283,13 @@ struct ham_record_filter_t
  * A function to install a record-level filter.
  *
  * Record-level filters are usually installed immediately after the Database
- * is created with @a ham_create[_ex] or opened with @a ham_open[_ex].
+ * is created with @ref ham_create / @ref ham_create_ex / @ref ham_env_create_db or opened with @ref ham_open / @ref ham_open_ex / @ref ham_env_open_db .
  *
  * @param db A valid Database handle
  * @param filter A pointer to a ham_record_filter_t structure
  *
- * @return @a HAM_SUCCESS upon success
- * @return @a HAM_INV_PARAMETER if @a db or @a filter is NULL
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_INV_PARAMETER if @a db or @a filter is NULL
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_add_record_filter(ham_db_t *db, ham_record_filter_t *filter);
@@ -320,9 +304,9 @@ ham_add_record_filter(ham_db_t *db, ham_record_filter_t *filter);
  * @param db A valid Database handle
  * @param filter A pointer to a ham_record_filter_t structure
  *
- * @return @a HAM_SUCCESS upon success
- * @return @a HAM_INV_PARAMETER if @a db or @a filter is NULL
- * @return @a HAM_FILTER_NOT_FOUND if @a filter was not registered
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_INV_PARAMETER if @a db or @a filter is NULL
+ * @return @ref HAM_FILTER_NOT_FOUND if @a filter was not registered
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_remove_record_filter(ham_db_t *db, ham_record_filter_t *filter);
@@ -338,15 +322,15 @@ ham_remove_record_filter(ham_db_t *db, ham_record_filter_t *filter);
  * in src/device.c.
  *
  * This function has to be called after the Environment handle has been
- * allocated (with @a ham_env_new) and before the Environment is created
- * or opened (with @a ham_env_create[_ex] or @a ham_env_open[_ex]).
+ * allocated (with @ref ham_env_new ) and before the Environment is created
+ * or opened (with @ref ham_env_create / @ref ham_env_create_ex or @ref ham_env_open / @ref ham_env_open_ex).
  *
  * @param env A valid Environment handle
  * @param device A pointer to a ham_device_t structure
  *
- * @return @a HAM_SUCCESS upon success
- * @return @a HAM_INV_PARAMETER if @a db or @a device is NULL
- * @return @a HAM_ALREADY_INITIALIZED if this function was already called
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_INV_PARAMETER if @a db or @a device is NULL
+ * @return @ref HAM_ALREADY_INITIALIZED if this function was already called
  *            for this Environment
  */
 struct ham_device_t;
@@ -403,12 +387,6 @@ ham_env_set_allocator(ham_env_t *env, mem_allocator_t *alloc);
  * @}
  */
 
-/* internal flag - do not use!! */
-#define HAM_HINT_UBER_FAST_ACCESS     0x00040000
-/* internal flag - do not use!! */
-#define HAM_HINT_RANDOM_ACCESS        0x00020000
-/* internal flag - do not use!! */
-#define HAM_HINT_SEQUENTIAL           0x00010000
 
 #ifdef __cplusplus
 } // extern "C"

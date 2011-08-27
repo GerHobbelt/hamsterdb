@@ -9,6 +9,12 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
+
 #include "config.h"
 
 #include <string.h>
@@ -1024,3 +1030,8 @@ ham_log_is_db_expansion(ham_env_t *env)
 
     return 0 != (log_get_state(log) & LOG_STATE_DB_EXPANSION);
 }
+
+/**
+* @endcond
+*/
+

@@ -9,6 +9,10 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
 #include "config.h"
 
 #include <string.h>
@@ -29,8 +33,8 @@
 #include "statistics.h"
 #include "util.h"
 
-/*
- *  TODO statistics gatherer/hinter:
+/**
+ * statistics gatherer/hinter:
  *
  * keep track of two areas' 'utilization':
  *
@@ -66,7 +70,7 @@
  *
  * -- YES, that also means we are able to switch freelist scanning
  * mode, and thus speed- versus storage consumption hints, on a per-insert basis: a single
- * database can mix slow but spacesaving record inserts for those times / tables when we do not need the extra oemph, while other inserts can
+ * database can mix slow but spacesaving record inserts for those times / tables when we do not need the extra oomph, while other inserts can
  * be told (using the flags in the API calls) to act optimized for
  *  - none (classic) --> ~ storage space saving
  *  - storage space saving
@@ -96,7 +100,7 @@
  *
  *
  * When loading a freelist page, we can use sampling to get an idea of
- * where the LAST zone starts and ends (2 bsearches: one assuming the
+ * where the LAST zone starts and ends (2 binary searches: one assuming the
  * freelist is sorted in descending order --> last 1 bit, one assuming the freelist is sorted in ascending
  * order (now that we 'know' the last free bit, this will scan the range 0..last-1-bit to
  * find the first 1 bit in there.
@@ -192,7 +196,7 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
          * test top bit by checking two's complement sign.
          *
          * This LOG2 is crafted to spend the least number of
-         * rounds inside the BM freelist bitarray scans.
+         * rounds inside the BM freelist bit-array scans.
          */
         while (!(value < 0))
         {
@@ -251,6 +255,12 @@ ham_bucket_index2bitcount(ham_u16_t bucket)
 {
     return (1U << (bucket * 1)) - 1;
 }
+
+
+
+
+
+
 
 void
 db_update_global_stats_find_query(ham_db_t *db, ham_size_t key_size)
@@ -466,15 +476,25 @@ stats_update(int op, ham_db_t *db, ham_page_t *page, ham_size_t cost, ham_bool_t
     }
 }
 
-/*
- * when the last hit leaf node is split or shrunk, blow it away for all operations!
- *
- * Also blow away a page when a transaction aborts which has modified this page. We'd rather
- * reconstruct our critical statistics then carry the wrong bounds, etc. around.
- *
- * This is done to prevent the hinter from hinting/pointing at an (by now)
- * INVALID btree node later on!
- */
+/**
+when the last hit leaf node is split or shrunk, blow it away for all operations!
+
+Also blow away a page when a transaction aborts which has modified this page. We'd rather
+reconstruct our critical statistics then carry the wrong bounds, etc. around.
+
+This is done to prevent the hinter from hinting/pointing at an (by now)
+INVALID btree node later on!
+
+@param btdata the collective of common 'constant' values such as the Database, Environment and Backend handles.
+
+@param page the current page
+
+@param reason One of
+              - @ref REASON_ERASE
+              - @ref REASON_MERGE
+              - @ref REASON_SPLIT
+              - @ref REASON_ABORT
+*/
 void
 stats_page_is_nuked(ham_db_t *db, struct ham_page_t *page, ham_bool_t split)
 {
@@ -696,6 +716,11 @@ stats_update_any_bound(int op, ham_db_t *db, struct ham_page_t *page, ham_key_t 
         }
     }
 }
+
+
+
+
+
 
 /*
  * NOTE:
@@ -1375,5 +1400,13 @@ stats_fill_ham_statistics_t(ham_env_t *env, ham_db_t *db, ham_statistics_t *dst)
 
     return st;
 }
+
+
+
+
+
+/**
+* @endcond
+*/
 
 

@@ -10,9 +10,13 @@
  */
 
 /**
- * this file contains macros for little endian/big endian byte swapping.
- * the database is always in little-endian.
+* @cond ham_internals
+*/
+
+/**
+ * This file contains macros for little endian/big endian byte swapping.
  *
+ * @note The database is always stored in little-endian format.
  */
 
 #ifndef HAM_ENDIANSWAP_H__
@@ -76,3 +80,8 @@ extern "C" {
 #endif
 
 #endif /* HAM_ENDIANSWAP_H__ */
+
+/**
+* @endcond
+*/
+

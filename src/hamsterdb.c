@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #ifdef HAVE_MALLOC_H
@@ -3600,4 +3605,11 @@ ham_clean_statistics_datarec(ham_statistics_t *s)
 
     return (0);
 }
+
+
+
+/**
+* @endcond
+*/
+
 

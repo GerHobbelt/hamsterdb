@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief internal macros and headers
  *
  */
@@ -29,6 +33,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 /**
  * a macro to cast pointers to u64 and vice versa to avoid compiler
@@ -203,7 +209,9 @@ struct ham_db_t
     /** current data access mode (DAM) */
     ham_u16_t _data_access_mode;
 
-    /** non-zero after this istem has been opened/created */
+    /** non-zero after this item has been opened/created.
+     * Indicates whether this db is 'active', i.e. between
+     * a create/open and matching close API call. */
     unsigned _is_active: 1;
 
     /** some freelist algorithm specific run-time data */
@@ -364,12 +372,12 @@ struct ham_db_t
 #define db_set_prefix_compare_func(db, f) (db)->_prefix_func=(f)
 
 /**
- * get the default comparison function
+ * get the key comparison function
  */
 #define db_get_compare_func(db)        (db)->_cmp_func
 
 /**
- * set the default comparison function
+ * set the key comparison function
  */
 #define db_set_compare_func(db, f)     (db)->_cmp_func=(f)
 
@@ -630,7 +638,7 @@ db_default_prefix_compare(ham_db_t *db,
  * compare two records for a duplicate key
  *
  * @return -1, 0, +1 or higher positive values are the result of a successful
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
+ *         record comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
  * @return values less than -1 are @ref ham_status_t error codes and indicate
@@ -676,13 +684,18 @@ extern int
 db_compare_keys(ham_db_t *db, ham_key_t *lsh, ham_key_t *rhs);
 
 /**
- * create a preliminary copy of an @ref int_key_t key to a @ref ham_key_t
+ * Create a preliminary copy of an @ref int_key_t key to a @ref ham_key_t
  * in such a way that @ref db_compare_keys can use the data and optionally
  * call @ref db_get_extended_key on this key to obtain all key data, when this
  * is an extended key.
  *
- * the 'ptr' says whether the first or the second static pointer should be
- * used. Valid values are 0 and 1.
+ * As the memory allocated for any input key @a src is cached in the @a db structure
+ * for re-use in order to reduce the number of allocator (heap) invocations during
+ * B-tree traversal, we do not to explicitly call an 'release' function. Instead, any
+ * allocated memory is released automatically when the database is closed.
+ *
+ * @param left_or_right The index (0 or 1) which decides which cached memory space
+ *                      slot will be used this time.
  */
 extern ham_status_t
 db_prepare_ham_key_for_compare(ham_db_t *db, int ptr,
@@ -726,7 +739,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         ham_offset_t address, ham_u32_t flags);
 
 /**
- * @defgroup db_fetch_page_flags @ref db_fetch_page Flags
+ * @defgroup db_fetch_page_flags @ref db_fetch_page / @ref db_alloc_page Flags
  * @{
  *
  * These flags can be bitwise-OR mixed with the @ref HAM_HINTS_MASK flags,
@@ -740,7 +753,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
  * reference when it is still stored in the cache, otherwise a NULL pointer
  * will be returned instead (and no error code)!
  */
-#define DB_ONLY_FROM_CACHE                0x0002
+#define DB_ONLY_FROM_CACHE                0x0002u
 
 /**
  * Register new pages in the cache, but give them an 'old' age upon first
@@ -750,7 +763,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
  * thrash the cache but meanwhile still gets added to the activity log in
  * a proper fashion.
  */
-#define DB_NEW_PAGE_DOES_THRASH_CACHE    0x0004
+#define DB_NEW_PAGE_DOES_THRASH_CACHE    0x0004u
 
 /**
  * @}
@@ -766,8 +779,8 @@ db_flush_page(ham_env_t *env, ham_page_t *page, ham_u32_t flags);
 /**
  * Flush all pages, and clear the cache.
  *
- * @param flags Set to DB_FLUSH_NODELETE if you do NOT want the cache to
- * be cleared
+ * @param flags Set to @ref DB_FLUSH_NODELETE if you do NOT want the cache to
+ *              be cleared.
  * @param cache
  */
 extern ham_status_t
@@ -784,13 +797,14 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags);
  *        can use env_alloc_page
  * @param type the page type of the new page. See @ref page_type_codes for
  *        a list of supported types.
+ *
  * @param flags optional allocation request flags. @a flags can be a mix
  *        of the following bits:
- *        - PAGE_IGNORE_FREELIST        ignores all freelist-operations
- *        - PAGE_CLEAR_WITH_ZERO        memset the persistent page with 0
- *        - DB_NEW_PAGE_DOES_THRASH_CACHE
- *        - PAGE_DONT_LOG_CONTENT       do not log page content for new
- *                                      pages
+ *        - @ref PAGE_IGNORE_FREELIST        ignores all freelist-operations
+ *        - @ref PAGE_CLEAR_WITH_ZERO        memset the persistent page with 0
+ *        - @ref DB_NEW_PAGE_DOES_THRASH_CACHE
+ *        - @ref PAGE_DONT_LOG_CONTENT       do not log page content for new
+ *                                           pages
  *
  * @note The page will be aligned at the current page size. Any wasted
  * space (due to the alignment) is added to the freelist.
@@ -856,25 +870,36 @@ extern ham_status_t
 db_resize_key_allocdata(ham_db_t *db, ham_size_t size);
 
 /**
-* @defgroup ham_database_flags
-* @{
-*/
+ * @defgroup ham_database_flags
+ * @{
+ */
 
 /**
- * An internal database flag - use mmap instead of read(2).
+ * Use mmap instead of read(2).
+ *
+ * @warning This is an internal database flag
  */
-#define DB_USE_MMAP                  0x00000100
+#define DB_USE_MMAP                  0x00000100u
 
 /**
- * An internal database flag - env handle is private to
- * the @ref ham_db_t instance
+ * The ENV handle is instantiated by
+ * a DB API (@ref ham_open, @ref ham_open_ex,
+ * @ref ham_create, @ref ham_create_ex) and must be destroyed
+ * by @ref ham_close / @ref ham_delete to ensure hamsterDB
+ * API call symmetry, i.e. the user should not need to call
+ * @ref ham_env_delete for an environment handle which he
+ * did not instantiate himself (through @ref ham_env_new)
+ *
+ * @warning This is an internal database flag
  */
-#define DB_ENV_IS_PRIVATE            0x00080000
+#define DB_ENV_IS_PRIVATE            0x00080000u
 
 /**
- * An internal database flag - env handle is remote
+ * The handle addresses a remote database.
+ *
+ * @warning This is an internal database flag
  */
-#define DB_IS_REMOTE                 0x00200000
+#define DB_IS_REMOTE                 0x00200000u
 
 /**
  * @}
@@ -893,8 +918,16 @@ extern ham_status_t
 db_initialize_remote(ham_db_t *db);
 
 
+
+
+
 #ifdef __cplusplus
 } // extern "C" {
 #endif
 
 #endif /* HAM_DB_H__ */
+
+/**
+* @endcond
+*/
+

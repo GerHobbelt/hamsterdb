@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -276,7 +281,7 @@ specified @a address.
       <pre>
       ham_assert(return_code == HAM_SUCCESS ? *entry_ref != NULL : *entry_ref == NULL, (0));
       </pre>
-         i.e. the @a entry_ref will only be NULL when an error occurred.
+      i.e. the @a entry_ref will only be NULL when an error occurred.
 
 */
 static ham_status_t
@@ -338,6 +343,19 @@ __freel_cache_get_entry(freelist_entry_t **entry_ref, ham_device_t *dev, ham_env
     }
 }
 
+/**
+Mark the area at @a start_bit and range @a size_bits as @a set, where set==HAM_TRUE(1)
+means the bits in the freelist bitmap will be marked 'free'/available, while set==HAM_FALSE(0)
+means the bits in the freelist bitmap will be marked 'allocated'/in-use.
+
+This routine assumes the proper freelist bitmap page is addressed through @a fp and @a entry.
+
+@note The bitmap is stored as a bit-array in Little-Endian byte order. This means that the
+      bit sequence
+          0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      will be stored as the byte sequence
+          3F C0 00 00
+*/
 static ham_size_t
 __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
         freelist_payload_t *fp, ham_bool_t overwrite,
@@ -466,7 +484,7 @@ __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
 }
 
 /**
-* Search for a sufficiently large free slot in the freelist bitarray.
+* Search for a sufficiently large free slot in the freelist bit-array.
 *
 * Before v1.0.9, this was a sequential scan, sped up by first scanning
 * QWORDs in an outer loop in order to find spots with at least 1 free
@@ -549,7 +567,7 @@ __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
 *     at the end of the pattern and then backtracked; we can
 *     improve our backtracking by assuming a few things about
 *     both the pattern and the search space: since our pattern
-*     is all-1s and we can can assume that our search space,
+*     is all-1s and we can assume that our search space,
 *     delimited by a previous sample which was false, and the
 *     latest sample, distanced pattern_length bits apart, is
 *     mostly 'used bits' (zeroes), we MAY assume that the
@@ -569,7 +587,7 @@ __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
 *     deliver a sufficiently trustworthy 'probable size of
 *     free area' to do this before we wind down to a (costly)
 *     sequential scan. Note that the two bsearches can
-*     be reduced to the first only, if it's verdict is that
+*     be reduced to the first only, if its verdict is that
 *     the range starts at offset -P+1, i.e. the first bit
 *     past the previous (failed) sample in the skip loop.
 *     The two blocks bsearched are, given the above, assumed
@@ -590,7 +608,7 @@ __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
 *     pattern sizes is the bsearch-before-sequential 'prescan'
 *     considered beneficial.)
 *
-*   # As we scan the freelist, we can gather statictics:
+*   # As we scan the freelist, we can gather statistics:
 *     how far we had to scan into the entire range before
 *     we hit our _real_ free slot:
 *     by remembering this position, the next search for
@@ -701,14 +719,14 @@ __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
 *     space to slices of 1 bit each, unless we
 *     limit the bsearch prescan to BYTE-level,
 *     i.e. 8-bit slices only for speed sake.
-*     AH! ANOTHER IMPROEMENT THERE!
+*     AH! ANOTHER IMPROVEMENT THERE!
 *
 *     the former (bsearch-at-start) will ALWAYS
 *     limit its divide-and-conquer to slices of
 *     P bits (or more); further reducing the
 *     minimum slice is identical to having a BM
 *     skip loop with a jump distance of P/2 (or
-*     lower), which is considered sub-optimumal.
+*     lower), which is considered sub-optimal.
 *     Such a bsearch would be blending the search
 *     pattern into the task area alotted the
 *     dual-bsearch backtrack prescans.
@@ -812,7 +830,7 @@ __freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
 * @author Ger Hobbelt, ger@hobbelt.com
 */
 
-/** 8 QWORDS or less: 1-stage scan, otherwise, bsearch prescan */
+/** 8 QWORDS or less: 1-stage scan, otherwise, bsearch pre-scan */
 #define SIMPLE_SCAN_THRESHOLD            8
 
 
@@ -4166,4 +4184,9 @@ freel_constructor_prepare16(freelist_cache_t **cache_ref, ham_device_t *dev, ham
 }
 
 #endif /* defined(IMPLEMENT_MODERN_FREELIST32) */
+
+
+/**
+* @endcond
+*/
 

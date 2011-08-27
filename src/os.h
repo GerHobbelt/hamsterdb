@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief operating-system specific functions (mostly I/O stuff)
  *
  */
@@ -49,14 +53,14 @@ extern ham_status_t
 os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size);
 
 /**
- * read data from a file
+ * read data from a file from the specified file offset
  */
 extern ham_status_t
 os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
         ham_offset_t bufferlen);
 
 /**
- * write data to a file
+ * write data to a file at the specified file offset
  */
 extern ham_status_t
 os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
@@ -146,3 +150,8 @@ os_close(ham_fd_t fd, ham_u32_t flags);
 #endif
 
 #endif /* HAM_OS_H__ */
+
+/**
+* @endcond
+*/
+

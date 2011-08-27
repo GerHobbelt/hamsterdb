@@ -3,12 +3,16 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
+
+/**
+* @cond ham_internals
+*/
+
 
 #include "config.h"
 
@@ -57,7 +61,7 @@ my_validate_page(ham_page_t *p)
     /*
      * not allowed: in transaction and in garbage bin
      */
-    ham_assert(!(my_is_in_list(p, PAGE_LIST_TXN) && 
+    ham_assert(!(my_is_in_list(p, PAGE_LIST_TXN) &&
                my_is_in_list(p, PAGE_LIST_GARBAGE)),
             ("in txn and in garbage bin"));
 
@@ -71,7 +75,7 @@ my_validate_page(ham_page_t *p)
     /*
      * not allowed: cached and in garbage bin
      */
-    ham_assert(!(my_is_in_list(p, PAGE_LIST_BUCKET) && 
+    ham_assert(!(my_is_in_list(p, PAGE_LIST_BUCKET) &&
                my_is_in_list(p, PAGE_LIST_GARBAGE)),
             ("cached and in garbage bin"));
 }
@@ -114,7 +118,7 @@ page_set_previous(ham_page_t *page, int which, ham_page_t *other)
         my_validate_page(other);
 }
 
-ham_bool_t 
+ham_bool_t
 page_is_in_list(ham_page_t *head, ham_page_t *page, int which)
 {
     if (page_get_next(page, which))
@@ -217,10 +221,10 @@ page_new(ham_env_t *env)
     page_set_device(page, env_get_device(env));
 
     /*
-     * initialize the cache counter, 
-     * see also cache_increment_page_counter() 
+     * initialize the cache counter,
+     * see also cache_increment_page_counter()
      */
-    page_set_cache_cntr(page, 
+    page_set_cache_cntr(page,
         (env_get_cache(env) ? env_get_cache(env)->_timeslot++ : 0));
 
     return (page);
@@ -268,20 +272,20 @@ page_flush(ham_page_t *page)
 	ham_assert(dev, (0));
 	env = device_get_env(dev);
 	ham_assert(env, (0));
-	ham_assert(page_get_owner(page) 
-                    ? env == db_get_env(page_get_owner(page)) 
+	ham_assert(page_get_owner(page)
+                    ? env == db_get_env(page_get_owner(page))
                     : 1, (0));
 
-	/* 
-	 * as we are about to write a modified page to disc, we MUST flush 
-	 * the log before we do write the page in order to assure crash 
+	/*
+	 * as we are about to write a modified page to disc, we MUST flush
+	 * the log before we do write the page in order to assure crash
 	 * recovery:
      *
 	 * as this page belongs to us, it may well be a page which was modified
 	 * in the pending transaction and any such edits should be REWINDable
 	 * after a crash when that page has just been written.
 	 */
-    if (env 
+    if (env
             && env_get_log(env)
             && !(log_get_state(env_get_log(env))&LOG_STATE_CHECKPOINT)) {
         st=ham_log_append_flush_page(env_get_log(env), page);
@@ -307,4 +311,11 @@ page_free(ham_page_t *page)
 
     return (dev->free_page(dev, page));
 }
+
+
+
+
+/**
+* @endcond
+*/
 

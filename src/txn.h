@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief transactions
  *
  */
@@ -229,3 +233,8 @@ a local transaction does not result in necessary different statistics.
 #endif
 
 #endif /* HAM_TXN_H__ */
+
+/**
+* @endcond
+*/
+

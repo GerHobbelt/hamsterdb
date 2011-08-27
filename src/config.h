@@ -10,9 +10,12 @@
  */
 
 /**
- * this file describes the configuration of hamster - serial number,
+* @cond ham_internals
+*/
+
+/**
+ * this file describes the configuration of hamsterdb - serial number,
  * enabled features etc.
- *
  */
 
 #ifndef __HAM_CONFIG_H__
@@ -59,10 +62,15 @@
 #   endif
 #endif
 
-/*
- * the default cache size is 2 MB
+/**
+ * the default cache size is 2 MiB
  */
 #define HAM_DEFAULT_CACHESIZE      (2*1024*1024)
 
 
 #endif /* __HAM_CONFIG_H__ */
+
+/**
+* @endcond
+*/
+

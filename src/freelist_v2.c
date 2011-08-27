@@ -9,6 +9,10 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
 #define IMPLEMENT_MODERN_FREELIST32
 
 #include "freelist.c"
@@ -88,4 +92,9 @@ __freel_flush_stats32(ham_device_t *dev, ham_env_t *env)
 	return (0);
 }
 
+
+
+/**
+* @endcond
+*/
 

@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief freelist structures, functions and macros
  *
  */
@@ -18,12 +22,18 @@
 #define HAM_FREELIST_H__
 
 #include "internal_fwd_decl.h"
+
 #include "freelist_statistics.h"
+
+
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
 
 /**
  * an entry in the freelist cache
@@ -48,13 +58,13 @@ struct freelist_entry_t
      */
     ham_offset_t _page_id;
 
-	/**
-	 * some freelist algorithm specific run-time data
-	 *
-	 * This is done as a union as it will reduce code complexity
-	 * significantly in the common freelist processing areas.
-	 */
-	runtime_statistics_pagedata_t _perf_data;
+    /**
+     * some freelist algorithm specific run-time data
+     *
+     * This is done as a union as it will reduce code complexity
+     * significantly in the common freelist processing areas.
+     */
+    runtime_statistics_pagedata_t _perf_data;
 };
 
 
@@ -111,74 +121,75 @@ struct freelist_entry_t
     ham_status_t                                                        \
 	(*_constructor)(clss *be, ham_device_t *dev, ham_env_t *env);       \
                                                                         \
-	/**                                                                 \
-	 * release all freelist pages (and their statistics)                \
-	 */                                                                 \
+    /**                                                                 \
+     * release all freelist pages (and their statistics)                \
+     */                                                                 \
 	ham_status_t                                                        \
 	(*_destructor)(ham_device_t *dev, ham_env_t *env);                  \
                                                                         \
-	/**                                                                 \
-	 * flush all freelist page statistics                               \
-	 */                                                                 \
+    /**                                                                 \
+     * flush all freelist page statistics                               \
+     */                                                                 \
 	ham_status_t                                                        \
 	(*_flush_stats)(ham_device_t *dev, ham_env_t *env);                 \
                                                                         \
-	/**                                                                 \
-	 * mark an area in the file as "free"                               \
-	 *                                                                  \
-	 * if 'overwrite' is true, will not assert that the bits are all    \
+    /**                                                                 \
+     * mark an area in the file as "free"                               \
+     *                                                                  \
+     * if 'overwrite' is true, will not assert that the bits are all    \
      * set to zero                                                      \
-	 *                                                                  \
-	 * @note                                                            \
-	 * will assert that address and size are DB_CHUNKSIZE-aligned!      \
-	 */                                                                 \
+     *                                                                  \
+     * @note                                                            \
+     * will assert that @a address and @a size are                      \
+     * @ref DB_CHUNKSIZE-aligned!                                       \
+     */                                                                 \
 	ham_status_t                                                        \
 	(*_mark_free)(ham_device_t *dev, ham_env_t *env, ham_db_t *db,      \
             ham_offset_t address, ham_size_t size,                      \
 			ham_bool_t overwrite);                                      \
                                                                         \
-	/**                                                                 \
-	 * try to allocate (possibly aligned) space from the freelist,      \
-	 * where the allocated space should be positioned at or beyond		\
-	 * the given address.												\
-	 *																	\
-	 * returns 0 on failure												\
-	 *																	\
-	 * @note															\
-	 * will assert that size is DB_CHUNKSIZE-aligned!					\
-	 *																	\
-	 * @note															\
-	 * The lower_bound_address is assumed to be on a DB_CHUNKSIZE		\
-	 * boundary at least. @a aligned space will end up at a             \
-     * @ref DB_PAGESIZE_MIN_REQD_ALIGNMENT bytes boundary.              \
-	 * Regardless, the lower address bound check will be performed		\
-	 * on a DB_CHUNKSIZE boundary level anyhow.							\
-	 */                                                                 \
+    /**                                                                 \
+     * try to allocate (possibly aligned) space from the freelist,      \
+     * where the allocated space should be positioned at or beyond      \
+     * the given @a lower_bound_address address.                        \
+     *                                                                  \
+     * returns 0 on failure                                             \
+     *                                                                  \
+     * @note                                                            \
+     * will assert that @a size is @ref DB_CHUNKSIZE-aligned!           \
+     *                                                                  \
+     * @note                                                            \
+     * The @a lower_bound_address is assumed to be on a                 \
+     * @ref DB_CHUNKSIZE boundary at least. When the @a alignment is    \
+     * non-zero, space will end up at the specified bytes boundary.     \
+     * Regardless, the lower address bound check will be performed      \
+     * on a @ref DB_CHUNKSIZE boundary level anyhow.                    \
+     */                                                                 \
 	ham_status_t                                                        \
 	(*_alloc_area)(ham_offset_t *addr_ref, ham_device_t *dev,			\
 			   ham_env_t *env, ham_db_t *db, ham_size_t size,           \
                ham_bool_t aligned, ham_offset_t lower_bound_address);   \
                                                                         \
-	/**																	\
-	 check whether the given block is administrated in the freelist.    \
-     If it isn't yet, make it so.                                 		\
-																		\
-     @return one of @ref ham_status_codes on error, @ref HAM_SUCCESS	\
-	         when the given storage area is within the scope of the		\
-			 freelist.													\
-	*/																	\
+    /**                                                                 \
+     check whether the given block is administrated in the freelist.    \
+     If it isn't yet, make it so.                                       \
+                                                                        \
+     @return one of @ref ham_status_codes on error, @ref HAM_SUCCESS    \
+             when the given storage area is within the scope of the     \
+             freelist.                                                  \
+    */                                                                  \
 	ham_status_t                                                        \
 	(*_check_area_is_allocated)(ham_device_t *dev, ham_env_t *env,		\
 								ham_offset_t address, ham_size_t size);	\
                                                                         \
-	/**																	\
-	 * setup / initialize the proper performance data for this			\
-	 * freelist page.													\
-	 *																	\
-	 * Yes, this data will (very probably) be lost once the page is		\
-	 * removed from the in-memory cache, unless the currently active	\
-	 * freelist algorithm persists this data to disc.					\
-	 */																	\
+    /**                                                                 \
+     * setup / initialize the proper performance data for this          \
+     * freelist page.                                                   \
+     *                                                                  \
+     * Yes, this data will (very probably) be lost once the page is     \
+     * removed from the in-memory cache, unless the currently active    \
+     * freelist algorithm persists this data to disc.                   \
+     */                                                                 \
 	ham_status_t														\
 	(*_init_perf_data)(clss *be, ham_device_t *dev, ham_env_t *env,		\
 						freelist_entry_t *entry,						\
@@ -282,7 +293,7 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
             /**
              * The persisted statistics.
              *
-             * Note that a copy is held in the nonpermanent section of
+             * Note that a copy is held in the non-permanent section of
              * each freelist entry; after all, it's ludicrous to keep
              * the cache clogged with freelist pages which our
              * statistics show are useless given our usage patterns
@@ -448,22 +459,22 @@ freel_alloc_area(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
             ham_size_t size);
 
 /**
- * Try to allocate (possibly aligned) space from the freelist,
- * where the allocated space should be positioned at or beyond
- * the given address.
- *
- * returns 0 on failure
- *
- * @note
- * will assert that size is DB_CHUNKSIZE-aligned!
- *
- * @note
- * The lower_bound_address is assumed to be on a DB_CHUNKSIZE
- * boundary at least. @a aligned space will end up at a
- * @ref DB_PAGESIZE_MIN_REQD_ALIGNMENT bytes boundary.
- * Regardless, the lower address bound check will be performed
- * on a DB_CHUNKSIZE boundary level anyhow.
- */
+* Try to allocate (possibly aligned) space from the freelist,
+* where the allocated space should be positioned at or beyond
+* the given @a lower_bound_address address.
+*
+* returns 0 on failure
+*
+* @note
+* will assert that @a size is @ref DB_CHUNKSIZE-aligned!
+*
+* @note
+* The @a lower_bound_address is assumed to be on a
+* @ref DB_CHUNKSIZE boundary at least. When the @a alignment is
+* non-zero, space will end up at the specified bytes boundary.
+* Regardless, the lower address bound check will be performed
+* on a @ref DB_CHUNKSIZE boundary level anyhow.
+*/
 extern ham_status_t
 freel_alloc_area_ex(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
                 ham_size_t size, ham_bool_t aligned,
@@ -492,8 +503,15 @@ freel_check_area_is_allocated(ham_env_t *env, ham_db_t *db,
                 ham_offset_t address, ham_size_t size);
 
 
+
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
 #endif /* HAM_FREELIST_H__ */
+
+/**
+* @endcond
+*/
+

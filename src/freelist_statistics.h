@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief freelist statistics structures, functions and macros
  *
  */
@@ -77,24 +81,24 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
  * freelist statistics as they are persisted on disc.
  *
  * Stats are kept with each freelist entry record, but we also keep
- * some derived data in the nonpermanent space with each freelist:
+ * some derived data in the non-permanent space with each freelist:
  * it's not required to keep a freelist page in cache just so the
  * statistics + our operational mode combined can tell us it's a waste
  * of time to go there.
  */
 typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
 {
-	/**
-	k-way statistics store which stores requested space slot size related data.
+    /**
+    k-way statistics store which stores requested space slot size related data.
 
-	The data is stored in @ref HAM_FREELIST_SLOT_SPREAD different buckets
-	which partition the statistical info across the entire space request range
-	by using a logarithmic partitioning function.
+    The data is stored in @ref HAM_FREELIST_SLOT_SPREAD different buckets
+    which partition the statistical info across the entire space request range
+    by using a logarithmic partitioning function.
 
-	That way, very accurate, independent statistics can be stores for both
-	small, medium and large sized space requests, so that the freelist hinter
-	can deliver a high quality search hint for various requests.
-	*/
+    That way, very accurate, independent statistics can be stores for both
+    small, medium and large sized space requests, so that the freelist hinter
+    can deliver a high quality search hint for various requests.
+    */
 	freelist_slotsize_stats_t per_size[HAM_FREELIST_SLOT_SPREAD];
 
     /**
@@ -132,18 +136,18 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
 	ham_u32_t delete_count;
     /**
      * count the number of times the freelist size was adjusted as new storage space
-	 * was added to the database.
-	 *
-	 * This can occur in two situations: either when a new page is allocated and
-	 * a part of it is marked as 'free' as it is not used up in its entirety, or
-	 * when a page is released (freed) which was previously allocated without involvement
-	 * of the freelist manager (this can happen when new HUGE BOBs are inserted, then
-	 * erased again).
+     * was added to the database.
+     *
+     * This can occur in two situations: either when a new page is allocated and
+     * a part of it is marked as 'free' as it is not used up in its entirety, or
+     * when a page is released (freed) which was previously allocated without involvement
+     * of the freelist manager (this can happen when new HUGE BOBs are inserted, then
+     * erased again).
      */
 	ham_u32_t extend_count;
     /**
      * count the number of times a freelist free space search (alloc operation) failed
-	 * to find any suitably large free space in this freelist page.
+     * to find any suitably large free space in this freelist page.
      */
 	ham_u32_t fail_count;
     /**
@@ -152,20 +156,20 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
      */
 	ham_u32_t search_count;
 
-	/**
-	Tracks the ascent of the various statistical counters in here in order to prevent
-	integer overflow.
+    /**
+    Tracks the ascent of the various statistical counters in here in order to prevent
+    integer overflow.
 
-	This is accomplished by tracking the summed hinting costs over time in this variable
-	and when that number surpasses a predetermined 'high water mark', all statistics
-	counters are 'rescaled', which scales down all counters and related data so that new
-	data can be added again multiple times before the risk of integer overflow may occur
-	again.
+    This is accomplished by tracking the summed hinting costs over time in this variable
+    and when that number surpasses a predetermined 'high water mark', all statistics
+    counters are 'rescaled', which scales down all counters and related data so that new
+    data can be added again multiple times before the risk of integer overflow may occur
+    again.
 
-	The goal here is to balance usable statistical numerical data while assuring integer
-	overflows @e never happen for @e any of the statistics items.
-	*/
-	ham_u32_t rescale_monitor;
+    The goal here is to balance usable statistical numerical data while assuring integer
+    overflows @e never happen for @e any of the statistics items.
+    */
+    ham_u32_t rescale_monitor;
 
 } HAM_PACK_2 freelist_page_statistics_t;
 
@@ -338,3 +342,8 @@ stats_fill_freel_statistics_t(ham_env_t *env, ham_statistics_t *dst);
 #endif
 
 #endif /* HAM_FREELIST_H__ */
+
+/**
+* @endcond
+*/
+

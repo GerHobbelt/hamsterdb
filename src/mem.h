@@ -3,11 +3,15 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
+
+/**
+* @cond ham_internals
+*/
 
 /**
  * @brief memory management routines
@@ -21,20 +25,19 @@
 
 #include <string.h>
 
-
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
 /**
  * typedefs for allocator function pointers
  */
-typedef void *(*alloc_func_t)(mem_allocator_t *self, const char *file, 
+typedef void *(*alloc_func_t)(mem_allocator_t *self, const char *file,
                    int line, ham_size_t size);
-typedef void  (*free_func_t) (mem_allocator_t *self, const char *file, 
+typedef void  (*free_func_t) (mem_allocator_t *self, const char *file,
                    int line, const void *ptr);
-typedef void *(*realloc_func_t) (mem_allocator_t *self, const char *file, 
+typedef void *(*realloc_func_t) (mem_allocator_t *self, const char *file,
                    int line, const void *ptr, ham_size_t size);
 typedef void  (*close_func_t)(mem_allocator_t *self);
 
@@ -51,13 +54,16 @@ struct mem_allocator_t
 };
 
 /**
- * a factory for creating the standard allocator (based on libc malloc 
+ * a factory for creating the standard allocator (based on libc malloc
  * and free)
  */
 #define ham_default_allocator_new()                                           \
                                 _ham_default_allocator_new(__FILE__, __LINE__)
 extern mem_allocator_t *
 _ham_default_allocator_new(const char *fname, const int lineno);
+
+
+
 
 
 #if defined(_MSC_VER) && defined(_CRTDBG_MAP_ALLOC)
@@ -74,43 +80,50 @@ _ham_default_allocator_new(const char *fname, const int lineno);
 #undef realloc
 #undef close
 
-/** 
- * allocate memory 
+
+
+/**
+ * allocate memory
+ *
  * returns 0 if memory can not be allocated; the default implementation
  * uses malloc()
  */
 #define allocator_alloc(a, size)   _allocator_alloc(a, __FILE__, __LINE__, size)
 
 static __inline void *
-_allocator_alloc(mem_allocator_t *a, const char *fname, 
+_allocator_alloc(mem_allocator_t *a, const char *fname,
                     const int lineno, ham_size_t size)
 {
     return a->alloc(a, fname, lineno, size);
 }
 
-/** 
- * free memory 
+/**
+ * free memory
+ *
  * the default implementation uses free()
  */
 #define allocator_free(a, ptr)      _allocator_free(a, __FILE__, __LINE__, ptr)
 
-static __inline void 
-_allocator_free(mem_allocator_t *a, const char *fname, 
+static __inline void
+_allocator_free(mem_allocator_t *a, const char *fname,
                     const int lineno, const void *ptr)
 {
     a->free(a, fname, lineno, ptr);
 }
 
-/** 
- * re-allocate memory 
+/**
+ * re-allocate memory
+ *
  * returns 0 if memory can not be allocated; the default implementation
  * uses realloc()
+
+ @param p may be NULL in which case this will act exactly like @ref allocator_alloc
  */
 #define allocator_realloc(a, p, size)                                         \
                               _allocator_realloc(a, __FILE__, __LINE__, p, size)
 
 static __inline void *
-_allocator_realloc(mem_allocator_t *a, const char *fname, 
+_allocator_realloc(mem_allocator_t *a, const char *fname,
                     const int lineno, const void *ptr, ham_size_t size)
 {
     return a->realloc(a, fname, lineno, ptr, size);
@@ -122,7 +135,7 @@ _allocator_realloc(mem_allocator_t *a, const char *fname,
 #define allocator_calloc(a, size) _allocator_calloc(a, __FILE__, __LINE__, size)
 
 static __inline void *
-_allocator_calloc(mem_allocator_t *a, const char *fname, 
+_allocator_calloc(mem_allocator_t *a, const char *fname,
                 const int lineno, ham_size_t size)
 {
     void *p = a->alloc(a, fname, lineno, size);
@@ -139,21 +152,23 @@ _allocator_calloc(mem_allocator_t *a, const char *fname,
 
 #else /* defined(_MSC_VER) && defined(_CRTDBG_MAP_ALLOC) */
 
-/** 
- * allocate memory 
+
+
+/**
+ * allocate memory
  * returns 0 if memory can not be allocated; the default implementation
  * uses malloc()
  */
 #define allocator_alloc(a, size)              (a)->alloc(a, "-", __LINE__, size)
 
-/** 
- * free memory 
+/**
+ * free memory
  * the default implementation uses free()
  */
 #define allocator_free(a, ptr)                (a)->free(a, "-", __LINE__, ptr)
 
-/** 
- * re-allocate memory 
+/**
+ * re-allocate memory
  * returns 0 if memory can not be allocated; the default implementation
  * uses realloc()
  */
@@ -176,8 +191,15 @@ _allocator_calloc(mem_allocator_t *a, const int lineno, ham_size_t size)
 
 #endif /* defined(_MSC_VER) && defined(_CRTDBG_MAP_ALLOC) */
 
+
+
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_MEM_H__ */
+
+/**
+* @endcond
+*/
+

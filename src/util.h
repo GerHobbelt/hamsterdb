@@ -3,11 +3,15 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
+
+/**
+* @cond ham_internals
+*/
 
 /**
  * @brief utility functions
@@ -25,11 +29,11 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
  * vsnprintf replacement/wrapper
- * 
+ *
  * uses sprintf on platforms which do not define snprintf
  */
 extern int
@@ -37,7 +41,7 @@ util_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 /**
  * snprintf replacement/wrapper
- * 
+ *
  * uses sprintf on platforms which do not define snprintf
  */
 #ifndef HAM_OS_POSIX
@@ -46,25 +50,25 @@ util_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #define util_snprintf snprintf
 #endif
 
-/** 
+/**
  * copy a key
  *
  * returns 0 if memory can not be allocated, or a pointer to @a dest.
  * uses ham_mem_malloc() - memory in dest->key has to be freed by the caller
- * 
- * @a dest must have been initialized before calling this function; the 
+ *
+ * @a dest must have been initialized before calling this function; the
  * dest->data space will be reused when the specified size is large enough;
- * otherwise the old dest->data will be ham_mem_free()d and a new space 
+ * otherwise the old dest->data will be ham_mem_free()d and a new space
  * allocated.
- * 
+ *
  * This can save superfluous heap free+allocation actions in there.
- * 
+ *
  * @note
  * This routine can cope with HAM_KEY_USER_ALLOC-ated 'dest'-inations.
- * 
+ *
  * @note
- * When an error is returned the 'dest->data' 
- * pointer is either NULL or still pointing at allocated space (when 
+ * When an error is returned the 'dest->data'
+ * pointer is either NULL or still pointing at allocated space (when
  * HAM_KEY_USER_ALLOC was not set).
  */
 extern ham_status_t
@@ -77,23 +81,24 @@ extern ham_status_t
 util_copy_key_int2pub(ham_db_t *db, const int_key_t *source, ham_key_t *dest);
 
 /**
- * read a record 
+ * read a record
  *
- * rid: same as record->_rid; however, if key is TINY/SMALL and 
- * HAM_DIRECT_ACCESS is set, we need a direct pointer to the original 
+ * rid: same as record->_rid; however, if key is TINY/SMALL and
+ * @ref HAM_DIRECT_ACCESS is set, we need a direct pointer to the original
  * record ID
- * flags: either 0 or HAM_DIRECT_ACCESS
+ *
+ * flags: either 0 or @ref HAM_DIRECT_ACCESS
  */
 extern ham_status_t
-util_read_record(ham_db_t *db, ham_record_t *record, ham_u64_t *rid, 
+util_read_record(ham_db_t *db, ham_record_t *record, ham_u64_t *rid,
                 ham_u32_t flags);
 
 /**
  * read a key
  *
- * @a dest must have been initialized before calling this function; the 
+ * @a dest must have been initialized before calling this function; the
  * dest->data space will be reused when the specified size is large enough;
- * otherwise the old dest->data will be ham_mem_free()d and a new 
+ * otherwise the old dest->data will be ham_mem_free()d and a new
  * space allocated.
  *
  * This can save superfluous heap free+allocation actions in there.
@@ -107,6 +112,11 @@ util_read_key(ham_db_t *db, int_key_t *source, ham_key_t *dest);
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_UTIL_H__ */
+
+/**
+* @endcond
+*/
+

@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief provides forward declarations of internally used types
  *
  * This header file provides these forward declarations to prevent several
@@ -39,6 +43,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 struct ham_page_t;
 typedef struct ham_page_t ham_page_t;
@@ -105,3 +111,8 @@ typedef struct int_key_t int_key_t;
 #endif
 
 #endif
+
+/**
+* @endcond
+*/
+

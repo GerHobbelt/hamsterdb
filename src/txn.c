@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -335,4 +340,9 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
 
     return (HAM_SUCCESS);
 }
+
+
+/**
+* @endcond
+*/
 

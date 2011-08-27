@@ -3,14 +3,19 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
 
 /**
- * @brief btree find/insert/erase statistical structures, functions and macros
+* @cond ham_internals
+*/
+
+/**
+ * @brief btree find / insert / erase statistical structures, functions and macros
+ *
  */
 
 #ifndef HAM_STATISTICS_H__
@@ -21,10 +26,10 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 /**
- * get a reference to the statistics data of the given operation 
+ * get a reference to the statistics data of the given operation
  */
 #define db_get_op_perf_data(db, o)        ((db_get_db_perf_data(db))->op + (o))
 
@@ -84,14 +89,14 @@ db_update_global_stats_insert_query(ham_db_t *db, ham_size_t key_size, ham_size_
 extern void
 db_update_global_stats_erase_query(ham_db_t *db, ham_size_t key_size);
 
-extern void 
+extern void
 stats_update_fail_oob(int op, ham_db_t *db, ham_size_t cost, ham_bool_t try_fast_track);
 
 #define stats_update_find_fail_oob(db, hints)  stats_update_fail(HAM_OPERATION_STATS_FIND, db, (hints)->cost, (hints)->try_fast_track)
 
 #define stats_update_erase_fail_oob(db, hints)  stats_update_fail(HAM_OPERATION_STATS_ERASE, db, (hints)->cost, (hints)->try_fast_track)
 
-extern void 
+extern void
 stats_update_fail(int op, ham_db_t *db, ham_size_t cost, ham_bool_t try_fast_track);
 
 #define stats_update_find_fail(db, hints)  stats_update_fail(HAM_OPERATION_STATS_FIND, db, (hints)->cost, (hints)->try_fast_track)
@@ -100,7 +105,7 @@ stats_update_fail(int op, ham_db_t *db, ham_size_t cost, ham_bool_t try_fast_tra
 
 #define stats_update_erase_fail(db, hints)  stats_update_fail(HAM_OPERATION_STATS_ERASE, db, (hints)->cost, (hints)->try_fast_track)
 
-extern void 
+extern void
 stats_update(int op, ham_db_t *db, struct ham_page_t *page, ham_size_t cost, ham_bool_t try_fast_track);
 
 #define stats_update_find(db, page, hints)    stats_update(HAM_OPERATION_STATS_FIND, db, page, (hints)->cost, (hints)->try_fast_track)
@@ -109,19 +114,19 @@ stats_update(int op, ham_db_t *db, struct ham_page_t *page, ham_size_t cost, ham
 
 #define stats_update_erase(db, page, hints)    stats_update(HAM_OPERATION_STATS_ERASE, db, page, (hints)->cost, (hints)->try_fast_track)
 
-extern void 
+extern void
 stats_page_is_nuked(ham_db_t *db, struct ham_page_t *page, ham_bool_t split);
 
-extern void 
+extern void
 stats_update_any_bound(int op, ham_db_t *db, struct ham_page_t *page, ham_key_t *key, ham_u32_t find_flags, ham_s32_t slot);
 
-extern void 
+extern void
 btree_find_get_hints(find_hints_t *hints, ham_db_t *db, ham_key_t *key);
 
-extern void 
+extern void
 btree_insert_get_hints(insert_hints_t *hints, ham_db_t *db, ham_key_t *key);
 
-extern void 
+extern void
 btree_erase_get_hints(erase_hints_t *hints, ham_db_t *db, ham_key_t *key);
 
 extern void
@@ -148,6 +153,11 @@ stats_fill_ham_statistics_t(ham_env_t *env, ham_db_t *db, ham_statistics_t *dst)
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_FREELIST_H__ */
+
+/**
+* @endcond
+*/
+

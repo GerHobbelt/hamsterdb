@@ -10,8 +10,19 @@
  */
 
 /**
- * @brief the btree-backend
+* @cond ham_internals
+*/
+
+/**
+ * @brief the classic B-tree backend
  *
+ * This backend implements a B+-tree with three notable characteristics:
+ *
+ * - the leaf nodes are chained to support O(1) next/prev key traversal.
+ * - the leaf nodes store the keys (and the accompanying record 'RID' (pointer))
+ *   in-page in an ordered array.
+ * - small records (<= 8 bytes) are stored in compressed format in the key overhead,
+ *   reducing disk access overhead by 1 (record page fetch).
  */
 
 #ifndef HAM_BTREE_H__
@@ -29,6 +40,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 /**
  * the backend structure for a b+tree
@@ -121,12 +133,12 @@ HAM_PACK_0 struct HAM_PACK_1 ham_btree_t
 typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 {
     /**
-     * flags of this node - flags are always the first member
+     * @ref btree_node_flags flags of this node - flags are always the first member
      * of every page - regardless of the backend.
 	 *
      * Currently only used for the page type.
 	 *
-	 * @sa page_type_codes
+     * @sa btree_node_flags
      */
     ham_u16_t _flags;
 
@@ -147,12 +159,15 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 
     /**
      * address of child node whose items are smaller than all items
-     * in this node
+     * in this node; NIL when this is a leaf node.
      */
     ham_offset_t _ptr_left;
 
     /**
-     * the entries of this node
+     * the entries of this node.
+     *
+     * When @ref HAM_BTREE_NODES_HAVE_FAST_INDEX is set, the 'fast index' is
+     * positioned before the actual key store in the node.
      */
     int_key_t _entries[1];
 
@@ -345,3 +360,8 @@ btree_close_cursors(ham_db_t *db, ham_u32_t flags);
 #endif
 
 #endif /* HAM_BTREE_H__ */
+
+/**
+* @endcond
+*/
+

@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief this file has error logging routines and a strerror() replacement
  *
  */
@@ -51,7 +55,7 @@ extern void (*ham_test_abort)(void);
  * not every preprocessor supports ellipsis as macro-arguments -
  * therefore we have to use brackets, so preprocessors treat multiple
  * arguments like a single argument. and we need to lock the output,
- * otherwise we are not thread-safe. this is super-ugly.
+ * otherwise we are not thread-safe. This is super-ugly.
  */
 #ifdef HAM_DEBUG
 #   define ham_assert(e, f)  if (!(e)) {                                       \
@@ -62,6 +66,13 @@ extern void (*ham_test_abort)(void);
                                 dbg_unlock();                                  \
                              }
 #else /* !HAM_DEBUG */
+/*
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+ham_assert MUST ALWAYS be exactly ONE statement -- unless we strictly enforce
+a coding standard where all conditionals and loops use curly braces; see
+cursor_set_next_in_page macro for a candidate to fail with the old 'empty' #define...
+*/
 #   define ham_assert(e, f)  (void)0
 #endif /* HAM_DEBUG */
 
@@ -94,3 +105,8 @@ extern void (*ham_test_abort)(void);
 #endif
 
 #endif /* HAM_ERROR_H__ */
+
+/**
+* @endcond
+*/
+

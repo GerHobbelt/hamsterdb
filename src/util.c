@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -317,4 +322,8 @@ util_read_key(ham_db_t *db, int_key_t *source, ham_key_t *dest)
 
     return HAM_SUCCESS;
 }
+
+/**
+* @endcond
+*/
 

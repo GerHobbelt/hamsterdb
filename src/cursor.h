@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief a base-"class" for cursors
  *
  */
@@ -72,12 +76,12 @@ extern "C" {
      */                                                                 \
     ham_status_t (*_fun_erase)(clss *cu, ham_u32_t flags);              \
                                                                         \
-	/**																	\
-	 * Count the number of records stored with the referenced key.		\
-	 */																	\
-	ham_status_t (*_fun_get_duplicate_count)(ham_cursor_t *cursor,		\
-			ham_size_t *count, ham_u32_t flags);						\
-																		\
+    /**                                                                 \
+     * Count the number of records stored with the referenced key.      \
+     */                                                                 \
+    ham_status_t (*_fun_get_duplicate_count)(ham_cursor_t *cursor,      \
+            ham_size_t *count, ham_u32_t flags);                        \
+                                                                        \
     /**                                                                 \
      * pointer to the Database object                                   \
      */                                                                 \
@@ -212,3 +216,8 @@ struct ham_cursor_t
 #endif
 
 #endif /* HAM_CURSORS_H__ */
+
+/**
+* @endcond
+*/
+

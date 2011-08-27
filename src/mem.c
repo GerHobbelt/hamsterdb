@@ -9,6 +9,12 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
+
 #include "config.h"
 
 #include <string.h>
@@ -100,4 +106,10 @@ _ham_default_allocator_new(const char *fname, const int lineno)
 
     return (m);
 }
+
+
+
+/**
+* @endcond
+*/
 

@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief btree cursors - implementation
  *
  */
@@ -1030,3 +1034,8 @@ bt_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
     *cu=c;
     return (0);
 }
+
+/**
+* @endcond
+*/
+

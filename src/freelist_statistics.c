@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -66,7 +71,7 @@
  *
  * -- YES, that also means we are able to switch freelist scanning
  * mode, and thus speed- versus storage consumption hints, on a per-insert basis: a single
- * database can mix slow but spacesaving record inserts for those times / tables when we do not need the extra oemph, while other inserts can
+ * database can mix slow but spacesaving record inserts for those times / tables when we do not need the extra oomph, while other inserts can
  * be told (using the flags in the API calls) to act optimized for
  *  - none (classic) --> ~ storage space saving
  *  - storage space saving
@@ -96,7 +101,7 @@
  *
  *
  * When loading a freelist page, we can use sampling to get an idea of
- * where the LAST zone starts and ends (2 bsearches: one assuming the
+ * where the LAST zone starts and ends (2 binary searches: one assuming the
  * freelist is sorted in descending order --> last 1 bit, one assuming the freelist is sorted in ascending
  * order (now that we 'know' the last free bit, this will scan the range 0..last-1-bit to
  * find the first 1 bit in there.
@@ -137,7 +142,6 @@ Make sure non-zero numbers remain non-zero: roundup(x)
  */
 static __inline ham_u16_t ham_log2(ham_u64_t v)
 {
-
     // which would be faster? Duff style unrolled loop or (CPU cached) loop?
 #if 0
 
@@ -201,7 +205,7 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
          * test top bit by checking two's complement sign.
          *
          * This LOG2 is crafted to spend the least number of
-         * rounds inside the BM freelist bitarray scans.
+         * rounds inside the BM freelist bit-array scans.
          */
         while (!(value < 0))
         {
@@ -251,7 +255,7 @@ static __inline ham_u16_t ham_bitcount2bucket_index(ham_size_t size)
 /**
  * inline function (must be fast!) which calculates the inverse of the
  * ham_log2() above:
-
+ *
  * converting a bucket index number to the maximum possible size for
  * that bucket.
  */
@@ -1393,25 +1397,7 @@ stats_fill_freel_statistics_t(ham_env_t *env, ham_statistics_t *dst)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+* @endcond
+*/
 

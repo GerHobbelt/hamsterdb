@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief the cache manager
  *
  */
@@ -62,9 +66,13 @@ struct ham_cache_t
      */
     ham_u32_t _timeslot;
 
-    /** the buckets - a linked list of ham_page_t pointers */
-    ham_page_t *_buckets[1];
+    /**
+    the buckets - an array of linked lists of ham_page_t pointers.
 
+    This essentially is a fixed width hash table with external chaining to
+    store an arbitrary number of pages.
+    */
+    ham_page_t *_buckets[1];
 };
 
 /*
@@ -234,3 +242,8 @@ cache_check_integrity(ham_cache_t *cache);
 #endif
 
 #endif /* HAM_CACHE_H__ */
+
+/**
+* @endcond
+*/
+

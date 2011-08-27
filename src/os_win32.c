@@ -9,6 +9,10 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
 #include "config.h"
 
 #include <windows.h>
@@ -126,7 +130,8 @@ calc_wlen4str(const char *str)
 /*
  * The typical pagesize of win32 is 4kb - described in info.dwPageSize.
  * However, pages have to be aligned to dwAllocationGranularity (64k),
- * therefore we're also forced to use this as a pagesize.
+ * therefore we're also forced to use this as a pagesize, unless we're
+ * willing to 'destroy' a lot of addressing space.
  */
 ham_size_t
 os_get_pagesize(void)
@@ -469,3 +474,8 @@ os_close(ham_fd_t fd, ham_u32_t flags)
 
     return (HAM_SUCCESS);
 }
+
+/**
+* @endcond
+*/
+

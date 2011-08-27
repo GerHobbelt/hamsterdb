@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief internal macros and headers
  *
  */
@@ -38,66 +42,64 @@ extern "C" {
  * This is the minimum chunk size; all chunks (pages and blobs) are aligned
  * to this size.
  *
- * WARNING: pages (and 'aligned' huge blobs) are aligned to
- * a DB_PAGESIZE_MIN_REQD_ALIGNMENT boundary, that is, any 'aligned=true'
- * freelist allocations will produce blocks which are aligned to a
- * 8*32 == 256 bytes boundary.
+ * WARNING: pages (and 'aligned' huge blobs) are aligned to a DB_PAGESIZE_MIN_REQD_ALIGNMENT
+ *          boundary, that is, any 'aligned=true' freelist allocations will
+ *          produce blocks which are aligned to a 8*32 == 256 bytes boundary.
  */
 #define DB_CHUNKSIZE        32
 
 /**
- * The minimum required database page alignment: since the freelist scanner
- * works on a byte-boundary basis for aligned storage, all aligned storage
- * must/align to an 8-bits times 1 DB_CHUNKSIZE-per-bit boundary. Which for a
- * 32 bytes chunksize means your pagesize minimum required alignment/size
- * is 8*32 = 256 bytes.
- */
-#define DB_PAGESIZE_MIN_REQD_ALIGNMENT		(8 * DB_CHUNKSIZE)
+The minimum required database page alignment: since the freelist scanner works
+on a byte-boundary basis for aligned storage, all aligned storage must/align
+to an 8-bits times 1 DB_CHUNKSIZE-per-bit boundary. Which for a 32 bytes chunksize
+means your pagesize minimum required alignment/size is 8*32 = 256 bytes.
+*/
+#define DB_PAGESIZE_MIN_REQD_ALIGNMENT      (8 * DB_CHUNKSIZE)
 
 #include "packstart.h"
 
 /**
- * the persistent database header
- */
+* the persistent database header
+*/
 typedef HAM_PACK_0 struct HAM_PACK_1
 {
 	/** magic cookie - always "ham\0" */
 	ham_u8_t  _magic[4];
 
-	/** version information - major, minor, rev, reserved */
-	ham_u8_t  _version[4];
+    /** version information - major, minor, rev, reserved */
+    ham_u8_t  _version[4];
 
-	/** serial number */
-	ham_u32_t _serialno;
+    /** serial number */
+    ham_u32_t _serialno;
 
-	/** size of the page */
-	ham_u32_t _pagesize;
+    /** size of the page */
+    ham_u32_t _pagesize;
 
-	/**
-	 * maximum number of databases for this environment
+    /**
+     * maximum number of databases for this environment
      *
-	 * NOTE: formerly, the _max_databases was 32 bits, but since
-	 * nobody would use more than 64K tables/indexes, we have the
-	 * MSW free for repurposing; as we store data in Little Endian
-	 * order, that would be the second WORD.
-	 *
-	 * For reasons of backwards compatibility, the default value
-	 * there would be zero (0).
-	 */
-	ham_u16_t _max_databases;
+     * NOTE: formerly, the _max_databases was 32 bits, but since
+     * nobody would use more than 64K tables/indexes, we have the
+     * MSW free for repurposing; as we store data in Little Endian
+     * order, that would be the second WORD.
+     *
+     * For reasons of backwards compatibility, the default value
+     * there would be zero (0).
+     */
+    ham_u16_t _max_databases;
 
-	/** reserved */
-	ham_u16_t _reserved1;
+    /** reserved */
+    ham_u16_t _reserved3;
 
-	/*
-	 * following here:
-	 *
-	 * 1. the private data of the index backend(s)
-	 *      -> see env_get_indexdata()
-	 *
-	 * 2. the freelist data
-	 *      -> see env_get_freelist()
-	 */
+    /*
+     * following here:
+     *
+     * 1. the private data of the index backend(s)
+     *      -> see env_get_indexdata()
+     *
+     * 2. the freelist data
+     *      -> see env_get_freelist()
+     */
 
 } HAM_PACK_2 env_header_t;
 
@@ -118,8 +120,8 @@ struct ham_env_t
     /** the 'mode' parameter of ham_env_create_ex */
     ham_u32_t _file_mode;
 
-	/** the user-provided context data */
-	void *_context;
+    /** the user-provided context data */
+    void *_context;
 
     /** the device (either a file or an in-memory-db) */
     ham_device_t *_device;
@@ -161,10 +163,10 @@ struct ham_env_t
      * was created */
 	ham_u16_t _max_databases;
 
-	/**
+    /**
      * non-zero after this item has been opened/created.
-	 * Indicates whether this environment is 'active', i.e. between
-	 * a create/open and matching close API call.
+     * Indicates whether this environment is 'active', i.e. between
+     * a create/open and matching close API call.
      */
 	unsigned _is_active: 1;
 
@@ -711,3 +713,8 @@ env_purge_cache(ham_env_t *env);
 #endif
 
 #endif /* HAM_ENV_H__ */
+
+/**
+* @endcond
+*/
+

@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief implementation of btree.h
  *
  */
@@ -228,10 +232,6 @@ my_fun_create(ham_btree_t *be, ham_u16_t keysize, ham_u32_t flags)
     memset(page_get_raw_payload(root), 0,
             sizeof(btree_node_t)+sizeof(ham_perm_page_union_t));
 
-    /*
-     * calculate the maximum number of keys for this page,
-     * and make sure that this number is even
-     */
     btree_set_maxkeys(be, (ham_u16_t)maxkeys);
     be_set_dirty(be, HAM_TRUE);
     be_set_keysize(be, keysize);
@@ -310,6 +310,20 @@ my_fun_flush(ham_btree_t *be)
 
     /*
      * nothing to do if the backend was not touched
+     *
+
+     WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+     This check is more important than it seems and EACH AND EVERY backend
+     should have it: when we work with environments, we will open a
+     'dummy db' at environment create/open times
+     (see ham_env_create/ham_env_open) and such 'databases' ONLY serve to
+     act as a somewhat compatible conduit to fetch the header page from
+     storage, after which they are closed the usual way (ham_close(db)):
+     in there this function is invoked and the only way to NOT B0RK on such
+     very immature 'dummy backends' is to flee through the escape hatch
+     called the 'dirty bit'. Which will be NOT SET for such 'dummy db's
+     as they do not 'edit' (i.e. 'dirty') the storage content.
      */
     if (!be_is_dirty(be))
         return (0);
@@ -422,6 +436,8 @@ my_fun_close_cursors(ham_btree_t *be, ham_u32_t flags)
 /**
  * Remove all extended keys for the given @a page from the
  * extended key cache.
+ *
+ * This method will be invoked when a B-tree index page is removed from storage: see @ref db_free_page().
  */
 static ham_status_t
 my_fun_free_page_extkeys(ham_btree_t *be, ham_page_t *page, ham_u32_t flags)
@@ -839,4 +855,10 @@ btree_close_cursors(ham_db_t *db, ham_u32_t flags)
 
     return st2;
 }
+
+
+
+/**
+* @endcond
+*/
 

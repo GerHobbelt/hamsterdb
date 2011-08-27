@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -140,8 +145,13 @@ dbg_verify_failed(const char *format, ...)
 #ifndef HAM_OS_WINCE
         abort();
 #else
-		ExitProcess(-1);
+        ExitProcess(-1);
 #endif
-	}
+    }
 }
+
+
+/**
+* @endcond
+*/
 

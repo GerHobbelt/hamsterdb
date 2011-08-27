@@ -3,14 +3,20 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
 
 /**
- * @brief functions for reading/writing/allocating blobs (memory chunks of
+* @cond ham_internals
+*/
+
+/**
+ * @brief BLOB processing
+ *
+ * Functions for reading/writing/allocating blobs (memory chunks of
  * arbitrary size)
  *
  */
@@ -25,37 +31,37 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #include "packstart.h"
 
 /**
  * a blob structure (blob_t)
  *
- * every blob has a blob_t header; it holds flags and some other 
+ * every blob has a blob_t header; it holds flags and some other
  * administrative information
  */
 typedef HAM_PACK_0 struct HAM_PACK_1 blob_t
 {
     /**
-     * the blob ID - which is the absolute address/offset of this 
-     * blob_t structure in the file
+     * The blob ID - which generally is the absolute address/offset of this
+     * blob_t structure in the file, i.e. the RID of the blob.
      */
     ham_u64_t _blobid;
 
     /**
-     * the allocated size of the blob; this is the size, which is used
-     * by the blob and it's header and maybe additional padding
+     * The allocated size of the blob; this is the size which is used
+     * by the blob and it's header and maybe additional padding.
      */
     ham_u64_t _allocated_size;
 
     /**
-     * the size of the blob
+     * The actual size of the blob itself.
      */
     ham_u64_t _size;
 
     /**
-     * additional flags
+     * Additional flags. Should always be zero(0).
      */
     ham_u32_t _flags;
 
@@ -64,12 +70,12 @@ typedef HAM_PACK_0 struct HAM_PACK_1 blob_t
 #include "packstop.h"
 
 /**
- * get the blob ID (blob start address) of a blob_t
+ * get the blob ID (blob start address / RID) of a @ref blob_t
  */
 #define blob_get_self(b)               (ham_db2h_offset((b)->_blobid))
 
 /**
- * set the blob ID (blob start address) of a blob_t
+ * set the blob ID (blob start address) of a @ref blob_t
  */
 #define blob_set_self(b, s)            (b)->_blobid=ham_h2db_offset(s)
 
@@ -107,23 +113,23 @@ typedef HAM_PACK_0 struct HAM_PACK_1 blob_t
 #include "packstart.h"
 
 /**
- * a structure for a duplicate - used in a duplicate table
+ * A persistent storage structure for a duplicate - used in a duplicate table BLOB.
  */
 typedef HAM_PACK_0 struct HAM_PACK_1 dupe_entry_t
 {
     /**
-     * reserved, for padding
+     * Reserved, for padding.
      */
     ham_u8_t _padding[7];
 
     /**
-     * the flags - same as @ref KEY_BLOB_SIZE_SMALL,
-	 *             @ref KEY_BLOB_SIZE_TINY and @ref KEY_BLOB_SIZE_EMPTY
+     * The flags - same as @ref KEY_BLOB_SIZE_SMALL,
+     *             @ref KEY_BLOB_SIZE_TINY and @ref KEY_BLOB_SIZE_EMPTY
      */
     ham_u8_t _flags;
 
     /**
-     * the record id (unless it's TINY, SMALL or NULL)
+     * The record id a.k.a. RID of the record data (unless it's TINY, SMALL or NULL)
      */
     ham_u64_t _rid;
 
@@ -131,22 +137,29 @@ typedef HAM_PACK_0 struct HAM_PACK_1 dupe_entry_t
 
 #include "packstop.h"
 
-/*
+/**
  * get the flags of a duplicate entry
  */
 #define dupe_entry_get_flags(e)         (e)->_flags
 
-/*
+/**
  * set the flags of a duplicate entry
  */
 #define dupe_entry_set_flags(e, f)      (e)->_flags=(f)
 
-/*
- * get the record id of a duplicate entry
- * 
- * !!!
- * if TINY or SMALL is set, the rid is actually a char*-pointer;
- * in this case, we must not use endian-conversion!
+/**
+ * Get the record id (a.k.a. RID) of a duplicate entry.
+ *
+ * @note
+ * If EMPTY, TINY or SMALL is set, the rid is actually a char[] array;
+ * in this case, we must not use endian-conversion! For those record
+ * types, use @ref dupe_entry_get_rid_as_data() instead!
+ *
+ * @sa KEY_BLOB_SIZE_SMALL
+ * @sa KEY_BLOB_SIZE_TINY
+ * @sa KEY_BLOB_SIZE_EMPTY
+ * @sa dupe_entry_get_rid_as_data
+ * @sa dupe_entry_get_rid_direct_ref
  */
 #define dupe_entry_get_rid(e)                                                 \
          (((dupe_entry_get_flags(e)&KEY_BLOB_SIZE_TINY)                       \
@@ -155,10 +168,11 @@ typedef HAM_PACK_0 struct HAM_PACK_1 dupe_entry_t
            : ham_db2h_offset((e)->_rid))
 
 #define dupe_entry_get_ridptr(e)                    &(e)->_rid
-/*
+/**
  * set the record id of a duplicate entry
  *
- * !!! same problems as with get_rid():
+ * @warning
+ * Same problems as with get_rid():
  * if TINY or SMALL is set, the rid is actually a char*-pointer;
  * in this case, we must not use endian-conversion!
  */
@@ -181,7 +195,9 @@ typedef HAM_PACK_0 struct HAM_PACK_1 dupe_table_t
     ham_u32_t _count;
 
     /**
-     * the capacity of entries in this table
+     * The capacity of entries in this table.
+
+     @remark This should correlate with the table BLOB size itself, i.e. the size of the BLOB which stores this dupe table.
      */
     ham_u32_t _capacity;
 
@@ -233,10 +249,10 @@ blob_allocate(ham_env_t *env, ham_db_t *db, ham_record_t *record,
  *
  * stores the data in @a record
  *
- * flags: either 0 or HAM_DIRECT_ACCESS
+ * flags: either 0 or @ref HAM_DIRECT_ACCESS
  */
 extern ham_status_t
-blob_read(ham_db_t *db, ham_offset_t blobid, 
+blob_read(ham_db_t *db, ham_offset_t blobid,
         ham_record_t *record, ham_u32_t flags);
 
 /**
@@ -246,7 +262,7 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
  * returns the blob-id (the start address of the blob header) in @a blobid
  */
 extern ham_status_t
-blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid, 
+blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
         ham_record_t *record, ham_u32_t flags, ham_offset_t *new_blobid);
 
 /**
@@ -260,13 +276,13 @@ blob_free(ham_env_t *env, ham_db_t *db, ham_offset_t blobid, ham_u32_t flags);
  * (max. two entries are allowed; first entry will be at the first position,
  * second entry will be set depending on the flags)
  *
- * OR, if the table already exists (i.e. table_id != 0), insert the 
+ * OR, if the table already exists (i.e. table_id != 0), insert the
  * entry depending on the flags (only one entry is allowed in this case)
  */
 extern ham_status_t
-blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id, 
-        ham_record_t *record, ham_size_t position, ham_u32_t flags, 
-        dupe_entry_t *entries, ham_size_t num_entries, 
+blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
+        ham_record_t *record, ham_size_t position, ham_u32_t flags,
+        dupe_entry_t *entries, ham_size_t num_entries,
         ham_offset_t *rid, ham_size_t *new_position);
 
 /**
@@ -294,13 +310,18 @@ blob_duplicate_get_count(ham_env_t *env, ham_offset_t table_id,
 /**
  * get a duplicate
  */
-extern ham_status_t 
+extern ham_status_t
 blob_duplicate_get(ham_env_t *env, ham_offset_t table_id,
         ham_size_t position, dupe_entry_t *entry);
 
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_BLOB_H__ */
+
+/**
+* @endcond
+*/
+

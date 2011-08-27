@@ -12,7 +12,7 @@
 /**
  * @file hamsterdb.hpp
  * @author Christoph Rupp, chris@crupp.de
- * @version 1.1.12
+ * @version 1.1.16
  *
  * This C++ wrapper class is a very tight wrapper around the C API. It does
  * not attempt to be STL compatible.
@@ -790,7 +790,7 @@ public:
         ham_status_t st;
         std::vector<ham_u16_t> v(count);
 
-        for(;;) {
+        for(;;) { // for(;;) is the only form where the compilers don't yak about the loop condition; while(1) and do-while(1) will cause a warning to be printed
             st=ham_env_get_database_names(m_env, &v[0], &count);
             if (!st)
                 break;

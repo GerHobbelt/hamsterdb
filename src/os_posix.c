@@ -9,6 +9,10 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
 #include "config.h"
 
 #define _GNU_SOURCE   1 /* for O_LARGEFILE */
@@ -377,3 +381,8 @@ os_close(ham_fd_t fd, ham_u32_t flags)
         return (HAM_IO_ERROR);
     return (HAM_SUCCESS);
 }
+
+/**
+* @endcond
+*/
+

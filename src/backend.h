@@ -315,3 +315,8 @@ HAM_PACK_0 struct HAM_PACK_1 ham_backend_t
 #endif
 
 #endif /* HAM_BACKEND_H__ */
+
+/**
+* @endcond
+*/
+

@@ -7,9 +7,14 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
- * btree inserting
+ */
+
+/**
+* @cond ham_internals
+*/
+
+/**
+ * @brief btree inserting
  *
  */
 
@@ -37,6 +42,9 @@
 /**
  * the insert_scratchpad_t structure helps us to propagate return values
  * from the bottom of the tree to the root.
+ *
+ * It also transports several semi-constant datums around the call tree
+ * at the cost of a single pointer instead of a series of stack pushes.
  */
 typedef struct insert_scratchpad_t
 {
@@ -51,20 +59,20 @@ typedef struct insert_scratchpad_t
     ham_record_t *record;
 
     /**
-     * a key; this is used to propagate SMOs (structure modification
-     * operations) from a child page to a parent page
+     * A key; this is used to propagate SMOs (structure modification
+     * operations) from a child page to a parent page.
      */
     ham_key_t key;
 
     /**
-     * a RID; this is used to propagate SMOs (structure modification
-     * operations) from a child page to a parent page
+     * A 'RID'; this is used to propagate SMOs (structure modification
+     * operations) from a child page to a parent page.
      */
     ham_offset_t rid;
 
     /**
-     * a pointer to a cursor; if this is a valid pointer, then this
-     * cursor will point to the new inserted item
+     * A pointer to a cursor; if this is a valid pointer, then this
+     * cursor will point to the new inserted item.
      */
     ham_bt_cursor_t *cursor;
 
@@ -87,7 +95,7 @@ typedef struct insert_scratchpad_t
 /**
  * this is the function which does most of the work - traversing to a
  * leaf, inserting the key using __insert_in_page()
- * and performing necessary SMOs. it works recursive.
+ * and performing necessary SMOs. It works recursively.
  */
 static ham_status_t
 __insert_recursive(ham_page_t *page, ham_key_t *key,
@@ -1047,4 +1055,9 @@ fail_dramatically:
         allocator_free(env_get_allocator(env), pivotkey.data);
     return st;
 }
+
+
+/**
+* @endcond
+*/
 

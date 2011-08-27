@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief btree enumeration
  *
  */
@@ -78,19 +82,17 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
         count=btree_node_get_count(node);
 
         /*
-         * WARNING:WARNING:WARNING:WARNING:WARNING
-         *
-         * the current Btree page must be 'pinned' during each callback
-         * invocation during the enumeration; if you don't (by temporarily
-         * bumping up its reference count) callback methods MAY flush the
-         * page from the page cache without us being aware of such until after
-         * the fact, when the hamster will CRASH as page pointers and content
-         * are invalidated.
-         *
-         * To prevent such mishaps, all user-callback invocations in here
-         * are surrounded
-         * by this page 'pinning' countermeasure.
-         */
+        WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:
+
+        the current Btree page must be 'pinned' during each callback invocation
+        during the enumeration; if you don't (by temporarily bumping up its reference count)
+        callback methods MAY flush the page from the page cache without us being
+        aware of such until after the fact, when the hamster will CRASH as page pointers
+        and content are invalidated.
+
+        To prevent such mishaps, all user-callback invocations in here are surrounded
+        by this page 'pinning' countermeasure.
+        */
         page_add_ref(page);
         st = cb(ENUM_EVENT_DESCEND, (void *)&level, (void *)&count, context);
         page_release_ref(page);
@@ -184,19 +186,17 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
     count=btree_node_get_count(node);
 
     /*
-     * WARNING:WARNING:WARNING:WARNING:WARNING
-     *
-     * the current Btree page must be 'pinned' during each callback
-     * invocation during the enumeration; if you don't (by temporarily
-     * bumping up its reference count) callback methods MAY flush the
-     * page from the page cache without us being aware of such until after
-     * the fact, when the hamster will CRASH as page pointers and content
-     * are invalidated.
-     *
-     * To prevent such mishaps, all user-callback invocations in here
-     * are surrounded
-     * by this page 'pinning' countermeasure.
-     */
+    WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:
+
+    the current Btree page must be 'pinned' during each callback invocation
+    during the enumeration; if you don't (by temporarily bumping up its reference count)
+    callback methods MAY flush the page from the page cache without us being
+    aware of such until after the fact, when the hamster will CRASH as page pointers
+    and content are invalidated.
+
+    To prevent such mishaps, all user-callback invocations in here are surrounded
+    by this page 'pinning' countermeasure.
+    */
     page_add_ref(page);
     cb_st = cb(ENUM_EVENT_PAGE_START, (void *)page, &is_leaf, context);
     page_release_ref(page);
@@ -223,4 +223,9 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
     else
         return (cb_st2);
 }
+
+
+/**
+* @endcond
+*/
 

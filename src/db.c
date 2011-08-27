@@ -9,6 +9,10 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
 #include "config.h"
 
 #include <string.h>
@@ -404,7 +408,6 @@ db_default_compare(ham_db_t *db,
             return (+1);
         return (-1);
     }
-
     else if (rhs_length<lhs_length) {
         m=memcmp(lhs, rhs, rhs_length);
         if (m<0)
@@ -768,9 +771,11 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
              "through a previous call to this function or db_fetch_page() "
              "unless page caching is available!"));
 
-    /* purge the cache, if necessary. if cache is unlimited, then we purge very
+    /*
+     * purge the cache, if necessary. if cache is unlimited, then we purge very
      * very rarely (but we nevertheless purge to avoid OUT OF MEMORY conditions
-     * which can happen on Win32) */
+     * which can happen on Win32 (and elsewhere))
+     */
     if (env_get_cache(env)
             && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
         ham_cache_t *cache=env_get_cache(env);
@@ -1018,9 +1023,14 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
 
     *page_ref = 0;
 
-    /* purge the cache, if necessary. if cache is unlimited, then we purge very
+    /*
+     * check if the cache allows us to allocate another page; if not,
+     * purge it
+     *
+     * purge the cache, if necessary. if cache is unlimited, then we purge very
      * very rarely (but we nevertheless purge to avoid OUT OF MEMORY conditions
-     * which can happen on Win32) */
+     * which can happen on Win32 (and elsewhere))
+     */
     if (!(flags&DB_ONLY_FROM_CACHE)
             && env_get_cache(env)
             && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
@@ -1140,7 +1150,11 @@ db_flush_page(ham_env_t *env, ham_page_t *page, ham_u32_t flags)
             return (st);
     }
 
-    /* put page back into the cache */
+    /*
+     * put page back into the cache; do NOT update the page_counter, as
+     * this flush operation should not be considered an 'additional page
+     * access' impacting the page life-time in the cache.
+     */
     if (env_get_cache(env))
         cache_put_page(env_get_cache(env), page);
 
@@ -2304,4 +2318,9 @@ db_initialize_local(ham_db_t *db)
 
     return (0);
 }
+
+
+/**
+* @endcond
+*/
 

@@ -10,6 +10,10 @@
  */
 
 /**
+ * @cond ham_internals
+ */
+
+/**
  * @brief an object which handles a database page
  *
  */
@@ -26,6 +30,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
 
 /*
  * indices for page lists
@@ -58,22 +64,28 @@ extern "C" {
  */
 typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
 {
-
-    /*
+    /**
      * this header is only available if the (non-persistent) flag
      * NPERS_NO_HEADER is not set!
      *
      * all blob-areas in the file do not have such a header, if they
      * span page-boundaries
      *
-     * !!
+     * @note
      * if this structure is changed, db_get_usable_pagesize has
      * to be changed as well!
      */
     HAM_PACK_0 struct HAM_PACK_1 page_union_header_t {
         /**
-         * flags of this page - currently only used for the page type
-         @sa page_type_codes
+         * flags of this page - flags are always the first member
+         * of every page - regardless of the backend or purpose - unless
+         * this page is a continuation page for an ELBLOB (Extremely Large BLOB),
+         * i.e. a BLOB spanning multiple pages. In that case any page but
+         * the first one will only contain BLOB content and no header at all.
+         *
+         * Currently only used for the page type.
+         *
+         * @sa page_type_codes
          */
         ham_u32_t _flags;
 
@@ -127,7 +139,15 @@ struct ham_page_t {
         /** the allocator */
         struct mem_allocator_t *_alloc;
 
-        /** reference to the database object */
+        /**
+        reference to the database object; will be set for backend
+        index pages, every time when such a page is allocated or
+        fetched.
+
+        This member is used as a fast way to reference the database
+        backend mathods given an index page, e.g. when flushing/nuking page
+        statistics at transaction abort (see @ref txn_abort()).
+        */
         ham_db_t *_owner;
 
         /** the device of this page */
@@ -136,13 +156,20 @@ struct ham_page_t {
         /** non-persistent flags */
         ham_u32_t _flags;
 
-        /** cache counter - used by the cache module
+        /**
+         * cache counter - used by the cache module
          *
-         * The higher the counter, the more 'important' this page is
+         * The higher the counter, the more 'recent' this page is
          * believed to be; when searching for pages to re-use, the empty
-         * page with the lowest counter value is re-purposed. Each valid
+         * page with the lowest 'adjusted' counter value is re-purposed. Each valid
          * page use bumps up the page counter by a certain amount, up to
          * a page-type specific upper bound.
+         *
+         * The counter value is 'adjusted' by the hit frequency of the cached page
+         * thus preferring an often accessed page over a page which was accessed only
+         * once or twice, even when that latter page is more recent. This is done to
+         * reduce cache thrashing when large numbers of key/record tuples are inserted
+         * or erased from the database.
          *
          * See also @ref cache_put_page()
          * and its invocations in the code. @ref page_new() initialized
@@ -516,7 +543,8 @@ page_remove_cursor(ham_page_t *page, ham_cursor_t *cursor);
  *
  * @return a pointer to a new @ref ham_page_t instance.
  *
- * @return NULL if out of memory
+ * @return NULL when an error occurred. The error is
+ *         implied to be @ref HAM_OUT_OF_MEMORY;
  */
 extern ham_page_t *
 page_new(ham_env_t *env);
@@ -551,8 +579,16 @@ page_flush(ham_page_t *page);
 extern ham_status_t
 page_free(ham_page_t *page);
 
+
+
+
 #ifdef __cplusplus
 } // extern "C" {
 #endif
 
 #endif /* HAM_PAGE_H__ */
+
+/**
+* @endcond
+*/
+

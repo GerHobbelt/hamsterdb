@@ -3,11 +3,15 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
  */
+
+/**
+* @cond ham_internals
+*/
 
 /**
  * @brief key handling
@@ -22,21 +26,23 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 #include "packstart.h"
 
 /**
  * the internal representation of a key
  *
- * Note: the names of the fields have changed in 1.1.0 to ensure the compiler 
- * barfs on misuse of some macros, e.g. key_get_flags(): here flags are 8-bit, 
+ * Note: the names of the fields have changed in 1.1.0 to ensure the compiler
+ * barfs on misuse of some macros, e.g. key_get_flags(): here flags are 8-bit,
  * while ham_key_t flags are 32-bit!
  */
 HAM_PACK_0 struct HAM_PACK_1 int_key_t
 {
     /**
-     * the pointer of this entry
+     * the pointer of this entry: points to either the corresponding record or
+     * (in case of duplicate keys) a record table BLOB which lists the pointers to
+     * all related records.
      */
     ham_u64_t _ptr;
 
@@ -66,11 +72,17 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
                                        /* sizeof(int_key_t)-1 */
 
 /**
- * get the pointer of an btree-entry
- * 
- * !!!
- * if TINY or SMALL is set, the key is actually a char*-pointer;
- * in this case, we must not use endian-conversion!
+ * get the pointer of a btree-entry
+ *
+ * @note
+ * If @ref KEY_BLOB_SIZE_TINY, @ref KEY_BLOB_SIZE_SMALL or
+ * @ref KEY_BLOB_SIZE_EMPTY is set, the key is actually not a
+ * index but stores the key data itself;
+ * in this case, we must not use endian-conversion! Instead, use
+ * @ref key_get_ptr_as_data() to obtain a reference for such keys.
+ *
+ * @sa key_get_ptr_direct_ref
+ * @sa key_get_ptr_as_data
  */
 #define key_get_ptr(k)             (((key_get_flags(k)&KEY_BLOB_SIZE_TINY) ||  \
                                      (key_get_flags(k)&KEY_BLOB_SIZE_SMALL))   \
@@ -120,34 +132,86 @@ key_set_extended_rid(ham_db_t *db, int_key_t *key, ham_offset_t rid);
 
 /**
  * set the flags of a key
- * 
- * Note that the ham_find/ham_cursor_find/ham_cursor_find_ex flags must be 
- * defined such that those can peacefully co-exist with these; that's why 
+ *
+ * Note that the ham_find/ham_cursor_find/ham_cursor_find_ex flags must be
+ * defined such that those can peacefully co-exist with these; that's why
  * those public flags start at the value 0x1000 (4096).
  */
 #define key_set_flags(bte, f)      (bte)->_flags8=(f)
 
 /**
- * persisted int_key_t flags; also used with ham_key_t._flags 
- * 
- * NOTE: persisted flags must fit within a ham_u8_t (1 byte) --> mask: 
- *  0x000000FF
- */
-#define KEY_BLOB_SIZE_TINY             0x01  /* size < 8; len encoded at byte[7] of key->ptr */
-#define KEY_BLOB_SIZE_SMALL            0x02	 /* size == 8; encoded in key->ptr */
-#define KEY_BLOB_SIZE_EMPTY            0x04	 /* size == 0; key->ptr == 0 */
+@defgroup persisted_key_flags Persisted @ref int_key_t flags
+@{
+
+Persisted @ref int_key_t flags; also used in @ref ham_key_t::_flags and @ref dupe_entry_t::_flags
+
+These flags are used to signal how the record (or duplicate record) data is encoded in the related persistent header structure:
+For sizes larger than 8 bytes, a RID (a 64-bit reference) is stored which points at (references) the actual record data; for sizes equal or less than
+8 bytes the record data is stored into the space otherwise reserved for the aforementioned RID. See the explanation accompanying each of the flags to
+see the various encodings for zero length, 1..7 byte length and 8 byte length data.
+
+NOTE: persisted flags must fit within a ham_u8_t (1 byte) --> mask: 0x000000FF
+*/
+
+/** size < 8; len encoded at byte[7] of key->ptr; data is stored as a 1..7 bytes large byte[] array in key->ptr */
+#define KEY_BLOB_SIZE_TINY             0x01
+/** size == 8; encoded in key->ptr as a byte[8] array */
+#define KEY_BLOB_SIZE_SMALL            0x02
+/** size == 0; key->ptr == 0 */
+#define KEY_BLOB_SIZE_EMPTY            0x04
+/** an extended key; the last 8 bytes of the key stored in-page contains the 'rid' to the trailing remainder of the key.
+
+That is: the key->ptr will store a regular RID to the record data as it would do for any other key with size larger than 8,
+while the <em>key data chunk</em> stored at this RID (starting at key->_key[0] a.k.a. @ref key_get_key(x)[0] ) will have a length equal to the configured maximum key length for this Database
+(see @ref HAM_PARAM_KEYSIZE). However, the <em>last 8 bytes</em> of that key data space will not contain key data but another RID instead, which
+points at the continuation of the key data.
+
+For example, a 500 byte key is considered 'extended' when the key size configured for this Database is less than 500, say for example, 100.
+Then the key data will be stored as follows: key->_key[] will point at the regular key space, which will <em>occupy</em> 100 bytes yet
+store <em>only</em> 100-8 = 92 bytes, plus another 8 byte RID, pointing at an 'extended' storage space (situated in another page) where
+the remaining 500-92 = 408 bytes of key data are stored.
+
+The latter part will be stored in a generic storage page (i.e. not an index page,
+but a page which also may store record data and BLOBs) and will occupy an number of 'chunks' (see @ref DB_CHUNKSIZE) as such storage is
+allocated on a per-chunk basis: assuming the default chunk size of 32, the remaining 408 key data bytes will therefore 'cost' ROUNDUP(408/32)=13 chunks i.e.
+416 bytes.
+
+@note The above is a hint that storing 'extended' keys, i.e. overlarge keys which surpass the initially configured maximum key size, will
+      result in a slightly lower insert/update/search/erase performance as the key data has to be fetched from two different pages instead of
+      only one (the index page). Nevertheless it is ill advised to just go and configure a very large maximum keysize for the Database as the
+      maximum keysize has an adverse effect on performance as well as index pages reserve this space for <em>each</em> key stored in the index
+      pages, resulting in a reduced span (number of keys stored per page) in the index for larger key sizes (@ref HAM_PARAM_KEYSIZE).
+*/
 #define KEY_IS_EXTENDED                0x08
+/**
+The @ref _ptr element does not point to the related record but instead points to a table BLOB which stored 'rid's for all related records,
+one entry for each duplicate key/record tuple. */
 #define KEY_HAS_DUPLICATES             0x10
+#if 0 /* [GerH] not included as this is a redundant flag; see the blob and other code about the right way to do it, i.e. by checking the USER_ALLOC flag for key and/or record. */
 #define KEY_IS_ALLOCATED               0x20  /* memory allocated in hamsterdb */
 
 
 /**
- * get a pointer to the key 
+@}
+*/
+
+/*
+and the nonpersistent flag bits:
+
+#define KEY_IS_LT                      0x00010000
+#define KEY_IS_GT                      0x00020000
+#define KEY_IS_APPROXIMATE             (KEY_IS_LT | KEY_IS_GT)
+*/
+
+
+
+/**
+ * get a pointer to the key
  */
 #define key_get_key(bte)                (bte->_key)
 
 /**
- * set the key data 
+ * set the key data
  */
 #define key_set_key(bte, ptr, len)      memcpy(bte->_key, ptr, len)
 
@@ -155,7 +219,7 @@ key_set_extended_rid(ham_db_t *db, int_key_t *key, ham_offset_t rid);
 ham_key_t support internals:
 */
 
-/* 
+/*
 flags used with the ham_key_t INTERNAL USE field _flags.
 
 Note: these flags should NOT overlap with the persisted flags for int_key_t
@@ -184,35 +248,35 @@ the range of a ham_u16_t, i.e. outside the mask 0x0000FFFF.
 /**
  * compare a public key (ham_key_t, LHS) to an internal key (int_key_t, RHS)
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
 extern int
-key_compare_pub_to_int(ham_db_t *db, ham_page_t *page, 
+key_compare_pub_to_int(ham_db_t *db, ham_page_t *page,
                 ham_key_t *lhs, ham_u16_t rhs);
 
 /**
  * compare two internal keys
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
 extern int
-key_compare_int_to_int(ham_db_t *db, ham_page_t *page, 
+key_compare_int_to_int(ham_db_t *db, ham_page_t *page,
         ham_u16_t lhs_int, ham_u16_t rhs_int);
 
 /**
@@ -221,24 +285,37 @@ key_compare_int_to_int(ham_db_t *db, ham_page_t *page,
  * @return the blob-id of this key in @a rid_ref
  */
 extern ham_status_t
-key_insert_extended(ham_offset_t *rid_ref, ham_db_t *db, 
+key_insert_extended(ham_offset_t *rid_ref, ham_db_t *db,
                 ham_page_t *page, ham_key_t *key);
 
 /**
- * inserts and sets a record
+ * Inserts / stores a record.
  *
- * flags can be 
- * - HAM_OVERWRITE
- * - HAM_DUPLICATE_INSERT_BEFORE
- * - HAM_DUPLICATE_INSERT_AFTER
- * - HAM_DUPLICATE_INSERT_FIRST
- * - HAM_DUPLICATE_INSERT_LAST 
- * - HAM_DUPLICATE
+ * flags can be
+ * - @ref HAM_OVERWRITE
+ * - @ref HAM_DUPLICATE_INSERT_BEFORE
+ * - @ref HAM_DUPLICATE_INSERT_AFTER
+ * - @ref HAM_DUPLICATE_INSERT_FIRST
+ * - @ref HAM_DUPLICATE_INSERT_LAST
+ * - @ref HAM_DUPLICATE
  *
- * a previously existing blob will be deleted if necessary
+ * A previously existing blob will be deleted if necessary.
+ *
+ * The related @a key is patched to point at the 'rid' where the record is stored in the
+ * persistent storage (file, ...).
+ *
+ * When the record is part of a series of key/record tuples which have a duplicate key, then
+ * @a position is used to indicate where the given @a record should be stored within the
+ * records table (see @ref blob_duplicate_insert). The optional @a new_position call-by-reference
+ * value is set to the actual position where the record is stored within the records table.
+ * This may differ from the input parameter @a position value when particular hinting flags
+ * have been specified as well (see @ref HAM_DUPLICATE_INSERT_BEFORE, @ref HAM_DUPLICATE_INSERT_AFTER,
+ * @ref HAM_DUPLICATE_INSERT_FIRST, @ref HAM_DUPLICATE_INSERT_LAST)
+ * or when the database has been configured to store the duplicates
+ * in record order (see @ref HAM_SORT_DUPLICATES).
  */
 extern ham_status_t
-key_set_record(ham_db_t *db, int_key_t *key, ham_record_t *record, 
+key_set_record(ham_db_t *db, int_key_t *key, ham_record_t *record,
                 ham_size_t position, ham_u32_t flags,
                 ham_size_t *new_position);
 
@@ -248,11 +325,18 @@ key_set_record(ham_db_t *db, int_key_t *key, ham_record_t *record,
  * flag can be BLOB_FREE_ALL_DUPES (declared in blob.h)
  */
 extern ham_status_t
-key_erase_record(ham_db_t *db, int_key_t *key, 
+key_erase_record(ham_db_t *db, int_key_t *key,
                 ham_size_t dupe_id, ham_u32_t flags);
+
+
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_KEY_H__ */
+
+/**
+* @endcond
+*/
+

@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -373,4 +378,9 @@ key_set_extended_rid(ham_db_t *db, int_key_t *key, ham_offset_t rid)
     memcpy(key_get_key(key)+(db_get_keysize(db)-sizeof(ham_offset_t)),
             &rid, sizeof(rid));
 }
+
+
+/**
+* @endcond
+*/
 

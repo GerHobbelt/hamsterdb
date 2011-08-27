@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief logging/recovery routines
  *
  */
@@ -18,6 +22,7 @@
 #define HAM_LOG_H__
 
 #include "internal_fwd_decl.h"
+
 
 
 #ifdef __cplusplus
@@ -32,7 +37,11 @@ extern "C" {
  */
 typedef HAM_PACK_0 struct HAM_PACK_1 log_header_t
 {
-    /* the magic */
+    /**
+     * the logfile magic header identifier.
+     *
+     * @sa HAM_LOG_HEADER_MAGIC
+     **/
     ham_u32_t _magic;
 
     /* a reserved field */
@@ -42,12 +51,18 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_header_t
 
 #include "packstop.h"
 
+/**
+ * The magic identification header code for HamsterDB logfiles.
+ *
+ * @note HamsterDB logfiles are, contrary to the HamsterDB database files themselves,
+ * <em>not</em> cross-platform portable.
+ */
 #define HAM_LOG_HEADER_MAGIC                  (('h'<<24)|('l'<<16)|('o'<<8)|'g')
 
-/* get the log header magic */
+/** get the log header magic */
 #define log_header_get_magic(l)                 (l)->_magic
 
-/* set the log header magic */
+/** set the log header magic */
 #define log_header_set_magic(l, m)              (l)->_magic=m
 
 #include "packstart.h"
@@ -110,40 +125,40 @@ typedef HAM_PACK_0 struct HAM_PACK_1 log_entry_t
  * @}
  */
 
-/* get the lsn */
+/** get the lsn */
 #define log_entry_get_lsn(l)                    (l)->_lsn
 
-/* set the lsn */
+/** set the lsn */
 #define log_entry_set_lsn(l, lsn)               (l)->_lsn=lsn
 
-/* get the transaction ID */
+/** get the transaction ID */
 #define log_entry_get_txn_id(l)                 (l)->_txn_id
 
-/* set the transaction ID */
+/** set the transaction ID */
 #define log_entry_set_txn_id(l, id)             (l)->_txn_id=id
 
-/* get the offset of this entry */
+/** get the offset of this entry */
 #define log_entry_get_offset(l)                 (l)->_offset
 
-/* set the offset of this entry */
+/** set the offset of this entry */
 #define log_entry_set_offset(l, o)              (l)->_offset=o
 
-/* get the size of this entry */
+/** get the size of this entry */
 #define log_entry_get_data_size(l)              (l)->_data_size
 
-/* set the size of this entry */
+/** set the size of this entry */
 #define log_entry_set_data_size(l, s)           (l)->_data_size=s
 
-/* get the flags of this entry */
+/** get the flags of this entry */
 #define log_entry_get_flags(l)                  (l)->_flags
 
-/* set the flags of this entry */
+/** set the flags of this entry */
 #define log_entry_set_flags(l, f)               (l)->_flags=f
 
-/* get the type of this entry */
+/** get the type of this entry */
 #define log_entry_get_type(l)                   ((l)->_flags&0xf)
 
-/* set the type of this entry */
+/** set the type of this entry */
 #define log_entry_set_type(l, t)                (l)->_flags|=(t)
 
 
@@ -155,8 +170,8 @@ struct ham_log_t
     /** the allocator object */
     mem_allocator_t *_alloc;
 
-	/** references the environment (database) this log file is for; may be NULL */
-	ham_env_t *_env;
+    /** references the environment (database) this log file is for; may be NULL */
+    ham_env_t *_env;
 
     /** the log flags - unused so far */
     ham_u32_t _flags;
@@ -205,10 +220,22 @@ struct ham_log_t
 /** set the environment */
 #define log_set_env(l, a)                       (l)->_env=(a)
 
-/** get the log flags */
+/**
+ * get the log flags.
+ *
+ * @note Logfile specific flags are part of the database create/open flag set.
+ *
+ * @sa ham_database_flags
+ */
 #define log_get_flags(l)                        (l)->_flags
 
-/** set the log flags */
+/**
+ * set the log flags.
+ *
+ * @note Logfile specific flags are part of the database create/open flag set.
+ *
+ * @sa ham_database_flags
+ */
 #define log_set_flags(l, f)                     (l)->_flags=(f)
 
 /** get the index of the current file */
@@ -280,6 +307,7 @@ struct ham_log_t
 /** current state bits: during a DATABASE EXPANSION */
 #define LOG_STATE_DB_EXPANSION                  0x0002
 
+
 /**
  * this function creates a new ham_log_t object
  *
@@ -291,7 +319,7 @@ ham_log_create(mem_allocator_t *alloc, ham_env_t *env,
         ham_u32_t mode, ham_u32_t flags, ham_log_t **log);
 
 /**
- * this function opens an existing log
+ * This function opens an existing log
  */
 extern ham_status_t
 ham_log_open(mem_allocator_t *alloc, ham_env_t *env,
@@ -345,11 +373,11 @@ to ensure crash recovery.
 
 @note The only time this signal is not delivered is when the
       database starts a new transaction by generating a new
-	  checkpoint.
+      checkpoint.
 
-	  At that time pages may be flushed to disc, but we will
-	  be sure those pages are already covered by the previous
-	  (by now already closed and flushed) transaction log/flush.
+      At that time pages may be flushed to disc, but we will
+      be sure those pages are already covered by the previous
+      (by now already closed and flushed) transaction log/flush.
 
 @sa page_flush
  */
@@ -488,8 +516,15 @@ from the coordinating transaction itself.
 extern ham_bool_t
 ham_log_is_db_expansion(ham_env_t *env);
 
+
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
 #endif /* HAM_LOG_H__ */
+
+/**
+* @endcond
+*/
+

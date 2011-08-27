@@ -13,7 +13,6 @@
  * @file types.h
  * @brief Portable typedefs for hamsterdb Embedded Storage.
  * @author Christoph Rupp, chris@crupp.de
- *
  */
 
 #ifndef HAM_TYPES_H__
@@ -123,7 +122,7 @@ typedef unsigned char      ham_u8_t;
 
 /**
  * typedefs for 64bit operating systems; on Win64,
- * longs do not always have 64bit!
+ * longs do not have 64bit! (LLP64 vs. LP64)
  */
 #ifdef HAM_64BIT
 #   ifdef _MSC_VER
@@ -181,10 +180,17 @@ typedef int                ham_bool_t;
 typedef int                ham_status_t;
 
 /**
- * typedef for addressing the file, which limits the file size to 64 bit
+ * typedef for when working on (or performing calculations with) RIDs (see
+ * @ref ham_pers_rid_t) at run-time.
+ * Note that only when your platform supports 64-bit integers will you be able
+ * to address persistent storage space (i.e. files) significantly larger
+ * than 4GByte (2^32 bytes).
  *
- * @remark If you change this datatype, you also have to change
- * the endian-macros in src/endian.h (ham_db2h_offset/ham_h2db_offset)
+ * This type will be the largest available <em>unsigned</em> integer type on
+ * your platform (compiler / OS combo)
+ *
+ * @sa ham_signed_off_t
+ * @sa ham_pers_rid_t
  */
 typedef ham_u64_t          ham_offset_t;
 
@@ -197,10 +203,21 @@ typedef ham_u64_t          ham_offset_t;
 typedef ham_u32_t          ham_size_t;
 
 /**
- * maximum values which can be stored in the related ham_[type]_t type:
+ * @defgroup max_values_for_types Maximum / minimum values which can be stored in the related ham_[type]_t type
+ *
+ * @{
+*/
+
+/** absolute maximum value for @ref ham_u32_t, which is an unsigned type */
+#define HAM_MAX_U32             (~(ham_u32_t)0)
+/** absolute maximum value for @ref ham_size_t, which is an unsigned type */
+#define HAM_MAX_SIZE_T          (~(ham_size_t)0)
+
+
+
+/**
+ * @}
  */
-#define HAM_MAX_U32			(~(ham_u32_t)0)
-#define HAM_MAX_SIZE_T      (~(ham_size_t)0)
 
 
 #ifdef __cplusplus

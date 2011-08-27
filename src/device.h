@@ -10,8 +10,14 @@
  */
 
 /**
- * device management; a device encapsulates the physical device, either a
- * file or memory chunks (for in-memory-databases)
+* @cond ham_internals
+*/
+
+/**
+ * @brief device management
+ *
+ * A device encapsulates the physical device, either a
+ * file or memory chunks (for in-memory-databases).
  *
  */
 
@@ -30,34 +36,34 @@ extern "C" {
  */
 struct ham_device_t {
     /**
-     * create a new device
+     * create a new device/store
      */
     ham_status_t (*create)(ham_device_t *self, const char *fname,
             ham_u32_t flags, ham_u32_t mode);
 
     /**
-     * open an existing device
+     * open an existing device/store
      */
     ham_status_t (*open)(ham_device_t *self, const char *fname,
             ham_u32_t flags);
 
     /**
-     * close the device
+     * close the device/store
      */
     ham_status_t (*close)(ham_device_t *self);
 
     /**
-     * flushes the device
+     * flushes the device/store
      */
     ham_status_t (*flush)(ham_device_t *self);
 
     /**
-     * truncate/resize the device
+     * truncate/resize the device/store
      */
     ham_status_t (*truncate)(ham_device_t *self, ham_offset_t newsize);
 
     /**
-     * returns true if the device is open
+     * returns true if the device/store is open
      */
     ham_bool_t (*is_open)(ham_device_t *self);
 
@@ -67,78 +73,109 @@ struct ham_device_t {
     ham_status_t (*get_filesize)(ham_device_t *self, ham_offset_t *length);
 
     /**
-     * seek position in a file
+     * seek position in a file/store
      */
     ham_status_t (*seek)(ham_device_t *self, ham_offset_t offset, int whence);
 
     /**
-     * tell the position in a file
+     * tell the position in a file/store
      */
     ham_status_t (*tell)(ham_device_t *self, ham_offset_t *offset);
 
     /**
-     * reads from the device; this function does not use mmap
+     * reads from the device/store; this function does not use mmap
      */
     ham_status_t (*read)(ham_device_t *self,
             ham_offset_t offset, void *buffer, ham_offset_t size);
 
     /**
-     * writes to the device; this function does not use mmap,
+     * writes to the device/store; this function does not use mmap,
      * the data is run through the file filters
      */
     ham_status_t (*write)(ham_device_t *self,
             ham_offset_t offset, void *buffer, ham_offset_t size);
 
     /**
-     * reads a page from the device; this function CAN use mmap
+     * reads a page from the device/store; this function CAN use mmap
+     *
+     * @return @ref HAM_LIMITS_REACHED when the underlying storage system is <em>temporarily</em> exhausted, that is:
+     *         the underlying system, for example a memory mapped file, cannot map another page as the
+     *         operating system signals that no more slots are available for memory mapping. This failure
+     *         is <em>temporary</em> in that it makes sense for the caller to flush/release lingering cached pages
+     *         in order to release some kernel resources, after which the caller may successfully retry this
+     *         @a read_page() operation.
+     *
+     * @note The @ref HAM_LIMITS_REACHED error is the only error which will see some form of 'retry' mechanism
+     *       happening in the calling layer.
+     *
+     * @sa page_fetch
      */
     ham_status_t (*read_page)(ham_device_t *self, ham_page_t *page);
 
     /**
-     * writes a page to the device
+     * writes a page to the device/store
      */
     ham_status_t (*write_page)(ham_device_t *self, ham_page_t *page);
 
     /**
-     * get the pagesize for this device
+     * get the pagesize for this device/store
      */
     ham_size_t (*get_pagesize)(ham_device_t *self);
 
     /**
-     * set the pagesize for this device
+     * set the pagesize for this device/store
      */
     ham_status_t (*set_pagesize)(ham_device_t *self, ham_size_t pagesize);
 
     /**
-     * set the device flags
+     * set the device/store flags
      */
     void (*set_flags)(ham_device_t *self, ham_u32_t flags);
 
     /**
-     * get the device flags
+     * get the device/store flags
      */
     ham_u32_t (*get_flags)(ham_device_t *self);
 
     /**
-     * allocate storage from this device; this function
+     * allocate storage space from this device/store; this function
      * will *NOT* use mmap.
      */
     ham_status_t (*alloc)(ham_device_t *self, ham_size_t size,
             ham_offset_t *address);
 
     /**
-     * allocate storage for a page from this device; this function
+     * allocate storage space for a page from this device/store; this function
      * @e can use mmap.
      *
      * @note
-     * The caller is responsible for flushing the page; the @ref free_page
-     * function will assert that the page is not dirty.
+     * The caller is responsible for flushing the page; the @ref free_page function will
+     * assert that the page is not dirty.
+     *
+     * @warning @ref alloc_page and @ref free_page are @e significantly different
+     *          from the @ref request_space and @ref release_space methods which
+     *          address the device-specific freelist manager instead.
+     *
+     * @return @ref HAM_LIMITS_REACHED when the underlying storage system is <em>temporarily</em> exhausted, that is:
+     *         the underlying system, for example a memory mapped file, cannot allocate another page as the
+     *         operating system signals that no more slots are available for memory mapping. This failure
+     *         is <em>temporary</em> in that it makes sense for the caller to flush/release lingering cached pages
+     *         in order to release some kernel resources, after which the caller may successfully retry this
+     *         @a alloc_page() operation.
+     *
+     * @note The @ref HAM_LIMITS_REACHED error is the only error which will see some form of 'retry' mechanism
+     *       happening in the calling layer.
+     *
+     * @sa page_alloc
      */
     ham_status_t (*alloc_page)(ham_device_t *self, ham_page_t *page);
 
     /**
-     * frees a page on the device; plays counterpoint to @ref alloc_page.
-     * Will not flush the page to disk!
+     * frees a page on the device/store; plays counterpoint to @ref alloc_page.
+     *
+     * @warning @ref alloc_page and @ref free_page are @e significantly different
+     *          from the @ref request_space and @ref release_space methods which
+     *          address the device-specific freelist manager instead.
      */
     ham_status_t (*free_page)(ham_device_t *self, ham_page_t *page);
 
@@ -150,21 +187,24 @@ struct ham_device_t {
     /* the memory allocator */
     mem_allocator_t *_malloc;
 
-    /** the environment which employs this device */
+    /**
+    * the environment which employs this device
+    */
     ham_env_t *_env;
 
     /**
      * Flags of this device.
      *
-     * Currently, these flags are used (at leas):
+     * Currently, these flags are used (at least):
      * - @ref HAM_DISABLE_MMAP do not use mmap but pread/pwrite
-     * - @ref DB_USE_MMAP use memory mapped I/O (this bit is not
-     *      observed through here, though)
+     * - @ref DB_USE_MMAP use memory mapped I/O (this bit is not observed through here, though)
      * - @ref HAM_READ_ONLY this is a read-only device
      */
     ham_u32_t _flags;
 
-    /** some private data for this device */
+    /**
+     * some private data for this device
+     */
     void *_private;
 
     /** the pagesize */
@@ -243,3 +283,8 @@ ham_device_new(mem_allocator_t *alloc, ham_env_t *env, int devtype);
 #endif
 
 #endif /* HAM_DEVICE_H__ */
+
+/**
+* @endcond
+*/
+

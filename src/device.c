@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -632,4 +637,9 @@ ham_device_new(mem_allocator_t *alloc, ham_env_t *env, int devtype)
 
     return (dev);
 }
+
+
+/**
+* @endcond
+*/
 

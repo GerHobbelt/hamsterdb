@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief extended key cache
  *
  */
@@ -23,6 +27,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 /**
  * an extended key
@@ -169,8 +174,9 @@ extern void
 extkey_cache_destroy(extkey_cache_t *cache);
 
 /**
- * insert a new extended key in the cache
- * will assert that there's no duplicate key!
+ * Insert a new extended key in the cache.
+ *
+ * Will assert that there's no duplicate key!
  */
 extern ham_status_t
 extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid,
@@ -192,7 +198,7 @@ extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid,
             ham_size_t *size, ham_u8_t **data);
 
 /**
- * removes all OLD keys from the cache
+ * removes all old keys from the cache
  */
 extern ham_status_t
 extkey_cache_purge(extkey_cache_t *cache);
@@ -214,3 +220,8 @@ extkey_remove(ham_db_t *db, ham_offset_t blobid);
 #endif
 
 #endif /* HAM_EXTKEYS_H__ */
+
+/**
+* @endcond
+*/
+

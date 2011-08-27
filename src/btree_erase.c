@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief btree erasing
  *
  */
@@ -39,6 +43,9 @@
 /**
  * the erase_scratchpad_t structure helps us to propagate return values
  * from the bottom of the tree to the root.
+ *
+ * It also transports several semi-constant datums around the call tree
+ * at the cost of a single pointer instead of a series of stack pushes.
  */
 typedef struct erase_scratchpad_t
 {
@@ -103,7 +110,7 @@ static ham_status_t
 my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibling, ham_offset_t anchor,
         erase_scratchpad_t *scratchpad, erase_hints_t *hints);
 
-/*
+/**
  * shift items from a sibling to this page, till both pages have an equal
  * number of items
  *
@@ -117,14 +124,22 @@ static ham_status_t
 my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, ham_offset_t anchor,
         erase_scratchpad_t *scratchpad, erase_hints_t *hints);
 
-/*
+/**
  * copy a key
  */
 static ham_status_t
 my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs);
 
 /**
- * replace two keys in a page
+ * replace the key in a page at index @a slot with the key referenced by @a newentry .
+ *
+ * When @a flags is set to @ref INTERNAL_KEY then the key written into index @a slot
+ * will have all its 'blob flags' reset:
+
+ - @ref KEY_BLOB_SIZE_TINY
+ - @ref KEY_BLOB_SIZE_SMALL
+ - @ref KEY_BLOB_SIZE_EMPTY
+ - @ref KEY_HAS_DUPLICATES
  */
 static ham_status_t
 my_replace_key(ham_page_t *page, ham_s32_t slot,
@@ -1231,6 +1246,35 @@ my_copy_key(ham_db_t *db, int_key_t *lhs, int_key_t *rhs)
      * if the key is extended, we copy the extended blob; otherwise, we'd
      * have to add reference counting to the blob, because two keys are now
      * using the same blobid. this would be too complicated.
+	 *
+	 * [GHo] comment about that: my_copy_key() is only used to duplicate keys
+	 *       from child to parent nodes; you do NOT need reference counting
+	 *       when you simply make all extended keys in non-leaf nodes point
+	 *       to the extended key storage for the leaf node: after all, any
+	 *       key occurring in a non-leaf node MUST also appear in a leaf
+	 *       node somewhere.
+	 *       This approach would also improve merge/split speed a little
+	 *       as you don't need to copy the extended key data, ever.
+	 *
+	 *       Wicked scenarios with fail risk: when a key is 'updated', it's
+	 *       basically a 'delete-insert' cycle, so any key changes will
+	 *       be applied to all instances of that key in the B+-tree.
+	 *       Unless, that is, we introduce new optimized 'update' code
+	 *       which 'rewrites' a key in that special circumstance where changing
+	 *       it does not alter its place in the sort order, i.e. position
+	 *       in the tree. Now THAT would be an optimization for VERY RARE
+	 *       circumstances; I don't think think it's useful to implement,
+	 *       as the rather more generic 'hold off tree rebalancing' idea
+	 *       will produce the same effect, and then some.
+	 *
+	 *       Conclusion: we can safely assume non-leaf node keys have their
+	 *       extkey data pointing at the same space as the same key in a
+	 *       leaf node.
+	 *
+	 *       Now all we need is a 'backwards compatible' approach which
+	 *       copes with older databases where each key would carry its own
+	 *       extkey copy... maybe a flag bit to signal the extkey data is
+	 *       NOT duplicated? Yeah, that should be enough...
      */
     if (key_get_flags(rhs)&KEY_IS_EXTENDED)
     {
@@ -1483,4 +1527,9 @@ free_all:
 
     return (0);
 }
+
+
+/**
+* @endcond
+*/
 

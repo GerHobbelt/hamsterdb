@@ -7,9 +7,14 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
- * btree searching
+ */
+
+/**
+* @cond ham_internals
+*/
+
+/**
+ * @brief btree searching
  *
  */
 
@@ -29,6 +34,14 @@
 #include "util.h"
 
 
+/**
+* search the btree structures for a record
+*
+* @remark this function returns HAM_SUCCESS and sets the cursor to the position
+* if the @a key was found; otherwise an error code is returned
+*
+* @remark this function is exported through the backend structure.
+*/
 ham_status_t
 btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor,
            ham_key_t *key, ham_record_t *record, ham_u32_t flags)
@@ -86,10 +99,10 @@ btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor,
         }
 
         /*
-		 * Reset any errors which may have been collected during the hinting
+         * Reset any errors which may have been collected during the hinting
          * phase -- this is done by setting 'idx = -1' above as that effectively
-		 * clears the possible error code stored in there when (idx < -1)
-		 */
+         * clears the possible error code stored in there when (idx < -1)
+         */
     }
 
 no_fast_track:
@@ -468,4 +481,9 @@ btree_find(ham_btree_t *be, ham_key_t *key,
 {
     return (btree_find_cursor(be, 0, key, record, flags));
 }
+
+
+/**
+* @endcond
+*/
 

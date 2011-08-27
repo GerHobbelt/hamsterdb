@@ -9,6 +9,11 @@
  * See files COPYING.* for License information.
  */
 
+/**
+* @cond ham_internals
+*/
+
+
 #include "config.h"
 
 #include <string.h>
@@ -25,7 +30,12 @@
 /** EXTKEY_CACHE_BUCKETSIZE should be a prime number or similar, as it is
  * used in a MODULO hash scheme */
 #define EXTKEY_CACHE_BUCKETSIZE        1021
+/**
+ * The age of extended keys (in terms of the number of transactions since they were used last)
+ * at which they are eligible for purging from the extended key cache.
+ */
 #define EXTKEY_MAX_AGE                    5
+
 
 extkey_cache_t *
 extkey_cache_new(ham_db_t *db)
@@ -247,3 +257,8 @@ extkey_remove(ham_db_t *db, ham_offset_t blobid)
 
     return (blob_free(db_get_env(db), db, blobid, 0));
 }
+
+/**
+* @endcond
+*/
+

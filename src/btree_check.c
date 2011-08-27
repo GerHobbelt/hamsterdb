@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief btree verification
  *
  */
@@ -289,4 +293,9 @@ __verify_page(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *page,
 
     return (0);
 }
+
+
+/**
+* @endcond
+*/
 
