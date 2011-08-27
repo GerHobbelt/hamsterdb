@@ -24,7 +24,6 @@ m4
 .deps
 messages.pb.cc
 messages.pb.h
-documentation
 *.psess
 *.vsp
 *.sdf
