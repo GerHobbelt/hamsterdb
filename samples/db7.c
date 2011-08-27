@@ -63,6 +63,29 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
             desc = "HAM_PARAM_DBNAME: db ID in database environment (%u)";
             break;
 
+        case HAM_PARAM_CUSTOM_DEVICE:
+            printf("HAM_PARAM_CUSTOM_DEVICE: %p\n", db_params_out[i].value.fn);
+			if (db_params_out[i].value.fn)
+			{
+				ham_parameter_function_t *fn = db_params_out[i].value.fn;
+		        ham_device_t *dev;
+
+				dev = (*fn)(env, db, 0, NULL);
+				if (dev)
+				{
+					/*TODO: find clean way to allow others to include 'internal' header files
+					        such as device.h, so they can, for instance, construct their
+							own devices. */
+#if defined(HAM_DEVICE_H__)
+					ham_device_class_info_t info = {0};
+
+					dev->get_device_class_info(dev, &info);
+					printf("                         device name: %s\n", info.device_name);
+#endif
+				}
+			}
+            continue;
+
         case HAM_PARAM_GET_FLAGS:
             desc = "HAM_PARAM_GET_FLAGS: %08x";
             break;
