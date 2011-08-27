@@ -38,21 +38,13 @@
  */
 typedef struct insert_scratchpad_t
 {
-    /**
-     * the backend pointer
-     */
-    ham_btree_t *be;
-
-    /**
-     * the record which is inserted
-     */
-    ham_record_t *record;
+    common_btree_datums_t *btdata;
 
     /**
      * A key; this is used to propagate SMOs (structure modification
      * operations) from a child page to a parent page.
      */
-    ham_key_t key;
+    ham_key_t propa_key;
 
     /**
      * A 'RID'; this is used to propagate SMOs (structure modification
@@ -89,54 +81,61 @@ typedef struct insert_scratchpad_t
  */
 static ham_status_t
 __insert_recursive(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, insert_scratchpad_t *scratchpad,
-        insert_hints_t *hints);
+        ham_offset_t rid, insert_scratchpad_t *scratchpad);
 
 /**
  * this function inserts a key in a page
  */
 static ham_status_t
 __insert_in_page(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, insert_scratchpad_t *scratchpad,
-        insert_hints_t *hints);
+        ham_offset_t rid, insert_scratchpad_t *scratchpad);
 
 /**
  * insert a key in a page; the page MUST have free slots
  */
 static ham_status_t
 __insert_nosplit(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, ham_record_t *record,
-        ham_bt_cursor_t *cursor, insert_hints_t *hints);
+        ham_offset_t rid, const ham_record_t *record,
+        insert_scratchpad_t *scratchpad);
 
 /**
  * split a page and insert the new element
  */
 static ham_status_t
 __insert_split(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, insert_scratchpad_t *scratchpad,
-        insert_hints_t *hints);
+        ham_offset_t rid, insert_scratchpad_t *scratchpad);
 
 static ham_status_t
-__insert_cursor(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
-        ham_bt_cursor_t *cursor, insert_hints_t *hints);
+__insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
+        ham_record_t *record);
+
 
 
 static ham_status_t
-__append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
-                ham_bt_cursor_t *cursor, insert_hints_t *hints)
+__append_key(insert_scratchpad_t *scratchpad, ham_key_t *key,
+        ham_record_t *record)
 {
     ham_status_t st=0;
     ham_page_t *page;
     btree_node_t *node;
-    ham_db_t *db;
+
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    ham_btree_t * const be = btdata->be;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    ham_bt_cursor_t * const cursor = btdata->cursor;
+    common_hints_t * const hints = &btdata->hints;
 
 #ifdef HAM_DEBUG
-    if (cursor && !bt_cursor_is_nil(cursor)) {
+    if (cursor && !bt_cursor_is_nil(cursor))
+    {
         ham_assert(be_get_db(be) == bt_cursor_get_db(cursor), (0));
     }
 #endif
 
-    db = be_get_db(be);
+    //db = be_get_db(be);
+
+    ham_assert(hints->try_fast_track, (0));
 
     /*
      * see if we get this btree leaf; if not, revert to regular scan
@@ -145,14 +144,20 @@ __append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
      * should still sit in the cache, or we're using old info, which should be
      * discarded.
      */
-    st = db_fetch_page(&page, db, hints->leaf_page_addr, DB_ONLY_FROM_CACHE);
+    st = db_fetch_page(&page, env, hints->leaf_page_addr, DB_ONLY_FROM_CACHE);
+    ham_assert(st ? page == NULL : 1, (0));
     if (st)
         return st;
-    if (!page) {
+    if (!page)
+    {
+        //hints->flags &=~ HAM_HINT_APPEND;
         hints->force_append = HAM_FALSE;
         hints->force_prepend = HAM_FALSE;
-        return (__insert_cursor(be, key, record, cursor, hints));
+        return __insert_cursor(scratchpad, key, record);
     }
+    ham_assert(!st, (0));
+    ham_assert(db, (0));
+    page_set_owner(page, db);
 
     page_add_ref(page);
     node=ham_page_get_btree_node(page);
@@ -164,12 +169,14 @@ __append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
      * OR the new key is not the highest key: perform a normal insert
      */
     if ((hints->force_append && btree_node_get_right(node))
-            || (hints->force_prepend && btree_node_get_left(node))
-            || btree_node_get_count(node) >= btree_get_maxkeys(be)) {
+        || (hints->force_prepend && btree_node_get_left(node))
+        || btree_node_get_count(node) >= btree_get_maxkeys(be))
+    {
         page_release_ref(page);
+        //hints->flags &=~ HAM_HINT_APPEND;
         hints->force_append = HAM_FALSE;
         hints->force_prepend = HAM_FALSE;
-        return (__insert_cursor(be, key, record, cursor, hints));
+        return __insert_cursor(scratchpad, key, record);
     }
 
     /*
@@ -179,78 +186,85 @@ __append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
      * or force_prepend is specified: that'd be SEQUENTIAL insertion
      * hinting somewhere in the middle of the total key range.
      */
-    if (btree_node_get_count(node)!=0) {
+    if (btree_node_get_count(node)!=0)
+    {
         int cmp_hi;
         int cmp_lo;
 
-        hints->cost++;
-        if (!hints->force_prepend) {
-            cmp_hi = key_compare_pub_to_int(db, page, key,
-                                btree_node_get_count(node)-1);
-            /* key is in the middle */
-            if (cmp_hi < -1) {
+        if (!hints->force_prepend)
+        {
+            cmp_hi = key_compare_pub_to_int(btdata, page, key, btree_node_get_count(node)-1);
+            /* did the key comparison result in a error? */
+            if (cmp_hi < -1)
+            {
                 page_release_ref(page);
                 return (ham_status_t)cmp_hi;
             }
-            /* key is at the end */
-            if (cmp_hi > 0) {
-                if (btree_node_get_right(node)) {
-                    /* not at top end of the btree, so we can't do the
-                     * fast track */
+            /* key is larger than the largest on this page */
+            if (cmp_hi > 0)
+            {
+                if (btree_node_get_right(node))
+                {
+                    /* not at top end of the btree, so we can't do the fast track */
                     page_release_ref(page);
                     //hints->flags &= ~HAM_HINT_APPEND;
                     hints->force_append = HAM_FALSE;
                     hints->force_prepend = HAM_FALSE;
-                    return (__insert_cursor(be, key, record, cursor, hints));
+                    return __insert_cursor(scratchpad, key, record);
                 }
 
                 hints->force_append = HAM_TRUE;
                 hints->force_prepend = HAM_FALSE;
             }
         }
-        else { /* hints->force_prepend is true */
-            /* not bigger than the right-most node while we
-             * were trying to APPEND */
+        else
+        {
+            /* not bigger than the right-most node while we were trying to APPEND */
             cmp_hi = -1;
         }
 
-        if (!hints->force_append) {
-            cmp_lo = key_compare_pub_to_int(db, page, key, 0);
-            /* in the middle range */
-            if (cmp_lo < -1) {
+        if (!hints->force_append)
+        {
+            cmp_lo = key_compare_pub_to_int(btdata, page, key, 0);
+            /* did the key comparison result in a error? */
+            if (cmp_lo < -1)
+            {
                 page_release_ref(page);
-                return ((ham_status_t)cmp_lo);
+                return (ham_status_t)cmp_lo;
             }
-            /* key is at the start of page */
-            if (cmp_lo < 0) {
-                if (btree_node_get_left(node)) {
-                    /* not at bottom end of the btree, so we can't
-                     * do the fast track */
+            /* key is smaller than the smallest on this page */
+            if (cmp_lo < 0)
+            {
+                if (btree_node_get_left(node))
+                {
+                    /* not at bottom end of the btree, so we can't do the fast track */
                     page_release_ref(page);
                     //hints->flags &= ~HAM_HINT_PREPEND;
                     hints->force_append = HAM_FALSE;
                     hints->force_prepend = HAM_FALSE;
-                    return (__insert_cursor(be, key, record, cursor, hints));
+                    return __insert_cursor(scratchpad, key, record);
                 }
 
                 hints->force_append = HAM_FALSE;
                 hints->force_prepend = HAM_TRUE;
             }
         }
-        else { /* hints->force_prepend is true */
-            /* not smaller than the left-most node while we were
-             * trying to PREPEND */
+        else
+        {
+            /* not smaller than the left-most node while we were trying to PREPEND */
             cmp_lo = +1;
         }
 
         /* handle inserts in the middle range */
-        if (cmp_lo >= 0 && cmp_hi <= 0) {
+        if (cmp_lo >= 0 && cmp_hi <= 0)
+        {
             /*
              * Depending on where we are in the btree, the current key either
              * is going to end up in the middle of the given node/page,
              * OR the given key is out of range of the given leaf node.
              */
-            if (hints->force_append || hints->force_prepend) {
+            if (hints->force_append || hints->force_prepend)
+            {
                 /*
                  * when prepend or append is FORCED, we are expected to
                  * add keys ONLY at the beginning or end of the btree
@@ -261,7 +275,7 @@ __append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
                 //hints->flags &= ~HAM_HINT_PREPEND;
                 hints->force_append = HAM_FALSE;
                 hints->force_prepend = HAM_FALSE;
-                return (__insert_cursor(be, key, record, cursor, hints));
+                return __insert_cursor(scratchpad, key, record);
             }
 
             /*
@@ -279,7 +293,9 @@ __append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
         ham_assert((hints->force_prepend + hints->force_append) < 2,
                 ("Either APPEND or PREPEND flag MAY be set, but not both"));
     }
-    else { /* empty page: force insertion in slot 0 */
+    else
+    {
+        /* empty page: force insertion in slot 0 */
         hints->force_append = HAM_FALSE;
         hints->force_prepend = HAM_TRUE;
     }
@@ -296,47 +312,52 @@ __append_key(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
     /*
      * OK - we're really appending/prepending the new key.
      */
-    ham_assert(hints->force_append || hints->force_prepend, (0));
-    st=__insert_nosplit(page, key, 0, record, cursor, hints);
+    //ham_assert(hints->force_append || hints->force_prepend, (0));
+    st=__insert_nosplit(page, key, 0, record, scratchpad);
+#if 0
+    scratchpad->cursor = 0; /* don't overwrite cursor if __insert_nosplit
+                             is called again */
+#endif
 
     page_release_ref(page);
     return (st);
 }
 
+
 static ham_status_t
-__insert_cursor(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
-                ham_bt_cursor_t *cursor, insert_hints_t *hints)
+__insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
+        ham_record_t *record)
 {
     ham_status_t st;
     ham_page_t *root;
-    ham_db_t *db=be_get_db(be);
-    ham_env_t *env = db_get_env(db);
-    insert_scratchpad_t scratchpad;
+
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    ham_btree_t * const be = btdata->be;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    common_hints_t * const hints = &btdata->hints;
 
     ham_assert(hints->force_append == HAM_FALSE, (0));
     ham_assert(hints->force_prepend == HAM_FALSE, (0));
 
     /*
-     * initialize the scratchpad
-     */
-    memset(&scratchpad, 0, sizeof(scratchpad));
-    scratchpad.be=be;
-    scratchpad.record=record;
-    scratchpad.cursor=cursor;
-
-    /*
      * get the root-page...
      */
-    ham_assert(btree_get_rootpage(be)!=0, ("btree has no root page"));
-    st=db_fetch_page(&root, db, btree_get_rootpage(be), 0);
-    ham_assert(st ? root == NULL : 1, (0));
-    if (st)
-        return st;
+    ham_assert(btree_get_rootpage(be) != 0, ("btree has no root page"));
+    st=db_fetch_page(&root, env, btree_get_rootpage(be), 0);
+    ham_assert(st ? root == NULL : root != NULL, (0));
+    if (!root)
+    {
+        return st ? st : HAM_INTERNAL_ERROR;
+    }
+    ham_assert(!st, (0));
+    ham_assert(db, (0));
+    page_set_owner(root, db);
 
     /*
      * ... and start the recursion
      */
-    st=__insert_recursive(root, key, 0, &scratchpad, hints);
+    st=__insert_recursive(root, key, 0, scratchpad);
 
     /*
      * if the root page was split, we have to create a new
@@ -346,6 +367,7 @@ __insert_cursor(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
     {
         ham_page_t *newroot;
         btree_node_t *node;
+        dev_alloc_request_info_ex_t info = {0};
 
         /*
          * the root-page will be changed...
@@ -357,31 +379,39 @@ __insert_cursor(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
         /*
          * allocate a new root page
          */
-        st=db_alloc_page(&newroot, db, PAGE_TYPE_B_ROOT, 0);
+        info.db = db;
+        info.env = env;
+        info.dam = db_get_data_access_mode(db);
+        info.entire_page = HAM_TRUE;
+        info.space_type = PAGE_TYPE_B_ROOT;
+        info.key = key;
+        info.record = record;
+
+        st=db_alloc_page(&newroot, 0, &info);
         ham_assert(st ? newroot == NULL : 1, (0));
+        ham_assert(!st ? newroot != NULL : 1, (0));
         if (st)
-            return (st);
-        ham_assert(page_get_owner(newroot), (""));
+            return st;
         /* clear the node header */
         memset(page_get_payload(newroot), 0, sizeof(btree_node_t));
+        page_set_owner(newroot, db);
 
-        stats_page_is_nuked(db, root, HAM_TRUE);
+        stats_page_is_nuked(btdata, root, REASON_SPLIT);
 
         /*
          * insert the pivot element and the ptr_left
          */
         node=ham_page_get_btree_node(newroot);
         btree_node_set_ptr_left(node, btree_get_rootpage(be));
-        st=__insert_nosplit(newroot, &scratchpad.key,
-                scratchpad.rid, scratchpad.record, scratchpad.cursor,
-                hints);
-        ham_assert(!(scratchpad.key.flags & HAM_KEY_USER_ALLOC), (0));
-        scratchpad.cursor=0; /* don't overwrite cursor if __insert_nosplit
+        st=__insert_nosplit(newroot, &scratchpad->propa_key,
+                scratchpad->rid, record, scratchpad);
+        ham_assert(!(scratchpad->propa_key.flags & HAM_KEY_USER_ALLOC), (0));
+        scratchpad->cursor = 0; /* don't overwrite cursor if __insert_nosplit
                                 is called again */
         if (st) {
-            ham_assert(!(scratchpad.key.flags & HAM_KEY_USER_ALLOC), (0));
-            if (scratchpad.key.data)
-                allocator_free(env_get_allocator(env), scratchpad.key.data);
+            ham_assert(!(scratchpad->propa_key.flags & HAM_KEY_USER_ALLOC), (0));
+            if (scratchpad->propa_key.data)
+                allocator_free(env_get_allocator(env), scratchpad->propa_key.data);
             return (st);
         }
 
@@ -398,17 +428,35 @@ __insert_cursor(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
          */
         btree_set_rootpage(be, page_get_self(newroot));
         be_set_dirty(be, HAM_TRUE);
+        env_set_dirty(env);
+		/* [i_a] Christoph added the flush + txn_add_page below, but somehow I get the feeling that he's been
+		         patching the side-effect of other bugs through enforced flush; my code had
+				 the env_set_dirty() and his didn't; also I seem to recall that 1.1.6 (which
+				 was when I wrote this code, not this comment!) had several spots where
+				 the dirty-marking of the ENV was neglected and a flush also corrects
+				 those mistakes, unless I am mistaken.
+
+				 Anyway, merged. We'll see what happens en when I've got time again, we'll do
+				 another flow review all over again.
+		*/
+
         be->_fun_flush(be);
 
-        /*
-         * As we re-purpose a page, we will reset its pagecounter
-         * as well to signal its first use as the new type assigned
-         * here.
-         */
-        if (env_get_cache(env) && (page_get_type(root)!=PAGE_TYPE_B_INDEX))
-            cache_update_page_access_counter(root, env_get_cache(env), 0);
-
-        page_set_type(root, PAGE_TYPE_B_INDEX);
+        if (env_get_cache(env) && (page_get_pers_type(root) != PAGE_TYPE_B_INDEX))
+        {
+            /*
+             * As we re-purpose a page, we will reset its pagecounter
+             * as well to signal its first use as the new type assigned
+             * here.
+             */
+            //page_set_cache_cntr(root, env_get_cache(env)->_timeslot++);
+#if 0
+            cache_update_page_access_counter(root, env_get_cache(env), +1); /* bump up */
+#else
+            cache_update_page_access_counter(root, env_get_cache(env));
+#endif
+        }
+        page_set_pers_type(root, PAGE_TYPE_B_INDEX);
         page_set_dirty(root, env);
         page_set_dirty(newroot, env);
 
@@ -425,22 +473,36 @@ __insert_cursor(ham_btree_t *be, ham_key_t *key, ham_record_t *record,
     /*
      * release the scratchpad-memory and return to caller
      */
-    ham_assert(!(scratchpad.key.flags & HAM_KEY_USER_ALLOC), (0));
-    if (scratchpad.key.data)
-        allocator_free(env_get_allocator(env), scratchpad.key.data);
+    ham_assert(!(scratchpad->propa_key.flags & HAM_KEY_USER_ALLOC), (0));
+    if (scratchpad->propa_key.data)
+        allocator_free(env_get_allocator(env), scratchpad->propa_key.data);
 
     return (st);
 }
 
 ham_status_t
-btree_insert_cursor(ham_btree_t *be, ham_key_t *key,
-        ham_record_t *record, ham_bt_cursor_t *cursor, ham_u32_t flags)
+btree_insert_cursor(common_btree_datums_t *btdata, ham_key_t *key,
+        ham_record_t *record)
 {
     ham_status_t st;
-    ham_db_t *db=be_get_db(be);
-    insert_hints_t hints = {flags, flags, (ham_cursor_t *)cursor, 0, HAM_FALSE, HAM_FALSE, HAM_FALSE, 0, NULL, -1};
 
-    btree_insert_get_hints(&hints, db, key);
+    //ham_btree_t * const be = btdata->be;
+    //ham_db_t * const db = btdata->db;
+    //ham_env_t * const env = btdata->env;
+    ham_bt_cursor_t * const cursor = btdata->cursor;
+    common_hints_t * const hints = &btdata->hints;
+
+    insert_scratchpad_t scratchpad =
+    {
+        btdata,
+        {0},
+        0,
+        cursor
+    };
+
+    db_update_global_stats_insert_query(btdata, key->size, record->size);
+
+    btree_insert_get_hints(btdata);
 
     /*
      * append the key? __append_key() will try to append the key; if it
@@ -448,77 +510,71 @@ btree_insert_cursor(ham_btree_t *be, ham_key_t *key,
      * because the current page is already full, it will remove the
      * HINT_APPEND flag and call btree_insert_cursor() again
      */
-    if (hints.force_append || hints.force_prepend)
+    if (hints->try_fast_track)
     {
-        ham_assert(hints.try_fast_track, (0));
-        st = __append_key(be, key, record, cursor, &hints);
+        //ham_assert(!bt_cursor_is_nil(cursor), (0)); -- [i_a] no need for a cursor anymore
+        st = __append_key(&scratchpad, key, record);
     }
     else
     {
-        /*ham_assert(!hints.try_fast_track, (0)); */
-        hints.force_append = HAM_FALSE;
-        hints.force_prepend = HAM_FALSE;
-        st = __insert_cursor(be, key, record, cursor, &hints);
+        ham_assert(!hints->force_append && !hints->force_prepend, (0));
+        //hints.force_append = HAM_FALSE;
+        //hints.force_prepend = HAM_FALSE;
+        st = __insert_cursor(&scratchpad, key, record);
     }
 
     if (st)
-     {
-        stats_update_insert_fail(db, &hints);
-     }
-     else
-     {
-        stats_update_insert(db, hints.processed_leaf_page, &hints);
-        stats_update_any_bound(HAM_OPERATION_STATS_INSERT,
-                    db, hints.processed_leaf_page, key, hints.flags,
-                    hints.processed_slot);
-     }
+    {
+        stats_update_insert_fail(btdata);
+    }
+    else
+    {
+        stats_update_insert(btdata, hints->processed_leaf_page);
+        stats_update_any_bound(btdata, hints->processed_leaf_page, key, hints->flags, hints->processed_slot);
+    }
 
     return (st);
 }
 
-/**
- * insert (or update) a key in the index
- *
- * the backend is responsible for inserting or updating the
- * record. (see blob.h for blob management functions)
- *
- * @note This is a B+-tree 'backend' method.
- */
-ham_status_t
-btree_insert(ham_btree_t *be, ham_key_t *key,
-        ham_record_t *record, ham_u32_t flags)
-{
-    return (btree_insert_cursor(be, key, record, 0, flags));
-}
 
 static ham_status_t
 __insert_recursive(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, insert_scratchpad_t *scratchpad,
-        insert_hints_t *hints)
+        ham_offset_t rid, insert_scratchpad_t *scratchpad)
 {
     ham_status_t st;
     ham_page_t *child;
-    ham_db_t *db=page_get_owner(page);
+    //ham_db_t *db=page_get_owner(page);
     btree_node_t *node=ham_page_get_btree_node(page);
+
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    //ham_btree_t * const be = btdata->be;
+    //ham_db_t * const db = btdata->db;
+    //ham_env_t * const env = btdata->env;
+    //ham_bt_cursor_t * const cursor = btdata->cursor;
+    common_hints_t * const hints = &btdata->hints;
 
     /*
      * if we've reached a leaf: insert the key
      */
     if (btree_node_is_leaf(node))
-        return (__insert_in_page(page, key, rid, scratchpad, hints));
+    {
+        return __insert_in_page(page, key, rid, scratchpad);
+    }
 
     /*
      * otherwise traverse the root down to the leaf
      */
-    hints->cost += 2;
-    st=btree_traverse_tree(&child, 0, db, page, key);
+    st = btree_traverse_tree(&child, 0, btdata, page, key);
     if (!child)
+    {
         return st ? st : HAM_INTERNAL_ERROR;
+    }
+    ham_assert(st == HAM_SUCCESS, (0));
 
     /*
      * and call this function recursively
      */
-    st=__insert_recursive(child, key, rid, scratchpad, hints);
+    st = __insert_recursive(child, key, rid, scratchpad);
     switch (st)
     {
     /*
@@ -538,16 +594,18 @@ __insert_recursive(ham_page_t *page, ham_key_t *key,
      */
     case SPLIT:
         hints->flags |= HAM_OVERWRITE;
-            st=__insert_in_page(page, &scratchpad->key,
-                        scratchpad->rid, scratchpad, hints);
-            ham_assert(!(scratchpad->key.flags & HAM_KEY_USER_ALLOC), (0));
+        ham_assert(!(ham_key_get_intflags(&scratchpad->propa_key) & KEY_IS_EXTENDED), (0));
+        st = __insert_in_page(page, &scratchpad->propa_key,
+                    scratchpad->rid, scratchpad);
+        ham_assert(!(scratchpad->propa_key.flags & HAM_KEY_USER_ALLOC), (0));
         hints->flags = hints->original_flags;
         break;
 
     /*
-         * every other return value is unexpected and shouldn't happen
+     * every other return value is an error
      */
     default:
+        ham_assert(st < 0, (0));
         break;
     }
 
@@ -556,14 +614,23 @@ __insert_recursive(ham_page_t *page, ham_key_t *key,
 
 static ham_status_t
 __insert_in_page(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, insert_scratchpad_t *scratchpad,
-        insert_hints_t *hints)
+        ham_offset_t rid, insert_scratchpad_t *scratchpad)
 {
     ham_status_t st;
-    ham_size_t maxkeys=btree_get_maxkeys(scratchpad->be);
-    btree_node_t *node=ham_page_get_btree_node(page);
+    btree_node_t *node = ham_page_get_btree_node(page);
+    //ham_size_t maxkeys=btree_get_maxkeys(scratchpad->be);
 
-    ham_assert(maxkeys>1,
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    //ham_btree_t * const be = btdata->be;
+    //ham_db_t * const db = btdata->db;
+    //ham_env_t * const env = btdata->env;
+    //ham_bt_cursor_t * const cursor = btdata->cursor;
+    //const ham_size_t keywidth = btdata->keywidth;
+    common_hints_t * const hints = &btdata->hints;
+    const ham_size_t maxkeys = btdata->maxkeys;
+    const ham_record_t * const record = btdata->in_rec;
+
+    ham_assert(maxkeys > 1,
             ("invalid result of db_get_maxkeys(): %d", maxkeys));
     ham_assert(hints->force_append == HAM_FALSE, (0));
     ham_assert(hints->force_prepend == HAM_FALSE, (0));
@@ -581,9 +648,8 @@ __insert_in_page(ham_page_t *page, ham_key_t *key,
      */
     if (btree_node_get_count(node) < maxkeys)
     {
-        st=__insert_nosplit(page, key, rid,
-                    scratchpad->record, scratchpad->cursor, hints);
-        scratchpad->cursor=0; /* don't overwrite cursor if __insert_nosplit
+        st = __insert_nosplit(page, key, rid, record, scratchpad);
+        scratchpad->cursor = 0; /* don't overwrite cursor if __insert_nosplit
                                  is called again */
         return (st);
     }
@@ -592,12 +658,11 @@ __insert_in_page(ham_page_t *page, ham_key_t *key,
      * otherwise, we have to split the page.
      * but BEFORE we split, we check if the key already exists!
      */
-    if (btree_node_is_leaf(node)) {
+    if (btree_node_is_leaf(node))
+    {
         ham_s32_t idx;
 
-        hints->cost++;
-        idx = btree_node_search_by_key(page_get_owner(page), page, key,
-                            HAM_FIND_EXACT_MATCH);
+        idx = btree_node_search_by_key(btdata, page, key, HAM_FIND_EXACT_MATCH);
         /* key exists! */
         if (idx >= 0)
         {
@@ -609,38 +674,56 @@ __insert_in_page(ham_page_t *page, ham_key_t *key,
                         : 1, (0));
             if (!(hints->flags & (HAM_OVERWRITE | HAM_DUPLICATE)))
                 return (HAM_DUPLICATE_KEY);
-            st=__insert_nosplit(page, key, rid,
-                    scratchpad->record, scratchpad->cursor, hints);
-            /* don't overwrite cursor if __insert_nosplit is called again */
-            scratchpad->cursor=0;
-            return (st);
+                st = __insert_nosplit(page, key, rid, record, scratchpad);
+                /* don't overwrite cursor if __insert_nosplit is called again */
+                scratchpad->cursor = 0;
+                return st;
+        }
+        else if (idx < -1)
+        {
+            ham_assert(!"this shouldn't ever happen, right?", (0));
+            return (ham_status_t)idx;
         }
     }
 
-    return (__insert_split(page, key, rid, scratchpad, hints));
+    return __insert_split(page, key, rid, scratchpad);
 }
 
 static ham_status_t
 __insert_nosplit(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, ham_record_t *record,
-        ham_bt_cursor_t *cursor, insert_hints_t *hints)
+        ham_offset_t rid, const ham_record_t *record,
+        insert_scratchpad_t *scratchpad)
 {
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    ham_device_t * const dev = btdata->dev;
+    ham_btree_t * const be = btdata->be;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    ham_bt_cursor_t * const cursor = btdata->cursor;
+    common_hints_t * const hints = &btdata->hints;
+    const ham_size_t keywidth = btdata->keywidth;
+    const ham_size_t keysize = btdata->keysize;
+
     ham_status_t st;
     ham_u16_t count;
-    ham_size_t keysize;
     ham_size_t new_dupe_id = 0;
     int_key_t *bte = 0;
+    //int_key_t *keyarr;
     btree_node_t *node;
-    ham_db_t *db=page_get_owner(page);
+    //ham_db_t *db=page_get_owner(page);
+    //ham_btree_t *be = (ham_btree_t *)db_get_backend(db);
     ham_bool_t exists = HAM_FALSE;
     ham_s32_t slot;
+    //ham_size_t keywidth;
 
     ham_assert(page_get_owner(page), (0));
-    ham_assert(device_get_env(page_get_device(page)) == db_get_env(page_get_owner(page)), (0));
+    ham_assert(dev == page_get_device(page), (0));
+    ham_assert(device_get_env(dev) == db_get_env(page_get_owner(page)), (0));
 
-    node=ham_page_get_btree_node(page);
-    count=btree_node_get_count(node);
-    keysize=db_get_keysize(db);
+    //keywidth = be_get_keysize(be) + db_get_int_key_header_size();
+    node = ham_page_get_btree_node(page);
+    count = btree_node_get_count(node);
+    //keysize = be_get_keysize(be);
 
     if (btree_node_get_count(node)==0)
     {
@@ -659,8 +742,7 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
     {
         int cmp;
 
-        hints->cost++;
-        st=btree_get_slot(db, page, key, &slot, &cmp);
+        st=btree_get_slot(btdata, page, key, &slot, &cmp);
         if (st)
             return st;
 
@@ -713,27 +795,35 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
      * in any case, uncouple the cursors and see if we must shift any elements to the
      * right
      */
-    bte=btree_node_get_key(db, node, slot);
+    bte = btree_in_node_get_key_ref(btdata, page, slot);
     ham_assert(bte, (0));
 
     if (!exists)
     {
+        ham_assert(count < btree_get_maxkeys(be), (0));
+
         if (count > slot)
         {
             /* uncouple all cursors & shift any elements following [slot] */
             st=bt_uncouple_all_cursors(page, slot);
             if (st)
-                return (st);
+                return st;
 
-            hints->cost += stats_memmove_cost((db_get_int_key_header_size()+keysize)*(count-slot));
-            memmove(((char *)bte)+db_get_int_key_header_size()+keysize, bte,
-                    (db_get_int_key_header_size()+keysize)*(count-slot));
-        }
+#if 0
+			memmove(((char *)bte)+keywidth, bte, keywidth * (count-slot));
+#else
+			{
+				int_key_t *bte_lhs = btree_in_node_get_key_ref(btdata, page, slot + 1);
+
+				btree_move_key_series(btdata, page, page, bte_lhs, bte, count - slot); // memmove(((char *)bte)+keywidth, bte, keywidth * (count-slot));
+			}
+#endif
+		}
 
         /*
          * if a new key is created or inserted: initialize it with zeroes
          */
-        memset(bte, 0, db_get_int_key_header_size()+keysize);
+        memset(bte, 0, keywidth);
     }
 
     /*
@@ -744,14 +834,14 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
     {
         ham_status_t st;
 
-        hints->cost++;
+        ham_assert(new_dupe_id == 0, (0));
         st=key_set_record(db, bte, record,
                         cursor
                             ? bt_cursor_get_dupe_id(cursor)
                             : 0,
                         hints->flags, &new_dupe_id);
         if (st)
-            return (st);
+            return st;
 
         hints->processed_leaf_page = page;
         hints->processed_slot = slot;
@@ -761,15 +851,15 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
         key_set_ptr(bte, rid);
     }
 
-    page_set_dirty(page, db_get_env(db));
+    page_set_dirty(page, env);
     key_set_size(bte, key->size);
 
     /*
      * set a flag if the key is extended, and does not fit into the
      * btree
      */
-    if (key->size > db_get_keysize(db))
-        key_set_flags(bte, key_get_flags(bte)|KEY_IS_EXTENDED);
+    if (key->size > keysize)
+        key_set_flags(bte, key_get_flags(bte) | KEY_IS_EXTENDED);
 
     /*
      * if we have a cursor: couple it to the new key
@@ -805,19 +895,19 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
      * we insert the extended key, if necessary
      */
     key_set_key(bte, key->data,
-            db_get_keysize(db) < key->size ? db_get_keysize(db) : key->size);
+            be_get_keysize(be) < key->size ? be_get_keysize(be) : key->size);
 
     /*
      * if we need an extended key, allocate a blob and store
      * the blob-id in the key
      */
-    if (key->size > db_get_keysize(db))
+    if (key->size > be_get_keysize(be))
     {
         ham_offset_t blobid;
 
-        key_set_key(bte, key->data, db_get_keysize(db));
+        key_set_key(bte, key->data, be_get_keysize(be));
 
-        st=key_insert_extended(&blobid, db, page, key);
+        st = key_insert_extended(&blobid, db, page, key);
         ham_assert(st ? blobid == 0 : 1, (0));
         if (!blobid)
             return st ? st : HAM_INTERNAL_ERROR;
@@ -836,56 +926,104 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
 
 static ham_status_t
 __insert_split(ham_page_t *page, ham_key_t *key,
-        ham_offset_t rid, insert_scratchpad_t *scratchpad,
-        insert_hints_t *hints)
+        ham_offset_t rid, insert_scratchpad_t *scratchpad)
 {
+    common_btree_datums_t * const btdata = scratchpad->btdata;
+    ham_device_t * const dev = btdata->dev;
+    //ham_btree_t * const be = btdata->be;
+    ham_db_t * const db = btdata->db;
+    ham_env_t * const env = btdata->env;
+    //ham_bt_cursor_t * const cursor = btdata->cursor;
+    common_hints_t * const hints = &btdata->hints;
+    const ham_size_t keywidth = btdata->keywidth;
+    //const ham_size_t keysize = btdata->keysize;
+    const ham_float_t split_ratio = btdata->split_ratio;
+
     int cmp;
     ham_status_t st;
-    ham_page_t *newpage, *oldsib;
-    int_key_t *nbte, *obte;
-    btree_node_t *nbtp, *obtp, *sbtp;
-    ham_size_t count, keysize;
-    ham_db_t *db=page_get_owner(page);
-    ham_env_t *env = db_get_env(db);
-    ham_key_t pivotkey, oldkey;
+    ham_page_t *newpage;
+    ham_page_t *oldsib;
+    int_key_t *nbte;
+    int_key_t *obte;
+    //int_key_t *nkeyarr;
+    //int_key_t *okeyarr;
+    //int_key_t *keyarr;
+    btree_node_t *nbtp;
+    btree_node_t *obtp;
+    btree_node_t *sbtp;
+    ham_size_t count;
+    //ham_size_t keysize;
+    //ham_db_t *db=page_get_owner(page);
+    //ham_btree_t *be = (ham_btree_t *)db_get_backend(db);
+    //ham_env_t *env = env;
+    ham_key_t pivotkey;
+    ham_key_t oldkey;
     ham_offset_t pivotrid;
     ham_u16_t pivot;
     ham_bool_t pivot_at_end=HAM_FALSE;
+    dev_alloc_request_info_ex_t info = {0};
+    //ham_size_t keywidth;
 
     ham_assert(page_get_owner(page), (0));
-    ham_assert(device_get_env(page_get_device(page))
-            == db_get_env(page_get_owner(page)), (0));
+    ham_assert(dev == page_get_device(page), (0));
+    ham_assert(device_get_env(dev) == db_get_env(page_get_owner(page)), (0));
 
     ham_assert(hints->force_append == HAM_FALSE, (0));
 
-    keysize=db_get_keysize(db);
+    //keysize=be_get_keysize(be);
+    //keywidth = be_get_keysize(be) + db_get_int_key_header_size();
 
     /*
      * allocate a new page
      */
-    hints->cost++;
-    st=db_alloc_page(&newpage, db, PAGE_TYPE_B_INDEX, 0);
-    ham_assert(st ? page == NULL : 1, (0));
-    ham_assert(!st ? page  != NULL : 1, (0));
+    info.db = db;
+    info.env = env;
+    info.dam = db_get_data_access_mode(db);
+    info.entire_page = HAM_TRUE;
+    info.space_type = PAGE_TYPE_B_INDEX;
+    info.key = key;
+    info.record = btdata->in_rec;
+
+    st = db_alloc_page(&newpage, 0, &info);
+    ham_assert(st ? newpage == NULL : 1, (0));
+    ham_assert(!st ? newpage != NULL : 1, (0));
     if (st)
         return st;
-    ham_assert(page_get_owner(newpage), (""));
     /* clear the node header */
     memset(page_get_payload(newpage), 0, sizeof(btree_node_t));
+    page_set_owner(newpage, db);
 
-    stats_page_is_nuked(db, page, HAM_TRUE);
+    stats_page_is_nuked(btdata, page, REASON_SPLIT);
 
     /*
      * move half of the key/rid-tuples to the new page
      *
-     * !! recno: keys are sorted; we do a "lazy split"
+     * !! recno: keys are sorted; we do a "lazy split".
+     *
+     * for databases with sequential access (this includes recno databases):
+     * do not split in the middle, but at the very end of the page
+     *
+     *
+     * The pivot is moved from the M/2 midpoint to either side, depending on
+     * the db statistics regarding append/prepend activity: when a lot of
+     * activity is append or prepend insert actitivy, a performance
+     * improvement can possibly be obtained by shifting the pivot anticipating
+     * near-future activity of the same type: that way the fill rate of the
+     * Btree index may improve resulting in fewer splits, which are costly
+     * in both CPU load and storage space terms. Otherwise, with a (semi-)ordered
+     * append or prepend insert feed, the fill rates of the pages would
+     * not surpass the worst case value of M/2.
+     *
+     * TODO: check the EMA's in the statistics to decide which way the pivot should shift.
      */
     nbtp=ham_page_get_btree_node(newpage);
-    nbte=btree_node_get_key(db, nbtp, 0);
+    nbte = btree_in_node_get_key_ref(btdata, newpage, 0);
+
     obtp=ham_page_get_btree_node(page);
-    obte=btree_node_get_key(db, obtp, 0);
+    obte = btree_in_node_get_key_ref(btdata, page, 0);
     count=btree_node_get_count(obtp);
 
+#if 0
     /*
      * for databases with sequential access (this includes recno databases):
      * do not split in the middle, but at the very end of the page
@@ -893,14 +1031,25 @@ __insert_split(ham_page_t *page, ham_key_t *key,
      * if this page is the right-most page in the index, and this key is
      * inserted at the very end, then we select the same pivot as for
      * sequential access
+     *
+     * TODO GerH: this should be hinter-based work!!!
      */
     if (db_get_data_access_mode(db)&HAM_DAM_SEQUENTIAL_INSERT)
+    {
         pivot_at_end=HAM_TRUE;
-    else if (btree_node_get_right(obtp)==0) {
+    }
+    else if (btree_node_get_right(obtp)==0)
+    {
+        ham_assert(!(db_get_rt_flags(db) & HAM_RECORD_NUMBER), (0));
         cmp=key_compare_pub_to_int(db, page, key, btree_node_get_count(obtp)-1);
         if (cmp>0)
             pivot_at_end=HAM_TRUE;
     }
+    else
+    {
+        ham_assert(!(db_get_rt_flags(db) & HAM_RECORD_NUMBER), (0));
+    }
+#endif
 
     /*
      * internal pages set the count of the new page to count-pivot-1 (because
@@ -908,11 +1057,39 @@ __insert_split(ham_page_t *page, ham_key_t *key,
      * by using pivot=count-2 we make sure that at least 1 element will remain
      * in the new node.
      */
-    if (pivot_at_end) {
-        pivot=count-2;
+    if (pivot_at_end)
+    {
+        ham_assert(count > 2, (0));
+        ham_assert(count - 2 < HAM_MAX_U16, (0));
+        pivot = count - 2;
     }
-    else {
-        pivot=count/2;
+    else
+    {
+        ham_assert((count * split_ratio) / HAM_FLOAT_1 < HAM_MAX_U16, (0));
+        ham_assert(split_ratio == MK_HAM_FLOAT(0.5), (0)); // old 1/2 ratio
+        pivot = (count * split_ratio + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1; // round the value
+		if (btree_node_is_leaf(obtp))
+		{
+			if (pivot < 2)
+			{
+				pivot = 2;
+			}
+			else if (count < pivot + 2)
+			{
+				pivot = count - 2;
+			}
+		}
+		else
+		{
+			if (pivot < 2)
+			{
+				pivot = 2;
+			}
+			else if (count < pivot + 2 + 1)
+			{
+				pivot = count - 3;
+			}
+		}
     }
 
     /*
@@ -927,31 +1104,41 @@ __insert_split(ham_page_t *page, ham_key_t *key,
      * page, too. in internal nodes, we don't insert it, but propagate
      * it to the parent node only.
      */
-    if (btree_node_is_leaf(obtp)) {
-        hints->cost += stats_memmove_cost((db_get_int_key_header_size()+keysize)*(count-pivot));
-        memcpy((char *)nbte,
-               ((char *)obte)+(db_get_int_key_header_size()+keysize)*pivot,
-               (db_get_int_key_header_size()+keysize)*(count-pivot));
-    }
-    else {
-        hints->cost += stats_memmove_cost((db_get_int_key_header_size()+keysize)*(count-pivot-1));
-        memcpy((char *)nbte,
-               ((char *)obte)+(db_get_int_key_header_size()+keysize)*(pivot+1),
-               (db_get_int_key_header_size()+keysize)*(count-pivot-1));
-    }
+    if (btree_node_is_leaf(obtp))
+    {
+#if 0
+		memcpy((char *)nbte,
+               ((char *)obte)+keywidth*pivot,
+               keywidth*(count-pivot));
+#else
+        int_key_t *bte_rhs = btree_in_node_get_key_ref(btdata, page, pivot);
+		btree_move_key_series(btdata, newpage, page, nbte, bte_rhs, count - pivot);
+#endif
+	}
+    else
+    {
+#if 0
+		memcpy((char *)nbte,
+               ((char *)obte)+keywidth*(pivot+1),
+               keywidth*(count-pivot-1));
+#else
+        int_key_t *bte_rhs = btree_in_node_get_key_ref(btdata, page, pivot + 1);
+		btree_move_key_series(btdata, newpage, page, nbte, bte_rhs, count - pivot - 1);
+#endif
+	}
 
     /*
      * store the pivot element, we'll need it later to propagate it
      * to the parent page
      */
-    nbte=btree_node_get_key(db, obtp, pivot);
+    nbte = btree_in_node_get_key_ref(btdata, page, pivot);
 
     memset(&pivotkey, 0, sizeof(pivotkey));
     memset(&oldkey, 0, sizeof(oldkey));
-    oldkey.data=key_get_key(nbte);
-    oldkey.size=key_get_size(nbte);
-    oldkey._flags=key_get_flags(nbte);
-    st = util_copy_key(db, &oldkey, &pivotkey);
+    oldkey.data = key_get_key(nbte);
+    oldkey.size = key_get_size(nbte);
+    ham_key_set_intflags(&oldkey, key_get_flags(nbte));
+    st = util_copy_key(db, &oldkey, &pivotkey, page);
     if (st)
     {
         (void)db_free_page(newpage, DB_MOVE_TO_FREELIST);
@@ -988,20 +1175,21 @@ __insert_split(ham_page_t *page, ham_key_t *key,
     /*
      * insert the new element
      */
-    hints->cost++;
-    cmp=key_compare_pub_to_int(db, page, key, pivot);
+    cmp = key_compare_pub_to_int(btdata, page, key, pivot);
     if (cmp < -1)
     {
         st = (ham_status_t)cmp;
         goto fail_dramatically;
     }
 
-    if (cmp>=0)
-        st=__insert_nosplit(newpage, key, rid,
-                scratchpad->record, scratchpad->cursor, hints);
+    if (cmp >= 0)
+    {
+        st = __insert_nosplit(newpage, key, rid, btdata->in_rec, scratchpad);
+    }
     else
-        st=__insert_nosplit(page, key, rid,
-                scratchpad->record, scratchpad->cursor, hints);
+    {
+        st = __insert_nosplit(page, key, rid, btdata->in_rec, scratchpad);
+    }
     if (st)
     {
         goto fail_dramatically;
@@ -1014,17 +1202,23 @@ __insert_split(ham_page_t *page, ham_key_t *key,
      */
     if (btree_node_get_right(obtp))
     {
-        st=db_fetch_page(&oldsib, db, btree_node_get_right(obtp), 0);
+        st=db_fetch_page(&oldsib, env, btree_node_get_right(obtp), 0);
+        ham_assert(st ? oldsib == NULL : oldsib != NULL, (0));
         if (st)
             goto fail_dramatically;
+        ham_assert(!st, (0));
+        ham_assert(db, (0));
+        page_set_owner(oldsib, db);
     }
     else
     {
         oldsib=0;
     }
 
-    if (oldsib) {
-        st=ham_log_add_page_before(oldsib);
+    if (oldsib)
+    {
+        ham_assert(btdata->db && page_get_owner(oldsib) == btdata->db, (0));
+        st = ham_log_add_page_before(oldsib);
         if (st)
             goto fail_dramatically;
     }
@@ -1032,8 +1226,9 @@ __insert_split(ham_page_t *page, ham_key_t *key,
     btree_node_set_left (nbtp, page_get_self(page));
     btree_node_set_right(nbtp, btree_node_get_right(obtp));
     btree_node_set_right(obtp, page_get_self(newpage));
-    if (oldsib) {
-        sbtp=ham_page_get_btree_node(oldsib);
+    if (oldsib)
+    {
+        sbtp = ham_page_get_btree_node(oldsib);
         btree_node_set_left(sbtp, page_get_self(newpage));
         page_set_dirty(oldsib, env);
     }
@@ -1043,12 +1238,13 @@ __insert_split(ham_page_t *page, ham_key_t *key,
     /*
      * propagate the pivot key to the parent page
      */
-    ham_assert(!(scratchpad->key.flags & HAM_KEY_USER_ALLOC), (0));
-    if (scratchpad->key.data)
-        allocator_free(env_get_allocator(env), scratchpad->key.data);
-    scratchpad->key=pivotkey;
-    scratchpad->rid=pivotrid;
-    ham_assert(!(scratchpad->key.flags & HAM_KEY_USER_ALLOC), (0));
+    ham_assert(!(scratchpad->propa_key.flags & HAM_KEY_USER_ALLOC), (0));
+    if (scratchpad->propa_key.data)
+        allocator_free(env_get_allocator(env), scratchpad->propa_key.data);
+    scratchpad->propa_key = pivotkey;
+    scratchpad->rid = pivotrid;
+    ham_assert(!(scratchpad->propa_key.flags & HAM_KEY_USER_ALLOC), (0));
+    ham_assert(!(ham_key_get_intflags(&scratchpad->propa_key) & KEY_IS_EXTENDED), (0));
 
     return (SPLIT);
 
