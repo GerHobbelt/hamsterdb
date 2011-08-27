@@ -246,6 +246,8 @@ typedef struct
 	 * @sa HAM_MAX_KEY_SIZE_T */
     ham_u16_t size;
 
+	ham_u16_t _alignment_padding_dummy1;
+
     /** The key flags; see @ref HAM_KEY_USER_ALLOC */
     ham_u32_t flags;
 
@@ -331,6 +333,14 @@ struct ham_parameter_t {
  */
 
 /**
+ * Assume 'default' behaviour: Databases created with versions newer
+ * than 1.0.9 will assume @ref HAM_DAM_RANDOM_WRITE, unless
+ * the Database is RECNO-based, in which case
+ * @ref HAM_DAM_SEQUENTIAL_INSERT is assumed.
+ */
+#define HAM_DAM_DEFAULT                  0u
+
+/**
  * Assume random access (a mixed bag of random insert and delete).
  *
  * This is the default setting for (non-RECNO) Databases created with versions
@@ -338,20 +348,16 @@ struct ham_parameter_t {
  *
  * Note: RECNO-based Databases will start in the implicit
  * @ref HAM_DAM_SEQUENTIAL_INSERT mode instead.
- *
- * This flag is non persistent.
 */
-#define HAM_DAM_RANDOM_WRITE            0x0001
+#define HAM_DAM_RANDOM_WRITE             0x0001u
 
 /**
  * Assume sequential insert (and few or no delete) operations.
  *
  * This is the default setting for RECNO based Databases created with versions
  * newer than 1.0.9.
- *
- * This flag is non persistent.
  */
-#define HAM_DAM_SEQUENTIAL_INSERT        0x0002
+#define HAM_DAM_SEQUENTIAL_INSERT        0x0002u
 
 /**
  * Suggest a faster allocation scheme, which will leave a few
@@ -371,7 +377,7 @@ struct ham_parameter_t {
  *
  * @note This bit flag will be set implicitly when opening an old (hamsterdb v1.0.x) Database file.
  */
-#define HAM_DAM_ENFORCE_PRE110_FORMAT    0x8000
+#define HAM_DAM_ENFORCE_PRE110_FORMAT    0x8000u
 
 /**
  * @}
@@ -444,8 +450,44 @@ struct ham_parameter_t {
 #define HAM_NEED_RECOVERY            (-28)
 /** Cursor must be closed prior to Transaction abort/commit */
 #define HAM_CURSOR_STILL_OPEN        (-29)
-/** Record filter or file filter not found */
-#define HAM_FILTER_NOT_FOUND         (-30)
+/** User-allocated record size too small
+
+@sa HAM_RECORD_USER_ALLOC
+@sa ham_record_t
+*/
+#define HAM_RECORDSIZE_TOO_SMALL     (-30)
+/** User-allocated key size too small
+
+@sa HAM_KEY_USER_ALLOC
+@sa ham_key_t
+*/
+#define HAM_KEYSIZE_TOO_SMALL        (-31)
+
+
+#if 0 /* [i_a] obsoleted; use the new device graph architecture instead */
+
+/** A special error signal for page filters which require precise page-sized I/O
+(such as page-oriented encryption and compression filters); this error may only
+be returned by such a page filter's @ref after_read() callback method when it
+has modified the @ref ham_file_filter_t.info.raw_page_size value too.
+*/
+#define HAM_INVALID_PAGEFILTER_PAGESIZE         (-36)
+/** The page filters quarreled unnecessarily about the right physical/raw pagesize
+and the maximum alloted number of iterations has been used up.
+This definitely hints at one (or more) page filters having a design (page layout) bug.
+*/
+#define HAM_INVALID_PAGEFILTER_DESIGN           (-37)
+
+#endif
+
+/** Filter was not part of the record/page filter chain */
+#define HAM_FILTER_NOT_FOUND_IN_CHAIN           (-33)
+/** Cycle detected in device graph */
+#define HAM_CYCLE_IN_DEVICE_GRAPH    (-34)
+/** Key already exists */
+#define HAM_KEY_ALREADY_EXISTS       (-32)
+/** Backend already initialized */
+#define HAM_BACKEND_ALREADY_INITIALIZED         (-35)
 /** Cursor does not point to a valid item */
 #define HAM_CURSOR_IS_NIL            (-100)
 /** Database not found */
@@ -500,7 +542,7 @@ struct ham_parameter_t {
  * @sa ham_set_errhandler
  */
 typedef void HAM_CALLCONV (*ham_errhandler_fun)
-                    (int level, const char *message);
+                    (int level, const char *file, int line, const char *function, const char *message);
 
 /**
  * @defgroup error_levels hamsterdb Error Levels
@@ -1307,6 +1349,9 @@ ham_txn_begin(ham_txn_t **txn, ham_db_t *db, ham_u32_t flags);
  */
 HAM_EXPORT ham_status_t
 ham_txn_commit(ham_txn_t *txn, ham_u32_t flags);
+
+/** Flag for @ref ham_txn_commit */
+#define HAM_TXN_FORCE_WRITE                                    1
 
 /**
  * Aborts a Transaction
@@ -4128,6 +4173,16 @@ ham_cursor_get_duplicate_count(ham_cursor_t *cursor,
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_cursor_close(ham_cursor_t *cursor);
+
+/**
+* Retrieves the Database handle of a Cursor
+*
+* @param cursor A valid Cursor handle
+*
+* @return @a The Database handle of @a cursor
+*/
+HAM_EXPORT ham_db_t * HAM_CALLCONV
+ham_cursor_get_database(ham_cursor_t *cursor);
 
 /**
  * @}

@@ -796,7 +796,7 @@ public:
                 break;
             if (st && st!=HAM_LIMITS_REACHED)
                 throw error(st);
-            count+=16;
+            //count+=16;  -- count is set to the required number when st==HAM_LIMITS_REACHED
             v.resize(count);
         }
 
