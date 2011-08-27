@@ -182,7 +182,7 @@ typedef struct
     ham_u32_t _intflags;
 
     /** Offset for partial reading/writing; see @ref HAM_PARTIAL for an in-depth discussion. */
-    ham_u32_t partial_offset;
+    ham_size_t partial_offset;
 
     /** Size for partial reading/writing; see @ref HAM_PARTIAL for an in-depth discussion. */
     ham_size_t partial_size;
@@ -193,7 +193,7 @@ typedef struct
 	 * This element MUST be able to carry sizeof(@ref ham_pers_rid_t) bytes, as it is also
 	 * used to keep a permanent copy of the key in case of TINY/SMALL keys.
 	 */
-    ham_u64_t _rid;
+	ham_rid_t _rid;
 
 } ham_record_t;
 
@@ -251,6 +251,7 @@ typedef struct
 
     /** For internal use */
     ham_u32_t _flags;
+
 } ham_key_t;
 
 /** Flag for @ref ham_key_t (only really useful in combination with

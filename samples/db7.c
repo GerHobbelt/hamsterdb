@@ -32,7 +32,7 @@ typedef struct approx_key
 
 
 
-void show_params(const ham_parameter_t *db_params_out)
+void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_out)
 {
     int i;
 
@@ -72,7 +72,7 @@ void show_params(const ham_parameter_t *db_params_out)
             break;
 
         case HAM_PARAM_GET_FILENAME:
-            printf("HAM_PARAM_GET_FILENAME: %s\n", (const char *)db_params_out[i].value);
+            printf("HAM_PARAM_GET_FILENAME: %s\n", (const char *)db_params_out[i].value.p);
             continue;
 
         case HAM_PARAM_GET_KEYS_PER_PAGE:
@@ -82,7 +82,7 @@ void show_params(const ham_parameter_t *db_params_out)
         default:
             continue;
         }
-        printf(desc, (unsigned int)db_params_out[i].value);
+        printf(desc, (unsigned int)db_params_out[i].value.n);
         puts("");
     }
 }
@@ -148,7 +148,7 @@ main(int argc, char **argv)
             printf("ham_get_env_params() failed with error %d\n", st);
             return (-1);
         }
-        show_params(db_params_out);
+        show_params(env, NULL, db_params_out);
     }
 
 
@@ -157,7 +157,7 @@ main(int argc, char **argv)
         printf("ham_get_db_params(NULL) failed with error %d\n", st);
         return (-1);
     }
-    show_params(db_params_out);
+    show_params(NULL, db, db_params_out);
 
     /*
      * second step: create a new database with support for duplicate keys
@@ -175,7 +175,7 @@ main(int argc, char **argv)
         printf("ham_get_db_params(DB) failed with error %d\n", st);
         return (-1);
     }
-    show_params(db_params_out);
+    show_params(NULL, db, db_params_out);
 
     st=ham_calc_maxkeys_per_page(db, &maxkeys, sizeof(approx_key));
     printf("ham_calc_maxkeys_per_page(keysize=%u) reported a keycount of %u, while producing error %d (%s)\n",

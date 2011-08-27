@@ -131,6 +131,16 @@ HAM_64BIT               compile for 64bit (alias: WIN64, also needs WIN32)
 HAM_DISABLE_COMPRESSION build without support for zlib compression
 HAM_DISABLE_ENCRYPTION  build without support for AES encryption
 HAM_ENABLE_REMOTE       build with remote access (needs libcurl/protobuf)
+HAM_FAST_ONLY_32BIT     compile a hamsterdb engine which performs
+                        all index access in 32 bits only; this limits
+						the number of keys you can access/store
+						in any environment / database to the unsigned
+						32 bit range (~4E9), but it gives you fast
+						32-bit integer code. Particularly useful
+						when you do not expect to ever need storage
+						for more than ~4E9 keys and records, and your
+						compiler produces slow 64 bit integer code.
+						(Which would be any 32-bit compiler / CPU.)
 
 Also, if you compile for windows, you have to compile the file 'src/os_win32.c',
 and ignore the file 'src/os_posix.c'. Vice versa on non-Windows platforms.

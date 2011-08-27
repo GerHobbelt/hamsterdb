@@ -89,7 +89,7 @@ main(int argc, char **argv)
          */
         while ((p=strtok(start, " \t\r\n"))) {
             key.data=p;
-            key.size=(ham_size_t)strlen(p)+1; /* also store the terminating
+            key.size=(ham_u16_t)strlen(p)+1; /* also store the terminating
                                                 0-byte */
 
             /* note: the second parameter of ham_insert() is reserved; set it

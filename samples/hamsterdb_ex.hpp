@@ -177,7 +177,7 @@ public:
 class key {
 public:
     /** Constructor */
-    key(void *data=0, ham_size_t size=0, ham_u16_t flags=0)
+    key(void *data=0, ham_u16_t size=0, ham_u16_t flags=0)
     {
         memset(&m_key, 0, sizeof(m_key));
         m_key.data=data;
@@ -223,7 +223,7 @@ public:
     }
 
     /** Sets the size of the key. */
-    void set_size(ham_size_t size)
+    void set_size(ham_u16_t size)
     {
         m_key.size=size;
     }

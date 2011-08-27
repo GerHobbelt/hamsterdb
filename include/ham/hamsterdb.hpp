@@ -472,8 +472,8 @@ public:
     }
 
     /** Returns number of items in the Database. */
-    ham_u64_t get_key_count(ham_txn_t *txn=0, ham_u32_t flags=0) {
-        ham_u64_t count=0;
+    ham_offset_t get_key_count(ham_txn_t *txn=0, ham_u32_t flags=0) {
+        ham_offset_t count=0;
         ham_status_t st=ham_get_key_count(m_db, txn, flags, &count);
         if (st)
             throw error(st);
