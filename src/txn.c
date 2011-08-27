@@ -144,7 +144,7 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
 
     ham_assert(txn_get_pagelist(txn)==0, (0));
     txn_set_env(txn, 0);
-    txn_set_pagelist(txn, 0);
+    //txn_set_pagelist(txn, 0);
     env_set_txn(env, 0);
 
     /* flush the file handle */
@@ -259,7 +259,8 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
     }
 
     ham_assert(txn_get_pagelist(txn)==0, (0));
-
+    txn_set_env(txn, 0);
+    //txn_set_pagelist(txn, 0);
     env_set_txn(env, 0);
 
     /* now it's the time to purge caches */
