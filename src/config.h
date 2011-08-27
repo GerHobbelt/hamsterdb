@@ -46,21 +46,12 @@
 #if (!defined(HAM_DEBUG))
 #   if (defined(_DEBUG) || defined(DEBUG))
 #       define HAM_DEBUG 1
-#		if !defined(HAM_LEAN_AND_MEAN_FOR_PROFILING)
-//#           define HAM_LEAN_AND_MEAN_FOR_PROFILING 1
-#       endif
 #   endif
+#endif
+#if !defined(HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL)
+#   define HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL     1
 #endif
 
-/*
- * the endian-architecture of the host computer; set this to
- * HAM_LITTLE_ENDIAN or HAM_BIG_ENDIAN
- */
-#ifndef HAM_LITTLE_ENDIAN
-#   ifndef HAM_BIG_ENDIAN
-#       error "neither HAM_LITTLE_ENDIAN nor HAM_BIG_ENDIAN defined"
-#   endif
-#endif
 
 /**
  * the default cache size is 2 MiB

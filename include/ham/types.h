@@ -75,7 +75,7 @@
  *
  * make sure crtdbg.h is loaded before malloc.h!
  */
-#if defined(_MSC_VER) && defined(HAM_OS_WIN32)
+#if defined(_MSC_VER) && defined(HAM_OS_WIN32) && (HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL < 3)
 #   if !defined(UNDER_CE)
 #      if defined(DEBUG) || defined(_DEBUG)
 #         if !defined(_CRTDBG_MAP_ALLOC)

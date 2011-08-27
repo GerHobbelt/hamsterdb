@@ -22,12 +22,26 @@
 #ifndef HAM_ENDIANSWAP_H__
 #define HAM_ENDIANSWAP_H__
 
+#include <ham/types.h>
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-/**
+/*
+ * the endian-architecture of the host computer; set this to
+ * HAM_LITTLE_ENDIAN or HAM_BIG_ENDIAN
+ */
+#ifndef HAM_LITTLE_ENDIAN
+#   ifndef HAM_BIG_ENDIAN
+#       error "neither HAM_LITTLE_ENDIAN nor HAM_BIG_ENDIAN defined"
+#   endif
+#endif
+
+
+/*
  * byte swapping macros - we use little endian
  */
 #ifdef HAM_BIG_ENDIAN
