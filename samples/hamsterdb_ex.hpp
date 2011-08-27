@@ -38,9 +38,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if 0
 #if defined(_MSC_VER) && defined(_DEBUG) && !defined(_CRTDBG_MAP_ALLOC) && !defined(UNDER_CE)
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
+#endif
 #endif
 
 

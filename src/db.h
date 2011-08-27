@@ -87,8 +87,8 @@ typedef HAM_PACK_0 union HAM_PACK_1
         /** key size in this page */
         ham_u16_t _keysize;
 
-        /* reserved */
-        ham_u16_t  _reserved1;
+        /** reserved */
+        ham_u16_t _reserved1;
 
         /** address of this page */
         ham_offset_t _self;
@@ -99,7 +99,7 @@ typedef HAM_PACK_0 union HAM_PACK_1
         /** last used record number value */
         ham_offset_t _recno;
 
-        /* reserved */
+        /** reserved */
         ham_u32_t _reserved2;
     } HAM_PACK_2 b;
 

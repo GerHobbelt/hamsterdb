@@ -76,11 +76,10 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
     {
         ham_size_t count;
 
-        node=ham_page_get_btree_node(page);
+        node = ham_page_get_btree_node(page);
         ptr_left = btree_node_get_ptr_left(node);
 
-        count=btree_node_get_count(node);
-
+        count = btree_node_get_count(node);
         /*
         WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:
 
@@ -118,12 +117,14 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
                 return st;
         }
         else
+        {
             page = 0;
+        }
 
         ++level;
     }
 
-    return (cb_st < 0 ? cb_st : HAM_SUCCESS);
+    return cb_st < 0 ? cb_st : HAM_SUCCESS;
 }
 
 static ham_status_t
@@ -131,7 +132,7 @@ _enumerate_level(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
         ham_enumerate_cb_t cb, ham_bool_t recursive, void *context)
 {
     ham_status_t st;
-    ham_size_t count=0;
+    ham_size_t count = 0;
     btree_node_t *node;
     ham_status_t cb_st = CB_CONTINUE;
 
@@ -147,7 +148,7 @@ _enumerate_level(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
         /*
          * get the right sibling
          */
-        node=ham_page_get_btree_node(page);
+        node = ham_page_get_btree_node(page);
         if (btree_node_get_right(node))
         {
             st=db_fetch_page(&page, be_get_db(be),
@@ -183,7 +184,7 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
     else
         is_leaf=1;
 
-    count=btree_node_get_count(node);
+    count = btree_node_get_count(node);
 
     /*
     WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:WARNING:
@@ -204,7 +205,7 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
         return (cb_st);
 
     page_add_ref(page);
-    for (i=0; (i < count) && (cb_st != CB_DO_NOT_DESCEND); i++)
+    for (i = 0; (i < count) && (cb_st != CB_DO_NOT_DESCEND); i++)
     {
         bte = btree_node_get_key(db, node, i);
 

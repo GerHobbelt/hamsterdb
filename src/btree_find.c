@@ -61,7 +61,8 @@ btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor,
         return HAM_KEY_NOT_FOUND;
     }
 
-    if (hints.try_fast_track) {
+    if (hints->try_fast_track)
+    {
         /*
          * see if we get a sure hit within this btree leaf; if not, revert to
          * regular scan
@@ -79,7 +80,7 @@ btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor,
             ham_assert(btree_node_is_leaf(node), (0));
 
             /* we need at least 3 keys in the node: edges + middle match */
-			if (btree_node_get_count(node) < 3)
+            if (btree_node_get_count(node) < 3)
                 goto no_fast_track;
 
             idx = btree_node_search_by_key(db, page, key, hints.flags);
@@ -107,7 +108,8 @@ btree_find_cursor(ham_btree_t *be, ham_bt_cursor_t *cursor,
 
 no_fast_track:
 
-    if (idx == -1) {
+    if (idx == -1)
+    {
         /* get the address of the root page */
         if (!btree_get_rootpage(be)) {
             stats_update_find_fail(db, &hints);
@@ -125,7 +127,8 @@ no_fast_track:
 
         /* now traverse the root to the leaf nodes, till we find a leaf */
         node=ham_page_get_btree_node(page);
-        if (!btree_node_is_leaf(node)) {
+        if (!btree_node_is_leaf(node))
+        {
             /* signal 'don't care' when we have multiple pages; we resolve
                this once we've got a hit further down */
             if (hints.flags & (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH))
@@ -172,11 +175,13 @@ no_fast_track:
      * do now is ensure we've got the right one and if not,
      * shift by one.
      */
-    if (idx >= 0) {
+    if (idx >= 0)
+    {
         if ((ham_key_get_intflags(key) & KEY_IS_APPROXIMATE)
             && (hints.original_flags
                     & (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH))
-                != (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH)) {
+                != (HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH))
+        {
             if ((ham_key_get_intflags(key) & KEY_IS_GT)
                 && (hints.original_flags & HAM_FIND_LT_MATCH)) {
                 /*
@@ -218,10 +223,12 @@ no_fast_track:
                  * if the index+1 is still in the page, just increment the
                  * index
                  */
-                if (idx + 1 < btree_node_get_count(node)) {
+                if (idx + 1 < btree_node_get_count(node))
+                {
                     idx++;
                 }
-                else {
+                else
+                {
                     /*
                      * otherwise load the right sibling page
                      */

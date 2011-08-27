@@ -102,7 +102,7 @@ main(int argc, char **argv)
     /*
      * iterate over all items and print them
      */
-    while (1) {
+    for (;;) {
         st=ham_cursor_move(cursor, &key, &record, HAM_CURSOR_NEXT);
         if (st!=HAM_SUCCESS) {
             /* reached end of the database? */

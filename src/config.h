@@ -29,13 +29,13 @@
 #ifdef HAVE_CONFIG_H
 #   include "../config.h"
 #else
-#	ifdef UNDER_CE
-#		define HAVE_MMAP                0
-#		define HAVE_UNMMAP              0
-#	else
-#		define HAVE_MMAP                1
-#		define HAVE_UNMMAP              1
-#	endif
+#   ifdef UNDER_CE
+#       define HAVE_MMAP                0
+#       define HAVE_UNMMAP              0
+#   else
+#       define HAVE_MMAP                1
+#       define HAVE_UNMMAP              1
+#   endif
 #   define HAVE_PREAD                   1
 #   define HAVE_PWRITE                  1
 #endif

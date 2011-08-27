@@ -117,7 +117,7 @@ main(int argc, char **argv)
     /*
      * iterate over all items with HAM_CURSOR_NEXT, and print the words
      */
-    while (1) {
+    for (;;) {
         st=ham_cursor_move(cursor, &key, &record, HAM_CURSOR_NEXT);
         if (st!=HAM_SUCCESS) {
             /* reached end of the database? */

@@ -193,7 +193,7 @@ cache_put_page(ham_cache_t *cache, ham_page_t *page)
 {
     ham_size_t hash=__calc_hash(cache, page_get_self(page));
 
-    ham_assert(page_get_pers(page), (""));
+    ham_assert(page_get_pers(page), (0));
 
     /* first remove the page from the cache, if it's already cached
      *
@@ -211,11 +211,12 @@ cache_put_page(ham_cache_t *cache, ham_page_t *page)
     ham_assert(!page_is_in_list(cache_get_totallist(cache), page,
                 PAGE_LIST_CACHED), (0));
     cache_set_totallist(cache,
-                page_list_insert(cache_get_totallist(cache),
-                    PAGE_LIST_CACHED, page));
+            page_list_insert(cache_get_totallist(cache),
+            PAGE_LIST_CACHED, page));
+
 
     cache_set_cur_elements(cache,
-                cache_get_cur_elements(cache)+1);
+            cache_get_cur_elements(cache)+1);
 
     /*
      * insert it in the cache bucket
@@ -224,8 +225,10 @@ cache_put_page(ham_cache_t *cache, ham_page_t *page)
      * bucket
      */
     if (page_is_in_list(cache_get_bucket(cache, hash), page, PAGE_LIST_BUCKET))
+    {
         cache_set_bucket(cache, hash, page_list_remove(cache_get_bucket(cache,
                     hash), PAGE_LIST_BUCKET, page));
+    }
     ham_assert(!page_is_in_list(cache_get_bucket(cache, hash), page,
                 PAGE_LIST_BUCKET), (0));
     cache_get_bucket(cache, hash)=
@@ -236,7 +239,7 @@ cache_put_page(ham_cache_t *cache, ham_page_t *page)
     if (!cache_get_totallist_tail(cache))
         cache_set_totallist_tail(cache, page);
 
-    ham_assert(cache_check_integrity(cache)==0, (""));
+    ham_assert(cache_check_integrity(cache)==0, (0));
 }
 
 /**
@@ -298,8 +301,10 @@ cache_remove_page(ham_cache_t *cache, ham_page_t *page)
     if (removed)
         cache_set_cur_elements(cache, cache_get_cur_elements(cache)-1);
 
-    ham_assert(cache_check_integrity(cache)==0, (""));
+    ham_assert(cache_check_integrity(cache)==0, (0));
 }
+
+
 
 ham_status_t
 cache_check_integrity(ham_cache_t *cache)
@@ -332,13 +337,13 @@ cache_check_integrity(ham_cache_t *cache)
     head=cache_get_totallist(cache);
     while (head) {
         if (tail && !page_get_next(head, PAGE_LIST_CACHED))
-            ham_assert(head==tail, (""));
+            ham_assert(head==tail, (0));
         head=page_get_next(head, PAGE_LIST_CACHED);
     }
     if (tail)
-        ham_assert(page_get_next(tail, PAGE_LIST_CACHED)==0, (""));
+        ham_assert(page_get_next(tail, PAGE_LIST_CACHED)==0, (0));
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 

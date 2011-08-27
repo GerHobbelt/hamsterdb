@@ -13,9 +13,10 @@
  * This sample does the same as env2, but uses the C++ API.
  */
 
+#include <ham/hamsterdb.hpp>
+
 #include <iostream>
 #include <stdlib.h> /* for exit() */
-#include <ham/hamsterdb.hpp>
 
 #define MAX_DBS             3
 
@@ -166,7 +167,7 @@ run_demo(void)
      * the outer loop is similar to
      * SELECT * FROM customers WHERE 1;
      */
-    while (1) {
+    for (;;) {
         customer_t *customer;
 
         try {
@@ -218,7 +219,7 @@ run_demo(void)
         /* get the record of this database entry */
         cursor[2].move(0, &c2o_record);
 
-        do {
+        for (;;) {
             int order_id;
 
             order_id=*(int *)c2o_record.get_data();
@@ -252,8 +253,7 @@ run_demo(void)
                     return (-1);
                 }
             }
-
-        } while(1);
+        }
     }
 
     /*

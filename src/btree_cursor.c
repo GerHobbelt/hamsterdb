@@ -70,7 +70,7 @@ my_move_first(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
      * while we've not reached the leaf: pick the smallest element
      * and traverse down
      */
-    while (1) {
+    for(;;) {
         node=ham_page_get_btree_node(page);
         /* check for an empty root page */
         if (btree_node_get_count(node)==0)
@@ -81,7 +81,8 @@ my_move_first(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
 
         st=db_fetch_page(&page, db, btree_node_get_ptr_left(node), 0);
         ham_assert(st ? !page : 1, (0));
-        if (!page) {
+        if (!page)
+        {
             return st ? st : HAM_KEY_NOT_FOUND;
         }
     }
@@ -96,7 +97,7 @@ my_move_first(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
             bt_cursor_get_flags(c)|BT_CURSOR_FLAG_COUPLED);
     bt_cursor_set_dupe_id(c, 0);
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 static ham_status_t
@@ -112,24 +113,28 @@ my_move_next(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
     /*
      * uncoupled cursor: couple it
      */
-    if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED) {
+    if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED)
+    {
         st=bt_cursor_couple(c);
         if (st)
             return (st);
     }
     else if (!(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED))
+    {
         return (HAM_CURSOR_IS_NIL);
+    }
 
-    page=bt_cursor_get_coupled_page(c);
-    node=ham_page_get_btree_node(page);
+    page = bt_cursor_get_coupled_page(c);
+    node = ham_page_get_btree_node(page);
     entry=btree_node_get_key(db, node, bt_cursor_get_coupled_index(c));
 
     /*
      * if this key has duplicates: get the next duplicate; otherwise
      * (and if there's no duplicate): fall through
      */
-    if (key_get_flags(entry)&KEY_HAS_DUPLICATES
-            && (!(flags&HAM_SKIP_DUPLICATES))) {
+    if (key_get_flags(entry) & KEY_HAS_DUPLICATES
+            && (!(flags & HAM_SKIP_DUPLICATES)))
+    {
         ham_status_t st;
         bt_cursor_set_dupe_id(c, bt_cursor_get_dupe_id(c)+1);
         page_add_ref(page);
@@ -143,7 +148,7 @@ my_move_next(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
                 return (st);
         }
         else if (!st)
-            return (0);
+            return HAM_SUCCESS;
     }
 
     /*
@@ -156,8 +161,9 @@ my_move_next(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
      * if the index+1 is still in the coupled page, just increment the
      * index
      */
-    if (bt_cursor_get_coupled_index(c)+1<btree_node_get_count(node)) {
-        bt_cursor_set_coupled_index(c, bt_cursor_get_coupled_index(c)+1);
+    if (bt_cursor_get_coupled_index(c) + 1 < btree_node_get_count(node))
+    {
+        bt_cursor_set_coupled_index(c, bt_cursor_get_coupled_index(c) + 1);
         bt_cursor_set_dupe_id(c, 0);
         return HAM_SUCCESS;
     }
@@ -202,7 +208,7 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
     /*
      * uncoupled cursor: couple it
      */
-    if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED) {
+    if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED) {
         st=bt_cursor_couple(c);
         if (st)
             return (st);
@@ -210,8 +216,8 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
     else if (!(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED))
         return (HAM_CURSOR_IS_NIL);
 
-    page=bt_cursor_get_coupled_page(c);
-    node=ham_page_get_btree_node(page);
+    page = bt_cursor_get_coupled_page(c);
+    node = ham_page_get_btree_node(page);
     entry=btree_node_get_key(db, node, bt_cursor_get_coupled_index(c));
 
     /*
@@ -235,7 +241,7 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
                 return (st);
         }
         else if (!st)
-            return (0);
+            return HAM_SUCCESS;
     }
 
     /*
@@ -297,7 +303,7 @@ my_move_previous(ham_btree_t *be, ham_bt_cursor_t *c, ham_u32_t flags)
         bt_cursor_set_dupe_id(c, count-1);
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 static ham_status_t
@@ -389,19 +395,21 @@ bt_cursor_set_to_nil(ham_bt_cursor_t *c)
     /*
      * uncoupled cursor: free the cached pointer
      */
-    if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED) {
-        ham_key_t *key=bt_cursor_get_uncoupled_key(c);
+    if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED)
+    {
+        ham_key_t *key = bt_cursor_get_uncoupled_key(c);
         if (key->data)
             allocator_free(env_get_allocator(env), key->data);
         allocator_free(env_get_allocator(env), key);
         bt_cursor_set_uncoupled_key(c, 0);
         bt_cursor_set_flags(c,
-                bt_cursor_get_flags(c)&(~BT_CURSOR_FLAG_UNCOUPLED));
+                bt_cursor_get_flags(c) & ~BT_CURSOR_FLAG_UNCOUPLED);
     }
     /*
      * coupled cursor: uncouple, remove from page
      */
-    else if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED) {
+    else if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_COUPLED)
+    {
         page_remove_cursor(bt_cursor_get_coupled_page(c),
                 (ham_cursor_t *)c);
         bt_cursor_set_flags(c,
@@ -411,7 +419,7 @@ bt_cursor_set_to_nil(ham_bt_cursor_t *c)
     bt_cursor_set_dupe_id(c, 0);
     memset(bt_cursor_get_dupe_cache(c), 0, sizeof(dupe_entry_t));
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -419,13 +427,13 @@ bt_cursor_couple(ham_bt_cursor_t *c)
 {
     ham_key_t key;
     ham_status_t st;
-    ham_db_t *db=cursor_get_db(c);
+    ham_db_t *db = cursor_get_db(c);
     ham_env_t *env = db_get_env(db);
     ham_u32_t dupe_id;
 
-    ham_assert(env_get_txn(env)!=0,
+    ham_assert(env_get_txn(env) != 0,
             ("coupling a cursor without a txn object"));
-    ham_assert(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED,
+    ham_assert(bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED,
             ("coupling a cursor which is not uncoupled"));
 
     /*
@@ -470,12 +478,12 @@ bt_cursor_uncouple(ham_bt_cursor_t *c, ham_u32_t flags)
     ham_db_t *db=bt_cursor_get_db(c);
     ham_env_t *env = db_get_env(db);
 
-    if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED)
-        return (0);
-    if (!(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED))
-        return (0);
+    if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED)
+        return HAM_SUCCESS;
+    if (!(bt_cursor_get_flags(c) & BT_CURSOR_FLAG_COUPLED))
+        return HAM_SUCCESS;
 
-    ham_assert(bt_cursor_get_coupled_page(c)!=0,
+    ham_assert(bt_cursor_get_coupled_page(c) != 0,
             ("uncoupling a cursor which has no coupled page"));
 
     /*
@@ -503,9 +511,11 @@ bt_cursor_uncouple(ham_bt_cursor_t *c, ham_u32_t flags)
     /*
      * uncouple the page
      */
-    if (!(flags&BT_CURSOR_UNCOUPLE_NO_REMOVE))
+    if (!(flags & BT_CURSOR_UNCOUPLE_NO_REMOVE))
+    {
         page_remove_cursor(bt_cursor_get_coupled_page(c),
                 (ham_cursor_t *)c);
+	}
 
     /*
      * set the flags and the uncoupled key
@@ -514,7 +524,7 @@ bt_cursor_uncouple(ham_bt_cursor_t *c, ham_u32_t flags)
     bt_cursor_set_flags(c, bt_cursor_get_flags(c)|BT_CURSOR_FLAG_UNCOUPLED);
     bt_cursor_set_uncoupled_key(c, key);
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**
@@ -574,7 +584,7 @@ bt_cursor_clone(ham_bt_cursor_t *old, ham_bt_cursor_t **newc)
 
     *newc=c;
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**
@@ -587,7 +597,7 @@ bt_cursor_close(ham_bt_cursor_t *c)
 {
     (void)bt_cursor_set_to_nil(c);
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**
@@ -609,7 +619,8 @@ bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
     /*
      * uncoupled cursor: couple it
      */
-    if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED) {
+    if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED)
+    {
         st=bt_cursor_couple(c);
         if (st)
             return (st);
@@ -617,13 +628,16 @@ bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
     /*
      * coupled cursor: the coupled page must be stored in the txn!
      */
-    else if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED) {
+    else if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_COUPLED)
+    {
         st=txn_add_page(env_get_txn(env), bt_cursor_get_coupled_page(c), 1);
         if (st)
             return (st);
     }
     else
+    {
         return (HAM_CURSOR_IS_NIL);
+    }
 
     /*
      * delete the cache of the current duplicate
@@ -665,7 +679,7 @@ bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
     page_set_dirty(page, env);
     page_release_ref(page);
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**
@@ -680,7 +694,7 @@ static ham_status_t
 bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags)
 {
-    ham_status_t st=0;
+    ham_status_t st = 0;
     ham_page_t *page;
     btree_node_t *node;
     ham_db_t *db=bt_cursor_get_db(c);
@@ -695,14 +709,17 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
      * if the cursor is NIL, and the user requests a NEXT, we set it to FIRST;
      * if the user requests a PREVIOUS, we set it to LAST, resp.
      */
-    if (bt_cursor_is_nil(c)) {
-        if (flags&HAM_CURSOR_NEXT) {
-            flags&=~HAM_CURSOR_NEXT;
-            flags|=HAM_CURSOR_FIRST;
+    if (bt_cursor_is_nil(c))
+    {
+        if (flags & HAM_CURSOR_NEXT)
+        {
+            flags &= ~HAM_CURSOR_NEXT;
+            flags |= HAM_CURSOR_FIRST;
         }
-        else if (flags&HAM_CURSOR_PREVIOUS) {
-            flags&=~HAM_CURSOR_PREVIOUS;
-            flags|=HAM_CURSOR_LAST;
+        else if (flags & HAM_CURSOR_PREVIOUS)
+        {
+            flags &= ~HAM_CURSOR_PREVIOUS;
+            flags |= HAM_CURSOR_LAST;
         }
     }
 
@@ -720,14 +737,16 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
     else if (flags&HAM_CURSOR_PREVIOUS)
         st=my_move_previous(be, c, flags);
     /* no move, but cursor is nil? return error */
-    else if (bt_cursor_is_nil(c)) {
+    else if (bt_cursor_is_nil(c))
+    {
         if (key || record)
-            return (HAM_CURSOR_IS_NIL);
+            return HAM_CURSOR_IS_NIL;
         else
-            return (0);
+            return HAM_SUCCESS;
     }
     /* no move, but cursor is not coupled? couple it */
-    else if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED) {
+    else if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED)
+    {
         st=bt_cursor_couple(c);
     }
 
@@ -743,9 +762,9 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
      */
     ham_assert(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED,
             ("move: cursor is not coupled"));
-    page=bt_cursor_get_coupled_page(c);
+    page = bt_cursor_get_coupled_page(c);
     page_add_ref(page);
-    node=ham_page_get_btree_node(page);
+    node = ham_page_get_btree_node(page);
     ham_assert(btree_node_is_leaf(node), ("iterator points to internal node"));
     entry=btree_node_get_key(db, node, bt_cursor_get_coupled_index(c));
 
@@ -757,16 +776,20 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
         }
     }
 
-    if (record) {
+    if (record)
+    {
         ham_offset_t *ridptr=0;
-        if (key_get_flags(entry)&KEY_HAS_DUPLICATES
-                && bt_cursor_get_dupe_id(c)) {
-            dupe_entry_t *e=bt_cursor_get_dupe_cache(c);
-            if (!dupe_entry_get_rid(e)) {
+        if (key_get_flags(entry) & KEY_HAS_DUPLICATES
+                && bt_cursor_get_dupe_id(c))
+        {
+            dupe_entry_t *e = bt_cursor_get_dupe_cache(c);
+            if (!dupe_entry_get_rid(e))
+            {
                 st=blob_duplicate_get(env, key_get_ptr(entry),
                         bt_cursor_get_dupe_id(c),
                         bt_cursor_get_dupe_cache(c));
-                if (st) {
+                if (st)
+                {
                     page_release_ref(page);
                     return st;
                 }
@@ -775,7 +798,8 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
             record->_rid=dupe_entry_get_rid(e);
             ridptr=dupe_entry_get_ridptr(e);
         }
-        else {
+        else
+        {
             record->_intflags=key_get_flags(entry);
             record->_rid=key_get_ptr(entry);
             ridptr=&key_get_rawptr(entry);
@@ -788,7 +812,7 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
     }
 
     page_release_ref(page);
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**
@@ -808,9 +832,9 @@ bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
         return (HAM_NOT_INITIALIZED);
     ham_assert(key, ("invalid parameter"));
 
-    st=bt_cursor_set_to_nil(c);
-    if (st)
-        return (st);
+        st=bt_cursor_set_to_nil(c);
+        if (st)
+            return (st);
 
     st=btree_find_cursor((ham_btree_t *)be, c, key, record, flags);
     if (st) {
@@ -818,7 +842,7 @@ bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
         return (st);
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**
@@ -831,8 +855,8 @@ bt_cursor_insert(ham_bt_cursor_t *c, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
-    ham_db_t *db=bt_cursor_get_db(c);
-    ham_btree_t *be=(ham_btree_t *)db_get_backend(db);
+    ham_db_t *db = bt_cursor_get_db(c);
+    ham_btree_t *be = (ham_btree_t *)db_get_backend(db);
 
     if (!be)
         return (HAM_NOT_INITIALIZED);
@@ -867,13 +891,16 @@ bt_cursor_erase(ham_bt_cursor_t *c, ham_u32_t flags)
     /*
      * coupled cursor: uncouple it
      */
-    if (bt_cursor_get_flags(c)&BT_CURSOR_FLAG_COUPLED) {
+    if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_COUPLED)
+    {
         st=bt_cursor_uncouple(c, 0);
         if (st)
             return (st);
     }
-    else if (!(bt_cursor_get_flags(c)&BT_CURSOR_FLAG_UNCOUPLED))
+    else if (!(bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED))
+    {
         return (HAM_CURSOR_IS_NIL);
+    }
 
     st=btree_erase_cursor(be, bt_cursor_get_uncoupled_key(c), c, flags);
     if (st)
@@ -895,23 +922,25 @@ bt_cursor_points_to(ham_bt_cursor_t *cursor, int_key_t *key)
     ham_status_t st;
     ham_db_t *db=bt_cursor_get_db(cursor);
 
-    if (bt_cursor_get_flags(cursor)&BT_CURSOR_FLAG_UNCOUPLED) {
+    if (bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_UNCOUPLED)
+    {
         st=bt_cursor_couple(cursor);
         if (st)
             return (st);
     }
 
-    if (bt_cursor_get_flags(cursor)&BT_CURSOR_FLAG_COUPLED) {
+    if (bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_COUPLED)
+    {
         ham_page_t *page=bt_cursor_get_coupled_page(cursor);
         btree_node_t *node=ham_page_get_btree_node(page);
         int_key_t *entry=btree_node_get_key(db, node,
                         bt_cursor_get_coupled_index(cursor));
 
-        if (entry==key)
-            return (1);
+        if (entry == key)
+            return HAM_TRUE;
     }
 
-    return (0);
+    return HAM_FALSE;
 }
 
 /**
@@ -939,29 +968,36 @@ bt_cursor_get_duplicate_count(ham_cursor_t *db_cursor,
     /*
      * uncoupled cursor: couple it
      */
-    if (bt_cursor_get_flags(cursor)&BT_CURSOR_FLAG_UNCOUPLED) {
+    if (bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_UNCOUPLED)
+    {
         st=bt_cursor_couple(cursor);
         if (st)
             return (st);
     }
-    else if (!(bt_cursor_get_flags(cursor)&BT_CURSOR_FLAG_COUPLED))
+    else if (!(bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_COUPLED))
+    {
         return (HAM_CURSOR_IS_NIL);
+    }
 
-    page=bt_cursor_get_coupled_page(cursor);
-    node=ham_page_get_btree_node(page);
+    page = bt_cursor_get_coupled_page(cursor);
+    node = ham_page_get_btree_node(page);
     entry=btree_node_get_key(db, node, bt_cursor_get_coupled_index(cursor));
 
-    if (!(key_get_flags(entry)&KEY_HAS_DUPLICATES)) {
-        *count=1;
+    if (!(key_get_flags(entry) & KEY_HAS_DUPLICATES))
+    {
+        *count = 1;
     }
-    else {
+    else
+    {
         st=blob_duplicate_get_count(env, key_get_ptr(entry), count, 0);
         if (st)
             return (st);
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
+
+
 
 ham_status_t
 bt_uncouple_all_cursors(ham_page_t *page, ham_size_t start)
@@ -976,12 +1012,12 @@ bt_uncouple_all_cursors(ham_page_t *page, ham_size_t start)
         n=cursor_get_next_in_page(c);
 
         /*
-        * ignore all cursors which are already uncoupled
-        */
+         * ignore all cursors which are already uncoupled
+         */
         if (bt_cursor_get_flags(btc)&BT_CURSOR_FLAG_COUPLED) {
             /*
-            * skip this cursor if its position is < start
-            */
+             * skip this cursor if its position is < start
+             */
             if (bt_cursor_get_coupled_index(btc)<start) {
                 c=n;
                 skipped=HAM_TRUE;
@@ -989,8 +1025,8 @@ bt_uncouple_all_cursors(ham_page_t *page, ham_size_t start)
             }
 
             /*
-            * otherwise: uncouple it
-            */
+             * otherwise: uncouple it
+             */
             st=bt_cursor_uncouple((ham_bt_cursor_t *)c, 0);
             if (st)
                 return (st);
@@ -1004,8 +1040,11 @@ bt_uncouple_all_cursors(ham_page_t *page, ham_size_t start)
     if (!skipped)
         page_set_cursors(page, 0);
 
-    return (0);
+    return HAM_SUCCESS;
 }
+
+
+
 
 ham_status_t
 bt_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
@@ -1032,7 +1071,7 @@ bt_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
     c->_fun_get_duplicate_count=bt_cursor_get_duplicate_count;
 
     *cu=c;
-    return (0);
+    return HAM_SUCCESS;
 }
 
 /**

@@ -184,7 +184,8 @@ __write_chunks(ham_env_t *env, ham_page_t *page, ham_offset_t addr,
                         (ham_size_t)(pagesize - writestart);
                 if (writesize>chunk_size[i])
                     writesize=chunk_size[i];
-                if ((st=ham_log_add_page_before(page)))
+                st=ham_log_add_page_before(page);
+                if (st)
                     return (st);
                 memcpy(&page_get_raw_payload(page)[writestart], chunk_data[i],
                             writesize);
@@ -211,7 +212,7 @@ __write_chunks(ham_env_t *env, ham_page_t *page, ham_offset_t addr,
         }
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 static ham_status_t
@@ -221,7 +222,8 @@ __read_chunk(ham_env_t *env, ham_page_t *page, ham_page_t **fpage,
     ham_status_t st;
     ham_device_t *device=env_get_device(env);
 
-    while (size) {
+    while (size)
+    {
         /*
          * get the page-ID from this chunk
          */
@@ -285,7 +287,7 @@ __read_chunk(ham_env_t *env, ham_page_t *page, ham_page_t **fpage,
     if (fpage)
         *fpage=page;
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 static ham_status_t
@@ -424,7 +426,7 @@ blob_allocate(ham_env_t *env, ham_db_t *db, ham_record_t *record,
         }
 
         *blobid=(ham_offset_t)PTR_TO_U64(p);
-        return (0);
+        return HAM_SUCCESS;
     }
 
     memset(&hdr, 0, sizeof(hdr));
@@ -528,11 +530,12 @@ blob_allocate(ham_env_t *env, ham_db_t *db, ham_record_t *record,
         st=__write_chunks(env, page, addr, HAM_TRUE, freshly_created,
                         chunk_data, chunk_size, 1);
         if (st)
-            return (st);
+            return st;
 
-        addr+=sizeof(hdr);
+        addr += sizeof(hdr);
 
-        /* now fill the gap; if the gap is bigger than a pagesize we'll
+        /*
+         * now fill the gap; if the gap is bigger than a pagesize we'll
          * split the gap into smaller chunks
          */
         while (gapsize>=env_get_pagesize(env)) {
@@ -649,7 +652,7 @@ blob_allocate(ham_env_t *env, ham_db_t *db, ham_record_t *record,
         }
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -672,41 +675,55 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
         /* when the database is closing, the header is already deleted */
         if (!hdr) {
             record->size = 0;
-            return (0);
+            return HAM_SUCCESS;
         }
 
         blobsize = (ham_size_t)blob_get_size(hdr);
 
-        if (flags&HAM_PARTIAL) {
-            if (record->partial_offset>blobsize) {
+        if (flags & HAM_PARTIAL)
+        {
+            if (record->partial_offset > blobsize)
+            {
                 ham_trace(("partial offset is greater than the total "
                             "record size"));
-                return (HAM_INV_PARAMETER);
+                return HAM_INV_PARAMETER;
             }
-            if (record->partial_offset+record->partial_size>blobsize)
+            else if (record->partial_offset + record->partial_size > blobsize)
+            {
                 blobsize=blobsize-record->partial_offset;
+            }
             else
+            {
                 blobsize=record->partial_size;
+            }
         }
 
-        if (!blobsize) {
+        if (!blobsize)
+        {
             /* empty blob? */
             record->data = 0;
             record->size = 0;
         }
-        else {
-            ham_u8_t *d=data;
-            if (flags&HAM_PARTIAL)
-                d+=record->partial_offset;
+        else
+        {
+            ham_u8_t *d = data;
 
-            if ((flags&HAM_DIRECT_ACCESS)
-                    && !(record->flags&HAM_RECORD_USER_ALLOC)) {
-                record->size=blobsize;
-                record->data=d;
+            if (flags & HAM_PARTIAL)
+            {
+                d += record->partial_offset;
             }
-            else {
+
+            if ((flags & HAM_DIRECT_ACCESS)
+                    && !(record->flags & HAM_RECORD_USER_ALLOC))
+            {
+                record->size = blobsize;
+                record->data = d;
+            }
+            else
+            {
                 /* resize buffer, if necessary */
-                if (!(record->flags & HAM_RECORD_USER_ALLOC)) {
+                if (!(record->flags & HAM_RECORD_USER_ALLOC))
+                {
                     st=db_resize_record_allocdata(db, blobsize);
                     if (st)
                         return (st);
@@ -718,7 +735,7 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
             }
         }
 
-        return (0);
+        return HAM_SUCCESS;
     }
 
     ham_assert(blobid%DB_CHUNKSIZE==0, ("blobid is %llu", blobid));
@@ -736,21 +753,27 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
     /*
      * sanity check
      */
-    if (blob_get_self(&hdr)!=blobid)
+    if (blob_get_self(&hdr) != blobid)
         return (HAM_BLOB_NOT_FOUND);
 
     blobsize = (ham_size_t)blob_get_size(&hdr);
 
-    if (flags&HAM_PARTIAL) {
-        if (record->partial_offset>blobsize) {
+    if (flags & HAM_PARTIAL)
+    {
+        if (record->partial_offset > blobsize)
+        {
             ham_trace(("partial offset+size is greater than the total "
                         "record size"));
-            return (HAM_INV_PARAMETER);
+            return HAM_INV_PARAMETER;
         }
-        if (record->partial_offset+record->partial_size>blobsize)
+        else if (record->partial_offset + record->partial_size > blobsize)
+        {
             blobsize=blobsize-record->partial_offset;
+        }
         else
+        {
             blobsize=record->partial_size;
+        }
     }
 
     /*
@@ -759,7 +782,7 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
     if (!blobsize) {
         record->data = 0;
         record->size = 0;
-        return (0);
+        return HAM_SUCCESS;
     }
 
     /*
@@ -785,7 +808,7 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
 
     record->size = blobsize;
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -812,26 +835,29 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
     }
 
     /*
-     * inmemory-databases: free the old blob,
+     * in-memory-databases: free the old blob,
      * allocate a new blob (but if both sizes are equal, just overwrite
      * the data)
      */
-    if (env_get_rt_flags(env)&HAM_IN_MEMORY_DB)
+    if (env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
     {
         blob_t *nhdr, *phdr=(blob_t *)U64_TO_PTR(old_blobid);
 
         if (blob_get_size(phdr)==record->size) {
             ham_u8_t *p=(ham_u8_t *)phdr;
-            if (flags&HAM_PARTIAL) {
+            if (flags & HAM_PARTIAL)
+            {
                 memmove(p+sizeof(blob_t)+record->partial_offset,
                         record->data, record->partial_size);
             }
-            else {
+            else
+            {
                 memmove(p+sizeof(blob_t), record->data, record->size);
             }
             *new_blobid=(ham_offset_t)PTR_TO_U64(phdr);
         }
-        else {
+        else
+        {
             st=blob_allocate(env, db, record, flags, new_blobid);
             if (st)
                 return (st);
@@ -841,7 +867,7 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
             allocator_free(env_get_allocator(env), phdr);
         }
 
-        return (HAM_SUCCESS);
+        return HAM_SUCCESS;
     }
 
     ham_assert(old_blobid%DB_CHUNKSIZE==0, (0));
@@ -858,7 +884,7 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
      * old blob, we overwrite the old blob (and add the remaining
      * space to the freelist, if there is any)
      */
-    st=__read_chunk(env, 0, &page, old_blobid, (ham_u8_t *)&old_hdr,
+    st = __read_chunk(env, 0, &page, old_blobid, (ham_u8_t *)&old_hdr,
             sizeof(old_hdr));
     if (st)
         return (st);
@@ -871,14 +897,14 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
     ham_assert(blob_get_self(&old_hdr)==old_blobid,
             ("invalid blobid %llu != %llu", blob_get_self(&old_hdr),
             old_blobid));
-    if (blob_get_self(&old_hdr)!=old_blobid)
+    if (blob_get_self(&old_hdr) != old_blobid)
         return (HAM_BLOB_NOT_FOUND);
 
     /*
      * now compare the sizes; does the new data fit in the old allocated
      * space?
      */
-    if (alloc_size<=blob_get_alloc_size(&old_hdr))
+    if (alloc_size <= blob_get_alloc_size(&old_hdr))
     {
         ham_u8_t *chunk_data[2];
         ham_size_t chunk_size[2];
@@ -889,7 +915,7 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
         blob_set_self(&new_hdr, blob_get_self(&old_hdr));
         blob_set_size(&new_hdr, record->size);
         blob_set_flags(&new_hdr, blob_get_flags(&old_hdr));
-        if (blob_get_alloc_size(&old_hdr)-alloc_size>SMALLEST_CHUNK_SIZE)
+        if (blob_get_alloc_size(&old_hdr) - alloc_size > SMALLEST_CHUNK_SIZE)
             blob_set_alloc_size(&new_hdr, alloc_size);
         else
             blob_set_alloc_size(&new_hdr, blob_get_alloc_size(&old_hdr));
@@ -901,7 +927,7 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
          * blob header and the blob data in two steps; otherwise we can
          * write both immediately
          */
-        if ((flags&HAM_PARTIAL) && (record->partial_offset)) {
+        if ((flags & HAM_PARTIAL) && (record->partial_offset)) {
             chunk_data[0]=(ham_u8_t *)&new_hdr;
             chunk_size[0]=sizeof(new_hdr);
             st=__write_chunks(env, page, blob_get_self(&new_hdr), HAM_FALSE,
@@ -935,7 +961,8 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
         /*
          * move remaining data to the freelist
          */
-        if (blob_get_alloc_size(&old_hdr)!=blob_get_alloc_size(&new_hdr)) {
+        if (blob_get_alloc_size(&old_hdr) != blob_get_alloc_size(&new_hdr))
+        {
             (void)freel_mark_free(env, db,
                   blob_get_self(&new_hdr)+blob_get_alloc_size(&new_hdr),
                   (ham_size_t)(blob_get_alloc_size(&old_hdr)-
@@ -947,7 +974,7 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
          */
         *new_blobid=blob_get_self(&new_hdr);
 
-        return (HAM_SUCCESS);
+        return HAM_SUCCESS;
     }
     else {
         /*
@@ -963,7 +990,7 @@ blob_overwrite(ham_env_t *env, ham_db_t *db, ham_offset_t old_blobid,
                 (ham_size_t)blob_get_alloc_size(&old_hdr), HAM_FALSE);
     }
 
-    return (HAM_SUCCESS);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -976,9 +1003,10 @@ blob_free(ham_env_t *env, ham_db_t *db, ham_offset_t blobid, ham_u32_t flags)
      * in-memory-database: the blobid is actually a pointer to the memory
      * buffer, in which the blob is stored
      */
-    if (env_get_rt_flags(env)&HAM_IN_MEMORY_DB) {
+    if (env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
+    {
         allocator_free(env_get_allocator(env), (void *)U64_TO_PTR(blobid));
-        return (0);
+        return HAM_SUCCESS;
     }
 
     ham_assert(blobid%DB_CHUNKSIZE==0, (0));
@@ -1005,7 +1033,7 @@ blob_free(ham_env_t *env, ham_db_t *db, ham_offset_t blobid, ham_u32_t flags)
      */
     st = freel_mark_free(env, db, blobid,
             (ham_size_t)blob_get_alloc_size(&hdr), HAM_FALSE);
-	ham_assert(!st, ("unexpected error, at least not covered in the old code"));
+    ham_assert(!st, ("unexpected error, at least not covered in the old code"));
 
     return st;
 }
@@ -1020,7 +1048,7 @@ __get_sorted_position(ham_db_t *db, dupe_table_t *table, ham_record_t *record,
     dupe_entry_t *e;
     ham_record_t item_record;
     ham_u16_t dam;
-    ham_status_t st=0;
+    ham_status_t st = 0;
 
     /*
      * Use a slightly adapted form of binary search: as we already have our
@@ -1121,7 +1149,7 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
      * the first entry
      */
     if (!table_id) {
-        ham_assert(num_entries==2, (""));
+        ham_assert(num_entries==2, (0));
         /* allocates space for 8 (!) entries */
         table=allocator_calloc(env_get_allocator(env),
                         sizeof(dupe_table_t)+7*sizeof(dupe_entry_t));
@@ -1135,26 +1163,27 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
         /* skip the first entry */
         entries++;
         num_entries--;
-        alloc_table=1;
+        alloc_table = HAM_TRUE;
     }
     else {
         /*
          * otherwise load the existing table
          */
         st=__get_duplicate_table(&table, &page, env, table_id);
-		ham_assert(st ? table == NULL : 1, (0));
-		ham_assert(st ? page == NULL : 1, (0));
+        ham_assert(st ? table == NULL : 1, (0));
+        ham_assert(st ? page == NULL : 1, (0));
         if (!table)
-			return st ? st : HAM_INTERNAL_ERROR;
-        if (!page && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB))
-            alloc_table=1;
+            return st ? st : HAM_INTERNAL_ERROR;
+        if (!page && !(env_get_rt_flags(env) & HAM_IN_MEMORY_DB))
+            alloc_table = HAM_TRUE;
     }
 
     if (page)
+    {
         if ((st=ham_log_add_page_before(page)))
             return (st);
 
-    ham_assert(num_entries==1, (""));
+    ham_assert(num_entries==1, (0));
 
     /*
      * resize the table, if necessary
@@ -1180,19 +1209,21 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
         if (alloc_table)
             allocator_free(env_get_allocator(env), old);
 
-        alloc_table=1;
-        resize=1;
+            alloc_table = HAM_TRUE;
+            resize = HAM_TRUE;
     }
 
     /*
      * insert sorted, unsorted or overwrite the entry at the requested position
      */
-    if (flags&HAM_OVERWRITE) {
-        dupe_entry_t *e=dupe_table_get_entry(table, position);
+    if (flags & HAM_OVERWRITE)
+    {
+        dupe_entry_t *e = dupe_table_get_entry(table, position);
 
-        if (!(dupe_entry_get_flags(e)&(KEY_BLOB_SIZE_SMALL
+        if (!(dupe_entry_get_flags(e) & (KEY_BLOB_SIZE_SMALL
                                     |KEY_BLOB_SIZE_TINY
-                                    |KEY_BLOB_SIZE_EMPTY))) {
+                                    |KEY_BLOB_SIZE_EMPTY)))
+        {
             (void)blob_free(env, db, dupe_entry_get_rid(e), 0);
         }
 
@@ -1212,15 +1243,15 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
         else if (flags&HAM_DUPLICATE_INSERT_BEFORE) {
             /* do nothing, insert at the current position */
         }
-        else if (flags&HAM_DUPLICATE_INSERT_AFTER) {
+        else if (flags & HAM_DUPLICATE_INSERT_AFTER) {
             position++;
             if (position > dupe_table_get_count(table))
                 position=dupe_table_get_count(table);
         }
-        else if (flags&HAM_DUPLICATE_INSERT_FIRST) {
-            position=0;
+        else if (flags & HAM_DUPLICATE_INSERT_FIRST) {
+            position = 0;
         }
-        else if (flags&HAM_DUPLICATE_INSERT_LAST) {
+        else if (flags & HAM_DUPLICATE_INSERT_LAST) {
             position=dupe_table_get_count(table);
         }
         else {
@@ -1228,13 +1259,13 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
         }
 
         if (position != dupe_table_get_count(table)) {
-            memmove(dupe_table_get_entry(table, position+1),
+            memmove(dupe_table_get_entry(table, position + 1),
                 dupe_table_get_entry(table, position),
                 sizeof(entries[0])*(dupe_table_get_count(table)-position));
         }
 
         memcpy(dupe_table_get_entry(table, position),
-                &entries[0], sizeof(entries[0]));
+            &entries[0], sizeof(entries[0]));
 
         dupe_table_set_count(table, dupe_table_get_count(table)+1);
     }
@@ -1245,16 +1276,16 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
     if ((table_id && !page) || resize)
     {
         ham_record_t rec={0};
-        rec.data=(ham_u8_t *)table;
-        rec.size=sizeof(dupe_table_t)
+        rec.data = (ham_u8_t *)table;
+        rec.size = sizeof(dupe_table_t)
                     +(dupe_table_get_capacity(table)-1)*sizeof(dupe_entry_t);
         st=blob_overwrite(env, db, table_id, &rec, 0, rid);
     }
     else if (!table_id)
     {
         ham_record_t rec={0};
-        rec.data=(ham_u8_t *)table;
-        rec.size=sizeof(dupe_table_t)
+        rec.data = (ham_u8_t *)table;
+        rec.size = sizeof(dupe_table_t)
                     +(dupe_table_get_capacity(table)-1)*sizeof(dupe_entry_t);
         st=blob_allocate(env, db, &rec, 0, rid);
     }
@@ -1271,7 +1302,7 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
         allocator_free(env_get_allocator(env), table);
 
     if (new_position)
-        *new_position=position;
+        *new_position = position;
 
     return (st);
 }
@@ -1288,8 +1319,9 @@ blob_duplicate_erase(ham_db_t *db, ham_offset_t table_id,
 	ham_env_t *env = db_get_env(db);
 
     /* store the public record pointer, otherwise it's destroyed */
-    ham_size_t rs=db_get_record_allocsize(db);
-    void      *rp=db_get_record_allocdata(db);
+    ham_size_t rs = db_get_record_allocsize(db);
+    void      *rp = db_get_record_allocdata(db);
+
     db_set_record_allocdata(db, 0);
     db_set_record_allocsize(db, 0);
 
@@ -1312,15 +1344,19 @@ blob_duplicate_erase(ham_db_t *db, ham_offset_t table_id,
      * if BLOB_FREE_ALL_DUPES is set *OR* if the last duplicate is deleted:
      * free the whole duplicate table
      */
-    if (flags&BLOB_FREE_ALL_DUPES
-            || (position==0 && dupe_table_get_count(table)==1)) {
-        for (i=0; i<dupe_table_get_count(table); i++) {
-            dupe_entry_t *e=dupe_table_get_entry(table, i);
-            if (!(dupe_entry_get_flags(e)&(KEY_BLOB_SIZE_SMALL
+    if (flags & BLOB_FREE_ALL_DUPES
+            || (position==0 && dupe_table_get_count(table)==1))
+    {
+        for (i = 0; i < dupe_table_get_count(table); i++)
+        {
+            dupe_entry_t *e = dupe_table_get_entry(table, i);
+            if (!(dupe_entry_get_flags(e) & (KEY_BLOB_SIZE_SMALL
                                         |KEY_BLOB_SIZE_TINY
-                                        |KEY_BLOB_SIZE_EMPTY))) {
+                                        |KEY_BLOB_SIZE_EMPTY)))
+            {
                 st=blob_free(env, db, dupe_entry_get_rid(e), 0);
-                if (st) {
+                if (st)
+                {
                     allocator_free(env_get_allocator(env), table);
                     return (st);
                 }
@@ -1336,14 +1372,16 @@ blob_duplicate_erase(ham_db_t *db, ham_offset_t table_id,
         if (new_table_id)
             *new_table_id=0;
 
-        return (0);
+        return HAM_SUCCESS;
     }
-    else {
+    else
+	{
         ham_record_t rec={0};
         dupe_entry_t *e=dupe_table_get_entry(table, position);
         if (!(dupe_entry_get_flags(e)&(KEY_BLOB_SIZE_SMALL
                                     |KEY_BLOB_SIZE_TINY
-                                    |KEY_BLOB_SIZE_EMPTY))) {
+                                    |KEY_BLOB_SIZE_EMPTY)))
+        {
             st=blob_free(env, db, dupe_entry_get_rid(e), 0);
             if (st) {
                 allocator_free(env_get_allocator(env), table);
@@ -1374,7 +1412,7 @@ blob_duplicate_erase(ham_db_t *db, ham_offset_t table_id,
             *new_table_id=0;
 
     allocator_free(env_get_allocator(env), table);
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -1395,12 +1433,12 @@ blob_duplicate_get_count(ham_env_t *env, ham_offset_t table_id,
     if (entry)
         memcpy(entry, dupe_table_get_entry(table, (*count)-1), sizeof(*entry));
 
-    if (!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB))
-	{
+    if (!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB))
+    {
         if (!page)
             allocator_free(env_get_allocator(env), table);
-	}
-    return (0);
+    }
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -1417,20 +1455,35 @@ blob_duplicate_get(ham_env_t *env, ham_offset_t table_id,
     if (!table)
         return st ? st : HAM_INTERNAL_ERROR;
 
-    if (position>=dupe_table_get_count(table))
-	{
-        if (!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB))
+    if (position >= dupe_table_get_count(table))
+    {
+        if (!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB))
             if (!page)
                 allocator_free(env_get_allocator(env), table);
         return HAM_KEY_NOT_FOUND;
     }
     memcpy(entry, dupe_table_get_entry(table, position), sizeof(*entry));
 
-    if (!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB))
-	{
+    if (!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB))
+    {
         if (!page)
             allocator_free(env_get_allocator(env), table);
-	}
-    return (0);
+    }
+    return HAM_SUCCESS;
 }
+
+
+
+/**
+* @endcond
+*/
+
+
+
+
+
+
+
+
+
 

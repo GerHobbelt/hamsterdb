@@ -315,6 +315,7 @@ blob_duplicate_get(ham_env_t *env, ham_offset_t table_id,
         ham_size_t position, dupe_entry_t *entry);
 
 
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

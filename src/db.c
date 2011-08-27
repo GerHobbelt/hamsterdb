@@ -268,7 +268,8 @@ db_uncouple_all_cursors(ham_page_t *page, ham_size_t start)
         if (db) {
             ham_backend_t *be = db_get_backend(db);
 
-            if (be) {
+            if (be)
+            {
                 return (*be->_fun_uncouple_all_cursors)(be, page, start);
             }
         }
@@ -277,12 +278,13 @@ db_uncouple_all_cursors(ham_page_t *page, ham_size_t start)
     return HAM_SUCCESS;
 }
 
+
 ham_u16_t
 db_get_dbname(ham_db_t *db)
 {
     ham_env_t *env;
 
-	ham_assert(db!=0, (""));
+    ham_assert(db!=0, (""));
     ham_assert(db_get_env(db), (""));
 
     env=db_get_env(db);
@@ -497,9 +499,10 @@ db_get_extended_key(ham_db_t *db, ham_u8_t *key_data,
             }
             memcpy(ext_key->data, ptr, key_length);
             ext_key->size=(ham_u16_t)key_length;
-            return (0);
+            return HAM_SUCCESS;
         }
-        else if (st!=HAM_KEY_NOT_FOUND) {
+        else if (st!=HAM_KEY_NOT_FOUND)
+        {
             return st;
         }
     }
@@ -537,13 +540,15 @@ db_get_extended_key(ham_db_t *db, ham_u8_t *key_data,
     record.flags = HAM_RECORD_USER_ALLOC;
 
     st=blob_read(db, blobid, &record, 0);
-    if (st)
+    if (st) {
         return st;
+    }
 
     /*
      * insert the FULL key in the extkey-cache
      */
-    if (db_get_extkey_cache(db)) {
+    if (db_get_extkey_cache(db))
+    {
         st = extkey_cache_insert(db_get_extkey_cache(db),
                 blobid, key_length, ext_key->data);
         if (st)
@@ -552,7 +557,7 @@ db_get_extended_key(ham_db_t *db, ham_u8_t *key_data,
 
     ext_key->size = (ham_u16_t)key_length;
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 extern ham_status_t
@@ -580,7 +585,7 @@ db_prepare_ham_key_for_compare(ham_db_t *db, int ptr,
 
     if (!p) {
         dest->data = 0;
-        return (HAM_OUT_OF_MEMORY);
+        return HAM_OUT_OF_MEMORY;
     }
 
     memcpy(p, key_get_key(src), db_get_keysize(db));
@@ -591,7 +596,7 @@ db_prepare_ham_key_for_compare(ham_db_t *db, int ptr,
     dest->_flags |= KEY_IS_EXTENDED;
     dest->flags  |= HAM_KEY_USER_ALLOC;
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 int
@@ -816,7 +821,7 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
                     goto done;
             }
             /* allocate a new page structure */
-            ham_assert(!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)
+            ham_assert(!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
                     ? 1
                     : !!env_get_cache(env),
                     ("in-memory DBs MUST have a cache"));
@@ -833,7 +838,9 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
             goto done;
         }
         else if (st)
+        {
             return st;
+        }
     }
 
     if (!page) {
@@ -858,7 +865,7 @@ db_alloc_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
      */
 
 done:
-    ham_assert(!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)
+    ham_assert(!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
             ? 1
             : !!env_get_cache(env), ("in-memory DBs MUST have a cache"));
 
@@ -991,7 +998,7 @@ done:
     }
 
     *page_ref = page;
-    return (HAM_SUCCESS);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -1011,10 +1018,10 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
     ham_assert(0 == (flags & ~(DB_NEW_PAGE_DOES_THRASH_CACHE
                                 | HAM_HINTS_MASK
                                 | DB_ONLY_FROM_CACHE)), (0));
-    ham_assert(!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)
+    ham_assert(!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
             ? 1
             : !!env_get_cache(env), ("in-memory DBs MUST have a cache"));
-    ham_assert((env_get_rt_flags(env)&HAM_IN_MEMORY_DB)
+    ham_assert((env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
             ? 1
             : env_get_cache(env) != 0,
             ("This code will not realize the requested page may already exist through"
@@ -1050,15 +1057,16 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         }
     }
 
-    if (env_get_txn(env)) {
+    if (env_get_txn(env))
+    {
         page=txn_get_page(env_get_txn(env), address);
         if (page) {
             *page_ref = page;
-            ham_assert(page_get_pers(page), (""));
+            ham_assert(page_get_pers(page), (0));
             if (db) {
                 ham_assert(page_get_owner(page)==db, (""));
             }
-            return (HAM_SUCCESS);
+            return HAM_SUCCESS;
         }
     }
 
@@ -1070,13 +1078,14 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         if (page) {
             if (env_get_txn(env)) {
                 st=txn_add_page(env_get_txn(env), page, HAM_FALSE);
-                if (st)
-                    return (st);
+                if (st) {
+                    return st;
+                }
             }
             *page_ref = page;
-            ham_assert(page_get_pers(page), (""));
-            ham_assert(db ? page_get_owner(page)==db : 1, (""));
-            return (HAM_SUCCESS);
+            ham_assert(page_get_pers(page), (0));
+            ham_assert(db ? page_get_owner(page)==db : 1, (0));
+            return HAM_SUCCESS;
         }
     }
 
@@ -1088,7 +1097,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         ham_assert(cache_get_page(env_get_cache(env), address, 0)==0, (0));
     }
 #endif
-    ham_assert(!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)
+    ham_assert(!(env_get_rt_flags(env) & HAM_IN_MEMORY_DB)
             ? 1
             : !!env_get_cache(env), ("in-memory DBs MUST have a cache"));
 
@@ -1104,7 +1113,7 @@ db_fetch_page_impl(ham_page_t **page_ref, ham_env_t *env, ham_db_t *db,
         return st;
     }
 
-    ham_assert(page_get_pers(page), (""));
+    ham_assert(page_get_pers(page), (0));
 
     if (env_get_txn(env)) {
         st=txn_add_page(env_get_txn(env), page, HAM_FALSE);
@@ -1158,7 +1167,7 @@ db_flush_page(ham_env_t *env, ham_page_t *page, ham_u32_t flags)
     if (env_get_cache(env))
         cache_put_page(env_get_cache(env), page);
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -1169,7 +1178,7 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags)
     ham_assert(0 == (flags & ~DB_FLUSH_NODELETE), (0));
 
     if (!cache)
-        return (0);
+        return HAM_SUCCESS;
 
     head=cache_get_totallist(cache);
     while (head) {
@@ -1212,7 +1221,7 @@ db_write_page_and_delete(ham_page_t *page, ham_u32_t flags)
      */
     ham_assert(env, (0));
     if (page_is_dirty(page)
-            && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
+            && !(env_get_rt_flags(env) & HAM_IN_MEMORY_DB)) {
         st=page_flush(page);
         if (st)
             return st;
@@ -1255,7 +1264,7 @@ db_resize_record_allocdata(ham_db_t *db, ham_size_t size)
         db_set_record_allocsize(db, size);
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t

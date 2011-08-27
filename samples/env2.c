@@ -239,7 +239,7 @@ main(int argc, char **argv)
      * the outer loop is similar to
      * SELECT * FROM customers WHERE 1;
      */
-    while (1) {
+    for (;;) {
         customer_t *customer;
 
         st=ham_cursor_move(cursor[0], &cust_key, &cust_record, HAM_CURSOR_NEXT);
@@ -278,7 +278,7 @@ main(int argc, char **argv)
         if (st!=HAM_SUCCESS)
             error("ham_cursor_move(c2o)", st);
 
-        do {
+        for (;;) {
             int order_id;
 
             order_id=*(int *)c2o_record.data;
@@ -309,7 +309,7 @@ main(int argc, char **argv)
                 else
                     error("ham_cursor_next(c2o)", st);
             }
-        } while(1);
+        }
     }
 
     /*
