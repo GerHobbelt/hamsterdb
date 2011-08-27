@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
-	Name="sample_db2"
-	ProjectGUID="{1D39526E-1AC3-4E5C-B7B6-AD78FD27C4CC}"
-	RootNamespace="sample_db2"
+	Version="9.00"
+	Name="unittests"
+	ProjectGUID="{0C5D0A1D-A98A-4A4A-A954-EC15F8A611A6}"
+	RootNamespace="unittests"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -24,8 +24,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
-			IntermediateDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -36,9 +36,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -58,7 +58,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
@@ -69,6 +69,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4100,4127,4324"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -97,6 +98,7 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -123,8 +125,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
-			IntermediateDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -135,9 +137,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -159,7 +161,7 @@
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;CODE_ANALYSIS"
+				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
@@ -171,6 +173,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4100,4127,4324"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -227,8 +230,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Itanium"
-			OutputDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
-			IntermediateDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -239,9 +242,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -262,7 +265,7 @@
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
@@ -273,6 +276,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4100,4127,4324"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -299,6 +303,7 @@
 				OptimizeReferences="2"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="5"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -325,8 +330,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
-			IntermediateDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -337,9 +342,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -356,7 +361,7 @@
 				Optimization="0"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -369,6 +374,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4100,4127,4324"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -397,6 +403,7 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -423,8 +430,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
-			IntermediateDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -435,9 +442,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -456,7 +463,7 @@
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -469,6 +476,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4100,4127,4324"
 				EnablePREfast="true"
 			/>
 			<Tool
@@ -498,6 +506,7 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="17"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -524,8 +533,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Itanium"
-			OutputDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
-			IntermediateDirectory="$(ProjectName)_$(PlatformName)_MSVC2005.$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -536,9 +545,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				Description="copy $(TargetFileName) to bin\$(PlatformName)_MSVC2005.$(ConfigurationName) directory"
-				CommandLine="if not exist &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot; mkdir &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)&quot;&#x0D;&#x0A;copy &quot;$(TargetPath)&quot; &quot;$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)&quot;&#x0D;&#x0A;"
-				Outputs="$(SolutionDir)bin\$(PlatformName)_MSVC2005.$(ConfigurationName)\$(TargetFileName)"
+				CommandLine=""
+				AdditionalDependencies=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -556,7 +565,7 @@
 				Optimization="0"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE"
+				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				MinimalRebuild="false"
 				ExceptionHandling="2"
@@ -569,6 +578,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				DisableSpecificWarnings="4100,4127,4324"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -595,6 +605,7 @@
 				OptimizeReferences="2"
 				LinkTimeCodeGeneration="1"
 				TargetMachine="5"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -623,10 +634,174 @@
 	<References>
 	</References>
 	<Files>
-		<File
-			RelativePath="..\..\samples\db2.c"
+		<Filter
+			Name="Header Files"
 			>
-		</File>
+			<File
+				RelativePath="..\..\unittests\bfc-signal.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\bfc-testsuite.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\hamster_fixture.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\memtracker.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\os.hpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Source Files"
+			>
+			<File
+				RelativePath="..\..\unittests\api110.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\blob.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\bt_cursor.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\btree_erase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\btree_insert.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\cache.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\check.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\cppapi.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\db.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\device.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\device_graph.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\duplicates.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\empty_sample.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\endian.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\env.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\error.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\extkeys.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\filter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\freelist.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\hamsterdb.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\keys.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\log.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\mem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\memtracker.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\os.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\page.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\partial.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\recno.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\remote.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\txn.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\unittests\util.cpp"
+				>
+			</File>
+			<Filter
+				Name="BFC framework"
+				>
+				<File
+					RelativePath="..\..\unittests\bfc-signal.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\unittests\bfc-testsuite.cpp"
+					>
+				</File>
+			</Filter>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
