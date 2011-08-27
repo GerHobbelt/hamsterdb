@@ -76,7 +76,7 @@
  * make sure crtdbg.h is loaded before malloc.h!
  */
 #if defined(_MSC_VER) && defined(HAM_OS_WIN32)
-#   if (defined(WIN32) || defined(__WIN32)) && !defined(UNDER_CE)
+#   if !defined(UNDER_CE)
 #      if defined(DEBUG) || defined(_DEBUG)
 #         if !defined(_CRTDBG_MAP_ALLOC)
 #            define _CRTDBG_MAP_ALLOC 1
