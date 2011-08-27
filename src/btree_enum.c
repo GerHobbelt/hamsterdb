@@ -29,15 +29,19 @@
  * the linked list of all the siblings
  */
 static ham_status_t
-_enumerate_level(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
-        ham_enumerate_cb_t cb, ham_bool_t recursive, void *context);
+my_enumerate_level(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_data,
+        ham_enumerate_cb_t cb);
 
+#if 0
 /**
  * enumerate a single page
  */
 static ham_status_t
-_enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
-        ham_u32_t count, ham_enumerate_cb_t cb, void *context);
+my_enumerate_page(ham_page_t *page, ham_u32_t level, ham_u32_t count,
+        ham_enumerate_cb_t cb, void *context);
+-->
+btree_in_node_enumerate()
+#endif
 
 /**
  * iterate the whole tree and enumerate every item.
@@ -45,24 +49,37 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
  * @note This is a B+-tree 'backend' method.
  */
 ham_status_t
-btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
+btree_enumerate(common_btree_datums_t *btdata, ham_enumerate_cb_t cb,
+        void *context)
 {
     ham_page_t *page;
-    ham_u32_t level=0;
+    ham_u32_t level = 0;
     ham_offset_t ptr_left;
     btree_node_t *node;
     ham_status_t st;
-    ham_db_t *db=be_get_db(be);
+
+    ham_btree_t * const be = btdata->be;
+    ham_env_t * const env = btdata->env;
+    ham_db_t * const db = btdata->db;
+
     ham_status_t cb_st = CB_CONTINUE;
 
-    ham_assert(btree_get_rootpage(be)!=0, ("invalid root page"));
-    ham_assert(cb!=0, ("invalid parameter"));
+	ham_cb_enum_data_t cb_data = { 0 };
+	cb_data.context = context;
+
+    ham_assert(btree_get_rootpage(be) != 0, ("invalid root page"));
+    ham_assert(cb != 0, ("invalid parameter"));
 
     /* get the root page of the tree */
-    st = db_fetch_page(&page, db, btree_get_rootpage(be), 0);
-    ham_assert(st ? !page : 1, (0));
+    st = db_fetch_page(&page, env, btree_get_rootpage(be), 0);
+    ham_assert(st ? page == NULL : page != NULL, (0));
     if (!page)
+    {
         return st ? st : HAM_INTERNAL_ERROR;
+    }
+    ham_assert(!st, (0));
+    ham_assert(db, (0));
+    page_set_owner(page, db);
 
     /* while we found a page... */
     while (page)
@@ -86,7 +103,12 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
         by this page 'pinning' countermeasure.
         */
         page_add_ref(page);
-        st = cb(ENUM_EVENT_DESCEND, (void *)&level, (void *)&count, context);
+		cb_data.event_code = ENUM_EVENT_DESCEND;
+		cb_data.page = page;
+		cb_data.level = level;
+		cb_data.node_count = count;
+		cb_data.node_is_leaf = btree_node_is_leaf(node);
+        st = cb(&cb_data);
         page_release_ref(page);
         if (st != CB_CONTINUE)
             return (st);
@@ -94,8 +116,7 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
         /*
          * enumerate the page and all its siblings
          */
-        cb_st = _enumerate_level(be, page, level, cb,
-                        (cb_st == CB_DO_NOT_DESCEND), context);
+        cb_st = my_enumerate_level(btdata, &cb_data, cb);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
 
@@ -104,10 +125,15 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
          */
         if (ptr_left)
         {
-            st = db_fetch_page(&page, db, ptr_left, 0);
-            ham_assert(st ? !page : 1, (0));
-            if (st)
-                return st;
+            st = db_fetch_page(&page, env, ptr_left, 0);
+            ham_assert(st ? page == NULL : page != NULL, (0));
+            if (!page)
+            {
+                return st ? st : HAM_INTERNAL_ERROR;
+            }
+            ham_assert(!st, (0));
+            ham_assert(db, (0));
+            page_set_owner(page, db);
         }
         else
         {
@@ -121,20 +147,29 @@ btree_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
 }
 
 static ham_status_t
-_enumerate_level(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
-        ham_enumerate_cb_t cb, ham_bool_t recursive, void *context)
+my_enumerate_level(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_data,
+        ham_enumerate_cb_t cb)
 {
     ham_status_t st;
     ham_size_t count = 0;
     btree_node_t *node;
     ham_status_t cb_st = CB_CONTINUE;
 
+    ham_btree_t * const be = btdata->be;
+    ham_device_t * const dev = btdata->dev;
+    ham_env_t * const env = btdata->env;
+    ham_db_t * const db = btdata->db;
+
+	ham_page_t *page = cb_data->page;
+
     while (page)
     {
         /*
          * enumerate the page
          */
-        cb_st = _enumerate_page(be, page, level, count, cb, context);
+		cb_data->page = page;
+		cb_data->page_level_sibling_index = count;
+        cb_st = be->_fun_in_node_enumerate(btdata, cb_data, cb);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
 
@@ -144,11 +179,18 @@ _enumerate_level(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
         node = ham_page_get_btree_node(page);
         if (btree_node_get_right(node))
         {
-            st=db_fetch_page(&page, be_get_db(be),
-                    btree_node_get_right(node), 0);
-            ham_assert(st ? !page : 1, (0));
-            if (st)
-                return st;
+            ham_assert(page_get_owner(page), (0));
+            ham_assert(dev == page_get_device(page), (0));
+            ham_assert(device_get_env(dev) == db_get_env(page_get_owner(page)), (0));
+            st=db_fetch_page(&page, env, btree_node_get_right(node), 0);
+            ham_assert(st ? page == NULL : page != NULL, (0));
+            if (!page)
+            {
+                return st ? st : HAM_INTERNAL_ERROR;
+            }
+            ham_assert(!st, (0));
+            ham_assert(db, (0));
+            page_set_owner(page, db);
         }
         else
             break;
@@ -160,22 +202,26 @@ _enumerate_level(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
 }
 
 ham_status_t
-_enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
-        ham_u32_t sibcount, ham_enumerate_cb_t cb, void *context)
+btree_in_node_enumerate(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_data, ham_enumerate_cb_t cb)
 {
     ham_size_t i;
     ham_size_t count;
-    ham_db_t *db=page_get_owner(page);
+	ham_page_t *page = cb_data->page;
+    //ham_db_t *db=page_get_owner(page);
+    //ham_btree_t *be = (ham_btree_t *)db_get_backend(db);
     int_key_t *bte;
-    btree_node_t *node=ham_page_get_btree_node(page);
-    ham_bool_t is_leaf;
+    //int_key_t *keyarr;
+    btree_node_t *node = ham_page_get_btree_node(page);
     ham_status_t cb_st;
     ham_status_t cb_st2;
+    //ham_size_t keywidth = be_get_keysize(be) + db_get_int_key_header_size();
 
-    if (btree_node_get_ptr_left(node))
-        is_leaf=0;
-    else
-        is_leaf=1;
+    //ham_btree_t * const be = btdata->be;
+    ham_device_t * const dev = btdata->dev;
+
+    ham_assert(page_get_owner(page), (0));
+    ham_assert(dev == page_get_device(page), (0));
+    ham_assert(device_get_env(dev) == db_get_env(page_get_owner(page)), (0));
 
     count = btree_node_get_count(node);
 
@@ -192,7 +238,11 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
     by this page 'pinning' countermeasure.
     */
     page_add_ref(page);
-    cb_st = cb(ENUM_EVENT_PAGE_START, (void *)page, &is_leaf, context);
+	cb_data->event_code = ENUM_EVENT_PAGE_START;
+	cb_data->node_count = count;
+	//cb_data->page = page;
+	cb_data->node_is_leaf = btree_node_is_leaf(node);
+    cb_st = cb(cb_data);
     page_release_ref(page);
     if (cb_st == CB_STOP || cb_st < 0 /* error */)
         return (cb_st);
@@ -200,14 +250,18 @@ _enumerate_page(ham_btree_t *be, ham_page_t *page, ham_u32_t level,
     page_add_ref(page);
     for (i = 0; (i < count) && (cb_st != CB_DO_NOT_DESCEND); i++)
     {
-        bte = btree_node_get_key(db, node, i);
+        bte = btree_in_node_get_key_ref(btdata, page, i);
 
-        cb_st = cb(ENUM_EVENT_ITEM, (void *)bte, (void *)&count, context);
+		cb_data->event_code = ENUM_EVENT_ITEM;
+		cb_data->key = bte;
+		cb_data->key_index = i;
+        cb_st = cb(cb_data);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
     }
 
-    cb_st2 = cb(ENUM_EVENT_PAGE_STOP, (void *)page, &is_leaf, context);
+	cb_data->event_code = ENUM_EVENT_PAGE_STOP;
+    cb_st2 = cb(cb_data);
     page_release_ref(page);
 
     if (cb_st < 0 /* error */)
