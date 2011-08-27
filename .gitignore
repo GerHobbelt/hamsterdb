@@ -25,4 +25,8 @@ m4
 messages.pb.cc
 messages.pb.h
 documentation
+*.psess
+*.vsp
+*.sdf
+*.opensdf
 
