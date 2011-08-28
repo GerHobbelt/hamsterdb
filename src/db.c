@@ -1243,17 +1243,16 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags)
         /* don't touch pages which are currently in use by a transaction */
         if (page_get_refcount(head)==0)
 		{
-            /* don't remove the page from the cache, if flag NODELETE
+            /*
+			 * don't remove the page from the cache, if flag NODELETE
              * is set (this flag is used i.e. in ham_flush()) */
-            if (!(flags&DB_FLUSH_NODELETE))
+	         */
+	        if (!(flags & DB_FLUSH_NODELETE))
 			{
-                ham_assert(page_get_refcount(head)==0,
-                    ("page is in use, but database is closing"));
-                cache_set_totallist(cache,
-                    page_list_remove(cache_get_totallist(cache),
-                        PAGE_LIST_CACHED, head));
-                cache_set_cur_elements(cache, cache_get_cur_elements(cache)-1);
-            }
+	            ham_assert(page_get_refcount(head)==0,
+	                ("page is in use, but database is closing"));
+				// [i_a] Christoph's fix is better than mine; removed code here as removal-from-cache is now correctly done in db_write_page_and_delete()!
+			}
 
 	        st = db_write_page_and_delete(head, flags);
 	        if (!st2) st2 = st;
