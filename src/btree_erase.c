@@ -560,11 +560,11 @@ my_collapse_root(ham_page_t *newroot, erase_scratchpad_t *scratchpad)
     {
         ham_cache_t *cache = env_get_cache(env);
         /*
-         * As we re-purpose a page, we will reset its pagecounter as
-         * well to signal its first use as the new type assigned here.
+         * As we re-purpose a page, we do NOT reset its pagecounter as
+         * well as the cache is merely interested in how 'important'
+		 * a page is, irrespective of purpose.
          */
         ham_assert(cache, (0));
-        //page_set_cache_cntr(newroot, cache->_timeslot++);
         cache_update_page_access_counter(newroot, cache); /* bump up */
     }
     page_set_pers_type(newroot, PAGE_TYPE_B_ROOT);
