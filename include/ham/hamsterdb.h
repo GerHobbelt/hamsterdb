@@ -1066,8 +1066,11 @@ ham_env_get_parameters(ham_env_t *env, ham_parameter_t *param);
  *            <em>WARNING</em>: However, this type of sorted duplicate record order
  *            database is often used as a secundary index into another table
  *            (a 'database' in hamster terminology) and forgetting to set this
- *            flag on database open would corrupt such an application level
- *            secundary index in hard to diagnose ways.
+ *            flag on database open in previous hamsterdb releases would corrupt such an application level
+ *            secundary index in hard to diagnose ways. Modern hamsterdb persists both
+ *            @ref HAM_ENABLE_DUPLICATES and @ref HAM_SORT_DUPLICATES flags in the
+ *            database store itself and will assume the same setting again when opening
+ *            the database later on.
  *       <li>@ref HAM_RECORD_NUMBER Creates an "auto-increment" Database.
  *            Keys in Record Number Databases are automatically assigned an
  *            incrementing 64bit value. If key->data is not NULL
@@ -1134,10 +1137,6 @@ ham_env_create_db(ham_env_t *env, ham_db_t *db,
  *       <li>@ref HAM_DISABLE_VAR_KEYLEN Do not allow the use of variable
  *            length keys. Inserting a key, which is larger than the
  *            B+Tree index key size, returns @ref HAM_INV_KEYSIZE.
- *       <li>@ref HAM_SORT_DUPLICATES Sort duplicate keys for this
- *            Database. Only allowed if the Database was created with the flag
- *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
- *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
  *     </ul>
  *
  * @param params An array of ham_parameter_t structures. The following
@@ -1164,6 +1163,21 @@ ham_env_create_db(ham_env_t *env, ham_db_t *db,
  *              opened
  * @return @ref HAM_OUT_OF_MEMORY if memory could not be allocated
  * @return @ref HAM_DATABASE_ALREADY_OPEN if @a db is already in use
+ *
+ * @warning Older releases of hamsterdb accepted the @ref HAM_SORT_DUPLICATES flag
+ *          as well, but this has been removed from the allowed set as it was only confusing and ground for this
+ *          severe warning:
+ *
+ *            <em>WARNING</em>: However, this type of sorted duplicate record order
+ *            database is often used as a secundary index into another table
+ *            (a 'database' in hamster terminology) and forgetting to set this
+ *            flag on database open in previous hamsterdb releases would corrupt such an application level
+ *            secundary index in hard to diagnose ways.
+ *
+ *            Fortunately, modern hamsterdb persists both
+ *            @ref HAM_ENABLE_DUPLICATES and @ref HAM_SORT_DUPLICATES flags in the
+ *            database store itself and will assume the same setting again when opening
+ *            the database later on.
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_env_open_db(ham_env_t *env, ham_db_t *db,
@@ -1607,6 +1621,15 @@ ham_create(ham_db_t *db, const char *filename,
  *            Database. Only allowed in combination with
  *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
  *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
+ *
+ *            <em>WARNING</em>: However, this type of sorted duplicate record order
+ *            database is often used as a secundary index into another table
+ *            (a 'database' in hamster terminology) and forgetting to set this
+ *            flag on database open in previous hamsterdb releases would corrupt such an application level
+ *            secundary index in hard to diagnose ways. Modern hamsterdb persists both
+ *            @ref HAM_ENABLE_DUPLICATES and @ref HAM_SORT_DUPLICATES flags in the
+ *            database store itself and will assume the same setting again when opening
+ *            the database later on.
  *       <li>@ref HAM_DISABLE_MMAP Do not use memory mapped files for I/O.
  *            By default, hamsterdb checks if it can use mmap,
  *            since mmap is faster than read/write. For performance
@@ -1758,10 +1781,6 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *            but with certain limitations. Please read the README file
  *            for details.<br>
  *            This flag implies @ref HAM_ENABLE_RECOVERY.
- *       <li>@ref HAM_SORT_DUPLICATES Sort duplicate keys for this
- *            Database. Only allowed if the Database was created with the flag
- *            @ref HAM_ENABLE_DUPLICATES. A compare function can be set with
- *            @ref ham_set_duplicate_compare_func. This flag is not persistent.
  *      </ul>
  *
  * @param param An array of ham_parameter_t structures. The following
@@ -1798,6 +1817,21 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  * @return @ref HAM_NEED_RECOVERY if the Database is in an inconsistent state
  * @return @ref HAM_LOG_INV_FILE_HEADER if the logfile is corrupt
  * @return @ref HAM_DATABASE_ALREADY_OPEN if @a db is already in use
+ *
+ * @warning Older releases of hamsterdb accepted the @ref HAM_SORT_DUPLICATES flag
+ *          as well, but this has been removed from the allowed set as it was only confusing and ground for this
+ *          severe warning:
+ *
+ *            <em>WARNING</em>: However, this type of sorted duplicate record order
+ *            database is often used as a secundary index into another table
+ *            (a 'database' in hamster terminology) and forgetting to set this
+ *            flag on database open in previous hamsterdb releases would corrupt such an application level
+ *            secundary index in hard to diagnose ways.
+ *
+ *            Fortunately, modern hamsterdb persists both
+ *            @ref HAM_ENABLE_DUPLICATES and @ref HAM_SORT_DUPLICATES flags in the
+ *            database store itself and will assume the same setting again when opening
+ *            the database later on.
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_open_ex(ham_db_t *db, const char *filename,
