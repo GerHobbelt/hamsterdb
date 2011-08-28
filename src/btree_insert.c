@@ -459,8 +459,7 @@ __insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
          * it's logged */
         if (env_get_rt_flags(env) & HAM_ENABLE_RECOVERY)
 		{
-            st=txn_add_page(env_get_txn(env), env_get_header_page(env),
-                    HAM_TRUE);
+            st=txn_add_page(env_get_txn(env), env_get_header_page(env), HAM_TRUE);
             if (st)
                 return (st);
         }

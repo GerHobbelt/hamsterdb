@@ -747,7 +747,7 @@ db_compare_keys(ham_db_t *db, ham_key_t *lsh, ham_key_t *rhs, const ham_page_t *
  *
  * As the memory allocated for any input key @a src is cached in the @a db structure
  * for re-use in order to reduce the number of allocator (heap) invocations during
- * B-tree traversal, we do not to explicitly call an 'release' function. Instead, any
+ * B-tree traversal, we do not to explicitly call a 'release' function. Instead, any
  * allocated memory is released automatically when the database is closed.
  *
  * @param left_or_right The index (0 or 1) which decides which cached memory space
