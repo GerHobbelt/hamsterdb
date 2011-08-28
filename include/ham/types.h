@@ -453,9 +453,9 @@ typedef ham_s32_t ham_float_t;
 /** absolute maximum value for @ref ham_s32_t, which is an signed type */
 #define HAM_MAX_S32             ((ham_s32_t)((~(ham_u32_t)0) >> 1))					// make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute minimum value for @ref ham_s16_t, which is an signed type */
-#define HAM_MIN_S16             ((ham_s16_t)((~(ham_u16_t)0) >> 1 + 1))				// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MIN_S16             ((ham_s16_t)(((~(ham_u16_t)0) >> 1) + 1))				// make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute minimum value for @ref ham_s32_t, which is an signed type */
-#define HAM_MIN_S32             ((ham_s32_t)((~(ham_u32_t)0) >> 1 + 1))				// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MIN_S32             ((ham_s32_t)(((~(ham_u32_t)0) >> 1) + 1))				// make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute maximum value for @ref ham_size_t, which is an unsigned type */
 #define HAM_MAX_SIZE_T          (~(ham_size_t)0)
 /** absolute maximum value for @ref ham_offset_t, which is an unsigned type */
@@ -463,7 +463,7 @@ typedef ham_s32_t ham_float_t;
 /** absolute maximum value for @ref ham_signed_off_t, which is an @e signed type */
 #define HAM_MAX_SIGNED_OFF_T    ((ham_signed_off_t)((~(ham_offset_t)0) >> 1))		// make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute minimum value for @ref ham_signed_off_t, which is an @e signed type */
-#define HAM_MIN_SIGNED_OFF_T    ((ham_signed_off_t)((~(ham_offset_t)0) >> 1 + 1))	// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MIN_SIGNED_OFF_T    ((ham_signed_off_t)(((~(ham_offset_t)0) >> 1) + 1))	// make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute maximum value for @ref ham_float_t, which is an signed type */
 #define HAM_MAX_FLOAT           HAM_MAX_S32
 /** absolute minimum value for @ref ham_float_t, which is an signed type */
