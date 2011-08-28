@@ -67,7 +67,9 @@ public:
         BFC_REGISTER_TEST(CppApiTest, cursorTest);
         BFC_REGISTER_TEST(CppApiTest, compressionTest);
         BFC_REGISTER_TEST(CppApiTest, envTest);
-        BFC_REGISTER_TEST(CppApiTest, envDestructorTest);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest1);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest2);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest3);
         BFC_REGISTER_TEST(CppApiTest, envGetDatabaseNamesTest);
         BFC_REGISTER_TEST(CppApiTest, getLicenseTest);
         BFC_REGISTER_TEST(CppApiTest, beginAbortTest);
@@ -155,9 +157,9 @@ public:
         // get_error() is one of the few methods which should NOT throw an exception itself:
         BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, db.get_error());
         db.get_version(0, 0, 0);
-        BFC_ASSERT(".get_version() did not throw a tantrum while receiving NULL arguments");
+        BFC_ASSERT_NOTNULL(".get_version() did not throw a tantrum while receiving NULL arguments");
         db.get_license(0, 0);
-        BFC_ASSERT(".get_license() did not throw a tantrum while receiving NULL arguments");
+        BFC_ASSERT_NOTNULL(".get_license() did not throw a tantrum while receiving NULL arguments");
     }
 
     void compareTest(void)
@@ -389,15 +391,50 @@ public:
         env.erase_db(2);
     }
 
-    void envDestructorTest(void)
+	// one instance per scope so that we have predictable order of the constructors
+    void envDestructorTest1(void)
     {
-        ham::db db1;
         ham::env env;
+		{
+			ham::db db1;
 
-        env.create(BFC_OPATH(".test"));
-        db1=env.create_db(1);
+			env.create(BFC_OPATH(".test"));
+			db1=env.create_db(1);
 
-        /* let the objects go out of scope */
+		    /* let the objects go out of scope */
+		}
+    }
+
+	// one instance per scope so that we have predictable order of the constructors:
+	//
+	// This one will exhibit coredumping behaviour similar to #3 which is the usual way
+	// you'ld declare C++ instances (all in a single scope): the hamster dislikes you very much
+	// when you close the ENV and AFTERWARDS try to close/access the DBs as well: the ENV would
+	// have nuked those, if we hadn't added refcounting at the C level to ensure that the
+	// 'close order' is stable.
+    void envDestructorTest2(void)
+    {
+		ham::db db1;
+
+		{
+	        ham::env env;
+
+			env.create(BFC_OPATH(".test"));
+			db1=env.create_db(2);
+
+		    /* let the objects go out of scope */
+		}
+    }
+
+    void envDestructorTest3(void)
+    {
+		ham::db db1;
+	    ham::env env;
+
+		env.create(BFC_OPATH(".test"));
+		db1=env.create_db(3);
+
+		/* let the objects go out of scope */
     }
 
     void envGetDatabaseNamesTest(void)
@@ -558,7 +595,6 @@ public:
             return fixture::FUT_invoker(me, m, funcname, state, ex);
         }
     }
-
 };
 
 BFC_REGISTER_FIXTURE(CppApiTest);

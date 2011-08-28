@@ -200,6 +200,7 @@ public:
         }
     }
 
+    /* not a real test any longer as extkey cache flushing has been made dependent on page flush */
     void purgeTest(void)
     {
         extkey_cache_t *c=db_get_extkey_cache(m_db);
@@ -209,18 +210,88 @@ public:
         for (int i=0; i<20; i++) {
             BFC_ASSERT_EQUAL(0,
                 extkey_cache_insert(c, (ham_offset_t)i,
-                    sizeof(buffer), buffer));
+                    sizeof(buffer), buffer, NULL));
         }
 
-        ham_env_t *env=db_get_env(m_db);
-        env_set_txn_id(env, env_get_txn_id(env)+2000);
+        env_set_txn_id(m_env, env_get_txn_id(m_env)+2000);
 
+#if 0
         BFC_ASSERT_EQUAL(0, extkey_cache_purge(c));
 
         for (int i=0; i<20; i++) {
             BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 extkey_cache_fetch(c, (ham_offset_t)i,
                     &size, &pbuffer));
+        }
+#else
+        for (int i=0; i<20; i++) {
+            BFC_ASSERT_EQUAL(HAM_SUCCESS,
+                extkey_cache_fetch(c, (ham_offset_t)i,
+                &size, &pbuffer));
+        }
+        for (int i=20; i<30; i++) {
+            BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
+                extkey_cache_fetch(c, (ham_offset_t)i,
+                &size, &pbuffer));
+        }
+#endif
+    }
+
+    void fullPurgeTest(void)
+    {
+        ham_status_t st;
+        ham_key_t key;
+        ham_record_t rec;
+        int i;
+        ham_txn_t *txn;
+        ham_parameter_t ps[] = {
+            {HAM_PARAM_KEYSIZE, 256},
+            {HAM_PARAM_PAGESIZE, 64 * 1024},
+            {0, 0},
+        };
+
+        ham_close(m_db, 0);
+
+        os::unlink(BFC_OPATH(".test"));
+
+        st = ham_create_ex(m_db, BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS | HAM_CACHE_UNLIMITED, 0644, ps);
+        BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
+
+        st = ham_txn_begin(&txn, m_db, 0);
+        BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
+        BFC_ASSERT_NOTNULL(txn);
+
+        for (i = 0; i < 100; i++)
+        {
+            ham_u64_t kv[100] = {i};
+            ham_u64_t rv = i * 317;
+
+            memset(&key, 0, sizeof(key));
+            memset(&rec, 0, sizeof(rec));
+
+            kv[99] = i;
+            kv[99] *= 65531;
+
+            key.data = &kv;
+            key.size = sizeof(kv);
+            rec.data = &rv;
+            rec.size = sizeof(rv);
+
+            st = ham_insert(m_db, txn, &key, &rec, HAM_HINT_APPEND);
+            BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
+        }
+
+        /* now that we are here, we know all extkeys are in cache, thanks to unlimited cache: */
+
+        extkey_cache_t *c=db_get_extkey_cache(m_db);
+        ham_u8_t *pbuffer;
+        ham_size_t size;
+
+        for (i=0; i<100; i++)
+        {
+            BFC_ASSERT_EQUAL(HAM_SUCCESS,
+                extkey_cache_fetch(c, i, &size, &pbuffer));
+
         }
     }
 };

@@ -423,33 +423,62 @@ public:
         ham_u8_t *p;
 		dev_alloc_request_info_ex_t info = {0};
 
-        BFC_ASSERT_EQUAL(0,
-                db_alloc_page(&page, m_db, 0, PAGE_IGNORE_FREELIST));
+		info.db = m_db;
+        info.env = m_env;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_UNKNOWN;
 
-        BFC_ASSERT(page_get_owner(page)==m_db);
+        ham_cache_t *cache=cache_new(m_env, 15);
+        BFC_ASSERT_NOTNULL(cache);
+        env_set_cache(m_env, cache);
+
+        st = db_alloc_page(&page, PAGE_IGNORE_FREELIST, &info);
+        BFC_ASSERT_NOTNULL(page);
+        BFC_ASSERT_EQUAL(page_get_owner(page), m_db);
         p=page_get_raw_payload(page);
         for (int i=0; i<16; i++)
             p[i]=(ham_u8_t)i;
         page_set_dirty(page, m_env);
         address=page_get_self(page);
-        BFC_ASSERT_EQUAL(0, db_flush_page(m_env, page, 0));
-        BFC_ASSERT_EQUAL(0, db_free_page(page, 0));
+        BFC_ASSERT_EQUAL(db_flush_page(m_env, page, 0), HAM_SUCCESS);
+        if (!m_inmemory)
+        {
+            /*
+            calling this will blow away the page without it
+            getting flushed to disc as db_flush_page() will
+            merely have stored the page in the cache for
+            DELAYED flushing...
+            */
+            BFC_ASSERT_EQUAL(db_free_page(page, 0), HAM_SUCCESS);
 
-        BFC_ASSERT_EQUAL(0, db_fetch_page(&page, m_db, address, 0));
-        BFC_ASSERT(page!=0);
-        BFC_ASSERT_EQUAL(address, page_get_self(page));
+            st = db_fetch_page(&page, m_env, address, 0);
+            BFC_ASSERT_NOTNULL(page);
+	        BFC_ASSERT_EQUAL(address, page_get_self(page));
+            p=page_get_raw_payload(page);
+            for (int i=0; i<16; i++)
+                BFC_ASSERT_EQUAL_I(p[i], 0, i);
+            BFC_ASSERT_EQUAL(db_free_page(page, 0), HAM_SUCCESS);
+
+            /* try again; this time FORCE a flush: HAM_WRITE_THROUGH */
+            st = db_alloc_page(&page, PAGE_IGNORE_FREELIST, &info);
+            BFC_ASSERT_NOTNULL(page);
+            BFC_ASSERT_EQUAL(page_get_owner(page), m_db);
+            p=page_get_raw_payload(page);
+            for (int i=0; i<16; i++)
+                p[i]=(ham_u8_t)i;
+            page_set_dirty(page, m_env);
+            address=page_get_self(page);
+            BFC_ASSERT_EQUAL(db_flush_page(m_env, page, HAM_WRITE_THROUGH), HAM_SUCCESS);
+            BFC_ASSERT_EQUAL(db_free_page(page, 0), HAM_SUCCESS);
+        }
+
+        st = db_fetch_page(&page, m_env, address, 0);
+        BFC_ASSERT_NOTNULL(page);
+        BFC_ASSERT_EQUAL(page_get_self(page), address);
         p=page_get_raw_payload(page);
-        /* TODO see comment in db.c - db_free_page()
         for (int i=0; i<16; i++)
-            BFC_ASSERT(p[i]==(ham_u8_t)i);
-        */
-        BFC_ASSERT_EQUAL(0, db_free_page(page, 0));
-    }
-
-    // using a function to compare the constants is easier for debugging
-    bool compare_sizes(size_t a, size_t b)
-    {
-        return a == b;
+            BFC_ASSERT_EQUAL_I(p[i], i, i);
+        BFC_ASSERT_EQUAL(db_free_page(page, 0), HAM_SUCCESS);
     }
 
     void checkStructurePackingTest(void)

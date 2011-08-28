@@ -217,20 +217,18 @@ public:
             page[i]=page_new(m_env);
             memset(&pers[i], 0, sizeof(pers[i]));
             page_set_npers_flags(page[i], PAGE_NPERS_NO_HEADER);
-            page_set_self(page[i], (i+1)*1024);
+            page_set_self(page[i], i*1024);
             page_set_pers(page[i], &pers[i]);
             BFC_ASSERT_EQUAL_I(cache_put_page(cache, page[i]), HAM_SUCCESS, i);
         }
         for (int i=0; i<MAX; i++) {
-            BFC_ASSERT_EQUAL(page[i],
-                    cache_get_page(cache, (i+1)*1024, 0));
+            BFC_ASSERT_EQUAL_I(cache_get_page(cache, i*1024, 0), page[i], i);
         }
         for (int i=0; i<MAX; i++) {
-            cache_remove_page(cache, page[i]);
+            BFC_ASSERT_EQUAL_I(cache_remove_page(cache, page[i]), 0, i);
         }
         for (int i=0; i<MAX; i++) {
-            BFC_ASSERT_EQUAL((ham_page_t *)0,
-                    cache_get_page(cache, (i+1)*1024, 0));
+            BFC_ASSERT_NULL_I(cache_get_page(cache, i*1024, 0), i);
             page_set_pers(page[i], 0);
             page_delete(page[i]);
         }
@@ -283,17 +281,28 @@ public:
         page_set_npers_flags(page2, PAGE_NPERS_NO_HEADER);
         page_set_self(page2, 0x456ull);
         page_set_pers(page2, &pers2);
-
-        cache_put_page(cache, page1);
-        cache_put_page(cache, page2);
-        BFC_ASSERT_EQUAL(page2, cache_get_unused_page(cache));
-        BFC_ASSERT_EQUAL((ham_page_t *)0, cache_get_unused_page(cache));
+        BFC_ASSERT_EQUAL(cache_put_page(cache, page1), HAM_SUCCESS);
+        BFC_ASSERT_EQUAL(cache_put_page(cache, page2), HAM_SUCCESS);
+        BFC_ASSERT_EQUAL(cache_get_unused_page(cache, HAM_FALSE), page2);
+        BFC_ASSERT_NULL(cache_get_unused_page(cache, HAM_TRUE));
+        BFC_ASSERT_NULL(cache_get_unused_page(cache, HAM_FALSE));
+        BFC_ASSERT_EQUAL(cache_get_page(cache, 0x123ull, 0), page1);
+        BFC_ASSERT_NULL(cache_get_page(cache, 0x456ull, 0));
+        //cache_delete(m_env, cache);  -- crashes the code for good reasons! you do NOT delete the cache halfway through!
         page_release_ref(page1);
+        page_add_ref(page2);
+        BFC_ASSERT_NULL(cache_get_page(cache, 0x123ull, CACHE_NOREMOVE));
+        BFC_ASSERT_EQUAL(cache_put_page(cache, page1), HAM_SUCCESS);
         BFC_ASSERT_EQUAL(page1, cache_get_page(cache, 0x123ull, CACHE_NOREMOVE));
-        BFC_ASSERT_EQUAL((ham_page_t *)0, cache_get_page(cache, 0x456ull, 0));
-        BFC_ASSERT_EQUAL(page1, cache_get_unused_page(cache));
-        BFC_ASSERT_EQUAL((ham_page_t *)0, cache_get_page(cache, 0x123ull, 0));
-        cache_delete(cache);
+        BFC_ASSERT_NULL(cache_get_page(cache, 0x456ull, 0));
+        BFC_ASSERT_EQUAL(cache_put_page(cache, page2), HAM_SUCCESS);
+        BFC_ASSERT_EQUAL(page2, cache_get_page(cache, 0x456ull, CACHE_NOREMOVE));
+        BFC_ASSERT_EQUAL(page1, cache_get_unused_page(cache, HAM_TRUE));
+        BFC_ASSERT_EQUAL(cache_put_page(cache, page1), HAM_SUCCESS);
+        BFC_ASSERT_EQUAL(page1, cache_get_unused_page(cache, HAM_FALSE));
+        BFC_ASSERT_NULL(cache_get_page(cache, 0x123ull, 0));
+        page_release_ref(page2);
+        cache_delete(m_env, cache);
         page_set_pers(page1, 0);
         page_delete(page1);
         page_set_pers(page2, 0);
@@ -380,14 +389,14 @@ public:
 
         unsigned int max_pages=HAM_DEFAULT_CACHESIZE/(1024*128);
         unsigned int i;
-        for (i=0; i<max_pages+1; i++) {
-            BFC_ASSERT_EQUAL(0, db_alloc_page(&p[i], db, 0, 0));
+        for (i=0; i < max_pages; i++) {
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, db_alloc_page(&p[i], 0, &info));
             page_add_ref(p[i]);
         }
 
-        BFC_ASSERT_EQUAL(HAM_CACHE_FULL, db_alloc_page(&p[i], db, 0, 0));
+        BFC_ASSERT_EQUAL(HAM_CACHE_FULL, db_alloc_page(&p[i], 0, &info));
 
-        for (i=0; i<max_pages+1; i++) {
+        for (i=0; i<max_pages; i++) {
             page_release_ref(p[i]);
         }
 
@@ -410,7 +419,7 @@ public:
                 ham_env_create_ex(env, ".test.db", 0, 0644, &param[0]));
         ham_cache_t *cache=env_get_cache(env);
 
-        BFC_ASSERT_EQUAL(100*1024u, cache_get_capacity(cache));
+        BFC_ASSERT_EQUAL(100u, cache_get_max_elements(cache));
 
         ham_env_close(env, 0);
         ham_env_delete(env);
@@ -420,6 +429,11 @@ public:
     {
         ham_env_t *env;
         ham_parameter_t param[]={
+            {HAM_PARAM_PAGESIZE, 1024},
+            {HAM_PARAM_CACHESIZE, 100*1024},
+            {0, 0}};
+        ham_parameter_t param4open[]={
+            //{HAM_PARAM_PAGESIZE, 1024},
             {HAM_PARAM_CACHESIZE, 100*1024},
             {0, 0}};
 
@@ -428,10 +442,10 @@ public:
                 ham_env_create_ex(env, ".test.db", 0, 0644, &param[0]));
         ham_env_close(env, 0);
         BFC_ASSERT_EQUAL(0,
-                ham_env_open_ex(env, ".test.db", 0, &param[0]));
+                ham_env_open_ex(env, ".test.db", 0, &param4open[0]));
         ham_cache_t *cache=env_get_cache(env);
 
-        BFC_ASSERT_EQUAL(100*1024u, cache_get_capacity(cache));
+        BFC_ASSERT_EQUAL(100u, cache_get_max_elements(cache));
 
         ham_env_close(env, 0);
         ham_env_delete(env);
@@ -450,7 +464,7 @@ public:
         ham_env_t *env=db_get_env(db);
         ham_cache_t *cache=env_get_cache(env);
 
-        BFC_ASSERT_EQUAL(100*1024u, cache_get_capacity(cache));
+        BFC_ASSERT_EQUAL(100u, cache_get_max_elements(cache));
 
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         ham_delete(db);
@@ -470,7 +484,7 @@ public:
         ham_env_t *env=db_get_env(db);
         ham_cache_t *cache=env_get_cache(env);
 
-        BFC_ASSERT_EQUAL(100*1024u, cache_get_capacity(cache));
+        BFC_ASSERT_EQUAL(100*1024u / os_get_pagesize(), cache_get_max_elements(cache));
 
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         ham_delete(db);

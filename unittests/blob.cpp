@@ -142,6 +142,13 @@ public:
         dupe_entry_set_flags(e, 0x13);
         BFC_ASSERT_EQUAL((ham_u8_t)0x13, dupe_entry_get_flags(e));
 
+		/*
+		setting a dupe record RID while that record has been flagged as tiny/small,
+		will trigger an assertion failure, at least in debug builds.
+
+		That's why we reset the flags above, before we do the next test.
+		*/
+        dupe_entry_set_flags(e, 0);
         dupe_entry_set_rid(e, (ham_offset_t)0x12345ull);
         BFC_ASSERT_EQUAL((ham_offset_t)0x12345ull,
                         dupe_entry_get_rid(e));

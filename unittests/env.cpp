@@ -224,40 +224,70 @@ protected:
         BFC_ASSERT(!db_is_active(db));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create_db(env, 0, 333, 0, 0));
-        BFC_ASSERT_EQUAL(0, ham_env_create_db(env, db, 333, 0, 0));
-        BFC_ASSERT_EQUAL(1u, db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_create_db(env, db, 333, 0, 0));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_DATABASE_ALREADY_OPEN,
+                ham_env_create_db(env, db, 334, 0, 0));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_DATABASE_ALREADY_OPEN,
+                ham_env_create_db(env, db, 333, 0, 0));
+        BFC_ASSERT(db_is_active(db));
+        /*
+        OLD CODE:
+        the ham_env_create_db() call above re-used a valid db handle
+        and calls ham_close() on it on error, which happened.
+        So the next ham_close should fail as well, as the 'db' is now
+        already closed!
+
+        NEW CODE:
+        Better behaviour would be to keep the handle intact while detecting that
+        the previous ham_env_create_db() call is really illegally re-using an
+        already open 'db' handle. */
         BFC_ASSERT_EQUAL(HAM_DATABASE_ALREADY_EXISTS,
                 ham_env_create_db(env, db2, 333, 0, 0));
-        BFC_ASSERT_EQUAL(1u, db_is_active(db));
-        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        BFC_ASSERT_EQUAL(0u, db_is_active(db));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_close(db, 0));
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_open_db(0, db, 333, 0, 0));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_open_db(env, 0, 333, 0, 0));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
 
         if (!(m_flags&HAM_IN_MEMORY_DB)) {
-            BFC_ASSERT_EQUAL(0u, db_is_active(db));
-            BFC_ASSERT_EQUAL(0, ham_env_open_db(env, db, 333, 0, 0));
-            BFC_ASSERT_EQUAL(1u, db_is_active(db));
+            BFC_ASSERT(!db_is_active(db));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_open(env, BFC_OPATH(".test"), m_flags));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_open_db(env, db, 333, 0, 0));
+            BFC_ASSERT(db_is_active(db));
             BFC_ASSERT_EQUAL(HAM_DATABASE_ALREADY_OPEN,
                     ham_env_open_db(env, db, 333, 0, 0));
-            BFC_ASSERT_EQUAL(1u, db_is_active(db));
-            BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-            BFC_ASSERT_EQUAL(0u, db_is_active(db));
-            BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
+            BFC_ASSERT(db_is_active(db));
+            /*
+            should we allow two DB handles into the very same database???
+            */
+            BFC_ASSERT_EQUAL(0 /*HAM_DATABASE_ALREADY_EXISTS*/,
+                    ham_env_open_db(env, db2, 333, 0, 0));
+            ham_close(db2, 0);
+            BFC_ASSERT_EQUAL(HAM_DATABASE_NOT_FOUND,
+                    ham_env_open_db(env, db2, 334, 0, 0));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_close(db, 0));
+            BFC_ASSERT(!db_is_active(db));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
 
-            BFC_ASSERT_EQUAL(0, ham_env_open(env, BFC_OPATH(".test"), 0));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_open(env, BFC_OPATH(".test"), 0));
 
-            BFC_ASSERT_EQUAL(0, ham_env_open_db(env, db, 333, 0, 0));
-            BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_open_db(env, db, 333, 0, 0));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_close(db, 0));
         }
-        BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db2, 0));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
 
-        BFC_ASSERT_EQUAL(0, ham_env_delete(env));
-        BFC_ASSERT_EQUAL(0, ham_delete(db));
-        BFC_ASSERT_EQUAL(0, ham_delete(db2));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_delete(env));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_delete(db));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_delete(db2));
     }
 
     /*
@@ -269,7 +299,8 @@ protected:
     void createCloseEmptyOpenCloseWithDatabasesTest(void)
     {
         ham_env_t *env;
-        ham_db_t *db[128], *dbx;
+        ham_db_t *db[128];
+        ham_db_t *dbx;
         int i;
         const ham_parameter_t parameters[]={
            { HAM_PARAM_CACHESIZE,  128*1024 },
@@ -282,59 +313,128 @@ protected:
            { 0, 0 }
         };
         ham_parameter_t ps[]={
-           { HAM_PARAM_CACHESIZE,0},
+           { HAM_PARAM_CACHESIZE,0}, // values must be zero or they will carry through (as least when the env has not been configured so far yet, thus overwriting the setting here, but that's a different test now...)
            { HAM_PARAM_PAGESIZE, 0},
+           { HAM_PARAM_KEYSIZE,  0},
            { HAM_PARAM_MAX_ENV_DATABASES, 0},
            { 0, 0 }
         };
+        // test whether the preconfigured values 'carry through' ...
+        ham_parameter_t ps2[]={
+            { HAM_PARAM_CACHESIZE,7},
+            { HAM_PARAM_PAGESIZE, 11},
+            { HAM_PARAM_KEYSIZE,  13},
+            { HAM_PARAM_MAX_ENV_DATABASES, 17},
+            { 0, 0 }
+        };
 
-        BFC_ASSERT_EQUAL(0, ham_env_new(&env));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_new(&env));
         for (i = 0; i < 128; i++)
+        {
             BFC_ASSERT_EQUAL_I(0, ham_new(&db[i]), i);
-        BFC_ASSERT_EQUAL(0, ham_new(&dbx));
+        }
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_new(&dbx));
 
-        BFC_ASSERT_EQUAL(0,
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, ham_env_get_parameters(env, ps2));
+        BFC_ASSERT_EQUAL(ps2[0].value.n, 7u);
+        BFC_ASSERT_EQUAL(ps2[1].value.n, 256u); // NOTE: these 5 lines have not been tested yet; this is just 'the idea'...
+        BFC_ASSERT_EQUAL(ps2[2].value.n, 13u);
+        BFC_ASSERT_EQUAL(ps2[3].value.n, 17u);
+        ps2[1].value.n = 256u;
+        ps2[3].value.n = 17u;
+
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_get_parameters(env, ps2));
+        BFC_ASSERT_EQUAL(ps2[0].value.n, 7u);
+        BFC_ASSERT_EQUAL(ps2[1].value.n, 256u); // env should NOT overrule the given pagesize in PARAM
+        BFC_ASSERT_EQUAL(ps2[2].value.n, 13u);
+        BFC_ASSERT_EQUAL(ps2[3].value.n, 17u);
+        ps2[1].value.n = 256u;
+        ps2[3].value.n = 17u;
+
+        BFC_ASSERT_EQUAL(HAM_SUCCESS,
             ham_env_create_ex(env, BFC_OPATH(".test"),
                 m_flags, 0664, parameters));
-        BFC_ASSERT_EQUAL(0, ham_env_get_parameters(env, ps));
-        BFC_ASSERT(ps[0].value == 128*1024);
-        BFC_ASSERT(ps[1].value == 64*1024);
-        BFC_ASSERT(ps[2].value == 128 /* 2029 */ );
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_get_parameters(env, ps));
+        BFC_ASSERT_EQUAL(ps[0].value.n, 128*1024u); // (in bytes)
+        BFC_ASSERT_EQUAL(ps[1].value.n, 64*1024u); // pagesize already configured (differs in behaviour from 1.0.9)
+        BFC_ASSERT_EQUAL(ps[2].value.n, 21u);
+        BFC_ASSERT_EQUAL(ps[3].value.n, 128u /* 2029u */ );
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_get_parameters(env, ps2));
+        BFC_ASSERT_EQUAL(ps2[0].value.n, 128*1024u);
+        BFC_ASSERT_EQUAL(ps2[1].value.n, 64*1024u); // env already set, will overwrite ('update') the preset in ps2[]
+        BFC_ASSERT_EQUAL(ps2[2].value.n, 21u);
+        BFC_ASSERT_EQUAL(ps2[3].value.n, 128u);
 
         /* close and re-open the ENV */
         if (!(m_flags&HAM_IN_MEMORY_DB)) {
-            BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
-            BFC_ASSERT_EQUAL(0, ham_env_delete(env));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_delete(env));
 
-            BFC_ASSERT_EQUAL(0, ham_env_new(&env));
-            BFC_ASSERT_EQUAL(0,
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_new(&env));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS,
                 ham_env_open_ex(env, BFC_OPATH(".test"), m_flags, parameters2));
         }
-
-        BFC_ASSERT_EQUAL(0, ham_env_get_parameters(env, ps));
-        BFC_ASSERT_EQUAL(128*1024u, ps[0].value);
-        BFC_ASSERT_EQUAL(1024*64u, ps[1].value);
-        BFC_ASSERT_EQUAL(128u, ps[2].value);
+        for (i = 0; ps[i].name; i++)
+        {
+            ps[i].value.n = 0u;
+        }
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_get_parameters(env, ps));
+        BFC_ASSERT_EQUAL(ps[0].value.n, 128*1024u); // no cache yet
+        BFC_ASSERT_EQUAL(ps[1].value.n, 64*1024u);
+        BFC_ASSERT_EQUAL(ps[2].value.n, 21u);
+        BFC_ASSERT_EQUAL(ps[3].value.n, 128u /* 2029u */ );
+        ps2[1].value.n = 256u;
+        ps2[3].value.n = 17u;
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_get_parameters(env, ps2));
+        BFC_ASSERT_EQUAL(ps2[0].value.n, 7u);
+        BFC_ASSERT_EQUAL(ps2[1].value.n, 64*1024u); // env already set, will overwrite ('update') the preset in ps2[]
+        BFC_ASSERT_EQUAL(ps2[2].value.n, 13u);
+        BFC_ASSERT_EQUAL(ps2[3].value.n, 128u);
 
         /* now create 128 DBs; we said we would, anyway, when creating the
          * ENV ! */
         for (i = 0; i < 128; i++) {
             int j;
+            ham_u16_t dbname_i = (ham_u16_t)(i + 100);
 
             BFC_ASSERT_EQUAL_I(0,
-                    ham_env_create_db(env, db[i], i + 100, 0, 0), i);
-            BFC_ASSERT_EQUAL_I(HAM_DATABASE_ALREADY_EXISTS,
-                    ham_env_create_db(env, dbx, i + 100, 0, 0), i);
+                    ham_env_create_db(env, db[i], dbname_i, 0, 0), i);
+            BFC_ASSERT_EQUAL_I(HAM_DATABASE_ALREADY_OPEN,
+                    ham_env_create_db(env, db[i], dbname_i, 0, 0), i);
+            if (i + 1 < 128)
+            {
+                BFC_ASSERT_EQUAL_I(HAM_DATABASE_ALREADY_EXISTS,
+                    ham_env_create_db(env, dbx, dbname_i, 0, 0), i);
+            }
+            else // (i + 1 == 128)
+            {
+                BFC_ASSERT_EQUAL_I(HAM_DATABASE_ALREADY_EXISTS,
+                    ham_env_create_db(env, dbx, dbname_i, 0, 0), i);
+            }
+            BFC_ASSERT_EQUAL_I(HAM_DATABASE_ALREADY_OPEN,
+                    ham_env_open_db(env, db[i], dbname_i, 0, 0), i); // making sure previous errors didn't inadvertedly close the db handles...
             BFC_ASSERT_EQUAL_I(0, ham_close(db[i], 0), i);
             BFC_ASSERT_EQUAL_I(0,
-                    ham_env_open_db(env, db[i], i + 100, 0, 0), i);
+                    ham_env_open_db(env, db[i], dbname_i, 0, 0), i);
 
             for (j = 0; ps[j].name; j++)
-                ps[j].value = 0;
-            BFC_ASSERT_EQUAL(0, ham_get_parameters(db[i], ps));
-            BFC_ASSERT_EQUAL(128*1024u, ps[0].value);
-            BFC_ASSERT_EQUAL(1024*64u, ps[1].value);
-            BFC_ASSERT_EQUAL(128u, ps[2].value);
+            {
+                ps[j].value.n = 0u;
+            }
+            BFC_ASSERT_EQUAL_I(0, ham_get_parameters(db[i], ps), i);
+            BFC_ASSERT_EQUAL_I(ps[0].value.n, 128*1024u, i); // (unit; bytes) rounded up when cache was actually created
+            BFC_ASSERT_EQUAL_I(ps[1].value.n, 1024*64u, i);
+            BFC_ASSERT_EQUAL_I(ps[2].value.n, 21u, i);
+            BFC_ASSERT_EQUAL_I(ps[3].value.n, 128u /* 2029u */ , i);
+            ps2[0].value.n = 7u;
+            ps2[1].value.n = 256u;
+            ps2[2].value.n = 13u;
+            ps2[3].value.n = 17u;
+            BFC_ASSERT_EQUAL_I(0, ham_get_parameters(db[i], ps2), i);
+            BFC_ASSERT_EQUAL_I(ps2[0].value.n, 128*1024u, i);
+            BFC_ASSERT_EQUAL_I(ps2[1].value.n, 1024*64u, i); // env already set, will overwrite ('update') the preset in ps2[]
+            BFC_ASSERT_EQUAL_I(ps2[2].value.n, 21u, i);
+            BFC_ASSERT_EQUAL_I(ps2[3].value.n, 128u, i);
         }
 
         BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_delete(dbx));
@@ -387,8 +487,17 @@ protected:
         BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
         BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_delete(env));
 
-        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        BFC_ASSERT_EQUAL(0, ham_delete(db));
+        /*
+        As the db handle is linked to the env and the env is closed BEFORE the db,
+        the cave canem from the documentation finally applies: the db handle is
+        auto-closed for you through ham_env_close() above, so should yak here.
+
+        Since v1.1.2, it does...
+
+        Christoph: since db_close does not b0rk on a double-close, this one should be fine anyhow... Ger: hrmpf...
+        */
+        BFC_ASSERT_EQUAL(0 /* HAM_NOT_INITIALIZED */ , ham_close(db, 0));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_delete(db));
     }
 
     void readOnlyTest(void)
@@ -475,11 +584,17 @@ protected:
     void openWithKeysizeTest(void)
     {
         ham_env_t *env;
+        ham_parameter_t parameters[]={
+           { HAM_PARAM_KEYSIZE,      20 },
+           { 0, 0ull }
+        };
 
-        BFC_ASSERT_EQUAL(0, ham_env_new(&env));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_new(&env));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_open_ex(0, BFC_OPATH(".test"), m_flags, 0));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_env_open_ex(env, BFC_OPATH(".test"), m_flags, &parameters[0]));
         BFC_ASSERT_EQUAL(HAM_FILE_NOT_FOUND,
                 ham_env_open_ex(env, BFC_OPATH(".test"), m_flags, 0));
         BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
@@ -640,16 +755,17 @@ protected:
                 ham_env_open_db(env, db[0], 1, 0, parameters));
         }
         else
-            BFC_ASSERT_EQUAL(((m_flags&HAM_IN_MEMORY_DB)
-                                ? HAM_INV_PARAMETER
-                                : HAM_DATABASE_NOT_FOUND),
-                            ham_env_open_db(env, db[0], 1, 0, 0));
+        {
+            BFC_ASSERT_EQUAL(0u, (m_flags & HAM_IN_MEMORY_DB));
+            BFC_ASSERT_EQUAL(HAM_DATABASE_ALREADY_OPEN,
+                ham_env_open_db(env, db[0], 1, 0, 0));
+        }
 
         for (i = 0; i < MAX; i++)
         {
             if (!(m_flags&HAM_IN_MEMORY_DB)) {
                 BFC_ASSERT_EQUAL_I(0,
-                        ham_env_open_db(env, db[i], i+1, 0, 0), i);
+                        ham_env_open_db(env, db[i], i+1, 0, parameters3), i);
             }
             memset(&key, 0, sizeof(key));
             memset(&rec, 0, sizeof(rec));
@@ -1711,7 +1827,8 @@ protected:
 
         BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_close(db2, 0));
         if (!(m_flags&HAM_IN_MEMORY_DB)) {
-            BFC_ASSERT_EQUAL(0,
+            /* how can this one succeed when a handle to it is still open??? */
+            BFC_ASSERT_EQUAL(HAM_SUCCESS,
                     ham_env_erase_db(env, 222, 0));
             names_size=5;
             BFC_ASSERT_EQUAL(HAM_SUCCESS,
@@ -1766,8 +1883,19 @@ protected:
             BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                     ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
         }
+        else if (os_get_pagesize()==1024*4) {
+            // should have Linux-specific test here too; the 128 is an initial wild guess though
+            ps[0].value.n=128;
+            BFC_ASSERT_EQUAL(HAM_SUCCESS,
+                    ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
+            BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_close(env, 0));
 
-        BFC_ASSERT_EQUAL(0, ham_env_delete(env));
+            ps[0].value.n=129;
+            BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                    ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
+        }
+
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, ham_env_delete(env));
     }
 
     void maxDatabasesReopenTest(void)
