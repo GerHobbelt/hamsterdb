@@ -403,7 +403,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
                     next_ranchor, page, scratchpad);
         if (st)
             return st;
-		ham_assert(newme ? newme == child : 1, (0));
+		//ham_assert(newme ? newme == child : 1, (0));
     }
     else
     {
@@ -459,7 +459,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
      */
     if (newme)
     {
-        ham_assert(slot != -1, (0)); /* [i_a] shouldn't ever happen, right? */
+        //ham_assert(slot != -1, (0)); /* [i_a] shouldn't ever happen, right? */
 
         if (slot==-1)
             slot=0;
@@ -909,8 +909,8 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
     page_set_dirty(sibpage, env);
     ham_assert(node_keycount == btree_node_get_count(node), (0));
     ham_assert(node_keycount + c <= MAX_KEYS_PER_NODE, (0));
-    ham_assert(btree_node_get_count(node) == node_keycount + c, (0));
-    ham_assert(btree_node_get_count(sibnode) == 0, (0));
+    btree_node_set_count(node, node_keycount + c);
+    btree_node_set_count(sibnode, 0);
 
     /*
      * update the linked list of pages
