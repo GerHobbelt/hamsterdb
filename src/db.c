@@ -849,10 +849,6 @@ done:
     }
 #endif
 
-    page_set_type(page, type);
-    page_set_owner(page, db);
-    page_set_undirty(page);
-
     /*
     CONCERN / TO BE CHECKED
 
@@ -917,12 +913,33 @@ done:
             return st;
     }
 
+    /* BUGFIX */
+    memset(page_get_raw_payload(page), 0, page_get_persistent_header_size());
+
+    /* this modifies the persisted part of the page; must be done AFTER writing the 'before' page image to log */
+#if 0 /* old code: */
+    page_set_type(page, type);
+    page_set_undirty(page);
+#endif
+    page_set_owner(page, extra_dev_alloc_info->db);
+    page_set_pers_type(page, extra_dev_alloc_info->space_type);
+    page_set_dirty(page, env); /* signal write required, otherwise header edit above is lost, at least, on recovery / commit */
+
     /*
      * clear the page with zeroes?
      */
-    if (flags&PAGE_CLEAR_WITH_ZERO) {
-        memset(page_get_pers(page), 0, env_get_pagesize(env));
+    if (flags & PAGE_CLEAR_WITH_ZERO)
+    {
+        ham_assert(((ham_u8_t *)page_get_payload(page)) - page_get_persistent_header_size() == page_get_raw_payload(page), (0));
+        memset(page_get_payload(page), 0, env_get_pagesize(env) - page_get_persistent_header_size());
 
+        /*
+        BUG?
+
+        why log this state of affairs???
+
+        or was that to compensate for the incorrect page_set_UNdirty() earlier???
+        */
         st=ham_log_add_page_after(page);
         if (st)
             return st;
