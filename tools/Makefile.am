@@ -1,5 +1,5 @@
 
-INCLUDES		    = -I$(top_builddir)/include -I$(top_builddir)/src \
+AM_CFLAGS		    = -I$(top_builddir)/include -I$(top_builddir)/src \
 					  -I$(top_builddir)/3rdparty/json
 
 hamzilla_SOURCES    = hamzilla.c getopts.c config.c
