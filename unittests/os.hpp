@@ -28,8 +28,8 @@ class os
 {
 protected:
 #ifdef WIN32
-	static const char *DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
-	{
+    static const char *DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
+    {
 #ifdef UNDER_CE
         strcpy(buf, "((WinCE: DisplayError() not implemented))");
 #else
@@ -46,8 +46,8 @@ protected:
             ;
         buf[buflen]=0;
 #endif
-		return buf;
-	}
+        return buf;
+    }
 #endif
 
 public:
@@ -58,28 +58,28 @@ public:
     {
 #ifdef WIN32
 #   ifdef UNDER_CE
-    	wchar_t wpath[1024];
-	    MultiByteToWideChar(CP_ACP, 0, path, -1, wpath,
+        wchar_t wpath[1024];
+        MultiByteToWideChar(CP_ACP, 0, path, -1, wpath,
                 sizeof(wpath)/sizeof(wchar_t));
         BOOL rv = DeleteFileW(wpath);
 #   else
         BOOL rv = DeleteFileA((LPCSTR)path);
 #   endif
-	    if (!rv) {
-			if (!fail_silently) {
-				char buf[1024];
-				char buf2[1024];
-				DWORD st;
-				st = GetLastError();
-				_snprintf(buf2, sizeof(buf2),
-					"DeleteFileA('%s') failed with OS status %u (%s)",
-					path, st, DisplayError(buf, sizeof(buf), st));
-				buf2[sizeof(buf2)-1] = 0;
-				ham_log(("%s", buf2));
-			}
-			return false;
-		}
-		return true;
+        if (!rv) {
+            if (!fail_silently) {
+                char buf[1024];
+                char buf2[1024];
+                DWORD st;
+                st = GetLastError();
+                _snprintf(buf2, sizeof(buf2),
+                    "DeleteFileA('%s') failed with OS status %u (%s)",
+                    path, st, DisplayError(buf, sizeof(buf), st));
+                buf2[sizeof(buf2)-1] = 0;
+                ham_logerr(("%s", buf2));
+            }
+            return false;
+        }
+        return true;
 #else
         return (0==::unlink(path));
 #endif
@@ -92,29 +92,29 @@ public:
     {
 #ifdef WIN32
 #   ifdef UNDER_CE
-    	wchar_t wsrc[1024];
+        wchar_t wsrc[1024];
         wchar_t wdest[1024];
-	    MultiByteToWideChar(CP_ACP, 0, src, -1, wsrc,
+        MultiByteToWideChar(CP_ACP, 0, src, -1, wsrc,
                 sizeof(wsrc)/sizeof(wchar_t));
-	    MultiByteToWideChar(CP_ACP, 0, dest, -1, wdest,
+        MultiByteToWideChar(CP_ACP, 0, dest, -1, wdest,
                 sizeof(wdest)/sizeof(wchar_t));
         BOOL rv = CopyFileW(wsrc, wdest, FALSE);
 #   else
         BOOL rv = CopyFileA((LPCSTR)src, dest, FALSE);
 #   endif
-	    if (!rv) {
-			char buf[2048];
-			char buf2[1024];
-			DWORD st;
-			st = GetLastError();
-			_snprintf(buf2, sizeof(buf2),
-				"CopyFileA('%s', '%s') failed with OS status %u (%s)",
-				src, dest, st, DisplayError(buf, sizeof(buf), st));
-			buf2[sizeof(buf2)-1] = 0;
-			ham_log(("%s", buf2));
-			return false;
-		}
-		return true;
+        if (!rv) {
+            char buf[2048];
+            char buf2[1024];
+            DWORD st;
+            st = GetLastError();
+            _snprintf(buf2, sizeof(buf2),
+                "CopyFileA('%s', '%s') failed with OS status %u (%s)",
+                src, dest, st, DisplayError(buf, sizeof(buf), st));
+            buf2[sizeof(buf2)-1] = 0;
+            ham_logerr(("%s", buf2));
+            return false;
+        }
+        return true;
 #else
         char buffer[1024*4];
 

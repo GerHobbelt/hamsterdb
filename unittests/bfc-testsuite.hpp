@@ -113,8 +113,8 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)!=catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-							"assertion failed in expr "#exp" == "#act \
-							"; actual values: '%s' != '%s'", \
+                            "assertion failed in expr "#exp" == "#act \
+                            "; actual values: '%s' != '%s'", \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
                     } while (0)
@@ -125,20 +125,20 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)==catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-							"assertion failed in expr "#exp" != "#act \
-							"; actual values: '%s' == '%s'", \
-							get_caught_value_string(0), \
-							get_caught_value_string(1)); } \
-					} while (0)
+                            "assertion failed in expr "#exp" != "#act \
+                            "; actual values: '%s' == '%s'", \
+                            get_caught_value_string(0), \
+                            get_caught_value_string(1)); } \
+                    } while (0)
 
 #define BFC_ASSERT_CMP(exp, comparator, act) \
-					do { \
+                    do { \
                         ditch_all_caught_values(); \
                         if (!(catch_value(0, exp) comparator catch_value(1, act))) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-							"assertion failed in expr "#exp" "#comparator" "#act \
-							"; actual values: '%s' <-> '%s'", \
+                            "assertion failed in expr "#exp" "#comparator" "#act \
+                            "; actual values: '%s' <-> '%s'", \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
                     } while (0)
@@ -162,8 +162,8 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-							" != NULL" \
-							"; actual value: '%s' == NULL", \
+                            " != NULL" \
+                            "; actual value: '%s' == NULL", \
                             get_caught_value_string(0)); } \
                     } while (0)
 
@@ -187,9 +187,9 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)!=catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-							"assertion failed in expr "#exp" == "#act \
-							" for scenario #%d" \
-							"; actual values: '%s' != '%s'", \
+                            "assertion failed in expr "#exp" == "#act \
+                            " for scenario #%d" \
+                            "; actual values: '%s' != '%s'", \
                             int(scenario), \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
@@ -201,9 +201,9 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)==catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-							"assertion failed in expr "#exp" != "#act \
-							" for scenario #%d" \
-							"; actual values: '%s' == '%s'", \
+                            "assertion failed in expr "#exp" != "#act \
+                            " for scenario #%d" \
+                            "; actual values: '%s' == '%s'", \
                             int(scenario), \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
@@ -216,9 +216,9 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-							" == NULL" \
-							" for scenario #%d" \
-							"; actual value: '%s' != NULL", \
+                            " == NULL" \
+                            " for scenario #%d" \
+                            "; actual value: '%s' != NULL", \
                             int(scenario), \
                             get_caught_value_string(0)); } \
                     } while (0)
@@ -230,26 +230,26 @@ typedef void (fixture::*method)();
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
-							" != NULL" \
-							" for scenario #%d" \
-							"; actual value: '%s' == NULL", \
+                            " != NULL" \
+                            " for scenario #%d" \
+                            "; actual value: '%s' == NULL", \
                             int(scenario), \
                             get_caught_value_string(0)); } \
                     } while (0)
 
 #define BFC_ASSERT_CMP_I(exp, comparator, act, scenario) \
-					do { \
-						ditch_all_caught_values(); \
+                    do { \
+                        ditch_all_caught_values(); \
                         if (!(catch_value(0, exp) comparator catch_value(1, act))) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-							"assertion failed in expr "#exp" "#comparator" "#act \
-							" for scenario #%d" \
-							"; actual values: '%s' <-> '%s'", \
-							int(scenario), \
-							get_caught_value_string(0), \
-							get_caught_value_string(1)); } \
-					} while (0)
+                            "assertion failed in expr "#exp" "#comparator" "#act \
+                            " for scenario #%d" \
+                            "; actual values: '%s' <-> '%s'", \
+                            int(scenario), \
+                            get_caught_value_string(0), \
+                            get_caught_value_string(1)); } \
+                    } while (0)
 
 
 struct test
@@ -683,17 +683,17 @@ public:
 class bfc_value_catcher_string : public bfc_value_catcher
 {
 public:
-	bfc_value_catcher_string(const std::string &v)
-	: _v(v) {
-	}
+    bfc_value_catcher_string(const std::string &v)
+    : _v(v) {
+    }
 protected:
-	std::string _v;
+    std::string _v;
 public:
-	virtual ~bfc_value_catcher_string() {};
-	virtual const char *value(void)
-	{
-		return _v.c_str();
-	}
+    virtual ~bfc_value_catcher_string() {};
+    virtual const char *value(void)
+    {
+        return _v.c_str();
+    }
 };
 
 
@@ -717,7 +717,7 @@ public:
     virtual ~fixture()
     {
         ditch_all_caught_values();
-		clear_tests();
+        clear_tests();
     }
 
     const char *get_name() const
@@ -832,15 +832,15 @@ protected:
 
     virtual void ditch_all_caught_values(void)
     {
-		if (_caught_values) /* BUGFIX */
-		{
-			for (size_t i = 0; i < _caught_values_size; i++)
-			{
-				if (_caught_values[i])
-					delete _caught_values[i];
-			}
-			free((void *)_caught_values);
-		}
+        if (_caught_values) /* BUGFIX */
+        {
+            for (size_t i = 0; i < _caught_values_size; i++)
+            {
+                if (_caught_values[i])
+                    delete _caught_values[i];
+            }
+            free((void *)_caught_values);
+        }
         _caught_values = NULL;
         _caught_values_size = 0;
     }
