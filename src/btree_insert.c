@@ -445,16 +445,11 @@ __insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
         if (env_get_cache(env) && (page_get_pers_type(root) != PAGE_TYPE_B_INDEX))
         {
             /*
-             * As we re-purpose a page, we will reset its pagecounter
-             * as well to signal its first use as the new type assigned
-             * here.
+             * As we re-purpose a page, we do NOT reset its pagecounter
+             * as well as the cache is merely interested in how 'important'
+			 * a page is, irrespective of purpose.
              */
-            //page_set_cache_cntr(root, env_get_cache(env)->_timeslot++);
-#if 0
-            cache_update_page_access_counter(root, env_get_cache(env), +1); /* bump up */
-#else
             cache_update_page_access_counter(root, env_get_cache(env));
-#endif
         }
         page_set_pers_type(root, PAGE_TYPE_B_INDEX);
         page_set_dirty(root, env);
@@ -462,7 +457,8 @@ __insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
 
         /* the root page was modified (btree_set_rootpage) - make sure that
          * it's logged */
-        if (env_get_rt_flags(env)&HAM_ENABLE_RECOVERY) {
+        if (env_get_rt_flags(env) & HAM_ENABLE_RECOVERY)
+		{
             st=txn_add_page(env_get_txn(env), env_get_header_page(env),
                     HAM_TRUE);
             if (st)

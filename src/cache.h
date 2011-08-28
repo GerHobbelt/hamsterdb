@@ -28,9 +28,14 @@
 extern "C" {
 #endif
 
-/** CACHE_BUCKET_SIZE should be a prime number or similar, as it is used in
- * a MODULO hash scheme */
-#define CACHE_BUCKET_SIZE    10317
+#if 0 /* [GerH] moved to cache.c: dimension hash table based on user cachesize config value */
+/**
+ * CACHE_BUCKET_SIZE should be a prime number or similar, as it is used in
+ * a MODULO hash scheme
+ */
+#define CACHE_BUCKET_SIZE    10313 /* 10317 is not prime ;) */
+#define CACHE_MAX_ELEM       8192 /**< a power of 2 *below* CACHE_BUCKET_SIZE */
+#endif
 
 
 /**
@@ -38,11 +43,8 @@ extern "C" {
  */
 struct ham_cache_t
 {
-    /** the current Environment */
-    ham_env_t *_env;
-
-    /** the capacity (in bytes) */
-    ham_size_t _capacity;
+    /** the maximum number of cached elements */
+    ham_size_t _max_elements;
 
     /** the current number of cached elements */
     ham_size_t _cur_elements;
@@ -53,18 +55,12 @@ struct ham_cache_t
     /** linked list of ALL cached pages */
     ham_page_t *_totallist;
 
-    /** the tail of the linked "totallist" - this is the oldest element,
-     * and therefore the highest candidate for a flush */
-    ham_page_t *_totallist_tail;
-
-    /** linked list of unused pages */
-    ham_page_t *_garbagelist;
-
     /**
      * a 'timer' counter used to set/check the age of cache entries:
-     * higher values represent newer / more important entries.
+     * higher values represent newer / more important entries, where
+	 * 'higher' is regarding this number as an UNSIGNED entity.
      */
-    ham_u32_t _timeslot;
+    ham_s32_t _timeslot;
 
     /**
     the buckets - an array of linked lists of ham_page_t pointers.
@@ -76,24 +72,14 @@ struct ham_cache_t
 };
 
 /*
- * get the current Environment
+ * get the maximum number of elements
  */
-#define cache_get_env(cm)                      (cm)->_env
+#define cache_get_max_elements(cm)             (cm)->_max_elements
 
 /*
- * set the current Environment
+ * set the maximum number of elements
  */
-#define cache_set_env(cm, e)                   (cm)->_env=(e)
-
-/*
- * get the capacity (in bytes)
- */
-#define cache_get_capacity(cm)                 (cm)->_capacity
-
-/*
- * set the capacity (in bytes)
- */
-#define cache_set_capacity(cm, c)              (cm)->_capacity=(c)
+#define cache_set_max_elements(cm, s)          (cm)->_max_elements=(s)
 
 /*
  * get the current number of elements
@@ -126,26 +112,6 @@ struct ham_cache_t
 #define cache_set_totallist(cm, l)             (cm)->_totallist=(l)
 
 /*
- * get the oldest page/tail in totallist
- */
-#define cache_get_totallist_tail(cm)           (cm)->_totallist_tail
-
-/*
- * set the oldest page/tail in totallist
- */
-#define cache_set_totallist_tail(cm, p)        (cm)->_totallist_tail=(p)
-
-/*
- * get the linked list of unused (garbage collected) pages
- */
-#define cache_get_garbagelist(cm)              (cm)->_garbagelist
-
-/*
- * set the linked list of unused pages
- */
-#define cache_set_garbagelist(cm, l)           (cm)->_garbagelist=(l)
-
-/*
  * get a bucket
  */
 #define cache_get_bucket(cm, i)                (cm)->_buckets[i]
@@ -154,14 +120,6 @@ struct ham_cache_t
  * set a bucket
  */
 #define cache_set_bucket(cm, i, p)             (cm)->_buckets[i]=p
-
-/**
- * increment the cache counter, while watching a global high water mark;
- * once we hit that, we decrement all counters equally, so this remains
- * a equal opportunity design for page aging.
- */
-extern void
-cache_reduce_page_counts(ham_cache_t *cache);
 
 /**
  * initialize a cache manager object
@@ -177,7 +135,13 @@ cache_new(ham_env_t *env, ham_size_t max_size);
  * @remark this will NOT flush the cache!
  */
 extern void
-cache_delete(ham_cache_t *cache);
+cache_delete(ham_env_t *env, ham_cache_t *cache);
+
+/**
+ * Clear the cache hash table and reset the current fill count to zero.
+ */
+extern void
+cache_reset(ham_cache_t *cache);
 
 /**
  * get an unused page (or an unreferenced page, if no unused page
@@ -187,14 +151,18 @@ cache_delete(ham_cache_t *cache);
  * write it to disk!
  *
  * @remark the page is removed from the cache
+ *
+ * @param fast only deliver unused pages which are located quickly when this parameter is set to
+ *        HAM_TRUE; in effect this means only pages from the garbage list are returned as scanning
+ *        the entire cache for the oldest unreferenced page takes too long for 'fast' mode.
  */
 extern ham_page_t *
-cache_get_unused_page(ham_cache_t *cache);
+cache_get_unused_page(ham_cache_t *cache, ham_bool_t fast);
 
 /**
  * get a page from the cache
  *
- * @remark the page is removed from the cache
+ * @remark the page is removed from the cache, unless you specify @ref CACHE_NOREMOVE in the @a flags
  *
  * @return 0 if the page was not cached
  */
@@ -206,29 +174,34 @@ cache_get_page(ham_cache_t *cache, ham_offset_t address, ham_u32_t flags);
 /**
  * store a page in the cache
  */
-extern void
+extern ham_status_t
 cache_put_page(ham_cache_t *cache, ham_page_t *page);
 
 /**
- * update the 'access counter' for a page in the cache.
+ * Update the 'access counter' for a page in the cache.
  * (The page is assumed to exist in the cache!)
+ *
+ * In order to improve cache activity for access patterns such as
+ * AAB.AAB. where a fetch at the '.' would rate both pages A and B as
+ * high, we use an increment-counter approach which will cause page A to
+ * be rated higher than page B over time as A is accessed/needed more
+ * often.
  */
-extern void
-cache_update_page_access_counter(ham_page_t *page, ham_cache_t *cache,
-                    ham_u32_t extra_bump);
+static __inline void
+cache_update_page_access_counter(ham_page_t *page, ham_cache_t *cache)
+{
+	cache->_timeslot++;
+    page_set_cache_cntr(page, cache->_timeslot);
+    page_increment_cache_hit_freq(page);
+}
 
 /**
  * remove a page from the cache
  */
-extern void
+extern ham_status_t
 cache_remove_page(ham_cache_t *cache, ham_page_t *page);
 
-/**
- * returns true if the caller should purge the cache
- */
-#define cache_too_big(c)                                                      \
-    ((cache_get_cur_elements(c)*env_get_pagesize(cache_get_env(c))            \
-            >cache_get_capacity(c)) ? HAM_TRUE : HAM_FALSE)
+
 
 /**
  * check the cache integrity
