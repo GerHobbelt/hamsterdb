@@ -11,97 +11,185 @@
 
 #include "internal_preparation.h"
 
-typedef struct free_cb_context_t
-{
-    ham_db_t *db;
-    ham_bool_t is_leaf;
 
-} free_cb_context_t;
 
-/*
- * forward decl - implemented in hamsterdb.c
- */
-extern ham_status_t
-__check_create_parameters(ham_env_t *env, ham_db_t *db, const char *filename,
-        ham_u32_t *pflags, const ham_parameter_t *param,
-        ham_size_t *ppagesize, ham_u16_t *pkeysize,
-        ham_size_t *pcachesize, ham_u16_t *pdbname,
-        ham_u16_t *pmaxdbs, ham_u16_t *pdata_access_mode, ham_bool_t create);
 
-/*
- * callback function for freeing blobs of an in-memory-database, implemented
- * in db.c
- */
-extern ham_status_t
-free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context);
 
-static ham_status_t
-__purge_cache_max20(ham_env_t *env)
+ham_status_t
+env_purge_cache(ham_env_t *env, ham_size_t purge_depth)
 {
     ham_status_t st;
     ham_page_t *page;
-    ham_cache_t *cache=env_get_cache(env);
-    unsigned i, max_pages=cache_get_cur_elements(cache);
-
-    /* don't remove pages from the cache if it's an in-memory database */
-    if (!cache)
-        return (0);
-    if ((env_get_rt_flags(env)&HAM_IN_MEMORY_DB))
-        return (0);
-    if (!cache_too_big(cache))
-        return (0);
+    ham_cache_t *cache = env_get_cache(env);
 
     /*
-     * max_pages specifies how many pages we try to flush in case the
-     * cache is full. some benchmarks showed that 10% is a good value.
-     *
-     * if STRICT cache limits are enabled then purge as much as we can
+     * first, try to delete unused pages from the cache
      */
-    if (!(env_get_rt_flags(env)&HAM_CACHE_STRICT)) {
-        max_pages/=10;
-        /* but still we set an upper limit to avoid IO spikes */
-        if (max_pages>20)
-            max_pages=20;
-    }
+    if (cache && !(env_get_rt_flags(env) & HAM_IN_MEMORY_DB) && purge_depth)
+    {
+        /*
+        Win32 and WinCE have an issue with unlimited caches and other data structures which /may/ consume very large amounts of memory-mapped disk space: as Win32 has a 32-bit, i.e. 4GiB memory space limit (i.e. 'flat' addressing model for x86), Microsoft Windows has split this memory space in several parts, one of which is used for addressing memory-mapped I/O, among other things: the 'paged pool' space: this space is about 470MiB large (and it doesn't seem the /3G Win32 boot switch has any impact on that one).
 
-    /* try to free 10% of the unused pages */
-    for (i=0; i<max_pages; i++) {
-        page=cache_get_unused_page(cache);
-        if (!page) {
-            if (i==0 && (env_get_rt_flags(env)&HAM_CACHE_STRICT))
-                return (HAM_CACHE_FULL);
-            else
-                break;
+        See also: http://msdn.microsoft.com/en-us/library/ms836325.aspx (Figure #2), where memory mapped address space is limited to the range 0x42000000-0x80000000.
+
+        See also: http://www.windows-tech.info/17/aa6968db35d5fb2c.php and http://support.microsoft.com/kb/889654 where the 'paged pool' is listed as 470MiB (where Russinovich mentions it is limited to 491MiB at most for Win32: http://blogs.technet.com/markrussinovich/archive/2009/03/26/3211216.aspx )
+
+        See also: http://blogs.technet.com/askperf/archive/2007/03/07/memory-management-understanding-pool-resources.aspx
+
+        From http://blogs.technet.com/markrussinovich/archive/2009/03/26/3211216.aspx :
+        "On 32-bit Windows XP, the limit is calculated based on how much
+        address space is assigned other resources, most notably system PTEs, with
+        an upper limit of 491MB."
+
+        Also note that currently this may seem a Win32 specific 'issue', but it really exists on ALL operating systems. See also: http://lists.freebsd.org/pipermail/freebsd-questions/2004-June/050371.html
+
+        Hence we take a bit of a different approach here to 'resolve' this issue, or at least to ameliorate it to a bearable level:
+        since we cannot guarantee that we will be the only piece of software running in the current process which consumes memory mapping
+        address space, we might have been able to guestimate some sort of best case upper bound on that limit for particular systems,
+        but generally speaking we can't say when we will 'hit the roof' with any reasonable prediction quality, so we turn around
+        and decide to act only once we hit that roof: that fact is simply detected through examining the operating system's error
+        code when doing the memory mapping jig, so we can add a 'retry/recovery mechanism' to the device I/O for when such a limit/failure
+        code occurs in our run-time.
+
+        THAT is the time this 'purge the cache' routine will be called (again), only this time we'll require the purge code to
+        do a little more work than just a superficial (and relatively fast) purge: this requirement can be enforced by passing
+        a lowered 'purge_depth' into this routine as such a lower depth (== the desired number of pages purged)
+        would require the purge routine to keep at it
+        for a while longer, thus ensuring more pages are released/purged and hence increasing our chances of a successful retry
+        action. (See page_alloc() and page_fetch(): since those are the only two routines which perform device->alloc_page() or
+        device->read_page() operations, and those are the only ones where memory mapped address space usage is possibly increased,
+        we can restrict the 'on error purge, then retry' activity to those routines (page_alloc() and page_fetch()).)
+
+        As this issue isn't just a Win32 issue, but also an issue on 32 bit UNIX systems (and probably other platforms as well), we
+        do NOT surround this code with
+            #ifdef WIN32
+        conditionals; instead, the support for this recovery scheme is now wholly dependent on the device driver code: the Win32
+        memory mapped file I/O device produces the correct, distinctive error code (@ref HAM_LIMITS_REACHED) for the retry action to
+        work; it is merely a question of time when the POSIX/UNIX equivalent will support this same feature.
+
+
+        Furthermore, the code in here tries to help cut down the number of possible occurrences of said failure by performing
+        a wee bit of purging even for the HAM_CACHE_UNLIMITED case of caching setup: in that we case we will purge the oldest
+        UNUSED page from the cache; since this purge routine is called often enough this approach will keep the cache to within
+        a reasonable bound for most use cases.
+        */
+        ham_bool_t fast_scan_mode;
+        ham_size_t cur = cache_get_cur_elements(cache);
+        ham_size_t max = cache_get_max_elements(cache);
+        const ham_size_t orig_purge_depth = purge_depth;
+
+        /*
+        Use 'fast' mode when the requested number of pages to purge is rather few:
+        if we can't get those from the garbage list, we don't want to spend a long time scanning
+        the cache linked list. See also cache_get_unused_page().
+        */
+        fast_scan_mode = ((purge_depth <= 4)
+                        && (purge_depth <= cur / 16));
+                        // && (cur <= max / 2));
+        ham_assert(fast_scan_mode ? cur <= max : 1, ("must be assured by the way the caller calculates purge_depth"));
+
+        // if (env_get_rt_flags(env) & HAM_CACHE_UNLIMITED)
+
+#if defined(HAM_DEBUG) && (HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL < 1)
+        if (!fast_scan_mode)
+        {
+            (void)cache_check_integrity(cache);
         }
+#endif
+        while (purge_depth)
+        {
+            page = cache_get_unused_page(cache, fast_scan_mode);
+            if (!page)
+            {
+                if (env_get_rt_flags(env) & HAM_CACHE_STRICT)
+                {
+                    if (!fast_scan_mode)
+                    {
+				        cur = cache_get_cur_elements(cache);
 
-        st=db_write_page_and_delete(page, 0);
-        if (st)
-            return (st);
+						/* only yak about CACHE FULL when there really is no space left any more! */
+						if (cur >= max)
+						{
+							return HAM_CACHE_FULL;
+						}
+						else
+						{
+							/* we still have 1 or more slots left to use... */
+							return HAM_SUCCESS;
+						}
+                    }
+                    else
+                    {
+                        /* use more energy to purge a page! */
+                        fast_scan_mode = HAM_FALSE;
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (!fast_scan_mode)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        /* should we put more effort into purging? Only when we didn't achieve anything yet! */
+                        if (purge_depth != orig_purge_depth)
+                        {
+                            break;
+                        }
+                        fast_scan_mode = HAM_FALSE;
+                        continue;
+                    }
+                }
+            }
+            cache_push_history(page, -100);
+
+            st = db_write_page_and_delete(page, 0);
+            if (st)
+                return st;
+
+            purge_depth--;
+        }
     }
 
-    if (i==max_pages && max_pages!=0)
-        return (HAM_LIMITS_REACHED);
-    return (0);
+    /*
+     * then free unused extended keys. We don't do this too often to
+     * avoid a thrashing of the cache, and freeing unused extkeys
+     * is more expensive (performance-wise) than freeing unused pages.
+     *
+     * We also purge the extkey cache when we flush a page above;
+     * this code is only active when we have no page cache, in which
+     * case we need another way to get at the extkey caches which
+     * are maintained per Database.
+     */
+    if (!cache)
+    {
+        if ((env_get_txn_id(env) & 0x7) == 0)  // N MOD 8 = 0
+        {
+            ham_db_t *db;
+
+            db = env_get_list(env);
+            while (db) {
+                if (db_get_extkey_cache(db))
+                {
+                    st=extkey_cache_purge(db_get_extkey_cache(db));
+                    if (st)
+                        return st;
+                }
+                db = db_get_next(db);
+            }
+        }
+    }
+
+    return HAM_SUCCESS;
 }
 
-ham_status_t
-env_purge_cache(ham_env_t *env)
-{
-    ham_status_t st;
-    ham_cache_t *cache=env_get_cache(env);
 
-    /* don't purge while txn is in progress */
-    if (env_get_txn(env))
-        return (0);
 
-    do {
-        st=__purge_cache_max20(env);
-        if (st && st!=HAM_LIMITS_REACHED)
-            return st;
-    } while (st==HAM_LIMITS_REACHED && cache_too_big(cache));
 
-    return (0);
-}
+
+
 
 ham_u16_t
 env_get_max_databases(ham_env_t *env)
