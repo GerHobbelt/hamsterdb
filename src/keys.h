@@ -49,7 +49,7 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
      * (in case of duplicate keys) a record table BLOB which lists the pointers to
      * all related records.
      */
-    ham_u64_t _ptr;
+    ham_pers_rid_t _ptr;
 
     /**
      * the size of this entry
@@ -60,6 +60,23 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
      * flags
      */
     ham_u8_t _flags8;
+
+#if 0
+	/*
+    WARNING WARNING WARNING WARNING WARNING WARNING
+
+    ALIGNMENT ISSUE (Motorola MC68000, DEC ALPHA, ...)
+
+    key data is positioned at an odd offset, so any word/int oriented keys will
+    fault when accessed directly.
+
+    This applies to the comparison callback methods!
+    */
+#if defined(FIX_PEDANTIC_64BIT_ALIGNMENT_REQUIREMENT)
+    ham_u8_t _reserved10;
+    ham_u32_t _reserved11;
+#endif
+#endif
 
     /**
      * the key
@@ -89,11 +106,32 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
  * @sa key_get_ptr_direct_ref
  * @sa key_get_ptr_as_data
  */
-#define key_get_ptr(k)             (((key_get_flags(k)&KEY_BLOB_SIZE_TINY) ||  \
-                                     (key_get_flags(k)&KEY_BLOB_SIZE_SMALL))   \
-                                    ? (k)->_ptr                                \
-                                    : ham_db2h_offset((k)->_ptr))
-#define key_get_rawptr(k)          (k)->_ptr
+#define key_get_ptr(k)                                                          \
+                                    ham_db2h_rid((k)->_ptr)
+
+/**
+ * get the reference to the key data itself for small keys (with have
+ * any of the flags @ref KEY_BLOB_SIZE_TINY, @ref KEY_BLOB_SIZE_SMALL or
+ * @ref KEY_BLOB_SIZE_EMPTY set).
+ *
+ * @note No endian conversion will take place.
+ *
+ * @sa key_get_ptr_direct_ref
+ * @sa key_get_ptr
+ */
+#define key_get_ptr_as_data(k)                                                  \
+                                    ((k)->_ptr.rid8)
+
+/**
+ * get the reference to the RID itself.
+ *
+ * @note No endian conversion will take place.
+ *
+ * @sa key_get_ptr
+ * @sa key_get_ptr_as_data
+ */
+#define key_get_ptr_direct_ref(k)												\
+                                    (&(k)->_ptr)
 
 /**
  * set the pointer of an btree-entry
@@ -102,11 +140,21 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
  * if TINY or SMALL is set, the key is actually a char*-pointer;
  * in this case, we must not use endian-conversion
  */
-#define key_set_ptr(k, p)          (k)->_ptr=(                                 \
-                                    ((key_get_flags(k)&KEY_BLOB_SIZE_TINY) ||  \
-                                     (key_get_flags(k)&KEY_BLOB_SIZE_SMALL))   \
-                                    ? p                                        \
-                                    : ham_h2db_offset(p))
+#define key_set_ptr(k, p)                                                   \
+    do {                                                                    \
+        ham_assert(!(key_get_flags(k)&(KEY_BLOB_SIZE_TINY                   \
+                              |KEY_BLOB_SIZE_SMALL                          \
+                              |KEY_BLOB_SIZE_EMPTY)), (0));                 \
+        ham_h2db_rid((k)->_ptr, p);                                         \
+    } while (0)
+
+#define key_set_ptr_direct_ref(k, p)                                        \
+    do {                                                                    \
+        ham_assert((key_get_flags(k)&(KEY_BLOB_SIZE_TINY                    \
+                              |KEY_BLOB_SIZE_SMALL                          \
+                              |KEY_BLOB_SIZE_EMPTY)), (0));                 \
+        (k)->_ptr = (p);                                                    \
+    } while (0)
 
 /**
  * get the size of an btree-entry
@@ -119,16 +167,41 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
 #define key_set_size(bte, s)            (bte)->_keysize=ham_h2db16(s)
 
 /**
+ * get a pointer to the key
+ */
+#define key_get_key(bte)                ((bte)->_key)
+
+/**
+ * set the key data
+ */
+#define key_set_key(bte, ptr, len)      memcpy((bte)->_key, ptr, len)
+
+/**
  * get the record-ID of an extended key
  */
-extern ham_offset_t
-key_get_extended_rid(ham_db_t *db, int_key_t *key);
+static __inline ham_offset_t
+key_get_extended_rid(ham_db_t *db, int_key_t *key)
+{
+    ham_pers_rid_t rid;
+    ham_backend_t *be = db_get_backend(db);
+    ham_size_t maxkeylen4ext_key = be_get_keysize(be)-sizeof(ham_pers_rid_t);
+    memcpy(&rid, key_get_key(key) + maxkeylen4ext_key, sizeof(rid));
+    return ham_db2h_rid(rid);
+}
 
 /**
  * set the record-ID of an extended key
  */
-extern void
-key_set_extended_rid(ham_db_t *db, int_key_t *key, ham_offset_t rid);
+static __inline void
+key_set_extended_rid(ham_db_t *db, int_key_t *key, ham_offset_t rid_int)
+{
+    ham_pers_rid_t rid;
+    ham_backend_t *be = db_get_backend(db);
+    ham_size_t maxkeylen4ext_key = be_get_keysize(be)-sizeof(ham_pers_rid_t);
+
+    ham_h2db_rid(rid, rid_int);
+    memcpy(key_get_key(key) + maxkeylen4ext_key, &rid, sizeof(rid));
+}
 
 /**
  * get the (persisted) flags of a key
@@ -194,7 +267,9 @@ one entry for each duplicate key/record tuple. */
 #define KEY_HAS_DUPLICATES             0x10
 #if 0 /* [GerH] not included as this is a redundant flag; see the blob and other code about the right way to do it, i.e. by checking the USER_ALLOC flag for key and/or record. */
 #define KEY_IS_ALLOCATED               0x20  /* memory allocated in hamsterdb */
-
+#endif
+/** Marks a deferred delete, i.e. a deleted key which has not yet been removed from the page. */
+#define KEY_IS_DELETED                 0x20
 
 /**
 @}
@@ -208,33 +283,36 @@ and the nonpersistent flag bits:
 #define KEY_IS_APPROXIMATE             (KEY_IS_LT | KEY_IS_GT)
 */
 
-
-
-/**
- * get a pointer to the key
- */
-#define key_get_key(bte)                (bte->_key)
-
-/**
- * set the key data
- */
-#define key_set_key(bte, ptr, len)      memcpy(bte->_key, ptr, len)
-
 /*
 ham_key_t support internals:
 */
 
-/*
-flags used with the ham_key_t INTERNAL USE field _flags.
+/**
+@defgroup ham_key_internal_flags flags used with the @ref ham_key_t INTERNAL USE field _flags.
+@{
 
-Note: these flags should NOT overlap with the persisted flags for int_key_t
+Note: these flags should NOT overlap with the persisted flags for @ref int_key_t
 
 As these flags NEVER will be persisted, they should be located outside
-the range of a ham_u16_t, i.e. outside the mask 0x0000FFFF.
+the range of a @ref ham_u16_t, i.e. outside the mask 0x0000FFFF.
+*/
+
+/**
+Indicates that the key match was a 'LESS THAN' result, rather than a 'IS EQUAL' match.
 */
 #define KEY_IS_LT                      0x00010000
+/**
+Indicates that the key match was a 'GREATER THAN' result, rather than a 'IS EQUAL' match.
+*/
 #define KEY_IS_GT                      0x00020000
+/**
+Indicates that the key match was an 'approximate' result, rather than a 'IS EQUAL' match.
+*/
 #define KEY_IS_APPROXIMATE             (KEY_IS_LT | KEY_IS_GT)
+
+/**
+ * @}
+ */
 
 /**
  * get the (non-persisted) flags of a key
@@ -250,6 +328,8 @@ the range of a ham_u16_t, i.e. outside the mask 0x0000FFFF.
  */
 #define ham_key_set_intflags(key, f)      (key)->_flags=(f)
 
+
+
 /**
  * compare a public key (ham_key_t, LHS) to an internal key (int_key_t, RHS)
  *
@@ -264,8 +344,7 @@ the range of a ham_u16_t, i.e. outside the mask 0x0000FFFF.
  * @sa ham_status_codes
  */
 extern int
-key_compare_pub_to_int(ham_db_t *db, ham_page_t *page,
-                ham_key_t *lhs, ham_u16_t rhs);
+key_compare_pub_to_int(common_btree_datums_t *btdata, const ham_page_t *page, ham_key_t *lhs, ham_u16_t rhs);
 
 /**
  * compare two internal keys
@@ -281,7 +360,7 @@ key_compare_pub_to_int(ham_db_t *db, ham_page_t *page,
  * @sa ham_status_codes
  */
 extern int
-key_compare_int_to_int(ham_db_t *db, ham_page_t *page,
+key_compare_int_to_int(common_btree_datums_t *btdata, const ham_page_t *page,
         ham_u16_t lhs_int, ham_u16_t rhs_int);
 
 /**
@@ -290,8 +369,7 @@ key_compare_int_to_int(ham_db_t *db, ham_page_t *page,
  * @return the blob-id of this key in @a rid_ref
  */
 extern ham_status_t
-key_insert_extended(ham_offset_t *rid_ref, ham_db_t *db,
-                ham_page_t *page, ham_key_t *key);
+key_insert_extended(ham_offset_t *rid_ref, ham_db_t *db, ham_page_t *page, ham_key_t *key);
 
 /**
  * Inserts / stores a record.
@@ -320,7 +398,7 @@ key_insert_extended(ham_offset_t *rid_ref, ham_db_t *db,
  * in record order (see @ref HAM_SORT_DUPLICATES).
  */
 extern ham_status_t
-key_set_record(ham_db_t *db, int_key_t *key, ham_record_t *record,
+key_set_record(ham_db_t *db, int_key_t *key, const ham_record_t *record,
                 ham_size_t position, ham_u32_t flags,
                 ham_size_t *new_position);
 
