@@ -738,11 +738,25 @@ extern ham_status_t
 env_reserve_space(ham_offset_t minimum_page_count,
                   dev_alloc_request_info_ex_t *extra_dev_alloc_info);
 
-/*
- * purge the cache if the limits are exceeded
- */
+/**
+ Purge the page cache, when needed.
+
+ This decision is influenced by the @a purge_depth parameter, which
+ is the target of the number of cache pages which should be purged from the cache
+ during this round of purging.
+
+ This function does <em>not</em> guarantee that this target will be
+ met, but it will try its best to arrive at it and it may surpass
+ the specified target at its discretion.
+
+ When the target equals zero, no purging will be performed.
+
+
+ @param purge_depth the purge target, i.e. the requested number of pages
+        to purge from the cache. When zero, no purging will be performed.
+*/
 extern ham_status_t
-env_purge_cache(ham_env_t *env);
+env_purge_cache(ham_env_t *env, ham_size_t purge_depth);
 
 
 #ifdef __cplusplus
