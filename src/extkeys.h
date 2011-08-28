@@ -44,18 +44,20 @@ struct extkey_t
     /** pointer to the next key in the linked list */
     extkey_t *_next;
 
+    /** pointer to the previous key in the linked list; note that this link direction is cyclic! */
+    extkey_t *_prev;
+
     /** the size of the extended key */
     ham_size_t _size;
 
     /** the key data */
-    ham_u8_t _data[1];
-
+    ham_u8_t _data[4];
 };
 
 /**
  * the size of an extkey_t, without the data byte
  */
-#define SIZEOF_EXTKEY_T                     (sizeof(extkey_t)-1)
+#define SIZEOF_EXTKEY_T                     OFFSETOF(extkey_t, _data)
 
 /**
  * get the blobid
@@ -88,6 +90,16 @@ struct extkey_t
 #define extkey_set_next(e, next)             (e)->_next=(next)
 
 /**
+* get the prev-pointer
+*/
+#define extkey_get_prev(e)                   (e)->_prev
+
+/**
+* set the prev-pointer
+*/
+#define extkey_set_prev(e, prev)             (e)->_prev=(prev)
+
+/**
  * get the size
  */
 #define extkey_get_size(e)                   (e)->_size
@@ -113,13 +125,20 @@ struct extkey_cache_t
     /** the used size, in byte */
     ham_size_t _usedsize;
 
+    /** the total number of cached entries */
+    ham_size_t _count;
+
     /** the number of buckets */
     ham_size_t _bucketsize;
 
     /** the buckets - a linked list of extkey_t pointers */
     extkey_t *_buckets[1];
-
 };
+
+/**
+* the size of an extkey_cache_t, without the data entry
+*/
+#define SIZEOF_EXTKEY_CACHE_T            OFFSETOF(extkey_cache_t, _buckets)
 
 /**
  * get the owner of the cache
@@ -142,6 +161,21 @@ struct extkey_cache_t
 #define extkey_cache_set_usedsize(c, s)  (c)->_usedsize=(s)
 
 /**
+* get the used entry count of the cache
+*/
+#define extkey_cache_get_count(c)     (c)->_count
+
+/**
+* increment the used entry count of the cache
+*/
+#define extkey_cache_inc_count(c)  (c)->_count++
+
+/**
+* decrement the used entry count of the cache
+*/
+#define extkey_cache_dec_count(c)  (c)->_count--
+
+/**
  * get the number of buckets
  */
 #define extkey_cache_get_bucketsize(c)     (c)->_bucketsize
@@ -160,6 +194,8 @@ struct extkey_cache_t
  * set a bucket
  */
 #define extkey_cache_set_bucket(c, i, p)   (c)->_buckets[i]=(p)
+
+
 
 /**
  * create a new extended key-cache
@@ -180,7 +216,7 @@ extkey_cache_destroy(extkey_cache_t *cache);
  */
 extern ham_status_t
 extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid,
-            ham_size_t size, const ham_u8_t *data);
+            ham_size_t size, const ham_u8_t *data, const ham_page_t *refering_index_page);
 
 /**
  * remove an extended key from the cache
@@ -202,12 +238,6 @@ extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid,
  */
 extern ham_status_t
 extkey_cache_purge(extkey_cache_t *cache);
-
-/**
- * removes ALL keys from the cache (new and old)
- */
-extern ham_status_t
-extkey_cache_purge_all(extkey_cache_t *cache);
 
 /**
  * a combination of extkey_cache_remove and blob_free

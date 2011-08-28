@@ -1290,8 +1290,20 @@ db_write_page_and_delete(ham_page_t *page, ham_u32_t flags)
     /*
      * if the page is deleted, uncouple all cursors, then
      * free the memory of the page
+     *
+     * Also check the extkey cache to see whether that one needs
+     * a purge by now; this is done here to reduce the number of
+     * extkey cache purge invocations as purging the extkey is
+     * not a cheap action.
      */
-    if (!(flags&DB_FLUSH_NODELETE)) {
+    if (!(flags & DB_FLUSH_NODELETE))
+    {
+        if (db && db_get_extkey_cache(db))
+        {
+            st = extkey_cache_purge(db_get_extkey_cache(db));
+            if (st)
+                return (st);
+        }
         st=db_uncouple_all_cursors(page, 0);
         if (st)
             return (st);
