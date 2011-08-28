@@ -35,7 +35,14 @@
 extern "C" {
 #endif
 
-#define OFFSETOF(type, member) ((size_t) &((type *)0)->member)
+
+
+
+#if 0 /* some MSVC versions don't like this in pedantic mode */
+#define OFFSETOF(type, member) ((unsigned int) &((type *)0)->member)
+#else
+#define OFFSETOF(type, member) ((unsigned int) (((char *)&((type *)0)->member) - ((char *)0)))
+#endif
 
 /**
  * This is the minimum chunk size; all chunks (pages and blobs) are aligned
@@ -280,10 +287,11 @@ struct ham_env_t
      */
     ham_status_t (*_fun_close)(ham_env_t *env, ham_u32_t flags);
 
-	/**
-	 * destroy the environment object, free all memory
-	 */
-	ham_status_t (*destroy)(ham_env_t *self);
+
+    /**
+     * destroy the environment object, free all memory
+     */
+    ham_status_t (*destroy)(ham_env_t **self_reference);
 };
 
 
@@ -374,11 +382,14 @@ struct ham_env_t
 
 /**
  * get a pointer to the header data
- *
- * implemented as a function - a macro would break strict aliasing rules
  */
-extern env_header_t *
+#if 01
+#define env_get_header(env)                                                 \
+    ((env_header_t *)(page_get_payload(env_get_header_page(env))))
+#else /* appease GCC 4.4.x 'pointer aliasing' errors in -O3 */
+env_header_t *
 env_get_header(ham_env_t *env);
+#endif
 
 /**
  * set the header page
@@ -407,8 +418,8 @@ env_get_header(ham_env_t *env);
  *       the environment.
  */
 #define env_get_indexdata_arrptr(env)                                         \
-    ((db_indexdata_t *)((ham_u8_t *)page_get_payload(                         \
-        env_get_header_page(env)) + sizeof(env_header_t)))
+    ((db_indexdata_t *)(((ham_u8_t *)page_get_payload(                        \
+        env_get_header_page(env))) + sizeof(env_header_t)))
 
 /**
  * Get the private data of the specified database stored at index @a i;
@@ -446,6 +457,13 @@ env_get_header(ham_env_t *env);
  * get the runtime-flags
  */
 #define env_get_rt_flags(env)            (env)->_rt_flags
+
+/**
+ * modify the runtime-flags
+ */
+#define env_modify_rt_flags(env, or_mask, inv_and_mask)                     \
+        env_set_rt_flags(env,                                               \
+            (env_get_rt_flags(env) & ~(inv_and_mask)) | (or_mask))
 
 /**
  * set the runtime-flags
@@ -489,11 +507,13 @@ env_get_header(ham_env_t *env);
 
 /**
  * get the maximum number of databases for this file
- *
- * implemented as a function - a macro would break gcc aliasing rules
  */
-extern ham_u16_t
-env_get_max_databases(ham_env_t *env);
+#define env_get_max_databases(env)       (env)->_max_databases
+
+/**
+ * get the expected data access mode for this file
+ */
+#define env_get_data_access_mode(env)    (env)->_data_access_mode
 
 /**
  * set the keysize
@@ -501,43 +521,61 @@ env_get_max_databases(ham_env_t *env);
 #define env_set_keysize(env, ks)         (env)->_keysize=(ks)
 
 /**
- * set the maximum number of databases for this file (cached, not written
- * to header file)
- */
-#define env_set_max_databases_cached(env, md)  (env)->_max_databases=(md)
-
-/**
- * get the maximum number of databases for this file (cached, not read
- * from header file)
- */
-#define env_get_max_databases_cached(env)       (env)->_max_databases
-
-/**
  * set the maximum number of databases for this file
  */
-#define env_set_max_databases(env, md)                                      \
-    (env_get_header(env)->_max_databases=(md))
+#define env_set_max_databases(env, md)   (env)->_max_databases=(md)
+
+/**
+ * set the expected data access mode for this file
+ */
+#define env_set_data_access_mode(env, md) (env)->_data_access_mode=(md)
+
+/**
+Mix a set of flag bits into the data access mode, according to the rule
+
+<pre>
+DAM(new) = (DAM & and_mask) | or_mask
+</pre>
+
+This is a quick way to set or unset particular DAM bits.
+
+@sa ham_data_access_modes
+*/
+#define env_set_data_access_mode_masked(env, or_mask, and_mask)             \
+    (env)->_data_access_mode=(((env)->_data_access_mode & (and_mask))       \
+                              | (or_mask))
+
+
+
+#define env_get_persistent_max_databases(env)                               \
+    ham_db2h16(env_get_header(env)->_max_databases)
+
+#define env_set_persistent_max_databases(env, s)                            \
+    env_get_header(env)->_max_databases = ham_h2db16(s)
 
 /**
  * get the page size
  */
-#define env_get_persistent_pagesize(env)									\
-	(ham_db2h32(env_get_header(env)->_pagesize))
+#define env_get_persistent_pagesize(env)                                    \
+    (ham_db2h32(env_get_header(env)->_pagesize))
 
 /**
  * set the page size
  */
-#define env_set_persistent_pagesize(env, ps)								\
-	env_get_header(env)->_pagesize=ham_h2db32(ps)
+#define env_set_persistent_pagesize(env, ps)                                \
+    env_get_header(env)->_pagesize=ham_h2db32(ps)
 
 /**
  * set the 'magic' field of a file header
  */
-#define env_set_magic(env, a,b,c,d)											\
-	{ env_get_header(env)->_magic[0]=a;										\
-      env_get_header(env)->_magic[1]=b;										\
-      env_get_header(env)->_magic[2]=c;										\
-      env_get_header(env)->_magic[3]=d; }
+#define env_set_magic(env, a,b,c,d)                                         \
+    do {                                                                    \
+      env_header_t *_env = env_get_header(env);                             \
+      _env->_magic[0]=(a);                                                  \
+      _env->_magic[1]=(b);                                                  \
+      _env->_magic[2]=(c);                                                  \
+      _env->_magic[3]=(d);                                                  \
+    } while (0)
 
 /**
  * get byte @a i of the 'magic'-header
@@ -547,11 +585,14 @@ env_get_max_databases(ham_env_t *env);
 /**
  * set the version of a file header
  */
-#define env_set_version(env,a,b,c,d)										\
-	{ env_get_header(env)->_version[0]=a;									\
-      env_get_header(env)->_version[1]=b;									\
-      env_get_header(env)->_version[2]=c;									\
-      env_get_header(env)->_version[3]=d; }
+#define env_set_version(env,a,b,c,d)                                        \
+    do {                                                                    \
+      env_header_t *_env = env_get_header(env);                             \
+      _env->_version[0]=(a);                                                \
+      _env->_version[1]=(b);                                                \
+      _env->_version[2]=(c);                                                \
+      _env->_version[3]=(d);                                                \
+    } while (0)
 
 /*
  * get byte @a i of the 'version'-header
@@ -560,31 +601,25 @@ env_get_max_databases(ham_env_t *env);
 
 /**
  * get byte @a i of the 'version'-header
- *
- * implemented as a function - a macro would break gcc aliasing rules
  */
-extern ham_u8_t
-env_get_version(ham_env_t *env, ham_size_t idx);
+#define env_get_version(env, i)   (envheader_get_version(env_get_header(env), i))
 
 /**
  * get the serial number
- *
- * implemented as a function - a macro would break gcc aliasing rules
  */
-extern ham_u32_t
-env_get_serialno(ham_env_t *env);
+#define env_get_serialno(env)       (ham_db2h32(env_get_header(env)->_serialno))
 
-/*
+/**
  * set the serial number
- *
- * implemented as a function - a macro would break gcc aliasing rules
  */
-extern void
-env_set_serialno(ham_env_t *env, ham_u32_t n);
+#define env_set_serialno(env, n)    env_get_header(env)->_serialno=ham_h2db32(n)
 
-#define SIZEOF_FULL_HEADER(env)												\
-	(sizeof(env_header_t)+													\
-	 env_get_max_databases(env)*sizeof(db_indexdata_t))
+
+
+
+#define SIZEOF_FULL_HEADER(env)                                             \
+    (sizeof(env_header_t) +                                                 \
+     env_get_max_databases(env) * sizeof(db_indexdata_t))
 
 /**
  * set the 'active' flag of the environment: a non-zero value
@@ -631,41 +666,27 @@ env_set_serialno(ham_env_t *env, ham_u32_t n);
 /**
  * get the freelist object of the database
  */
-#define env_get_freelist(env)												\
-	((freelist_payload_t *)													\
-     (page_get_payload(env_get_header_page(env))+							\
-	  SIZEOF_FULL_HEADER(env)))
+#define env_get_freelist(env)                                               \
+    ((freelist_payload_t *)                                                 \
+     (((ham_u8_t *)page_get_payload(env_get_header_page(env))) +            \
+      SIZEOF_FULL_HEADER(env)))
+
+
 
 /**
  * get the size of the usable persistent payload of a page
  */
-#define env_get_usable_pagesize(env)										\
-	(env_get_pagesize(env) - page_get_persistent_header_size())
+#define env_get_usable_pagesize(env)                                        \
+    (env_get_pagesize(env) - page_get_persistent_header_size())
+
+
 
 /**
  * get a reference to the DB FILE (global) statistics
  */
 #define env_get_global_perf_data(env)    &(env)->_perf_data
 
-/**
- * fetch a page.
- *
- * This is like db_fetch_page, but only for those cases when there's
- * no Database handle
- */
-extern ham_status_t
-env_fetch_page(ham_page_t **page_ref, ham_env_t *env,
-        ham_offset_t address, ham_u32_t flags);
 
-/**
- * allocate a page.
- *
- * This is like db_alloc_page, but only for those cases when there's
- * no Database handle
- */
-extern ham_status_t
-env_alloc_page(ham_page_t **page_ref, ham_env_t *env,
-                ham_u32_t type, ham_u32_t flags);
 
 /**
  * create a env_backend_t structure for accessing local files
