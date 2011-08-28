@@ -1245,7 +1245,7 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags)
 		{
             /*
 			 * don't remove the page from the cache, if flag NODELETE
-             * is set (this flag is used i.e. in ham_flush()) */
+             * is set (this flag is used i.e. in ham_flush())
 	         */
 	        if (!(flags & DB_FLUSH_NODELETE))
 			{
