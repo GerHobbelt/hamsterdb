@@ -11,6 +11,7 @@
 
 #include "../src/config.h"
 
+#define HAM_IMPLEMENT_CPP_CLASSCODE    1
 #include <ham/hamsterdb.hpp>
 
 #include "bfc-testsuite.hpp"

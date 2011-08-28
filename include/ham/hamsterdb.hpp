@@ -521,12 +521,11 @@ protected:
     friend class env;
 
     /* Copy Constructor. Is protected and should not be used, except by class env methods. */
-    db(ham_db_t *db, class env *e) : m_db(db), m_env(e) {
-    }
+	db(ham_db_t *db, class env &e);
 
 private:
     ham_db_t *m_db;
-    class env *m_env;
+    ham_env_t *m_env;
 };
 
 
@@ -732,7 +731,7 @@ public:
             throw error(st);
         }
 
-        return (ham::db(dbh, this));
+        return (ham::db(dbh, *this));
     }
 
     /** Opens an existing Database in the Environment. */
@@ -750,7 +749,7 @@ public:
             throw error(st);
         }
 
-        return (ham::db(dbh, this));
+        return (ham::db(dbh, *this));
     }
 
     /** Renames an existing Database in the Environment. */
@@ -816,9 +815,21 @@ public:
         return (v);
     }
 
-private:
+protected:
+    friend class db;
+
     ham_env_t *m_env;
 };
+
+
+#if defined(HAM_IMPLEMENT_CPP_CLASSCODE)
+
+/* Copy Constructor. Is protected and should not be used, except by class env methods. */
+db::db(ham_db_t *db, class env &e) : m_db(db), m_env(e.m_env) {
+}
+
+#endif
+
 
 }; // namespace ham
 

@@ -13,6 +13,7 @@
  * This sample does the same as env2, but uses the C++ API.
  */
 
+#define HAM_IMPLEMENT_CPP_CLASSCODE    1
 #include <ham/hamsterdb.hpp>
 
 #include <iostream>
