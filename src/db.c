@@ -1330,13 +1330,43 @@ db_resize_record_allocdata(ham_db_t *db, ham_size_t size)
         db_set_record_allocdata(db, 0);
         db_set_record_allocsize(db, 0);
     }
-    else if (size>db_get_record_allocsize(db)) {
-        void *newdata=allocator_realloc(env_get_allocator(db_get_env(db)),
+    else if (size > db_get_record_allocsize(db))
+    {
+#if 0 /* huge blob test profiling --> 8.1% spent in realloc through here, while malloc is much cheaper and we don't need the content intact anyway */
+		void *newdata=allocator_realloc(allocator,
                 db_get_record_allocdata(db), size);
-        if (!newdata)
-            return (HAM_OUT_OF_MEMORY);
+#else
+		void *newdata;
+		/*
+		Also improve performance in race conditions (such as the blob unittests) by
+		bumping the storage reserved for the record by a power curve, so that 'slow
+		growth' doesn't hammer this code section.
+
+		After all, we only allocate space for a single record here, so allocating
+		a little 'too much' doesn't harm.
+		*/
+#if 01
+		ham_size_t new_size = db_get_record_allocsize(db) * 3 / 2; // factor 1.5 instead of the more brutal 2
+#else
+		ham_size_t new_size = db_get_record_allocsize(db) * 2;
+#endif
+		if (size < new_size)
+			size = new_size;
+
+        if (db_get_record_allocdata(db))
+	        allocator_free(allocator, db_get_record_allocdata(db));
+		newdata = allocator_alloc(allocator, size);
+#endif
         db_set_record_allocdata(db, newdata);
         db_set_record_allocsize(db, size);
+        /*
+        make sure the new memory pointer is set, even in error conditions,
+        so that global cleanup code doesn't try to free an invalid heap pointer reference.
+        */
+        if (!newdata) {
+            db_set_record_allocsize(db, 0);
+            return (HAM_OUT_OF_MEMORY);
+        }
     }
 
     return HAM_SUCCESS;
