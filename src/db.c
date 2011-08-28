@@ -1150,7 +1150,9 @@ db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u
     if (!page)
         return HAM_OUT_OF_MEMORY;
 
+#if 0 /* [GerH] deferred to caller; hence we don't need to know about the db here */
     page_set_owner(page, db);
+#endif
     page_set_self(page, address);
     st=page_fetch(page, env_get_pagesize(env));
     if (st) {
