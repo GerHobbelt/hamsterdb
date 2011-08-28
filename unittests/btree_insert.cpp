@@ -47,12 +47,12 @@ protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
     ham_u32_t m_flags;
-    memtracker_t *m_alloc;
+    mem_allocator_t *m_alloc;
 
 public:
     virtual void setup()
-	{
-		__super::setup();
+    {
+        __super::setup();
 
         ham_parameter_t params[]={
             { HAM_PARAM_PAGESIZE, 1024 },
@@ -61,7 +61,7 @@ public:
         };
 
         os::unlink(BFC_OPATH(".test"));
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"), m_flags,
@@ -70,12 +70,12 @@ public:
     }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void defaultPivotTest()
@@ -102,20 +102,20 @@ public:
         ham_page_t *page;
         btree_node_t *node;
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*1, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_INDEX, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*1, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(4, btree_node_get_count(node));
 
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*2, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_INDEX, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*2, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(3, btree_node_get_count(node));
 
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*3, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_ROOT, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*3, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_ROOT, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(1, btree_node_get_count(node));
     }
@@ -144,20 +144,20 @@ public:
         ham_page_t *page;
         btree_node_t *node;
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*1, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_INDEX, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*1, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(4, btree_node_get_count(node));
 
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*2, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_INDEX, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*2, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(3, btree_node_get_count(node));
 
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*3, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_ROOT, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*3, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_ROOT, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(1, btree_node_get_count(node));
     }
@@ -201,20 +201,20 @@ public:
         ham_page_t *page;
         btree_node_t *node;
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*1, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_INDEX, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*1, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(4, btree_node_get_count(node));
 
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*2, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_INDEX, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*2, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(3, btree_node_get_count(node));
 
         BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, env_get_pagesize(m_env)*3, 0));
-        BFC_ASSERT_EQUAL((unsigned)PAGE_TYPE_B_ROOT, page_get_type(page));
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*3, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_ROOT, page_get_pers_type(page));
         node=ham_page_get_btree_node(page);
         BFC_ASSERT_EQUAL(1, btree_node_get_count(node));
     }

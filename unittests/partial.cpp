@@ -46,7 +46,7 @@ protected:
     bool m_inmemory;
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
+    mem_allocator_t *m_alloc;
 
 public:
     virtual void setup()
@@ -60,7 +60,7 @@ public:
 
         if (m_pagesize) {
             params[0].name=HAM_PARAM_PAGESIZE;
-            params[0].value=m_pagesize;
+            params[0].value.n=m_pagesize;
         }
 
         BFC_ASSERT((m_alloc=memtracker_new())!=0);
@@ -76,7 +76,7 @@ public:
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        ham_delete(m_db);
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
         BFC_ASSERT(!memtracker_get_leaks(m_alloc));
     }
 
@@ -1164,7 +1164,7 @@ protected:
     ham_u32_t m_find_flags;
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
+    mem_allocator_t *m_alloc;
 
 public:
     virtual void setup()
@@ -1178,10 +1178,11 @@ public:
 
         if (m_pagesize) {
             params[0].name=HAM_PARAM_PAGESIZE;
-            params[0].value=m_pagesize;
+            params[0].value.n=m_pagesize;
         }
 
         BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
@@ -1194,7 +1195,7 @@ public:
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        ham_delete(m_db);
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
         BFC_ASSERT(!memtracker_get_leaks(m_alloc));
     }
 
@@ -1531,7 +1532,7 @@ public:
 
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
+    mem_allocator_t *m_alloc;
     bool m_inmemory;
     ham_u32_t m_find_flags;
 
@@ -1540,6 +1541,7 @@ public:
         __super::setup();
 
         BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
@@ -1552,7 +1554,7 @@ public:
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        ham_delete(m_db);
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
         BFC_ASSERT(!memtracker_get_leaks(m_alloc));
     }
 

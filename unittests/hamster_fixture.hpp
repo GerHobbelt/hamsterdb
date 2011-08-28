@@ -64,12 +64,15 @@ public:
 
 private:
     static void HAM_CALLCONV
-    hamster_dbghandler(int level, const char *message)
+    hamster_dbghandler(int level, const char *file, int line, const char *function, const char *message)
     {
         std::cout << message << std::endl;
         if (level == HAM_DEBUG_LEVEL_FATAL)
         {
-            throw bfc::error(__FILE__, __LINE__, NULL, NULL, "%s", message);
+            throw bfc::error((file ? file : __FILE__),
+                            (line ? line : __LINE__),
+                            NULL, NULL,
+                            "%s", message);
         }
     }
 };

@@ -35,8 +35,10 @@ class DeviceTest : public hamsterDB_fixture
 public:
     DeviceTest(bool inmemory=false, const char *name="DeviceTest")
     : hamsterDB_fixture(name),
-        m_db(0), m_inmemory(inmemory), m_dev(0), m_alloc(0)
+        m_db(NULL), m_env(NULL), m_inmemory(inmemory), m_dev(NULL)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(DeviceTest, newDeleteTest);
         BFC_REGISTER_TEST(DeviceTest, createCloseTest);
@@ -53,9 +55,9 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
+    mem_allocator_t *m_alloc;
     ham_bool_t m_inmemory;
     ham_device_t *m_dev;
-    memtracker_t *m_alloc;
 
 public:
     virtual void setup()
@@ -64,12 +66,12 @@ public:
 
         (void)os::unlink(BFC_OPATH(".test"));
 
-        m_alloc=memtracker_new();
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644));
-        m_env=db_get_env(m_db);
+        m_env = db_get_env(m_db);
         m_dev=env_get_device(m_env);
     }
 
@@ -79,7 +81,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void newDeleteTest()
@@ -121,18 +123,23 @@ public:
         cps=m_dev->get_pagesize(m_dev);
         BFC_ASSERT(cps!=0);
         BFC_ASSERT(cps % DB_CHUNKSIZE == 0);
-        if (!m_inmemory)
-            BFC_ASSERT_EQUAL(cps, ps);
+        BFC_ASSERT_EQUAL(cps, ps);
     }
 
     void allocTest()
     {
         int i;
         ham_offset_t address;
+		dev_alloc_request_info_ex_t info = {0};
+
+		info.db = m_db;
+        info.env = m_env;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_UNKNOWN;
 
         BFC_ASSERT_EQUAL(1, m_dev->is_open(m_dev));
         for (i=0; i<10; i++) {
-            BFC_ASSERT_EQUAL(0, m_dev->alloc(m_dev, 1024, &address));
+            BFC_ASSERT_EQUAL(0, m_dev->alloc(m_dev, 1024, &address, &info));
             BFC_ASSERT_EQUAL((env_get_pagesize(m_env)*2)+1024*i, address);
         }
     }
@@ -140,11 +147,19 @@ public:
     void allocFreeTest()
     {
         ham_page_t page;
+		dev_alloc_request_info_ex_t info = {0};
+
+		info.db = m_db;
+        info.env = m_env;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_UNKNOWN;
+
         memset(&page, 0, sizeof(page));
         page_set_owner(&page, m_db);
 
         BFC_ASSERT_EQUAL(1, m_dev->is_open(m_dev));
-        BFC_ASSERT_EQUAL(0, m_dev->alloc_page(m_dev, &page));
+        BFC_ASSERT_EQUAL(0, m_dev->alloc_page(m_dev, &page,
+                    env_get_pagesize(m_env), &info));
         BFC_ASSERT(page_get_pers(&page)!=0);
         BFC_ASSERT_EQUAL(0, m_dev->free_page(m_dev, &page));
     }
@@ -169,7 +184,8 @@ public:
             memset(&pages[i], 0, sizeof(ham_page_t));
             page_set_owner(&pages[i], m_db);
             page_set_self(&pages[i], i*ps);
-            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, &pages[i]));
+            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, &pages[i],
+                        env_get_pagesize(m_env)));
         }
         for (i=0; i<10; i++)
             memset(page_get_pers(&pages[i]), i, ps);
@@ -181,7 +197,8 @@ public:
             memset(temp, i, ps);
             BFC_ASSERT_EQUAL(0, m_dev->free_page(m_dev, &pages[i]));
 
-            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, &pages[i]));
+            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, &pages[i],
+                        env_get_pagesize(m_env)));
             buffer=(ham_u8_t *)page_get_pers(&pages[i]);
             BFC_ASSERT_EQUAL(0, memcmp(buffer, temp, ps));
         }
@@ -236,7 +253,7 @@ public:
         for (i=0; i<2; i++) {
             BFC_ASSERT((pages[i]=page_new(m_env)));
             page_set_self(pages[i], ps*i);
-            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, pages[i]));
+            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, pages[i], 0));
         }
         for (i=0; i<2; i++) {
             BFC_ASSERT(page_get_npers_flags(pages[i])&PAGE_NPERS_MALLOC);
@@ -252,7 +269,7 @@ public:
             memset(temp, i+1, sizeof(temp));
             BFC_ASSERT((pages[i]=page_new(m_env)));
             page_set_self(pages[i], ps*i);
-            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, pages[i]));
+            BFC_ASSERT_EQUAL(0, m_dev->read_page(m_dev, pages[i], ps));
             BFC_ASSERT_EQUAL(0,
                     memcmp(page_get_pers(pages[i]), temp, sizeof(temp)));
             BFC_ASSERT_EQUAL(0, page_free(pages[i]));
@@ -274,8 +291,12 @@ public:
         BFC_REGISTER_TEST(InMemoryDeviceTest, createCloseTest);
         BFC_REGISTER_TEST(InMemoryDeviceTest, openCloseTest);
         BFC_REGISTER_TEST(InMemoryDeviceTest, pagesizeTest);
+        //BFC_REGISTER_TEST(InMemoryDeviceTest, allocTest);
         BFC_REGISTER_TEST(InMemoryDeviceTest, allocFreeTest);
         BFC_REGISTER_TEST(InMemoryDeviceTest, flushTest);
+        //BFC_REGISTER_TEST(InMemoryDeviceTest, mmapUnmapTest);
+        //BFC_REGISTER_TEST(InMemoryDeviceTest, readWriteTest);
+        //BFC_REGISTER_TEST(InMemoryDeviceTest, readWritePageTest);
     }
 
 };

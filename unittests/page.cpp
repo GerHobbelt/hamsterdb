@@ -32,14 +32,16 @@ using namespace bfc;
 
 class PageTest : public hamsterDB_fixture
 {
-	define_super(hamsterDB_fixture);
+    define_super(hamsterDB_fixture);
 
 public:
     PageTest(ham_bool_t inmemorydb=HAM_FALSE, ham_bool_t mmap=HAM_TRUE,
             const char *name="PageTest")
     :   hamsterDB_fixture(name),
-        m_db(0), m_inmemory(inmemorydb), m_usemmap(mmap), m_dev(0), m_alloc(0)
+        m_db(0), m_inmemory(inmemorydb), m_usemmap(mmap), m_dev(0)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(PageTest, newDeleteTest);
         BFC_REGISTER_TEST(PageTest, allocFreeTest);
@@ -50,45 +52,46 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
+    mem_allocator_t *m_alloc;
     ham_bool_t m_inmemory;
     ham_bool_t m_usemmap;
     ham_device_t *m_dev;
-    memtracker_t *m_alloc;
 
 public:
     virtual void setup()
-	{
+    {
         ham_u32_t flags=0;
 
-		__super::setup();
+        __super::setup();
 
         if (m_inmemory)
             flags|=HAM_IN_MEMORY_DB;
         if (!m_usemmap)
             flags|=HAM_DISABLE_MMAP;
 
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                                 flags, 0644, 0));
-        m_env=db_get_env(m_db);
+
+        m_env = db_get_env(m_db);
     }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void newDeleteTest()
     {
         ham_page_t *page;
-        page=page_new(m_env);
-        BFC_ASSERT(page!=0);
+        page = page_new(m_env);
+        BFC_ASSERT_NOTNULL(page);
         page_delete(page);
     }
 
@@ -96,8 +99,8 @@ public:
     {
         ham_page_t *page;
         page=page_new(m_env);
-        BFC_ASSERT_EQUAL(0, page_alloc(page));
-        BFC_ASSERT_EQUAL(0, page_free(page));
+        BFC_ASSERT_EQUAL(page_alloc(page, env_get_pagesize(m_env), NULL), HAM_SUCCESS);
+        BFC_ASSERT_EQUAL(page_free(page), HAM_SUCCESS);
 
         BFC_ASSERT_EQUAL((ham_offset_t)0, page_get_before_img_lsn(page));
         page_set_before_img_lsn(page, 0x13ull);
@@ -110,11 +113,11 @@ public:
     {
         int i;
         ham_page_t *page;
-        ham_size_t ps=env_get_pagesize(m_env);
+        ham_size_t ps=os_get_pagesize();
 
         for (i=0; i<10; i++) {
             page=page_new(m_env);
-            BFC_ASSERT_EQUAL(0, page_alloc(page));
+            BFC_ASSERT_EQUAL(0, page_alloc(page, env_get_pagesize(m_env), NULL));
             /* i+2 since we need 1 page for the header page and one page
              * for the root page */
             if (!m_inmemory)
@@ -131,18 +134,18 @@ public:
 
         page=page_new(m_env);
         temp=page_new(m_env);
-        BFC_ASSERT_EQUAL(0, page_alloc(page));
+        BFC_ASSERT_EQUAL(0, page_alloc(page, ps, NULL));
         BFC_ASSERT_EQUAL(ps*2, page_get_self(page));
         BFC_ASSERT_EQUAL(0, page_free(page));
 
-        BFC_ASSERT_EQUAL(0, page_fetch(page));
+        BFC_ASSERT_EQUAL(0, page_fetch(page, ps));
         memset(page_get_pers(page), 0x13, ps);
         page_set_dirty(page, m_env);
         BFC_ASSERT_EQUAL(0, page_flush(page));
 
         BFC_ASSERT_EQUAL(false, page_is_dirty(page));
         page_set_self(temp, ps*2);
-        BFC_ASSERT_EQUAL(0, page_fetch(temp));
+        BFC_ASSERT_EQUAL(0, page_fetch(temp, ps));
         BFC_ASSERT_EQUAL(0,
                 memcmp(page_get_pers(page), page_get_pers(temp), ps));
 

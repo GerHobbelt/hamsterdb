@@ -27,13 +27,15 @@ using namespace bfc;
 
 class CheckIntegrityTest : public hamsterDB_fixture
 {
-	define_super(hamsterDB_fixture);
+    define_super(hamsterDB_fixture);
 
 public:
     CheckIntegrityTest(ham_bool_t inmemorydb=HAM_FALSE, const char *name="CheckIntegrityTest")
         : hamsterDB_fixture(name),
             m_inmemory(inmemorydb)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(CheckIntegrityTest, emptyDatabaseTest);
         BFC_REGISTER_TEST(CheckIntegrityTest, smallDatabaseTest);
@@ -42,17 +44,17 @@ public:
 
 protected:
     ham_db_t *m_db;
+    mem_allocator_t *m_alloc;
     ham_bool_t m_inmemory;
-    memtracker_t *m_alloc;
 
 public:
     virtual void setup()
-	{
-		__super::setup();
+    {
+        __super::setup();
 
         os::unlink(BFC_OPATH(".test"));
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"),
                     m_inmemory ? HAM_IN_MEMORY_DB : 0,
@@ -60,12 +62,12 @@ public:
     }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void emptyDatabaseTest()

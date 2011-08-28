@@ -30,11 +30,11 @@ using namespace bfc;
 
 class ExtendedKeyTest : public hamsterDB_fixture
 {
-	define_super(hamsterDB_fixture);
+    define_super(hamsterDB_fixture);
 
 public:
     ExtendedKeyTest()
-    :   hamsterDB_fixture("ExtendedKeyTest")
+    :   hamsterDB_fixture("ExtendedKeyTest"), m_db(NULL), m_env(NULL), m_alloc(NULL)
     {
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(ExtendedKeyTest, keyStructureTest);
@@ -44,33 +44,36 @@ public:
         BFC_REGISTER_TEST(ExtendedKeyTest, negativeRemoveTest);
         BFC_REGISTER_TEST(ExtendedKeyTest, bigCacheTest);
         BFC_REGISTER_TEST(ExtendedKeyTest, purgeTest);
+        BFC_REGISTER_TEST(ExtendedKeyTest, fullPurgeTest);
     }
 
 protected:
     ham_db_t *m_db;
-    memtracker_t *m_alloc;
+    ham_env_t *m_env;
+    mem_allocator_t *m_alloc;
 
 public:
     virtual void setup()
-	{
-		__super::setup();
+    {
+        __super::setup();
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY_DB, 0));
+        m_env = db_get_env(m_db);
 
         extkey_cache_t *c=extkey_cache_new(m_db);
         BFC_ASSERT(c!=0);
-        db_set_extkey_cache(m_db, c);
+        db_set_extkey_cache(m_db, c);   /* [i_a] keycache per db */
     }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void keyStructureTest(void)
@@ -133,7 +136,7 @@ public:
         ham_size_t size;
 
         BFC_ASSERT_EQUAL(0,
-                extkey_cache_insert(c, 0x123, sizeof(buffer), buffer));
+                extkey_cache_insert(c, 0x123, sizeof(buffer), buffer, NULL));
 
         BFC_ASSERT_EQUAL(0,
                 extkey_cache_fetch(c, 0x123, &size, &pbuffer));
@@ -151,7 +154,7 @@ public:
         ham_size_t size;
 
         BFC_ASSERT_EQUAL(0,
-                extkey_cache_insert(c, 0x123, sizeof(buffer), buffer));
+                extkey_cache_insert(c, 0x123, sizeof(buffer), buffer, NULL));
 
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 extkey_cache_fetch(c, 0x1234, &size, &pbuffer));
@@ -181,7 +184,7 @@ public:
         for (ham_size_t i=0; i<extkey_cache_get_bucketsize(c)*4; i++) {
             BFC_ASSERT_EQUAL(0,
                 extkey_cache_insert(c, (ham_offset_t)i,
-                    sizeof(buffer), buffer));
+                    sizeof(buffer), buffer, NULL));
         }
 
         for (ham_size_t i=0; i<extkey_cache_get_bucketsize(c)*4; i++) {

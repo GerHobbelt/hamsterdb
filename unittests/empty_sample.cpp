@@ -66,39 +66,42 @@ public:
 
 protected:
     virtual void setup()
-	{
-		__super::setup();
+    {
+        __super::setup();
 
-		// add your own setup code, which is run before each test invocation
+        // add your own setup code, which is run before each test invocation
     }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
-		// add your own teardown code, which is always run after each test invocation (even when the test failed dramatically!)
+        // add your own teardown code, which is always run after each test invocation (even when the test failed dramatically!)
     }
 
     void Test1(void)
     {
         BFC_ASSERT_EQUAL(0, 0);
+        BFC_ASSERT_NOTEQUAL(1, 0);
+        BFC_ASSERT_NULL(0);
+        BFC_ASSERT_NOTNULL("");
 
 #if 0 // turn on to see a SIGSEGV being caught by BFC: one failed test
 
-		// cause a SIGSEGV (or something along those lines: a hardware trap)
-		char *p = 0;
-		char c = *p;
-		BFC_ASSERT(c != 0);
+        // cause a SIGSEGV (or something along those lines: a hardware trap)
+        char *p = 0;
+        char c = *p;
+        BFC_ASSERT(c != 0);
 
 #endif
-	}
+    }
 
     void Test2(void)
     {
 #if 0 // turn on to see an intentional validation failure occur: one failed test
-		BFC_ASSERT_EQUAL(0, 1);
+        BFC_ASSERT_EQUAL(0, 1);
 #endif
-	}
+    }
 
 };
 

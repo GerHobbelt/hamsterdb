@@ -11,6 +11,8 @@
 
 #include "../src/mem.h"
 
+typedef unsigned int  memdesc_magic_edge_t;
+
 typedef struct memdesc_t
 {
     const char *file;
@@ -18,31 +20,28 @@ typedef struct memdesc_t
     int size;
     struct memdesc_t *next;
     struct memdesc_t *previous;
-    int magic_start;
-    char data[1];
+    memdesc_magic_edge_t magic_start;
+
+    union
+    {
+        double d;
+        void *p;
+        long l;
+    } data[1]; /* ensure regular malloc alignment: this is the 'biggest' type we'll need for that */
 } memdesc_t;
 
 typedef struct
 {
     memdesc_t *header;
     unsigned long total;
+    int instance_counter;
 } memtracker_priv_t;
 
-typedef struct
-{
-    alloc_func_t alloc;
-    free_func_t  free;
-    realloc_func_t realloc;
-    close_func_t close;
 
-    memtracker_priv_t *priv;
-
-} memtracker_t;
-
-extern memtracker_t *
+extern mem_allocator_t *
 memtracker_new(void);
 
 extern unsigned long
-memtracker_get_leaks(memtracker_t *mt);
+memtracker_get_leaks(mem_allocator_t *mt);
 
 

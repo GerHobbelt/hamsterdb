@@ -36,8 +36,10 @@ class RecNoTest : public hamsterDB_fixture
 
 public:
     RecNoTest(ham_u32_t flags=0, const char *name="RecNoTest")
-    :   hamsterDB_fixture(name), m_flags(flags)
+    :   hamsterDB_fixture(name), m_flags(flags), m_db(NULL), m_env(NULL)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(RecNoTest, createCloseTest);
         BFC_REGISTER_TEST(RecNoTest, createCloseOpenCloseTest);
@@ -62,6 +64,7 @@ public:
 protected:
     ham_u32_t m_flags;
     ham_db_t *m_db;
+    ham_env_t *m_env;
 
 public:
     virtual void setup()
@@ -69,6 +72,7 @@ public:
         __super::setup();
 
         (void)os::unlink(BFC_OPATH(".test"));
+        ham_set_default_allocator_template(memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
     }
 
@@ -500,7 +504,7 @@ public:
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_flags|HAM_RECORD_NUMBER, 0664, &p[0]));
 
-        p[0].value=9;
+        p[0].value.n=9;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_flags|HAM_RECORD_NUMBER, 0664, &p[0]));
@@ -509,7 +513,6 @@ public:
 
     void envTest(void)
     {
-        ham_env_t *env;
         ham_key_t key;
         ham_record_t rec;
         ham_u64_t recno;
@@ -520,29 +523,29 @@ public:
         key.size=sizeof(recno);
         key.flags=HAM_KEY_USER_ALLOC;
 
-        BFC_ASSERT_EQUAL(0, ham_env_new(&env));
+        BFC_ASSERT_EQUAL(0, ham_env_new(&m_env));
         BFC_ASSERT_EQUAL(0,
-                ham_env_create(env, BFC_OPATH(".test"), m_flags, 0664));
+                ham_env_create(m_env, BFC_OPATH(".test"), m_flags, 0664));
         BFC_ASSERT_EQUAL(0,
-                ham_env_create_db(env, m_db, 333, HAM_RECORD_NUMBER, 0));
+                ham_env_create_db(m_env, m_db, 333, HAM_RECORD_NUMBER, 0));
         BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key, &rec, 0));
         BFC_ASSERT_EQUAL((ham_u64_t)1ull, *(ham_u64_t *)key.data);
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
+        BFC_ASSERT_EQUAL(0, ham_env_close(m_env, 0));
 
         if (!(m_flags&HAM_IN_MEMORY_DB)) {
-            BFC_ASSERT_EQUAL(0, ham_env_open(env, BFC_OPATH(".test"), 0));
+            BFC_ASSERT_EQUAL(0, ham_env_open(m_env, BFC_OPATH(".test"), 0));
             BFC_ASSERT_EQUAL(0,
-                    ham_env_open_db(env, m_db, 333, HAM_RECORD_NUMBER, 0));
+                    ham_env_open_db(m_env, m_db, 333, HAM_RECORD_NUMBER, 0));
             BFC_ASSERT_EQUAL(0,
                     ham_insert(m_db, 0, &key, &rec, 0));
             BFC_ASSERT_EQUAL((ham_u64_t)2ull, *(ham_u64_t *)key.data);
             BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-            BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
+            BFC_ASSERT_EQUAL(0, ham_env_close(m_env, 0));
         }
 
-        BFC_ASSERT_EQUAL(0, ham_env_delete(env));
+        BFC_ASSERT_EQUAL(0, ham_env_delete(m_env));
     }
 
     void endianTestOpenDatabase(void)
@@ -719,6 +722,7 @@ public:
 
     void uncoupleTest(void)
     {
+        ham_status_t st;
         ham_key_t key;
         ham_record_t rec;
         ham_u64_t recno;
@@ -733,6 +737,7 @@ public:
 
         BFC_ASSERT_EQUAL(0,
                 ham_create(m_db, BFC_OPATH(".test"), m_flags|HAM_RECORD_NUMBER, 0664));
+        m_env = db_get_env(m_db);
         BFC_ASSERT_EQUAL(0,
                 ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT_EQUAL(0,
@@ -746,9 +751,9 @@ public:
 
         ham_btree_t *be=(ham_btree_t *)db_get_backend(m_db);
         ham_page_t *page;
-        BFC_ASSERT_EQUAL(0, db_fetch_page(&page, m_db,
-                btree_get_rootpage(be), 0));
-        BFC_ASSERT(page!=0);
+        st=db_fetch_page(&page, m_env, btree_get_rootpage(be), 0);
+        BFC_ASSERT_NOTNULL(page);
+        BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
         BFC_ASSERT_EQUAL(0, db_uncouple_all_cursors(page, 0));
 
         for (int i=0; i<5; i++) {
@@ -770,15 +775,22 @@ public:
         clear_tests(); // don't inherit tests
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(InMemoryRecNoTest, createCloseTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, createCloseOpenCloseTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertCloseTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertManyCloseTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertCloseCursorTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertCloseReopenTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertCloseReopenCursorTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertCloseReopenTwiceTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, createInsertCloseReopenTwiceCursorTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, insertBadKeyTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, insertBadKeyCursorTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, createBadKeysizeTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, envTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, endianTestOpenDatabase);
         BFC_REGISTER_TEST(InMemoryRecNoTest, overwriteTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, overwriteCursorTest);
+        //BFC_REGISTER_TEST(InMemoryRecNoTest, eraseLastReopenTest);
         BFC_REGISTER_TEST(InMemoryRecNoTest, uncoupleTest);
     }
 

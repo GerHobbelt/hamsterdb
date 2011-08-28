@@ -247,7 +247,7 @@ public:
         /* compare */
         BFC_ASSERT_EQUAL(0x13, page[0]);
 
-		BFC_ASSERT_EQUAL(0, os_close(fd, 0));
+        BFC_ASSERT_EQUAL(0, os_close(fd, 0));
         free(page);
     }
 

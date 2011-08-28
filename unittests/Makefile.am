@@ -1,15 +1,11 @@
 
-#
-# make sure that our modified CFLAGS are also respected by g++
-#
-AM_CXXFLAGS     = $(CFLAGS)
-CXXFLAGS        = $(CFLAGS)
+EXTRA_DIST = valgrind.supp
 
-EXTRA_DIST      = valgrind.supp
+
 
 noinst_PROGRAMS = test bfc_sample
 
-AM_CPPFLAGS     = -I$(top_builddir)/include
+AM_CFLAGS       = -I$(top_builddir)/include
 
 test_SOURCES    = log.cpp \
                   api110.cpp \
@@ -53,7 +49,7 @@ test_LDADD      = $(top_builddir)/src/libhamsterdb.la -ldl
 
 if ENABLE_REMOTE
 test_SOURCES   += remote.cpp
-CFLAGS         += -DHAM_ENABLE_REMOTE
+AM_CFLAGS      += -DHAM_ENABLE_REMOTE
 test_LDADD     += $(top_builddir)/src/server/libhamserver.la
 endif
 
@@ -61,7 +57,7 @@ bfc_sample_SOURCES = bfc-sample.cpp \
                   empty_sample.cpp \
                   bfc-testsuite.cpp \
                   bfc-testsuite.hpp \
-		  		  os.hpp \
+  		  os.hpp \
                   bfc-signal.h \
                   bfc-signal.c
 

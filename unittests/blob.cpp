@@ -40,9 +40,11 @@ public:
                 ham_size_t cachesize=0, ham_size_t pagesize=0,
                 const char *name="BlobTest")
     :   hamsterDB_fixture(name),
-        m_db(0), m_alloc(0), m_inmemory(inmemory), m_use_txn(use_txn),
+        m_db(NULL), m_env(NULL), m_alloc(NULL), m_inmemory(inmemory), m_use_txn(use_txn),
         m_cachesize(cachesize), m_pagesize(pagesize)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(BlobTest, structureTest);
         BFC_REGISTER_TEST(BlobTest, dupeStructureTest);
@@ -61,7 +63,7 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
+    mem_allocator_t *m_alloc;
     ham_bool_t m_inmemory;
     ham_bool_t m_use_txn;
     ham_size_t m_cachesize;
@@ -83,7 +85,8 @@ public:
 
         os::unlink(BFC_OPATH(".test"));
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        m_alloc = memtracker_new();
+        ham_set_default_allocator_template(m_alloc);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
@@ -93,7 +96,7 @@ public:
                             ? HAM_ENABLE_TRANSACTIONS
                             : 0)),
                         0644, &params[0]));
-        m_env=db_get_env(m_db);
+        m_env = db_get_env(m_db);
     }
 
     virtual void teardown()
@@ -101,8 +104,8 @@ public:
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        BFC_ASSERT_EQUAL(memtracker_get_leaks(ham_get_default_allocator_template()), 0U);
     }
 
     void structureTest(void)
@@ -149,19 +152,28 @@ public:
         ham_u8_t buffer[64];
         ham_offset_t blobid;
         ham_record_t record;
+		dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+		info.record = &record;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_BLOB;
+
         ::memset(&record, 0, sizeof(record));
         ::memset(&buffer, 0x12, sizeof(buffer));
 
         record.size=sizeof(buffer);
         record.data=buffer;
-        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, m_db, &record, 0, &blobid));
-        BFC_ASSERT(blobid!=0);
+        ham_assert(info.space_type != PAGE_TYPE_UNKNOWN, (0)); // not necessarily a TYPE_BLOB though...
+        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, &record, 0, &info, 0, &blobid));
+        BFC_ASSERT_NOTNULL(blobid);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer));
-        BFC_ASSERT(0==::memcmp(buffer, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer, record.data, record.size));
 
-        BFC_ASSERT_EQUAL(0, blob_free(m_env, m_db, blobid, 0));
+        BFC_ASSERT_EQUAL(0, blob_free(m_env, blobid, 0));
     }
 
     void replaceTest(void)
@@ -169,31 +181,38 @@ public:
         ham_u8_t buffer[64], buffer2[64];
         ham_offset_t blobid, blobid2;
         ham_record_t record;
+		dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+		info.record = &record;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_BLOB;
+
         ::memset(&record,  0, sizeof(record));
         ::memset(&buffer,  0x12, sizeof(buffer));
         ::memset(&buffer2, 0x15, sizeof(buffer2));
 
         record.size=sizeof(buffer);
         record.data=buffer;
-        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, m_db, &record, 0, &blobid));
-        BFC_ASSERT(blobid!=0);
+        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, &record, 0, &info, 0, &blobid));
+        BFC_ASSERT_NOTNULL(blobid);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer));
-        BFC_ASSERT(0==::memcmp(buffer, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer, record.data, record.size));
 
         record.size=sizeof(buffer2);
         record.data=buffer2;
-        BFC_ASSERT_EQUAL(0, blob_overwrite(m_env, m_db, blobid, &record,
-                    0, &blobid2));
-        BFC_ASSERT(blobid2!=0);
+        BFC_ASSERT_EQUAL(0, blob_overwrite(m_env, blobid, &record, 0, &info, &blobid2));
+        BFC_ASSERT_NOTNULL(blobid2);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid2,
                                 &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer2));
-        BFC_ASSERT(0==::memcmp(buffer2, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer2, record.data, record.size));
 
-        BFC_ASSERT_EQUAL(0, blob_free(m_env, m_db, blobid2, 0));
+        BFC_ASSERT_EQUAL(0, blob_free(m_env, blobid2, 0));
     }
 
     void replaceWithBigTest(void)
@@ -201,78 +220,97 @@ public:
         ham_u8_t buffer[64], buffer2[128];
         ham_offset_t blobid, blobid2;
         ham_record_t record;
+		dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+		info.record = &record;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_BLOB;
+
         ::memset(&record,  0, sizeof(record));
         ::memset(&buffer,  0x12, sizeof(buffer));
         ::memset(&buffer2, 0x15, sizeof(buffer2));
 
         record.data=buffer;
         record.size=sizeof(buffer);
-        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, m_db, &record, 0, &blobid));
-        BFC_ASSERT(blobid!=0);
+        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, &record, 0, &info, 0, &blobid));
+        BFC_ASSERT_NOTNULL(blobid);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid,
                                 &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer));
-        BFC_ASSERT(0==::memcmp(buffer, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer, record.data, record.size));
 
         record.size=sizeof(buffer2);
         record.data=buffer2;
-        BFC_ASSERT_EQUAL(0, blob_overwrite(m_env, m_db, blobid, &record,
-                    0, &blobid2));
-        BFC_ASSERT(blobid2!=0);
+        BFC_ASSERT_EQUAL(0, blob_overwrite(m_env, blobid, &record, 0, &info, &blobid2));
+        BFC_ASSERT_NOTNULL(blobid2);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid2,
                                 &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer2));
-        BFC_ASSERT(0==::memcmp(buffer2, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer2, record.data, record.size));
 
-        BFC_ASSERT_EQUAL(0, blob_free(m_env, m_db, blobid2, 0));
+        BFC_ASSERT_EQUAL(0, blob_free(m_env, blobid2, 0));
     }
 
     void replaceWithSmallTest(void)
     {
+        ham_status_t st;
         ham_u8_t buffer[128], buffer2[64];
         ham_offset_t blobid, blobid2;
+        ham_offset_t addr;
         ham_record_t record;
+		dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+		info.record = &record;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_BLOB;
+
         ::memset(&record,  0, sizeof(record));
         ::memset(&buffer,  0x12, sizeof(buffer));
         ::memset(&buffer2, 0x15, sizeof(buffer2));
 
         record.data=buffer;
         record.size=sizeof(buffer);
-        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, m_db, &record, 0, &blobid));
-        BFC_ASSERT(blobid!=0);
+        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, &record, 0, &info, 0, &blobid));
+        BFC_ASSERT_NOTNULL(blobid);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid,
                                 &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer));
-        BFC_ASSERT(0==::memcmp(buffer, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer, record.data, record.size));
 
         record.size=sizeof(buffer2);
         record.data=buffer2;
-        BFC_ASSERT_EQUAL(0, blob_overwrite(m_env, m_db, blobid, &record,
-                    0, &blobid2));
-        BFC_ASSERT(blobid2!=0);
+        BFC_ASSERT_EQUAL(0, blob_overwrite(m_env, blobid, &record,
+                    0, &info, &blobid2));
+        BFC_ASSERT_NOTNULL(blobid2);
 
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid2,
                                 &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer2));
-        BFC_ASSERT(0==::memcmp(buffer2, record.data, record.size));
+        BFC_ASSERT_EQUAL(0, ::memcmp(buffer2, record.data, record.size));
 
         /* make sure that at least 64bit are in the freelist */
-        if (!m_inmemory) {
-            ham_offset_t addr;
-            BFC_ASSERT_EQUAL(0, freel_alloc_area(&addr, m_env, m_db, 64));
-            BFC_ASSERT(addr!=0);
+        if (!m_inmemory)
+        {
+            st = freel_alloc_area(&addr, 64, &info);
+            BFC_ASSERT_NOTEQUAL(addr, 0u);
+            BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
         }
 
-        BFC_ASSERT_EQUAL(0, blob_free(m_env, m_db, blobid2, 0));
+        BFC_ASSERT_EQUAL(0, blob_free(m_env, blobid2, 0));
 
         /* and now another 64bit should be in the freelist */
-        if (!m_inmemory) {
-            ham_offset_t addr;
-            BFC_ASSERT_EQUAL(0, freel_alloc_area(&addr, m_env, m_db, 64));
-            BFC_ASSERT(addr!=0);
+        if (!m_inmemory)
+        {
+            st = freel_alloc_area(&addr, 64, &info);
+            BFC_ASSERT_NOTEQUAL(addr, 0u);
+            BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
         }
     }
 
@@ -283,6 +321,14 @@ public:
         ham_u8_t *buffer=(ham_u8_t *)malloc(ps*BLOCKS*2);
         ham_offset_t blobid, blobid2;
         ham_record_t record;
+		dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+		info.record = &record;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_BLOB;
+
         ::memset(&record, 0, sizeof(record));
         ::memset(buffer,  0, ps*BLOCKS*2);
 
@@ -290,15 +336,15 @@ public:
          * space from the freelist */
         record.data=buffer;
         record.size=ps*BLOCKS*2;
-        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, m_db, &record, 0, &blobid));
-        BFC_ASSERT(blobid!=0);
+        BFC_ASSERT_EQUAL(0, blob_allocate(m_env, &record, 0, &info, 0, &blobid));
+        BFC_ASSERT_NOTNULL(blobid);
 
         /* verify it */
         BFC_ASSERT_EQUAL(0, blob_read(m_db, blobid, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)ps*BLOCKS*2);
 
         /* and erase it */
-        BFC_ASSERT_EQUAL(0, blob_free(m_env, m_db, blobid, 0));
+        BFC_ASSERT_EQUAL(0, blob_free(m_env, blobid, 0));
 
         /* now use a loop to allocate the buffer, and make it bigger and
          * bigger */
@@ -308,17 +354,17 @@ public:
             ::memset(buffer, i, record.size);
             if (i==1) {
                 BFC_ASSERT_EQUAL(0,
-                        blob_allocate(m_env, m_db, &record, 0, &blobid2));
+                        blob_allocate(m_env, &record, 0, &info, 0, &blobid2));
             }
             else {
                 BFC_ASSERT_EQUAL(0,
-                        blob_overwrite(m_env, m_db, blobid,
-                                    &record, 0, &blobid2));
+                        blob_overwrite(m_env, blobid,
+                                    &record, 0, &info, &blobid2));
             }
             blobid=blobid2;
-            BFC_ASSERT(blobid!=0);
+            BFC_ASSERT_NOTNULL(blobid);
         }
-        BFC_ASSERT_EQUAL(0, blob_free(m_env, m_db, blobid, 0));
+        BFC_ASSERT_EQUAL(0, blob_free(m_env, blobid, 0));
         ::free(buffer);
     }
 
@@ -328,13 +374,21 @@ public:
         ham_offset_t *blobid;
         ham_record_t record;
         ham_txn_t *txn = 0; /* need a txn object for the blob routines */
+		dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+		info.record = &record;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_BLOB;
+
         ::memset(&record, 0, sizeof(record));
         ::memset(&buffer, 0x12, sizeof(buffer));
 
         blobid=(ham_offset_t *)::malloc(sizeof(ham_offset_t)*loops);
-        BFC_ASSERT(blobid!=0);
+        BFC_ASSERT_NOTNULL(blobid);
         if (!m_inmemory && m_use_txn)
-            BFC_ASSERT(ham_txn_begin(&txn, m_db, 0)==HAM_SUCCESS);
+            BFC_ASSERT_EQUAL(ham_txn_begin(&txn, m_db, 0), HAM_SUCCESS);
 
         for (int i=0; i<loops; i++) {
             buffer=(ham_u8_t *)::malloc((i+1)*factor);
@@ -345,7 +399,7 @@ public:
             rec.data=buffer;
             rec.size=(ham_size_t)((i+1)*factor);
             BFC_ASSERT_EQUAL(0,
-                        blob_allocate(m_env, m_db, &rec, 0, &blobid[i]));
+                        blob_allocate(m_env, &rec, 0, &info, 0, &blobid[i]));
             BFC_ASSERT_I(blobid[i]!=0, i);
 
             ::free(buffer);
@@ -365,12 +419,12 @@ public:
         }
 
         for (int i=0; i<loops; i++) {
-            BFC_ASSERT_EQUAL_I(0, blob_free(m_env, m_db, blobid[i], 0), i);
+            BFC_ASSERT_EQUAL_I(0, blob_free(m_env, blobid[i], 0), i);
         }
 
         ::free(blobid);
         if (!m_inmemory && m_use_txn)
-            BFC_ASSERT(ham_txn_commit(txn, 0)==HAM_SUCCESS);
+            BFC_ASSERT_EQUAL(ham_txn_commit(txn, 0), HAM_SUCCESS);
     }
 
     void multipleAllocReadFreeTest(void)

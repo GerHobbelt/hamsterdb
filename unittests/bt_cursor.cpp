@@ -42,9 +42,10 @@ public:
     BtreeCursorTest(bool inmemory=false, ham_size_t pagesize=0,
                     const char *name="BtreeCursorTest")
     :   hamsterDB_fixture(name),
-        m_db(0), m_inmemory(inmemory), m_alloc(0),
-        m_pagesize(pagesize)
+        m_db(NULL), m_env(NULL), m_alloc(NULL), m_inmemory(inmemory), m_pagesize(pagesize)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(BtreeCursorTest, createCloseTest);
         BFC_REGISTER_TEST(BtreeCursorTest, cloneTest);
@@ -61,8 +62,9 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
+    mem_allocator_t *m_alloc;
+    //ham_device_t *m_dev;
     bool m_inmemory;
-    memtracker_t *m_alloc;
     ham_size_t m_pagesize;
 
 public:
@@ -80,13 +82,13 @@ public:
 
         os::unlink(BFC_OPATH(".test"));
 
+        m_alloc = memtracker_new();
+        ham_set_default_allocator_template(m_alloc);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
         BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"),
                     HAM_ENABLE_DUPLICATES|(m_inmemory?HAM_IN_MEMORY_DB:0),
                     0664, params));
-
-        m_env=db_get_env(m_db);
+        m_env = db_get_env(m_db);
     }
 
     virtual void teardown()
@@ -95,36 +97,33 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void createCloseTest(void)
     {
-        ham_bt_cursor_t *cursor;
-        ham_cursor_t *c;
+        ham_cursor_t *cursor;
 
-        BFC_ASSERT(ham_cursor_create(m_db, 0, 0, &c)==0);
-        cursor=(ham_bt_cursor_t *)c;
+        BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT(cursor!=0);
-        BFC_ASSERT_EQUAL(0, ham_cursor_close((ham_cursor_t *)cursor));
+        BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
     }
 
     void cloneTest(void)
     {
-        ham_bt_cursor_t *cursor, *clone;
-        ham_cursor_t *c;
+        ham_cursor_t *cursor, *clone;
 
-        BFC_ASSERT(ham_cursor_create(m_db, 0, 0, &c)==0);
-        cursor=(ham_bt_cursor_t *)c;
+        BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT(cursor!=0);
-        BFC_ASSERT(cursor->_fun_clone(cursor, &clone)==0);
+        BFC_ASSERT(ham_cursor_clone(cursor, &clone)==0);
         BFC_ASSERT(clone!=0);
-        BFC_ASSERT_EQUAL(0, ham_cursor_close((ham_cursor_t *)clone));
-        BFC_ASSERT_EQUAL(0, ham_cursor_close((ham_cursor_t *)cursor));
+        BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
+        BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
     }
 
     void overwriteTest(void)
     {
+        ham_status_t st;
         ham_cursor_t *cursor;
         ham_key_t key;
         ham_record_t rec;
@@ -142,9 +141,9 @@ public:
 
         ham_btree_t *be=(ham_btree_t *)db_get_backend(m_db);
         ham_page_t *page;
-        BFC_ASSERT_EQUAL(0,
-                db_fetch_page(&page, m_db, btree_get_rootpage(be), 0));
-        BFC_ASSERT(page!=0);
+        st=db_fetch_page(&page, m_env, btree_get_rootpage(be), 0);
+        BFC_ASSERT_NOTNULL(page);
+        BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
         BFC_ASSERT_EQUAL(0, db_uncouple_all_cursors(page, 0));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_overwrite(cursor, &rec, 0));
@@ -166,11 +165,9 @@ public:
         memset(&rec, 0, sizeof(rec));
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
-        BFC_ASSERT_EQUAL(0,
-                ham_create_ex(m_db, BFC_OPATH(".test"),
-                        (m_inmemory ? HAM_IN_MEMORY_DB : 0),
-                        0664, &params[0]));
-        m_env=db_get_env(m_db);
+        BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"),
+                    /*HAM_ENABLE_DUPLICATES|*/ (m_inmemory ? HAM_IN_MEMORY_DB : 0),
+                    0664, &params[0]));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor2));
@@ -276,12 +273,13 @@ public:
         BFC_ASSERT_EQUAL((ham_cursor_t *)0, db_get_cursors(m_db));
 
         for (int i=0; i<5; i++) {
-            BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor[i]));
-            BFC_ASSERT_EQUAL(cursor[i], db_get_cursors(m_db));
+            BFC_ASSERT_EQUAL_I(0, ham_cursor_create(m_db, 0, 0, &cursor[i]), i);
+            BFC_ASSERT_NOTNULL_I(cursor[i], i);
+            BFC_ASSERT_EQUAL_I(cursor[i], db_get_cursors(m_db), i);
         }
 
         BFC_ASSERT_EQUAL(0, ham_cursor_clone(cursor[0], &clone));
-        BFC_ASSERT(clone!=0);
+        BFC_ASSERT_NOTNULL(clone);
         BFC_ASSERT_EQUAL(clone, db_get_cursors(m_db));
 
         for (int i=0; i<5; i++) {
@@ -295,19 +293,19 @@ public:
 
     void linkedListReverseCloseTest(void)
     {
-        ham_cursor_t *cursor[5]={0}, *clone=0;
+        ham_cursor_t *cursor[5] = {0}, *clone = 0;
 
         BFC_ASSERT_EQUAL((ham_cursor_t *)0, db_get_cursors(m_db));
 
         for (int i=0; i<5; i++) {
-            BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor[i]));
-            BFC_ASSERT(cursor[i]!=0);
-            BFC_ASSERT_EQUAL(cursor[i], db_get_cursors(m_db));
+            BFC_ASSERT_EQUAL_I(0, ham_cursor_create(m_db, 0, 0, &cursor[i]), i);
+            BFC_ASSERT_NOTNULL_I(cursor[i], i);
+            BFC_ASSERT_EQUAL_I(cursor[i], db_get_cursors(m_db), i);
         }
 
         BFC_ASSERT_EQUAL(0, ham_cursor_clone(cursor[0], &clone));
-        BFC_ASSERT(clone!=0);
-        BFC_ASSERT_EQUAL((ham_cursor_t *)clone, db_get_cursors(m_db));
+        BFC_ASSERT_NOTNULL(clone);
+        BFC_ASSERT_EQUAL(clone, db_get_cursors(m_db));
 
         for (int i=4; i>=0; i--) {
             BFC_ASSERT_EQUAL(0,
@@ -315,7 +313,7 @@ public:
         }
         BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
 
-        BFC_ASSERT_EQUAL((ham_cursor_t *)0, db_get_cursors(m_db));
+        BFC_ASSERT_NULL(db_get_cursors(m_db));
     }
 
     void cursorGetErasedItemTest(void)

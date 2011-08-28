@@ -29,13 +29,15 @@ using namespace bfc;
 
 class EraseTest : public hamsterDB_fixture
 {
-	define_super(hamsterDB_fixture);
+    define_super(hamsterDB_fixture);
 
 public:
     EraseTest(ham_u32_t flags=0, const char *name="EraseTest")
         : hamsterDB_fixture(name),
-        m_db(0), m_flags(flags), m_alloc(0)
+        m_db(0), m_flags(flags)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(EraseTest, collapseRootTest);
         BFC_REGISTER_TEST(EraseTest, shiftFromRightTest);
@@ -45,28 +47,27 @@ public:
 
 protected:
     ham_db_t *m_db;
+    mem_allocator_t *m_alloc;
     ham_u32_t m_flags;
-    memtracker_t *m_alloc;
 
 public:
     virtual void setup()
-	{
-		__super::setup();
+    {
+        __super::setup();
 
         os::unlink(BFC_OPATH(".test"));
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0,
-                ham_create(m_db, BFC_OPATH(".test"), m_flags, 0644));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), m_flags, 0644));
     }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void prepare(int num_inserts)

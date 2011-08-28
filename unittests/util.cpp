@@ -50,7 +50,7 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
+    mem_allocator_t *m_alloc;
 
 public:
     virtual void setup()
@@ -59,7 +59,7 @@ public:
 
         ham_parameter_t p[]={{HAM_PARAM_PAGESIZE, 4096}, {0, 0}};
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
         BFC_ASSERT(ham_new(&m_db)==HAM_SUCCESS);
         BFC_ASSERT(ham_create_ex(m_db, 0, HAM_IN_MEMORY_DB, 0644,
                         &p[0])==HAM_SUCCESS);
@@ -74,7 +74,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
         m_db=0;
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
     }
 
     void copyKeyTest(void)
@@ -87,7 +87,7 @@ public:
         src.flags=0;
         src._flags=0;
 
-        BFC_ASSERT_EQUAL(0, util_copy_key(m_db, &src, &dest));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key(m_db, &src, &dest, NULL));
         BFC_ASSERT_EQUAL(dest.size, src.size);
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src.data));
 
@@ -104,7 +104,7 @@ public:
         src.flags=0;
         src._flags=0;
 
-        BFC_ASSERT_EQUAL(0, util_copy_key(m_db, &src, &dest));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key(m_db, &src, &dest, NULL));
         BFC_ASSERT_EQUAL(dest.size, src.size);
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src.data));
 
@@ -123,9 +123,9 @@ public:
         key_set_flags(&src, 0);
         src._key[0]=0;
 
-        BFC_ASSERT_EQUAL(0, util_copy_key_int2pub(m_db, &src, &dest));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, &src, &dest, NULL));
         BFC_ASSERT_EQUAL(0, dest.size);
-        BFC_ASSERT_EQUAL((void *)0, dest.data);
+        BFC_ASSERT_NULL(dest.data);
     }
 
     void copyKeyInt2PubTinyTest(void)
@@ -140,7 +140,7 @@ public:
         key_set_flags(&src, 0);
         src._key[0]='a';
 
-        BFC_ASSERT_EQUAL(0, util_copy_key_int2pub(m_db, &src, &dest));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, &src, &dest, NULL));
         BFC_ASSERT_EQUAL(1, dest.size);
         BFC_ASSERT_EQUAL('a', ((char *)dest.data)[0]);
         allocator_free(env_get_allocator(m_env), dest.data);
@@ -158,7 +158,7 @@ public:
         key_set_flags(src, 0);
         ::strcpy((char *)src->_key, "1234567\0");
 
-        BFC_ASSERT_EQUAL(0, util_copy_key_int2pub(m_db, src, &dest));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, src, &dest, NULL));
         BFC_ASSERT_EQUAL(dest.size, key_get_size(src));
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src->_key));
         allocator_free(env_get_allocator(m_env), dest.data);
@@ -176,7 +176,7 @@ public:
         key_set_flags(src, 0);
         ::strcpy((char *)src->_key, "123456781234567\0");
 
-        BFC_ASSERT_EQUAL(0, util_copy_key_int2pub(m_db, src, &dest));
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, src, &dest, NULL));
         BFC_ASSERT_EQUAL(dest.size, key_get_size(src));
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src->_key));
 

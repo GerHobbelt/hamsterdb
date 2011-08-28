@@ -45,11 +45,11 @@ public:
         mem_allocator_t *alloc=ham_default_allocator_new();
         p=alloc->alloc(alloc, __FILE__, __LINE__, 128);
         BFC_ASSERT(p);
-		/* yuck! MSVC defines free() as a macro, therefore the next line
-		 * would fail to compile */
+        /* yuck! MSVC defines free() as a macro, therefore the next line
+         * would fail to compile */
 #undef free
         alloc->free(alloc, __FILE__, __LINE__, p);
-        alloc->close(alloc);
+        alloc->destroy(&alloc);
     }
 
     /*
@@ -58,41 +58,41 @@ public:
 
     void trackingTest() {
         void *p;
-        memtracker_t *alloc=memtracker_new();
-        p=alloc->alloc((mem_allocator_t *)alloc, __FILE__, __LINE__, 128);
+        mem_allocator_t *alloc=memtracker_new();
+        p=alloc->alloc(alloc, __FILE__, __LINE__, 128);
         BFC_ASSERT(p);
-        alloc->free((mem_allocator_t *)alloc, __FILE__, __LINE__, p);
+        alloc->free(alloc, __FILE__, __LINE__, p);
         BFC_ASSERT(!memtracker_get_leaks(alloc));
-        alloc->close((mem_allocator_t *)alloc);
+        alloc->destroy(&alloc);
     }
 
     void trackingTest2() {
         void *p[3];
-        memtracker_t *alloc=memtracker_new();
-        p[0]=alloc->alloc((mem_allocator_t *)alloc, __FILE__, __LINE__, 10);
+        mem_allocator_t *alloc=memtracker_new();
+        p[0]=alloc->alloc(alloc, __FILE__, __LINE__, 10);
         BFC_ASSERT(p[0]);
-        p[1]=alloc->alloc((mem_allocator_t *)alloc, __FILE__, __LINE__, 12);
+        p[1]=alloc->alloc(alloc, __FILE__, __LINE__, 12);
         BFC_ASSERT(p[1]);
-        p[2]=alloc->alloc((mem_allocator_t *)alloc, __FILE__, __LINE__, 14);
+        p[2]=alloc->alloc(alloc, __FILE__, __LINE__, 14);
         BFC_ASSERT(p[2]);
-        alloc->free((mem_allocator_t *)alloc, __FILE__, __LINE__, p[0]);
+        alloc->free(alloc, __FILE__, __LINE__, p[0]);
         BFC_ASSERT(memtracker_get_leaks(alloc)==26);
-        alloc->free((mem_allocator_t *)alloc, __FILE__, __LINE__, p[1]);
+        alloc->free(alloc, __FILE__, __LINE__, p[1]);
         BFC_ASSERT(memtracker_get_leaks(alloc)==14);
-        alloc->free((mem_allocator_t *)alloc, __FILE__, __LINE__, p[2]);
+        alloc->free(alloc, __FILE__, __LINE__, p[2]);
         BFC_ASSERT(memtracker_get_leaks(alloc)==0);
-        alloc->close((mem_allocator_t *)alloc);
+        alloc->destroy(&alloc);
     }
 
     void freeNullTest() {
         void *p=0;
-        memtracker_t *alloc=memtracker_new();
+        mem_allocator_t *alloc=memtracker_new();
         try {
-            alloc->free((mem_allocator_t *)alloc, __FILE__, __LINE__, p);
+            alloc->free(alloc, __FILE__, __LINE__, p);
         }
         catch (std::logic_error e) {
             BFC_ASSERT(memtracker_get_leaks(alloc)==0);
-            alloc->close((mem_allocator_t *)alloc);
+            alloc->destroy(&alloc);
             return;
         }
 
@@ -101,18 +101,18 @@ public:
 
     void reallocTest(void) {
         void *p=0;
-        memtracker_t *alloc=memtracker_new();
+        mem_allocator_t *alloc=memtracker_new();
 
-        p=allocator_realloc((mem_allocator_t *)alloc, p, 15);
+        p=allocator_realloc(alloc, p, 15);
         BFC_ASSERT(p!=0);
-        allocator_free((mem_allocator_t *)alloc, p);
+        allocator_free(alloc, p);
         BFC_ASSERT_EQUAL(0lu, memtracker_get_leaks(alloc));
 
-        p=allocator_realloc((mem_allocator_t *)alloc, 0, 15);
+        p=allocator_realloc(alloc, 0, 15);
         BFC_ASSERT(p!=0);
-        p=allocator_realloc((mem_allocator_t *)alloc, p, 30);
+        p=allocator_realloc(alloc, p, 30);
         BFC_ASSERT(p!=0);
-        allocator_free((mem_allocator_t *)alloc, p);
+        allocator_free(alloc, p);
         BFC_ASSERT_EQUAL(0lu, memtracker_get_leaks(alloc));
     }
 

@@ -26,7 +26,7 @@
 using namespace bfc;
 
 static void HAM_CALLCONV
-my_handler(int level, const char *msg)
+my_handler(int level, const char *file, int line, const char *function, const char *msg)
 {
     static int i=0;
     static const char *s[]={
@@ -53,7 +53,7 @@ my_abort_handler(void)
 
 class ErrorTest : public hamsterDB_fixture
 {
-	define_super(hamsterDB_fixture);
+    define_super(hamsterDB_fixture);
 
 public:
     ErrorTest()
@@ -66,24 +66,24 @@ public:
 
 public:
     virtual void setup()
-	{
-		__super::setup();
+    {
+        __super::setup();
 
         ham_set_errhandler(my_handler);
-	}
+    }
 
     virtual void teardown()
-	{
-		__super::teardown();
+    {
+        __super::teardown();
 
-		ham_set_errhandler(0);
-	}
+        ham_set_errhandler(0);
+    }
 
     void errorHandlerTest()
     {
         ham_trace(("hello world"));
         ham_set_errhandler(0);
-        ham_log(("testing error handler - hello world\n"));
+        ham_logerr(("testing error handler - hello world\n"));
     }
 
     void verifyTest()
