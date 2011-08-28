@@ -95,7 +95,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
             break;
 
         case HAM_PARAM_GET_FILENAME:
-            printf("HAM_PARAM_GET_FILENAME: %s\n", (const char *)db_params_out[i].value.p);
+			printf("HAM_PARAM_GET_FILENAME: %s\n", *db_params_out[i].value.str_ref);
             continue;
 
         case HAM_PARAM_GET_KEYS_PER_PAGE:
@@ -124,6 +124,7 @@ main(int argc, char **argv)
         { HAM_PARAM_KEYSIZE, sizeof(approx_key) },
         {0,0},
     };
+	const char *filename_param_str = NULL;
     ham_parameter_t db_params_out[] =
     {
         { HAM_PARAM_PAGESIZE, 0 },
@@ -133,7 +134,7 @@ main(int argc, char **argv)
         { HAM_PARAM_DBNAME, 0 },
         { HAM_PARAM_GET_FLAGS, 0 },
         { HAM_PARAM_GET_FILEMODE, 0 },
-        { HAM_PARAM_GET_FILENAME, 0 },
+        { HAM_PARAM_GET_FILENAME, 0 /* &filename_param_str */ },
         { HAM_PARAM_GET_KEYS_PER_PAGE, 0 },
         {0,0},
     };
@@ -148,6 +149,7 @@ main(int argc, char **argv)
         "e1 e2 e3 e4\n"
     };
 
+	db_params_out[7].value.str_ref = &filename_param_str;
 
     printf("This sample uses hamsterdb and approximate keys to list all words "
             "in the\noriginal order, together with their line number.\n");

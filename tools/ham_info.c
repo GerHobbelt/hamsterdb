@@ -13,21 +13,21 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
+
+#include "../3rdparty/json/JSON_parser.h"
 
 #include <ham/hamsterdb.h>
-
-#include "../src/backend.h"
-#include "../src/btree.h"
-#include "../src/btree_classic.h"
-#include "../src/db.h"
-#include "../src/env.h"
-#include "../src/mem.h"
+#include <ham/hamsterdb_int.h>
 
 #include "getopts.h"
+
+
 
 #define ARG_HELP            1
 #define ARG_DBNAME          2
 #define ARG_FULL            3
+#define ARG_OUTPUT_JSON     4
 
 /*
  * command line parameters
@@ -51,6 +51,20 @@ static option_t opts[]={
         "full",
         "print full information",
         0 },
+    {
+        ARG_OUTPUT_JSON,
+        "out",
+        "output-json",
+        "write the info to the specified file in JSON format suitable for 'ham_dump --clone-settings'",
+        GETOPTS_NEED_ARGUMENT },
+	{
+		0,
+		NULL, NULL,
+		"\n"
+		"%s prints information about the specified HamsterDB database, such as\n"
+		"  a list of the database tables stored in the given file, their identifiers,\n"
+		"  configured key size and configuration flags.",
+		GETOPTS_IS_ONLY_INFO },
     { 0, 0, 0, 0, 0 } /* terminating element */
 };
 
@@ -64,40 +78,41 @@ error(const char *foo, ham_status_t st)
 static void
 print_environment(ham_env_t *env)
 {
-    /*
-     * we need a temp. database
-     */
-    ham_db_t *db;
+	ham_env_info_t env_info = {0};
+    ham_parameter_t params[] =
+    {
+        {HAM_PARAM_GET_ENVIRONMENT_INFO, 0 /* &env_info */ },
+        {0,0}
+    };
     ham_status_t st;
 
-    st=ham_new(&db);
-    if (st)
-        error("ham_new", st);
+	params[0].value.env_info_ref = &env_info;
 
-    st=ham_env_open_db(env, db, 0xf001, 0, 0);
-    if (st)
-        error("ham_env_open_db", st);
+	st = ham_env_get_parameters(env, params);
+    if (st != HAM_SUCCESS)
+        error("ham_env_get_parameters", st);
 
     printf("environment\n");
-    printf("    pagesize:                   %u\n", env_get_pagesize(env));
-    printf("    version:                    %u.%u.%u.%u\n",
-            env_get_version(env, 0),
-            env_get_version(env, 1),
-            env_get_version(env, 2),
-            env_get_version(env, 3));
-    printf("    serialno:                   %u\n", env_get_serialno(env));
-    printf("    max databases:              %u\n", env_get_max_databases(env));
-
-    st=ham_close(db, 0);
-    if (st)
-        error("ham_close", st);
-    ham_delete(db);
+    printf("    pagesize:                      %u\n", env_info.pagesize);
+    printf("    version:                       %u.%u.%u.%u\n",
+            env_info.version_info[0],
+            env_info.version_info[1],
+            env_info.version_info[2],
+            env_info.version_info[3]);
+    printf("    serialno:                      %u\n", env_info.serial_no);
+	printf("    max databases:                 %u\n", env_info.max_db_count);
+	printf("    number of databases defined:   %u\n", env_info.db_count);
 }
 
 static void
 print_database(ham_db_t *db, ham_u16_t dbname, int full)
 {
-    ham_btree_t *be;
+	ham_db_info_t db_info = {0};
+    ham_parameter_t params[] =
+    {
+        {HAM_PARAM_GET_DATABASE_INFO, 0 /* &db_info */ },
+        {0,0}
+    };
     ham_cursor_t *cursor;
     ham_status_t st;
     ham_key_t key;
@@ -105,22 +120,26 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
     unsigned num_items=0, ext_keys=0, min_key_size=0xffffffff,
              max_key_size=0, min_rec_size=0xffffffff, max_rec_size=0,
             total_key_size=0, total_rec_size=0;
+	char strbuf[256];
 
-    be=(ham_btree_t *)db_get_backend(db);
+	params[0].value.db_info_ref = &db_info;
 
     memset(&key, 0, sizeof(key));
     memset(&rec, 0, sizeof(rec));
 
+	st = ham_get_parameters(db, params);
+    if (st != HAM_SUCCESS)
+        error("ham_get_parameters", st);
+
+	assert(db_info.dbname == dbname);
+
     printf("\n");
     printf("    database %d (0x%x)\n", (int)dbname, (int)dbname);
-    printf("        max key size:           %u\n",
-            be_get_keysize(be));
-    printf("        max keys per page:      %u\n",
-            btree_get_maxkeys(be));
-    printf("        address of root page:   %llu\n",
-            (long long unsigned int)btree_get_rootpage(be));
-    printf("        flags:                  0x%04x\n",
-            db_get_rt_flags(db));
+	printf("        max key size:           %u\n", db_info.key_size);
+	printf("        max keys per page:      %u\n", db_info.max_key_count_per_page);
+	printf("        flags:                  0x%04x (%s)\n",
+			db_info.create_flags,
+			ham_create_flags2str(strbuf, 256, db_info.create_flags));
 
     if (!full)
         return;
@@ -129,7 +148,7 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
     if (st!=HAM_SUCCESS)
         error("ham_cursor_create", st);
 
-    while (1) {
+    for (;;) {
         st=ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT);
         if (st!=HAM_SUCCESS) {
             /* reached end of the database? */
@@ -151,7 +170,7 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
         if (rec.size>max_rec_size)
             max_rec_size=rec.size;
 
-        if (key.size>db_get_keysize(db))
+		if (key.size > db_info.key_size)
             ext_keys++;
 
         total_key_size+=key.size;
@@ -179,6 +198,7 @@ main(int argc, char **argv)
 {
     unsigned opt;
     char *param, *filename=0, *endptr=0;
+    char *output_file = NULL;
     unsigned short dbname=0xffff;
     int full=0;
 
@@ -212,6 +232,14 @@ main(int argc, char **argv)
             case ARG_FULL:
                 full=1;
                 break;
+			case ARG_OUTPUT_JSON:
+                if (!param) {
+                    printf("Parameter `output-file' is missing.\n");
+                    return (-1);
+                }
+                output_file = strdup(param);
+                break;
+
             case GETOPTS_PARAMETER:
                 if (filename) {
                     printf("Multiple files specified. Please specify "
@@ -221,7 +249,7 @@ main(int argc, char **argv)
                 filename=param;
                 break;
             case ARG_HELP:
-                printf("hamsterdb %d.%d.%d - Copyright (C) 2005-2007 "
+                printf("hamsterdb %d.%d.%d - Copyright (C) 2005-2011 "
                        "Christoph Rupp (chris@crupp.de).\n\n",
                        maj, min, rev);
 
@@ -238,13 +266,7 @@ main(int argc, char **argv)
                     printf("Commercial version; licensed for %s (%s)\n\n",
                             licensee, product);
 
-                printf("usage: ham_info [-db DBNAME] [-f] file\n");
-                printf("usage: ham_info -h\n");
-                printf("       -h:         this help screen (alias: --help)\n");
-                printf("       -db DBNAME: only print info about "
-                        "this database (alias: --dbname=<arg>)\n");
-                printf("       -f:         print full information "
-                        "(alias: --full)\n");
+				getopts_usage(opts);
                 return (0);
             default:
                 printf("Invalid or unknown parameter `%s'. "

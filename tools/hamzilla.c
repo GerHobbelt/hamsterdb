@@ -63,8 +63,8 @@ static TCHAR *serviceDescription = TEXT("Provides network access to hamsterdb Da
 #define ARG_INSTALL         5
 #define ARG_UNINSTALL       6
 #define ARG_STOP            7
-#define ARG_START			8
-#define ARG_RUN 			9
+#define ARG_START           8
+#define ARG_RUN             9
 #define ARG_LOG_LEVEL      10
 
 /*
@@ -173,28 +173,28 @@ hlog(int level, const char *format, ...)
     }
     else {
 #ifdef WIN32
-		TCHAR msg[1024];
+        TCHAR msg[1024];
 
-		mbstowcs(msg, buffer, 1024);
+        mbstowcs(msg, buffer, 1024);
 
-		switch(level) {
+        switch(level) {
             case LOG_DBG:
-				OutputDebugString(TEXT("DBG "));
-				break;
+                OutputDebugString(TEXT("DBG "));
+                break;
             case LOG_NORMAL:
-				OutputDebugString(TEXT("INFO "));
-				break;
+                OutputDebugString(TEXT("INFO "));
+                break;
             case LOG_WARN:
-				OutputDebugString(TEXT("WARN "));
+                OutputDebugString(TEXT("WARN "));
                 break;
             default:
-				OutputDebugString(TEXT("ERROR "));
+                OutputDebugString(TEXT("ERROR "));
                 break;
-		}
+        }
 
-		OutputDebugString(msg);
+        OutputDebugString(msg);
 #else
-		unsigned code;
+        unsigned code;
 
         switch (level) {
             case LOG_DBG:
@@ -308,7 +308,7 @@ write_pidfile(const char *pidfile)
 #ifdef WIN32
     fprintf(fp, "%u", (unsigned)_getpid());
 #else
-	fprintf(fp, "%u", (unsigned)getpid());
+    fprintf(fp, "%u", (unsigned)getpid());
 #endif
     fclose(fp);
 }
@@ -437,63 +437,63 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
 static void
 win32_service_install(void)
 {
-	SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CREATE_SERVICE);
+    SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CREATE_SERVICE);
 
-	if (scm) {
-		TCHAR path[MAX_PATH_LENGTH+1];
-		if (GetModuleFileName(0, path, sizeof(path)/sizeof(path[0])) > 0) {
-			SC_HANDLE service = CreateService(scm,
-							serviceName, serviceName,
-							SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
-							SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, path,
-							0, 0, 0, 0, 0 );
-			if (service) {
-				SERVICE_DESCRIPTION sd;
-				sd.lpDescription=serviceDescription;
-				ChangeServiceConfig2(service, SERVICE_CONFIG_DESCRIPTION, &sd);
-				CloseServiceHandle(service);
+    if (scm) {
+        TCHAR path[MAX_PATH_LENGTH+1];
+        if (GetModuleFileName(0, path, sizeof(path)/sizeof(path[0])) > 0) {
+            SC_HANDLE service = CreateService(scm,
+                            serviceName, serviceName,
+                            SERVICE_ALL_ACCESS, SERVICE_WIN32_OWN_PROCESS,
+                            SERVICE_AUTO_START, SERVICE_ERROR_IGNORE, path,
+                            0, 0, 0, 0, 0 );
+            if (service) {
+                SERVICE_DESCRIPTION sd;
+                sd.lpDescription=serviceDescription;
+                ChangeServiceConfig2(service, SERVICE_CONFIG_DESCRIPTION, &sd);
+                CloseServiceHandle(service);
                 hlog(LOG_DBG, "Service was installed successfully.\n");
-			}
-			else
+            }
+            else
             switch(GetLastError()) {
-			case ERROR_ACCESS_DENIED:
-				hlog(LOG_FATAL, "The handle to the SCM database does not "
+            case ERROR_ACCESS_DENIED:
+                hlog(LOG_FATAL, "The handle to the SCM database does not "
                         "have the SC_MANAGER_CREATE_SERVICE access right.\n");
-				break;
-			case ERROR_CIRCULAR_DEPENDENCY:
-				hlog(LOG_FATAL, "A circular service dependency was "
+                break;
+            case ERROR_CIRCULAR_DEPENDENCY:
+                hlog(LOG_FATAL, "A circular service dependency was "
                         "specified.\n");
-				break;
-			case ERROR_DUPLICATE_SERVICE_NAME:
-				hlog(LOG_FATAL, "The display name already exists in the "
+                break;
+            case ERROR_DUPLICATE_SERVICE_NAME:
+                hlog(LOG_FATAL, "The display name already exists in the "
                         "service control manager database either as a "
                         "service name or as another display name.\n");
-				break;
-			case ERROR_INVALID_NAME:
-				hlog(LOG_FATAL, "The specified service name is invalid.\n");
-				break;
-			case ERROR_INVALID_PARAMETER:
-				hlog(LOG_FATAL, "A parameter that was specified is invalid.\n");
-				break;
-			case ERROR_INVALID_SERVICE_ACCOUNT:
-				hlog(LOG_FATAL, "The user account name specified in the "
+                break;
+            case ERROR_INVALID_NAME:
+                hlog(LOG_FATAL, "The specified service name is invalid.\n");
+                break;
+            case ERROR_INVALID_PARAMETER:
+                hlog(LOG_FATAL, "A parameter that was specified is invalid.\n");
+                break;
+            case ERROR_INVALID_SERVICE_ACCOUNT:
+                hlog(LOG_FATAL, "The user account name specified in the "
                         "lpServiceStartName parameter does not exist.\n");
-				break;
-			case ERROR_SERVICE_EXISTS:
-				hlog(LOG_FATAL, "The specified service already exists in "
+                break;
+            case ERROR_SERVICE_EXISTS:
+                hlog(LOG_FATAL, "The specified service already exists in "
                         "this database.\n");
-				break;
-			default:
-				hlog(LOG_FATAL, "Failed to install the service (error %u)\n",
+                break;
+            default:
+                hlog(LOG_FATAL, "Failed to install the service (error %u)\n",
                         GetLastError());
-				break;
- 			}
-		}
+                break;
+            }
+        }
         else
             hlog(LOG_FATAL, "GetModuleFileName failed\n");
 
-		CloseServiceHandle(scm);
-	}
+        CloseServiceHandle(scm);
+    }
     else
         hlog(LOG_FATAL, "OpenSCManager failed\n");
 }
@@ -501,32 +501,32 @@ win32_service_install(void)
 static void
 win32_service_uninstall(void)
 {
-	SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
+    SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
 
-	if (scm) {
-		SC_HANDLE service = OpenService(scm, serviceName,
+    if (scm) {
+        SC_HANDLE service = OpenService(scm, serviceName,
                     SERVICE_QUERY_STATUS | DELETE);
-		if (service) {
-			SERVICE_STATUS sst;
-			if (QueryServiceStatus(service, &sst )) {
-				if (sst.dwCurrentState == SERVICE_STOPPED) {
-					DeleteService(service);
+        if (service) {
+            SERVICE_STATUS sst;
+            if (QueryServiceStatus(service, &sst )) {
+                if (sst.dwCurrentState == SERVICE_STOPPED) {
+                    DeleteService(service);
                     hlog(LOG_DBG, "Service was uninstalled.\n");
                 }
                 else
                     hlog(LOG_FATAL, "Failed to uninstall - service was "
                             "not stopped\n");
-			}
+            }
             else
                 hlog(LOG_FATAL, "QueryServiceStatus failed\n");
 
-			CloseServiceHandle(service);
-		}
+            CloseServiceHandle(service);
+        }
         else
             hlog(LOG_FATAL, "OpenService failed\n");
 
-		CloseServiceHandle(scm);
-	}
+        CloseServiceHandle(scm);
+    }
     else
         hlog(LOG_FATAL, "OpenSCManager failed\n");
 }
@@ -538,35 +538,35 @@ static HANDLE stop_me = 0;
 void WINAPI
 ServiceControlHandler(DWORD controlCode)
 {
-	switch (controlCode) {
-		case SERVICE_CONTROL_INTERROGATE:
-			break;
+    switch (controlCode) {
+        case SERVICE_CONTROL_INTERROGATE:
+            break;
 
-		case SERVICE_CONTROL_SHUTDOWN:
-		case SERVICE_CONTROL_STOP:
+        case SERVICE_CONTROL_SHUTDOWN:
+        case SERVICE_CONTROL_STOP:
             hlog(LOG_DBG, "Service received STOP request\n");
-			sst.dwCurrentState = SERVICE_STOP_PENDING;
-			SetServiceStatus(ssth, &sst);
+            sst.dwCurrentState = SERVICE_STOP_PENDING;
+            SetServiceStatus(ssth, &sst);
 
-			SetEvent(stop_me);
-			return;
+            SetEvent(stop_me);
+            return;
 
-		case SERVICE_CONTROL_PAUSE:
-			break;
+        case SERVICE_CONTROL_PAUSE:
+            break;
 
-		case SERVICE_CONTROL_CONTINUE:
-			break;
+        case SERVICE_CONTROL_CONTINUE:
+            break;
 
-		default:
-			if ((controlCode>=128) && (controlCode<=255))
-				// user defined control code
-				break;
-			else
-				// unrecognized control code
-				break;
-	}
+        default:
+            if ((controlCode>=128) && (controlCode<=255))
+                // user defined control code
+                break;
+            else
+                // unrecognized control code
+                break;
+    }
 
-	SetServiceStatus(ssth, &sst);
+    SetServiceStatus(ssth, &sst);
 }
 
 static void
@@ -574,32 +574,32 @@ win32_service_stop(void)
 {
     SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
 
-	if (scm) {
-		SC_HANDLE service = OpenService(scm, serviceName,
+    if (scm) {
+        SC_HANDLE service = OpenService(scm, serviceName,
                     SERVICE_QUERY_STATUS | DELETE | SERVICE_STOP);
-		if (service) {
-			SERVICE_STATUS sst;
-			if (QueryServiceStatus(service, &sst )) {
-				if (sst.dwCurrentState == SERVICE_STOPPED) {
-					hlog(LOG_NORMAL, "Service is already stopped\n");
-				}
-				else {
-					if (!ControlService(service, SERVICE_CONTROL_STOP, &sst)) {
-					    hlog(LOG_FATAL, "ControlService failed (%d)\n",
+        if (service) {
+            SERVICE_STATUS sst;
+            if (QueryServiceStatus(service, &sst )) {
+                if (sst.dwCurrentState == SERVICE_STOPPED) {
+                    hlog(LOG_NORMAL, "Service is already stopped\n");
+                }
+                else {
+                    if (!ControlService(service, SERVICE_CONTROL_STOP, &sst)) {
+                        hlog(LOG_FATAL, "ControlService failed (%d)\n",
                                 GetLastError());
-    				}
-				}
-			}
+                    }
+                }
+            }
             else
                 hlog(LOG_FATAL, "QueryServiceStatus failed\n");
 
-			CloseServiceHandle(service);
-		}
+            CloseServiceHandle(service);
+        }
         else
             hlog(LOG_FATAL, "OpenService failed\n");
 
-		CloseServiceHandle(scm);
-	}
+        CloseServiceHandle(scm);
+    }
     else
         hlog(LOG_FATAL, "OpenSCManager failed\n");
 }
@@ -607,35 +607,35 @@ win32_service_stop(void)
 static void
 win32_service_start(void)
 {
-	SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
+    SC_HANDLE scm = OpenSCManager(0, 0, SC_MANAGER_CONNECT);
 
-	if (scm) {
-		SC_HANDLE service = OpenService(scm, serviceName,
+    if (scm) {
+        SC_HANDLE service = OpenService(scm, serviceName,
                     SERVICE_QUERY_STATUS | SERVICE_START | DELETE);
-		if (service) {
-			SERVICE_STATUS sst;
-			if (QueryServiceStatus(service, &sst )) {
-				if (sst.dwCurrentState != SERVICE_STOPPED
-						&& sst.dwCurrentState != SERVICE_STOP_PENDING) {
-					hlog(LOG_NORMAL, "Service is already running\n");
-				}
-				else {
-					if (!StartService(service, 0, NULL)) {
-					    hlog(LOG_FATAL, "StartService failed (%d)\n",
+        if (service) {
+            SERVICE_STATUS sst;
+            if (QueryServiceStatus(service, &sst )) {
+                if (sst.dwCurrentState != SERVICE_STOPPED
+                        && sst.dwCurrentState != SERVICE_STOP_PENDING) {
+                    hlog(LOG_NORMAL, "Service is already running\n");
+                }
+                else {
+                    if (!StartService(service, 0, NULL)) {
+                        hlog(LOG_FATAL, "StartService failed (%d)\n",
                                 GetLastError());
-    				}
-				}
-			}
+                    }
+                }
+            }
             else
                 hlog(LOG_FATAL, "QueryServiceStatus failed\n");
 
-			CloseServiceHandle(service);
-		}
+            CloseServiceHandle(service);
+        }
         else
             hlog(LOG_FATAL, "OpenService failed\n");
 
-		CloseServiceHandle(scm);
-	}
+        CloseServiceHandle(scm);
+    }
     else
         hlog(LOG_FATAL, "OpenSCManager failed\n");
 }
@@ -643,38 +643,38 @@ win32_service_start(void)
 void WINAPI
 ServiceMain(DWORD argc, TCHAR *argv[])
 {
-	ssth = RegisterServiceCtrlHandler(serviceName, ServiceControlHandler);
-	if (ssth) {
-		// do initialisation here
-		stop_me = CreateEvent(0, FALSE, FALSE, 0);
+    ssth = RegisterServiceCtrlHandler(serviceName, ServiceControlHandler);
+    if (ssth) {
+        // do initialisation here
+        stop_me = CreateEvent(0, FALSE, FALSE, 0);
 
-		// running
-		sst.dwControlsAccepted |= (SERVICE_ACCEPT_STOP
+        // running
+        sst.dwControlsAccepted |= (SERVICE_ACCEPT_STOP
                                     | SERVICE_ACCEPT_SHUTDOWN);
-		sst.dwCurrentState = SERVICE_RUNNING;
-		SetServiceStatus(ssth, &sst);
+        sst.dwCurrentState = SERVICE_RUNNING;
+        SetServiceStatus(ssth, &sst);
 
         hlog(LOG_DBG, "Service is entering main loop\n");
 
-		do {
-			/* this is the main loop */;
-		} while (WaitForSingleObject(stop_me, 5000)==WAIT_TIMEOUT);
+        do {
+            /* this is the main loop */;
+        } while (WaitForSingleObject(stop_me, 5000)==WAIT_TIMEOUT);
 
-		// service was stopped
+        // service was stopped
         hlog(LOG_DBG, "Service is leaving main loop\n");
-		sst.dwCurrentState = SERVICE_STOP_PENDING;
-		SetServiceStatus(ssth, &sst);
+        sst.dwCurrentState = SERVICE_STOP_PENDING;
+        SetServiceStatus(ssth, &sst);
 
-		// do cleanup here
-		CloseHandle(stop_me);
-		stop_me = 0;
+        // do cleanup here
+        CloseHandle(stop_me);
+        stop_me = 0;
 
-		// service is now stopped
-		sst.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP
+        // service is now stopped
+        sst.dwControlsAccepted &= ~(SERVICE_ACCEPT_STOP
                                 | SERVICE_ACCEPT_SHUTDOWN);
-		sst.dwCurrentState = SERVICE_STOPPED;
-		SetServiceStatus(ssth, &sst);
-	}
+        sst.dwCurrentState = SERVICE_STOPPED;
+        SetServiceStatus(ssth, &sst);
+    }
     else
         hlog(LOG_FATAL, "RegisterServiceCtrlHandler failed\n");
 }
@@ -691,31 +691,31 @@ win32_service_run_fg(void)
 static void
 win32_service_run(void)
 {
-	DWORD ret;
-	SERVICE_TABLE_ENTRY serviceTable[] =
-	{
-		{ serviceName, ServiceMain },
-		{ 0, 0 }
-	};
+    DWORD ret;
+    SERVICE_TABLE_ENTRY serviceTable[] =
+    {
+        { serviceName, ServiceMain },
+        { 0, 0 }
+    };
 
-	// initialize service status
-	sst.dwServiceType = SERVICE_WIN32;
-	sst.dwCurrentState = SERVICE_STOPPED;
-	sst.dwControlsAccepted = 0;
-	sst.dwWin32ExitCode = NO_ERROR;
-	sst.dwServiceSpecificExitCode = NO_ERROR;
-	sst.dwCheckPoint = 0;
-	sst.dwWaitHint = 0;
+    // initialize service status
+    sst.dwServiceType = SERVICE_WIN32;
+    sst.dwCurrentState = SERVICE_STOPPED;
+    sst.dwControlsAccepted = 0;
+    sst.dwWin32ExitCode = NO_ERROR;
+    sst.dwServiceSpecificExitCode = NO_ERROR;
+    sst.dwCheckPoint = 0;
+    sst.dwWaitHint = 0;
 
-	// service is starting
-	sst.dwCurrentState = SERVICE_START_PENDING;
-	SetServiceStatus(ssth, &sst);
+    // service is starting
+    sst.dwCurrentState = SERVICE_START_PENDING;
+    SetServiceStatus(ssth, &sst);
 
-	ret=StartServiceCtrlDispatcher(serviceTable);
-	if (!ret) {
-		/* This fails if hamzilla is started from the console. */
-		printf("Please run `hamzilla.exe -s` to start the service.\n");
-	}
+    ret=StartServiceCtrlDispatcher(serviceTable);
+    if (!ret) {
+        /* This fails if hamzilla is started from the console. */
+        printf("Please run `hamzilla.exe -s` to start the service.\n");
+    }
 }
 #endif
 
@@ -728,9 +728,9 @@ main(int argc, char **argv)
     ham_srv_t *srv=0;
     ham_srv_config_t cfg;
     config_table_t *params=0;
-	char configbuffer[MAX_PATH_LENGTH*2];
+    char configbuffer[MAX_PATH_LENGTH*2];
 #ifdef WIN32
-	int win32_action=ARG_RUN;
+    int win32_action=ARG_RUN;
 #endif
 
     ham_u32_t maj, min, rev;
@@ -740,9 +740,9 @@ main(int argc, char **argv)
 
     memset(&cfg, 0, sizeof(cfg));
     getopts_init(argc, argv, EXENAME);
-	strcpy(configbuffer, argv[0]);
+    strcpy(configbuffer, argv[0]);
 
-	while ((opt=getopts(&opts[0], &param))) {
+    while ((opt=getopts(&opts[0], &param))) {
         switch (opt) {
             case ARG_FOREGROUND:
                 hlog(LOG_DBG, "Paramter: Running in foreground\n");
@@ -816,32 +816,32 @@ main(int argc, char **argv)
     if (!foreground)
         init_syslog();
 
-	/* if there's no configuration file then load a default one:
-	 * Just look for a configuration file with the same name (but a
+    /* if there's no configuration file then load a default one:
+     * Just look for a configuration file with the same name (but a
      * different extension ".config") in the same directory
-	 * as hamsvc[.exe] */
-	if (!configfile) {
+     * as hamsvc[.exe] */
+    if (!configfile) {
 #ifdef WIN32
-		char *p;
-		p=configbuffer+strlen(configbuffer)-1;
-		while (*p!='.')
-			p--;
-		*p='\0';
+        char *p;
+        p=configbuffer+strlen(configbuffer)-1;
+        while (*p!='.')
+            p--;
+        *p='\0';
 #endif
-		strcat(configbuffer, ".config");
-		configfile=&configbuffer[0];
+        strcat(configbuffer, ".config");
+        configfile=&configbuffer[0];
         hlog(LOG_DBG, "Parameter: No config file specified - using %s\n",
                 configfile);
-	}
+    }
 
-	/* now read and parse the configuration file */
-	if (configfile)
+    /* now read and parse the configuration file */
+    if (configfile)
         read_config(configfile, &params);
 
     /* register signals; these are the signals that will terminate the daemon */
     hlog(LOG_DBG, "Registering signal handlers\n");
 #ifndef WIN32
-	signal(SIGHUP, signal_handler);
+    signal(SIGHUP, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGKILL, signal_handler);
 #endif
@@ -852,40 +852,40 @@ main(int argc, char **argv)
 #ifdef WIN32
     switch (win32_action) {
         case ARG_INSTALL:
-			hlog(LOG_NORMAL, "hamsrv is installing...\n");
+            hlog(LOG_NORMAL, "hamsrv is installing...\n");
             win32_service_install();
             goto cleanup;
         case ARG_UNINSTALL:
-			hlog(LOG_NORMAL, "hamsrv is uninstalling...\n");
+            hlog(LOG_NORMAL, "hamsrv is uninstalling...\n");
             win32_service_uninstall();
             goto cleanup;
         case ARG_STOP:
-			hlog(LOG_NORMAL, "hamsrv is stopping...\n");
+            hlog(LOG_NORMAL, "hamsrv is stopping...\n");
             win32_service_stop();
             goto cleanup;
         case ARG_START:
-			hlog(LOG_NORMAL, "hamsrv is starting...\n");
+            hlog(LOG_NORMAL, "hamsrv is starting...\n");
             win32_service_start();
             goto cleanup;
     }
 #else
-	hlog(LOG_NORMAL, "hamsrv is starting...\n");
+    hlog(LOG_NORMAL, "hamsrv is starting...\n");
 #endif
 
-	if (params) {
-		cfg.port=params->globals.port;
-	    hlog(LOG_DBG, "Config: port is %u\n", cfg.port);
-		if (params->globals.enable_access_log) {
-			cfg.access_log_path=params->globals.access_log;
-	        hlog(LOG_DBG, "Config: http access hlog is %s\n",
+    if (params) {
+        cfg.port=params->globals.port;
+        hlog(LOG_DBG, "Config: port is %u\n", cfg.port);
+        if (params->globals.enable_access_log) {
+            cfg.access_log_path=params->globals.access_log;
+            hlog(LOG_DBG, "Config: http access hlog is %s\n",
                     cfg.access_log_path);
         }
-		if (params->globals.enable_error_log) {
-			cfg.error_log_path=params->globals.error_log;
-	        hlog(LOG_DBG, "Config: http error hlog is %s\n",
+        if (params->globals.enable_error_log) {
+            cfg.error_log_path=params->globals.error_log;
+            hlog(LOG_DBG, "Config: http error hlog is %s\n",
                     cfg.error_log_path);
         }
-	}
+    }
 
     /* on Unix we first daemonize, then write the pidfile (otherwise we do
      * not know the pid of the daemon process). On Win32, we first write
@@ -902,12 +902,12 @@ main(int argc, char **argv)
     }
 
     /* Initialize the server */
-	if ((0!=ham_srv_init(&cfg, &srv))) {
-	    hlog(LOG_FATAL, "Failed to initialize the server; terminating\n");
-		exit(-1);
+    if ((0!=ham_srv_init(&cfg, &srv))) {
+        hlog(LOG_FATAL, "Failed to initialize the server; terminating\n");
+        exit(-1);
     }
-	if (params)
-		initialize_server(srv, params);
+    if (params)
+        initialize_server(srv, params);
 
     /* This is the unix "main loop" which waits till the server is terminated.
      * Any registered signal will terminate the server by setting the
@@ -939,15 +939,15 @@ main(int argc, char **argv)
 cleanup:
     /* clean up */
     hlog(LOG_DBG, "Cleaning up\n");
-	if (srv)
-		ham_srv_close(srv);
-	if (params) {
-		for (e=0; e<params->env_count; e++) {
-			if (params->envs[e].env)
-				(void)ham_env_close(params->envs[e].env, HAM_AUTO_CLEANUP);
-		}
-		config_clear_table(params);
-	}
+    if (srv)
+        ham_srv_close(srv);
+    if (params) {
+        for (e=0; e<params->env_count; e++) {
+            if (params->envs[e].env)
+                (void)ham_env_close(params->envs[e].env, HAM_AUTO_CLEANUP);
+        }
+        config_clear_table(params);
+    }
 
     hlog(LOG_DBG, "Terminating process\n");
 

@@ -114,6 +114,9 @@ extern "C" {
 struct ham_parameter_t;
 typedef struct ham_parameter_t ham_parameter_t;
 
+struct ham_statistics_t;
+typedef struct ham_statistics_t ham_statistics_t;
+
 /**
  * The hamsterdb Database structure
  *
@@ -276,6 +279,44 @@ typedef struct
 typedef void *ham_parameter_function_t(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
 
 /**
+ * Structure filled by @ref ham_env_get_parameters or @ref ham_get_parameters
+ * when referenced by the value of a @ref HAM_PARAM_GET_DATABASE_INFO parameter line.
+ */
+typedef struct
+{
+	ham_u16_t dbname; /**< the database 'name' i.e. the database identifier */
+
+	ham_u32_t create_flags; /**< the database flags which were persisted at create time */
+
+	/** maximum keys in an internal page */
+    ham_u32_t max_key_count_per_page;
+
+    /** configured key size */
+    ham_u32_t key_size;
+
+    /** last used record number value, valid only when this is a @ref HAM_RECORD_NUMBER flagged database */
+    ham_recno_t last_used_recno;
+} ham_db_info_t;
+
+/**
+ * Structure filled by @ref ham_env_get_parameters or @ref ham_get_parameters
+ * when referenced by the value of a @ref HAM_PARAM_GET_ENVIRONMENT_INFO parameter line.
+ */
+typedef struct
+{
+	ham_size_t db_count; /**< the number of databases currently available */
+	ham_size_t max_db_count; /**< the maximum number of databases you can create within this environment */
+
+	ham_u8_t version_info[4]; /**< environment/database was created by a hamsterdb version: major, minor, revision, build */
+	ham_u32_t serial_no; /**< environment was created by a licensed hamsterdb with license code X */
+
+	ham_u32_t pagesize; /**< environment was created with a configured page size value X */
+
+	ham_bool_t is_legacy_db; /**< this is an environment/database created by a hamsterdb release at or before v1.0.9 */
+} ham_env_info_t;
+
+
+/**
  * A named parameter.
  *
  * These parameter structures are used for functions like @ref ham_open_ex,
@@ -300,7 +341,14 @@ struct ham_parameter_t {
     union
     {
         ham_offset_t n;
-        void *p;
+
+		//void *p;
+        const char **str_ref;
+
+		ham_db_info_t *db_info_ref;
+		ham_env_info_t *env_info_ref;
+        ham_statistics_t *stats_ref;
+
         ham_parameter_function_t *fn;
     } value;
 
@@ -934,11 +982,23 @@ ham_env_open_ex(ham_env_t *env, const char *filename,
  *              open or create this Database
  *        <li>@ref HAM_PARAM_GET_FILEMODE returns the @a mode parameter which
  *              was specified when creating this Database
- *        <li>@ref HAM_PARAM_GET_FILENAME returns the filename (the @a value
- *              of this parameter is a const char * pointer casted to a
- *              ham_u64_t variable)
+ *        <li>@ref HAM_PARAM_GET_FILENAME returns the filename: the @a value
+ *              of this parameter is a reference to a <code>const char *</code> type
  *        <li>@ref HAM_PARAM_GET_STATISTICS returns a @ref ham_statistics_t
  *              structure with the current statistics
+ *        <li>@ref HAM_PARAM_GET_VERSION returns the version number of this
+ *              hamsterdb release. See @ref HAM_PARAM_GET_VERSION for a
+ *              description of the format returned by this call: the @a value
+ *              of this parameter is a @ref ham_offset_t type
+ *        <li>@ref HAM_PARAM_GET_VERSION_STRING returns the version of this
+ *              hamsterdb release as a (non-modifiable) string reference: the @a value
+ *              of this parameter is a reference to a <code>const char *</code> type
+ *        <li>@ref HAM_PARAM_GET_LICENSEE returns the hamsterdb licensee info.
+ *        <li>@ref HAM_PARAM_GET_LICENSE_SERIALNO returns the hamsterdb license serial number: the @a value
+ *              of this parameter is a @ref ham_offset_t type
+ *        <li>@ref HAM_PARAM_GET_ENVIRONMENT_INFO fills the referenced @ref ham_env_info_t
+ *              structure with information about the @a env environment. The referenced structure
+ *              is zeroed when no valid @a env environment has been specified.
  *      </ul>
  *
  * @param env A valid Environment handle; may be NULL
@@ -2165,6 +2225,21 @@ When no database or environment is specified with the request, the 'cooked' page
  */
 #define HAM_PARAM_GET_LICENSE_SERIALNO  0x00000210u
 
+/**
+ * Retrieve info, such as identifier, configured key size, setup flags, etc.
+ * for the given @ref ham_db_t Database and store these datums in the structure referenced
+ * by this parameter's value.
+*/
+#define HAM_PARAM_GET_DATABASE_INFO     0x00000211u
+
+/**
+ * Retrieve info, such as number of databases stored, setup flags, etc.
+ * for the given @ref ham_env_t Environment and store these datums in the structure referenced
+ * by this parameter's value.
+*/
+#define HAM_PARAM_GET_ENVIRONMENT_INFO  0x00000212u
+
+
 
 /**
  * @}
@@ -2197,6 +2272,30 @@ When no database or environment is specified with the request, the 'cooked' page
  *        <li>HAM_PARAM_GET_KEYS_PER_PAGE  returns the maximum number
  *              of keys per page
  *        <li>HAM_PARAM_GET_DATA_ACCESS_MODE  returns the Data Access Mode
+ *        <li>@ref HAM_PARAM_GET_FLAGS returns the flags which were used to
+ *              open or create this Database
+ *        <li>@ref HAM_PARAM_GET_FILEMODE returns the @a mode parameter which
+ *              was specified when creating this Database
+ *        <li>@ref HAM_PARAM_GET_FILENAME returns the filename: the @a value
+ *              of this parameter is a reference to a <code>const char *</code> type
+ *        <li>@ref HAM_PARAM_GET_STATISTICS returns a @ref ham_statistics_t
+ *              structure with the current statistics
+ *        <li>@ref HAM_PARAM_GET_VERSION returns the version number of this
+ *              hamsterdb release. See @ref HAM_PARAM_GET_VERSION for a
+ *              description of the format returned by this call: the @a value
+ *              of this parameter is a @ref ham_offset_t type
+ *        <li>@ref HAM_PARAM_GET_VERSION_STRING returns the version of this
+ *              hamsterdb release as a (non-modifiable) string reference: the @a value
+ *              of this parameter is a reference to a <code>const char *</code> type
+ *        <li>@ref HAM_PARAM_GET_LICENSEE returns the hamsterdb licensee info.
+ *        <li>@ref HAM_PARAM_GET_LICENSE_SERIALNO returns the hamsterdb license serial number: the @a value
+ *              of this parameter is a @ref ham_offset_t type
+ *        <li>@ref HAM_PARAM_GET_DATABASE_INFO fills the referenced @ref ham_db_info_t
+ *              structure with information about the @a db database. The referenced structure
+ *              is zeroed when no valid @a db database has been specified.
+ *        <li>@ref HAM_PARAM_GET_ENVIRONMENT_INFO fills the referenced @ref ham_env_info_t
+ *              structure with information about the @a db environment. The referenced structure
+ *              is zeroed when no valid @a db database has been specified.
  *      </ul>
  *
  * @param db A valid Database handle
@@ -2218,7 +2317,7 @@ ham_get_parameters(ham_db_t *db, ham_parameter_t *param);
  *
  * @return The Database flags
  *
- * @deprecated This function was replaced by @ref ham_get_parameters
+ * @obsoleted This function was replaced by @ref ham_get_parameters
  * and @ref ham_env_get_parameters
  */
 HAM_EXPORT ham_u32_t HAM_CALLCONV

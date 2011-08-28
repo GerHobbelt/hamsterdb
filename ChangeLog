@@ -1,3 +1,54 @@
+Aug 2011 - Ger Hobbelt
+
+o feature: added HAM_PARAM_GET_ENVIRONMENT_INFO and HAM_PARAM_GET_DATABASE_INFO
+  parameter choices; new interface removes the need for ham_info to have access 
+  to all sorts of hamsterdb internal headers.
+
+o improved the page cache system; included several fixes to my own older 
+  (timestamp + frequency.of.use) aging system which popped up in the latest test 
+  runs.  
+
+  
+Jul/Aug 2011 - Ger Hobbelt
+
+o bugfix/feature: rewrote the freelist management code once more to introduce 
+    better performance and eradicate a few nasty, yet subtle, bugs alongside.
+									     
+o feature: merging old work of mine into 1.1.16, including augmented unit tests 
+        and a few more performance improvements.
+	
+	Added features (WIP):
+	
+	- arbitrary device chains for storage management: currently the original
+	  file and heap memory device drivers are supported, alongside a 
+	  Flash-memory sample device which would serve as a base for use of the
+	  hamsterdb in deep embedded environments.
+	  
+	- further abstraction of the backend, so that arbitrary database backends
+	  become a possibility.
+	  
+	- enhanced ham_get_parameters()
+	
+	- improved B-tree performance (I hope :-) ) by better use of the statistics
+	  gatherer and (still minimal) hinting engine.
+	  
+	- measurably improved hamsterdb performance by speeding the internal
+	  db_resize_record_allocdata() call; blob unittests are now faster.
+	  
+	- included compile-time 'HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL' levels
+	  to allow reasonable profiling results while profiling 'debug builds':
+	  major debug-only time consumers such as the heap integrity validation
+	  are disabled at higher levels, while almost all assertions remain
+	  compiled in. This permits a mixed profile/debug run series during
+	  development. (default HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL is configured 
+	  in config.h, which can be overruled by a command line #define entry
+	  at compile-time.
+	  
+	- Improved the BFC unittests environment: the command line usage is now
+	  finally documented and you can list the available unittests as well
+	  to help determine what the comman dline options should be this time
+	  around.
+	  
 Jul 09, 2011 - chris ---------------------------------------------------
 o bugfix: when aborting a transaction, modified pages would be recreated from 
     the log even if the current transaction was read-only. This caused a 

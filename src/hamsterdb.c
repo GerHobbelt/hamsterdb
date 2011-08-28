@@ -193,7 +193,7 @@ ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
 }
 
 const char * HAM_CALLCONV
-ham_param2str(char *buf, size_t buflen, ham_u32_t name)
+ham_param2str(char *buf, ham_size_t buflen, ham_u32_t name)
 {
     switch (name)
     {
@@ -209,8 +209,14 @@ ham_param2str(char *buf, size_t buflen, ham_u32_t name)
     case HAM_PARAM_MAX_ENV_DATABASES  :
         return "HAM_PARAM_MAX_ENV_DATABASES";
 
+    case HAM_PARAM_INITIAL_DB_SIZE:
+        return "HAM_PARAM_INITIAL_DB_SIZE";
+
     case HAM_PARAM_DATA_ACCESS_MODE   :
         return "HAM_PARAM_DATA_ACCESS_MODE";
+
+    case HAM_PARAM_CUSTOM_DEVICE:
+        return "HAM_PARAM_CUSTOM_DEVICE";
 
     case HAM_PARAM_GET_FLAGS          :
         return "HAM_PARAM_GET_FLAGS";
@@ -232,6 +238,18 @@ ham_param2str(char *buf, size_t buflen, ham_u32_t name)
 
     case HAM_PARAM_GET_STATISTICS        :
         return "HAM_PARAM_GET_STATISTICS";
+
+    case HAM_PARAM_GET_VERSION:
+        return "HAM_PARAM_GET_VERSION";
+
+    case HAM_PARAM_GET_VERSION_STRING:
+        return "HAM_PARAM_GET_VERSION_STRING";
+
+    case HAM_PARAM_GET_LICENSEE:
+		return "HAM_PARAM_GET_LICENSEE";
+
+    case HAM_PARAM_GET_LICENSE_SERIALNO:
+		return "HAM_PARAM_GET_LICENSE_SERIALNO";
 
     default:
         if (buf && buflen > 13) {

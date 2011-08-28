@@ -30,9 +30,6 @@
 extern "C" {
 #endif
 
-struct ham_statistics_t;
-typedef struct ham_statistics_t ham_statistics_t;
-
 
 /**
  * function prototype for the hamsterdb-specified @ref ham_statistics_t cleanup
@@ -527,7 +524,6 @@ struct ham_statistics_t
      * @a _free_func callback.
      */
     void *_free_func_internal_arg;
-
 };
 
 
