@@ -94,7 +94,9 @@ DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
 #endif
 }
 
-/*
+#ifdef UNICODE
+
+/**
  * MS says:
  *
  * Security Alert
@@ -110,13 +112,13 @@ DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
  * appropriate for the data type the buffer receives. For more information, see
  * Security Considerations: International Features.
  */
-static void
+static __inline void
 __utf8_string(const char *filename, WCHAR *wfilename, int wlen)
 {
     MultiByteToWideChar(CP_ACP, 0, filename, -1, wfilename, wlen);
 }
 
-static int
+static __inline int
 calc_wlen4str(const char *str)
 {
     /*
@@ -126,6 +128,8 @@ calc_wlen4str(const char *str)
     size_t len = strlen(str) + 1;
     return (int)len;
 }
+
+#endif
 
 /*
  * The typical pagesize of win32 is 4kb - described in info.dwPageSize.
@@ -138,7 +142,11 @@ os_get_pagesize(void)
 {
     SYSTEM_INFO info;
     GetSystemInfo(&info);
-    return (ham_size_t)info.dwAllocationGranularity;
+#if 01 // alt for Win32 when you accept that you're gonna loose 64K-4K = 60K addressing space per mapped page!!!
+	return (ham_size_t)info.dwPageSize;
+#else
+	return (ham_size_t)info.dwAllocationGranularity;
+#endif
 }
 
 ham_size_t
@@ -154,40 +162,41 @@ os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
         ham_offset_t size, ham_bool_t readonly, ham_u8_t **buffer)
 {
 #ifndef UNDER_CE
-    ham_status_t st;
+    DWORD st;
     DWORD protect=(readonly ? PAGE_READONLY : PAGE_WRITECOPY);
     DWORD access =FILE_MAP_COPY;
     LARGE_INTEGER i;
-    i.QuadPart=position;
+
+    i.QuadPart = position;
 
     *mmaph=CreateFileMapping(fd, 0, protect, 0, 0, 0);
     if (!*mmaph) {
         char buf[256];
         *buffer=0;
-        st=(ham_status_t)GetLastError();
-        ham_log(("CreateFileMapping failed with OS status %u (%s)",
-                st, DisplayError(buf, sizeof(buf), st)));
-        if (st==ERROR_NOT_ENOUGH_QUOTA) /* not enough resources - fallback to r/w */
-            return (HAM_OUT_OF_MEMORY);
+        st=GetLastError();
+        ham_logerr(("CreateFileMapping failed with OS status %u (%s)",
+                (unsigned int)st, DisplayError(buf, sizeof(buf), st)));
+        if (st==ERROR_NOT_ENOUGH_QUOTA) /* not enough resources - fallback to r/w? */
+            return (HAM_LIMITS_REACHED);
         return (HAM_IO_ERROR);
     }
 
-    *buffer=MapViewOfFile(*mmaph, access, i.HighPart, i.LowPart, (SIZE_T)size);
+    *buffer=(ham_u8_t *)MapViewOfFile(*mmaph, access, i.HighPart, i.LowPart, (SIZE_T)size);
     if (!*buffer) {
         char buf[256];
-        st=(ham_status_t)GetLastError();
+        st=GetLastError();
         /* make sure to release the mapping */
         (void)CloseHandle(*mmaph);
         *mmaph=0;
-        ham_log(("MapViewOfFile failed with OS status %u (%s)",
-                st, DisplayError(buf, sizeof(buf), st)));
-        if (st==ERROR_NOT_ENOUGH_QUOTA) /* not enough resources - fallback to r/w */
-            return (HAM_OUT_OF_MEMORY);
+        ham_logerr(("MapViewOfFile failed with OS status %u (%s)",
+                (unsigned int)st, DisplayError(buf, sizeof(buf), st)));
+        if (st==ERROR_NOT_ENOUGH_QUOTA) /* not enough resources - fallback to r/w? */
+            return (HAM_LIMITS_REACHED);
         return (HAM_IO_ERROR);
     }
     return (HAM_SUCCESS);
 #else
-    return (HAM_IO_ERROR);
+    return (HAM_NOT_IMPLEMENTED);
 #endif /* UNDER_CE */
 }
 
@@ -200,14 +209,14 @@ os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size)
     if (!UnmapViewOfFile(buffer)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("UnMapViewOfFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("UnMapViewOfFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
     if (!CloseHandle(*mmaph)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("CloseHandle failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("CloseHandle failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
@@ -215,7 +224,7 @@ os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size)
 
     return (HAM_SUCCESS);
 #else
-    return (HAM_IO_ERROR);
+    return (HAM_NOT_IMPLEMENTED);
 #endif /* UNDER_CE */
 }
 
@@ -233,7 +242,7 @@ os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
     if (!ReadFile((HANDLE)fd, buffer, (DWORD)bufferlen, &read, 0)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("ReadFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("ReadFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
@@ -262,7 +271,7 @@ os_write(ham_fd_t fd, const void *buffer, ham_offset_t bufferlen)
     if (!WriteFile((HANDLE)fd, buffer, (DWORD)bufferlen, &written, 0)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("WriteFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("WriteFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
@@ -285,11 +294,11 @@ os_seek(ham_fd_t fd, ham_offset_t offset, int whence)
     if (i.LowPart==INVALID_SET_FILE_POINTER &&
         (st=GetLastError())!=NO_ERROR) {
         char buf[256];
-        ham_log(("SetFilePointer failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("SetFilePointer failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -304,12 +313,12 @@ os_tell(ham_fd_t fd, ham_offset_t *offset)
     if (i.LowPart==INVALID_SET_FILE_POINTER &&
         (st=GetLastError())!=NO_ERROR) {
         char buf[256];
-        ham_log(("SetFilePointer failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("SetFilePointer failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
     *offset=(ham_offset_t)i.QuadPart;
-    return (0);
+    return HAM_SUCCESS;
 }
 
 #ifndef INVALID_FILE_SIZE
@@ -327,12 +336,12 @@ os_get_filesize(ham_fd_t fd, ham_offset_t *size)
     if (i.LowPart == INVALID_FILE_SIZE &&
         (st=GetLastError())!=NO_ERROR) {
         char buf[256];
-        ham_log(("GetFileSize failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("GetFileSize failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
     *size=(ham_offset_t)i.QuadPart;
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -347,7 +356,7 @@ os_truncate(ham_fd_t fd, ham_offset_t newsize)
     if (!SetEndOfFile((HANDLE)fd)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("SetEndOfFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("SetEndOfFile failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
@@ -362,10 +371,17 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
     DWORD access = ((flags & HAM_READ_ONLY)
                     ? GENERIC_READ
                     : (GENERIC_READ|GENERIC_WRITE));
+#if 0
+	USHORT dont_compress = COMPRESSION_FORMAT_LZNT1;
+#else
+    USHORT dont_compress = COMPRESSION_FORMAT_NONE;
+#endif
+	DWORD newsize;
 
 #ifdef UNICODE
+    mem_allocator_t *a = ham_get_default_allocator_template();
     int fnameWlen = calc_wlen4str(filename);
-    WCHAR *wfilename=malloc(fnameWlen * sizeof(wfilename[0]));
+    WCHAR *wfilename=allocator_alloc(a, fnameWlen * sizeof(wfilename[0]));
     if (!wfilename)
         return (HAM_OUT_OF_MEMORY);
 
@@ -373,7 +389,7 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
     __utf8_string(filename, wfilename, fnameWlen);
     *fd=(ham_fd_t)CreateFileW(wfilename, access,
                 share, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-    free(wfilename);
+    allocator_free(a, wfilename);
 #else
     *fd=(ham_fd_t)CreateFileA(filename, access,
                 share, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
@@ -386,11 +402,28 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
 #if 0 // [i_a] yes, it can, but here we're already in the middle of Error County
         /* this function can return errors even when it succeeds... */
         if (st==ERROR_ALREADY_EXISTS)
-            return (0);
+            return HAM_SUCCESS;
 #endif
         if (st==ERROR_SHARING_VIOLATION)
             return (HAM_WOULD_BLOCK);
-        ham_log(("CreateFile(%s, %x, %x, ...) (create) failed with OS status %u (%s)",
+        ham_logerr(("CreateFile(%s, %x, %x, ...) (create) failed with OS status %u (%s)",
+            filename, access, share, st, DisplayError(buf, sizeof(buf), st)));
+        return (HAM_IO_ERROR);
+    }
+
+    /*
+    make sure the file is NOT compressed, even when the default for the
+    directory it is created in is compression 'on'.
+    */
+    if (!DeviceIoControl((HANDLE)*fd, FSCTL_SET_COMPRESSION,
+              (LPVOID)&dont_compress, (DWORD)sizeof(dont_compress),
+              NULL, 0, &newsize, NULL))
+    {
+        char buf[256];
+        st=(ham_status_t)GetLastError();
+        (void)CloseHandle((HANDLE)*fd);
+        *fd=HAM_INVALID_FD;
+        ham_logerr(("CreateFile(%s, %x, %x, ...).DeviceIoControl() (create) failed with OS status %u (%s)",
             filename, access, share, st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
@@ -406,7 +439,7 @@ os_flush(ham_fd_t fd)
     if (!FlushFileBuffers((HANDLE)fd)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("FlushFileBuffers failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("FlushFileBuffers failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
@@ -427,8 +460,9 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
 
 #ifdef UNICODE
     {
+        mem_allocator_t *a = ham_get_default_allocator_template();
         int fnameWlen = calc_wlen4str(filename);
-        WCHAR *wfilename=malloc(fnameWlen * sizeof(wfilename[0]));
+        WCHAR *wfilename=allocator_alloc(a, fnameWlen * sizeof(wfilename[0]));
         if (!wfilename)
             return (HAM_OUT_OF_MEMORY);
 
@@ -436,7 +470,7 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
         __utf8_string(filename, wfilename, fnameWlen);
         *fd=(ham_fd_t)CreateFileW(wfilename, access, share, NULL,
                             dispo, osflags, 0);
-        free(wfilename);
+        allocator_free(a, wfilename);
     }
 #else
     *fd=(ham_fd_t)CreateFileA(filename, access, share, NULL,
@@ -447,7 +481,7 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
         char buf[256];
         *fd=HAM_INVALID_FD;
         st=(ham_status_t)GetLastError();
-        ham_log(("CreateFile(%s, %x, %x, ...) (open) failed with OS status %u (%s)",
+        ham_logerr(("CreateFile(%s, %x, %x, ...) (open) failed with OS status %u (%s)",
             filename, access, share,
             st, DisplayError(buf, sizeof(buf), st)));
         if (st==ERROR_SHARING_VIOLATION)
@@ -468,7 +502,7 @@ os_close(ham_fd_t fd, ham_u32_t flags)
     if (!CloseHandle((HANDLE)fd)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("CloseHandle failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
+        ham_logerr(("CloseHandle failed with OS status %u (%s)", st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }
 
