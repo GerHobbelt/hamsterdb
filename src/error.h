@@ -83,7 +83,7 @@ cursor_set_next_in_page macro for a candidate to fail with the old 'empty' #defi
 #endif /* HAM_DEBUG */
 
 /**
- * ham_trace(), ham_log() and ham_verify() are available in every build
+ * ham_trace(), ham_logwarn(), ham_logerr() and ham_verify() are available in every build
  */
 #define ham_trace(f)                                                            \
     do {                                                                        \
@@ -93,14 +93,23 @@ cursor_set_next_in_page macro for a candidate to fail with the old 'empty' #defi
         dbg_log f;                                                              \
         dbg_unlock();                                                           \
      } while (0)
-#define ham_log(f)                                                              \
+#define ham_logwarn(f)                                                          \
     do {                                                                        \
         dbg_lock();                                                             \
-        dbg_prepare(HAM_DEBUG_LEVEL_NORMAL, __FILE__,                           \
+        dbg_prepare(HAM_DEBUG_LEVEL_WARNING, __FILE__,                          \
                 __LINE__, __FUNCTION__, 0);                                     \
         dbg_log f;                                                              \
         dbg_unlock();                                                           \
      } while (0)
+#define ham_logerr(f)                                                           \
+    do {                                                                        \
+        dbg_lock();                                                             \
+        dbg_prepare(HAM_DEBUG_LEVEL_ERROR, __FILE__,                            \
+                __LINE__, __FUNCTION__, 0);                                     \
+        dbg_log f;                                                              \
+        dbg_unlock();                                                           \
+     } while (0)
+
 #define ham_verify(e, f)                                                        \
     do {                                                                        \
         if (!(e)) {                                                             \

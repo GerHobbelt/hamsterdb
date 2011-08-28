@@ -147,7 +147,7 @@ my_verify_level(ham_page_t *parent, ham_page_t *page,
             return (ham_status_t)cmp;
         if (cmp < 0)
         {
-            ham_log(("integrity check failed in page 0x%llx: parent item #0 "
+            ham_logerr(("integrity check failed in page 0x%llx: parent item #0 "
                     "< item #%d\n", page_get_self(page),
                     btree_node_get_count(cnode)-1));
             return HAM_INTEGRITY_VIOLATED;
@@ -222,7 +222,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
         if (page_get_self(page) == btree_get_rootpage(be))
             return HAM_SUCCESS;
 
-        ham_log(("integrity check failed in page 0x%llx: empty page!\n",
+        ham_logerr(("integrity check failed in page 0x%llx: empty page!\n",
                 page_get_self(page)));
         return HAM_INTEGRITY_VIOLATED;
     }
@@ -242,7 +242,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
         isfew = btree_node_get_count(node) < minkeys-1;
         if (isfew)
         {
-            ham_log(("integrity check notification in page 0x%llx: few keys, which is most probably due to speed optimizations or other relaxed criteria "
+            ham_logwarn(("integrity check notification in page 0x%llx: few keys, which is most probably due to speed optimizations or other relaxed criteria "
                     " (usual for B+/B*-tree: %d, now %d)\n", page_get_self(page),
                     minkeys, btree_node_get_count(node)));
             // return HAM_INTEGRITY_VIOLATED;
@@ -266,7 +266,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
         if ((key_get_flags(bte) != 0 && key_get_flags(bte) != KEY_IS_EXTENDED)
             && !btree_node_is_leaf(node))
         {
-            ham_log(("integrity check failed in page 0x%llx: item #0 "
+            ham_logerr(("integrity check failed in page 0x%llx: item #0 "
                     "has flags, but it's not a leaf page",
                     page_get_self(page)));
             return HAM_INTEGRITY_VIOLATED;
@@ -294,7 +294,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
 
         if (cmp >= 0)
         {
-            ham_log(("integrity check failed in page 0x%llx: item #0 "
+            ham_logerr(("integrity check failed in page 0x%llx: item #0 "
                     "< left sibling item #%d\n", page_get_self(page),
                     sibnode_keycount-1));
             return HAM_INTEGRITY_VIOLATED;
@@ -319,7 +319,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
             ham_offset_t blobid = key_get_extended_rid(db, bte);
             if (!blobid)
             {
-                ham_log(("integrity check failed in page 0x%llx: item #%d "
+                ham_logerr(("integrity check failed in page 0x%llx: item #%d "
                         "is extended, but has no blob",
                         page_get_self(page), i));
                 return HAM_INTEGRITY_VIOLATED;
@@ -334,7 +334,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
                 return (ham_status_t)cmp;
             if (cmp >= 0)
             {
-                ham_log(("integrity check failed in page 0x%llx: item #%u "
+                ham_logerr(("integrity check failed in page 0x%llx: item #%u "
                         "< item #%u", page_get_self(page), i-1, i));
                 return HAM_INTEGRITY_VIOLATED;
             }

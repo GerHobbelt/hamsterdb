@@ -39,7 +39,7 @@ my_snprintf(char *str, size_t size, const char *format, ...)
 }
 
 static void HAM_CALLCONV
-my_errhandler(int level, const char *message)
+my_errhandler(int level, const char *file, int line, const char *function, const char *message)
 {
 #ifndef HAM_DEBUG
     if (level==HAM_DEBUG_LEVEL_DEBUG)
@@ -100,7 +100,7 @@ dbg_log(const char *format, ...)
 #endif
     va_end(ap);
 
-    g_hand(g_level, buffer);
+    g_hand(g_level, g_file, g_line, g_function, buffer);
 }
 
 void
@@ -123,13 +123,13 @@ dbg_verify_failed(const char *format, ...)
         va_end(ap);
     }
 
-    g_hand(g_level, buffer);
+    g_hand(g_level, g_file, g_line, g_function, buffer);
 
     /* [i_a] ALWAYS offer the user-def'able abort
      * handler (unittests depend on this) */
     if (ham_test_abort) {
         ham_test_abort();
-	}
+    }
     else {
 #ifndef HAM_OS_WINCE
         abort();

@@ -1397,7 +1397,7 @@ ham_srv_init(ham_srv_config_t *config, ham_srv_t **psrv)
     if (config->access_log_path) {
         if (!mg_set_option(srv->mg_ctxt, "access_log",
                     config->access_log_path)) {
-            ham_log(("failed to write access log file '%s'",
+            ham_logerr(("failed to write access log file '%s'",
                         config->access_log_path));
             mg_stop(srv->mg_ctxt);
             free(srv);
@@ -1407,7 +1407,7 @@ ham_srv_init(ham_srv_config_t *config, ham_srv_t **psrv)
     if (config->error_log_path) {
         if (!mg_set_option(srv->mg_ctxt, "error_log",
                     config->error_log_path)) {
-            ham_log(("failed to write access log file '%s'",
+            ham_logerr(("failed to write access log file '%s'",
                         config->access_log_path));
             mg_stop(srv->mg_ctxt);
             free(srv);

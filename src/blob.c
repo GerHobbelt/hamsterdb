@@ -940,7 +940,7 @@ blob_read(ham_db_t *db, ham_offset_t blobid,
             if (record->partial_offset > blobsize)
             {
 #if 0
-                ham_trace(("partial offset is greater than the total "
+                ham_logerr(("partial offset is greater than the total "
                             "record size"));
                 return HAM_INV_PARAMETER;
 #endif
