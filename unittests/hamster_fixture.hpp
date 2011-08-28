@@ -78,6 +78,23 @@ private:
 };
 
 
+/*
+fast convert pagesize to unique array index:
+
+accepted inputs:
+
+4096	8192	16384	32768	65536
+
+produced index outputs:
+
+0	3	1	2	4
+*/
+static __inline int pg2i(ham_size_t pagesize)
+{
+	return (pagesize % 125) & 0x07;
+}
+
+
 } // namespace bfc
 
 #endif // HAMSTER_BFC_FIXTURE_HPP__

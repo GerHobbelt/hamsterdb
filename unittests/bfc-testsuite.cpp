@@ -284,8 +284,10 @@ const char *testrunner::bfc_sigdescr(int signal_code)
 	case SIGFPE:
 		return "SIGFPE";
 #endif
-	}
-	return "(unidentified)";
+    default:
+        break;
+    }
+    return "(unidentified)";
 }
 
 
@@ -309,9 +311,12 @@ bool testrunner::setup_signal_handlers(testrunner *me, const fixture *f, method 
 {
 	bool threw_ex = false;
 #ifndef UNDER_CE
-	assert(m_current_signal_context.this_is_me == me);
-	assert(m_current_signal_context.active_fixture == f);
-
+    assert(m_current_signal_context.this_is_me == me);
+    assert(m_current_signal_context.active_fixture == f);
+#if 0
+    assert(m_current_signal_context.active_method == m);
+    assert(m_current_signal_context.active_funcname.compare(funcname ? funcname : "") == 0);
+#endif
     m_current_signal_context.active_method = m;
 	m_current_signal_context.active_funcname = (funcname ? funcname : "");
 	m_current_signal_context.active_state = sub_state;
@@ -522,7 +527,10 @@ testrunner::exec_testfun(testrunner *me, fixture *f, method m,
 	{
 		assert(m_current_signal_context.this_is_me == me);
 		assert(m_current_signal_context.active_fixture == f);
-
+#if 0
+        assert(m_current_signal_context.active_method == m);
+        assert(m_current_signal_context.active_funcname.compare(funcname ? funcname : "") == 0);
+#endif
 		m_current_signal_context.active_method = m;
 		m_current_signal_context.active_funcname = (funcname ? funcname : "");
 		m_current_signal_context.active_state = state;
@@ -1177,9 +1185,10 @@ void testrunner::init_run(void)
 
 
 // print all errors
-void testrunner::print_errors(bool panic_flush) {
-        std::vector<error>::iterator it;
-        unsigned i=1;
+void testrunner::print_errors(bool panic_flush)
+{
+    std::vector<error>::iterator it;
+    unsigned i=1;
 
         for (it=m_errors.begin(); it!=m_errors.end(); it++, i++)
 		{
@@ -1239,44 +1248,49 @@ void testrunner::print_errors(bool panic_flush) {
     }
 
 // run all tests - returns number of errors
-unsigned int testrunner::run(bool print_err_report)
-	{
-		std::string fixname("");
-		std::string testname("");
+unsigned int testrunner::run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
+	bool print_err_report)
+{
+    std::string fixname("");
+    std::string testname("");
 
-		return run(fixname, testname, fixname, testname, true, false, print_err_report);
-	}
+	return run(callback_per_fixture, callback_per_test,
+			fixname, testname, fixname, testname, true, false, print_err_report);
+}
 
 // run all tests (optional fixture and/or test selection) - returns number of errors
-unsigned int testrunner::run(const char *fixture_name, const char *test_name,
-			bool print_err_report)
-	{
-		std::string fixname(fixture_name ? fixture_name : "");
-		std::string testname(test_name ? test_name : "");
+unsigned int testrunner::run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
+	const char *fixture_name, const char *test_name,
+	bool print_err_report)
+{
+    std::string fixname(fixture_name ? fixture_name : "");
+    std::string testname(test_name ? test_name : "");
 
-		return run(fixname, testname, fixname, testname, true, true, print_err_report);
-	}
+    return run(callback_per_fixture, callback_per_test,
+			fixname, testname, fixname, testname, true, true, print_err_report);
+}
 
 // run all tests in a given range (start in/exclusive, end inclusive)
 //
 // returns number of errors
 unsigned int testrunner::run(
-		const std::string &begin_fixture, const std::string &begin_test,
-		const std::string &end_fixture, const std::string &end_test,
-		bool inclusive_begin,
-		bool is_not_a_series,
-		bool print_err_report)
-	{
-		std::vector<fixture *>::iterator it;
-		if (print_err_report)
-		{
-			init_run();
-		}
-		bool f_start = (begin_fixture.size() == 0);
-		bool f_end = false;
-		bool delay = !inclusive_begin;
-		bool t_start = (begin_test.size() == 0);
-		bool t_end = false;
+    bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
+	const std::string &begin_fixture, const std::string &begin_test,
+    const std::string &end_fixture, const std::string &end_test,
+    bool inclusive_begin,
+    bool is_not_a_series,
+    bool print_err_report)
+{
+    std::vector<fixture *>::iterator it;
+    if (print_err_report)
+    {
+        init_run();
+    }
+    bool f_start = (begin_fixture.size() == 0);
+    bool f_end = false;
+    bool delay = !inclusive_begin;
+    bool t_start = (begin_test.size() == 0);
+    bool t_end = false;
 
 		for (it = m_fixtures.begin(); it != m_fixtures.end() && !f_end; it++)
 		{
@@ -1297,6 +1311,7 @@ unsigned int testrunner::run(
 			}
 
 			f_start |= b_match;
+		printf("Checking spec %s against fixture %s --> start = %d, end = %d\n", begin_fixture.c_str(), (*it)->get_name(), (int)f_start, (int)f_end);
 
 			if (f_start && !f_end)
 			{
@@ -1317,7 +1332,8 @@ unsigned int testrunner::run(
 					else if (t_start && (!t_end || !delay))
 					{
 						const test &t = *it2;
-					    run(f, &t, (print_err_report ? BFC_REPORT_IN_OUTER : BFC_QUIET));
+                    run(callback_per_fixture, callback_per_test,
+							f, &t, (print_err_report ? BFC_REPORT_IN_OUTER : BFC_QUIET));
 					}
 
 					if (t_end)
@@ -1339,7 +1355,8 @@ unsigned int testrunner::run(
 	}
 
 // run all tests of a fixture
-unsigned int testrunner::run(fixture *f, const char *test_name, bool print_err_report)
+unsigned int testrunner::run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
+	fixture *f, const char *test_name, bool print_err_report)
 	{
 		if (print_err_report)
 		{
@@ -1348,13 +1365,14 @@ unsigned int testrunner::run(fixture *f, const char *test_name, bool print_err_r
         std::vector<test>::iterator it;
 		std::string testname(test_name ? test_name : "");
 
-        for (it=f->get_tests().begin(); it!=f->get_tests().end(); it++)
-		{
-			if (testname.size() == 0 || testname.compare(it->name) == 0)
-			{
-				run(f, &(*it), (print_err_report ? BFC_REPORT_IN_OUTER : BFC_QUIET));
-			}
-		}
+    for (it = f->get_tests().begin(); it != f->get_tests().end(); it++)
+    {
+        if (testname.size() == 0 || testname.compare(it->name) == 0)
+        {
+            run(callback_per_fixture, callback_per_test,
+					f, &(*it), (print_err_report ? BFC_REPORT_IN_OUTER : BFC_QUIET));
+        }
+    }
 
 		if (print_err_report)
 		{
@@ -1364,9 +1382,10 @@ unsigned int testrunner::run(fixture *f, const char *test_name, bool print_err_r
 	}
 
 // run a single test of a fixture
-bool testrunner::run(fixture *f, const test *test, bfc_error_report_mode_t print_err_report)
-	{
-        bool success = false;
+bool testrunner::run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
+	fixture *f, const test *test, bfc_error_report_mode_t print_err_report)
+{
+    bool success = false;
 
 		std::cout << "starting " << f->get_name()
 				  << "::" << test->name << std::endl;
@@ -1561,15 +1580,15 @@ const std::string &testrunner::inputdir(const char *inputdir)
 	}
 
 testrunner::bfc_signal_context_t::bfc_signal_context_t()
-	: 	this_is_me(NULL),
-		active_fixture(NULL),
-		active_method(0),
-		//active_funcname(""),
-		active_state(BFC_STATE_NONE),
-		print_err_report(BFC_QUIET),
-		current_error(__FILE__, __LINE__, "???", "???", ""),
-		error_set(false),
-        sig_handlers_set(false)
+:   this_is_me(NULL),
+    active_fixture(NULL),
+    active_method(0),
+    //active_funcname(""),
+    active_state(BFC_STATE_NONE),
+    print_err_report(BFC_QUIET),
+    current_error(__FILE__, __LINE__, "???", "???", ""),
+    error_set(false),
+    sig_handlers_set(false)
 {
 	for (int i = 0;
 		i < int(sizeof(old_sig_handlers) / sizeof(old_sig_handlers[0]));
@@ -1582,7 +1601,7 @@ testrunner::bfc_signal_context_t::bfc_signal_context_t()
 #endif
 	}
 
-	memset(&signal_return_point, 0, sizeof(signal_return_point));
+//memset(&signal_return_point, 0, sizeof(signal_return_point));
 }
 
 testrunner::bfc_signal_context_t::~bfc_signal_context_t()

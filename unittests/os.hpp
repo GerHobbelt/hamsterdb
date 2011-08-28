@@ -33,14 +33,18 @@ protected:
 #ifdef UNDER_CE
         strcpy(buf, "((WinCE: DisplayError() not implemented))");
 #else
-		buf[0] = 0;
-		FormatMessageA(/* FORMAT_MESSAGE_ALLOCATE_BUFFER | */
-					  FORMAT_MESSAGE_FROM_SYSTEM |
-					  FORMAT_MESSAGE_IGNORE_INSERTS,
-					  NULL, errorcode,
-					  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					  (LPSTR)buf, buflen, NULL);
-		buf[buflen-1]=0;
+        buf[0] = 0;
+        FormatMessageA(/* FORMAT_MESSAGE_ALLOCATE_BUFFER | */
+                      FORMAT_MESSAGE_FROM_SYSTEM |
+                      FORMAT_MESSAGE_IGNORE_INSERTS,
+                      NULL, errorcode,
+                      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                      (LPSTR)buf, buflen, NULL);
+        buf[buflen-1]=0;
+        // trim trailing CR/LF/whitespace:
+        for (buflen = strlen(buf); buflen > 0 && strchr("\r\n\t ", buf[buflen-1]); buflen--)
+            ;
+        buf[buflen]=0;
 #endif
 		return buf;
 	}
