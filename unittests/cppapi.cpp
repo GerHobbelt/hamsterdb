@@ -67,9 +67,10 @@ public:
         BFC_REGISTER_TEST(CppApiTest, cursorTest);
         BFC_REGISTER_TEST(CppApiTest, compressionTest);
         BFC_REGISTER_TEST(CppApiTest, envTest);
-        BFC_REGISTER_TEST(CppApiTest, envDestructorTest1);
-        BFC_REGISTER_TEST(CppApiTest, envDestructorTest2);
-        BFC_REGISTER_TEST(CppApiTest, envDestructorTest3);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest_ExplicitCstyleDestructOrder);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest_InverseDestructOrder);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest_CompilerDeterminesDestructOrder);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTestRefCounting);
         BFC_REGISTER_TEST(CppApiTest, envGetDatabaseNamesTest);
         BFC_REGISTER_TEST(CppApiTest, getLicenseTest);
         BFC_REGISTER_TEST(CppApiTest, beginAbortTest);
@@ -392,7 +393,7 @@ public:
     }
 
 	// one instance per scope so that we have predictable order of the constructors
-    void envDestructorTest1(void)
+    void envDestructorTest_ExplicitCstyleDestructOrder(void)
     {
         ham::env env;
 		{
@@ -412,7 +413,7 @@ public:
 	// when you close the ENV and AFTERWARDS try to close/access the DBs as well: the ENV would
 	// have nuked those, if we hadn't added refcounting at the C level to ensure that the
 	// 'close order' is stable.
-    void envDestructorTest2(void)
+    void envDestructorTest_InverseDestructOrder(void)
     {
 		ham::db db1;
 
@@ -426,7 +427,7 @@ public:
 		}
     }
 
-    void envDestructorTest3(void)
+    void envDestructorTest_CompilerDeterminesDestructOrder(void)
     {
 		ham::db db1;
 	    ham::env env;
@@ -435,6 +436,25 @@ public:
 		db1=env.create_db(3);
 
 		/* let the objects go out of scope */
+    }
+
+	// and this is us anticipating reference counters in env PLUS a flag to delete on refcount drop to zero:
+    void envDestructorTestRefCounting(void)
+    {
+		ham::db db1;
+		ham::db db2;
+		ham::db db3;
+
+		{
+	        ham::env env;
+
+			env.create(BFC_OPATH(".test"));
+			db1=env.create_db(2);
+			db2=env.create_db(3);
+			db3=env.create_db(4);
+
+		    /* let the objects go out of scope */
+		}
     }
 
     void envGetDatabaseNamesTest(void)

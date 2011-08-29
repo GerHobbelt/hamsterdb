@@ -373,7 +373,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_create_ex(m_db, filename, flags, mode, param);
+        st=ham_create_ex(m_db, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, mode, param);
         if (st)
             throw error(st);
     }
@@ -387,7 +387,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_open_ex(m_db, filename, flags, param);
+        st=ham_open_ex(m_db, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st)
             throw error(st);
     }
@@ -697,7 +697,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_env_create_ex(m_env, filename, flags, mode, param);
+        st=ham_env_create_ex(m_env, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, mode, param);
         if (st)
             throw error(st);
     }
@@ -711,7 +711,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_env_open_ex(m_env, filename, flags, param);
+        st=ham_env_open_ex(m_env, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st)
             throw error(st);
     }
@@ -725,7 +725,7 @@ public:
         st=ham_new(&dbh);
         if (st)
             throw error(st);
-        st=ham_env_create_db(m_env, dbh, name, flags, param);
+        st=ham_env_create_db(m_env, dbh, name, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st) {
             ham_delete(dbh);
             throw error(st);
@@ -743,7 +743,7 @@ public:
         st=ham_new(&dbh);
         if (st)
             throw error(st);
-        st=ham_env_open_db(m_env, dbh, name, flags, param);
+        st=ham_env_open_db(m_env, dbh, name, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st) {
             ham_delete(dbh);
             throw error(st);

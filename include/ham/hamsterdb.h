@@ -1850,7 +1850,23 @@ ham_open_ex(ham_db_t *db, const char *filename,
  * This flag is non persistent. */
 #define HAM_WRITE_THROUGH            0x00000001u
 
-/* unused                            0x00000002u */
+/**
+ * Flag used by the C++ wrapper and other interfaces which cannot or will not
+ * guarantee the order in which Databases and Environments are destroyed.
+ *
+ * When a @ref ham_env_t Environment is flagged by the caller with this,
+ * then @ref ham_env_close and @ref ham_env_delete will be postponed until
+ * all active @ref ham_db_t Databases have been closed: the last Database
+ * to be closed (@ref ham_close) will also close and destroy the linked
+ * Environment.
+ *
+ * @note Incidentally, the same 'pending until children are destroyed' approach
+ *       using this flag bit is also used for Databases vs. Cursors, where
+ *       any @ref ham_db_t Database flagged with this bit will delay the
+ *       @ref ham_close and @ref ham_delete actions until all @ref ham_cursor_t
+ *       Cursors have been closed explicitly by the user.
+ */
+#define HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE   0x00000002u
 
 /** Flag for @ref ham_open, @ref ham_open_ex.
  *
@@ -2016,7 +2032,7 @@ In-memory Databases are discarded on close anyhow.
  * This flag is non persistent. */
 #define HAM_CACHE_UNLIMITED          0x00040000u
 
-/* reserved: DB_ENV_IS_PRIVATE (not persistent)      0x00080000u */
+/* obsoleted as these are replaced by bitfields: DB_ENV_IS_PRIVATE (not persistent)      0x00080000u */
 
 /** Flag for @ref ham_create, @ref ham_create_ex, @ref ham_env_create_db,
  * @ref ham_open, @ref ham_open_ex, @ref ham_env_open_db
@@ -2028,7 +2044,7 @@ In-memory Databases are discarded on close anyhow.
  */
 #define HAM_SORT_DUPLICATES          0x00100000u
 
-/* reserved: DB_IS_REMOTE     (not persistent)       0x00200000u */
+/* obsoleted as these are replaced by bitfields: DB_IS_REMOTE     (not persistent)       0x00200000u */
 
 /**
 The B+tree nodes are augmented with a 'fast index':

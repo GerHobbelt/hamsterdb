@@ -181,14 +181,40 @@ struct ham_env_t
      * Indicates whether this environment is 'active', i.e. between
      * a create/open and matching close API call.
      */
-    unsigned short _is_active: 1;
+    unsigned _is_active: 1;
 
     /**
      * non-zero if this Environment is pre-1.1.0 format
      */
-    unsigned short _is_legacy: 1;
+    unsigned _is_legacy: 1;
 
-    /* linked list of all file-level filters */
+	/**
+	 * non-zero when @ref ham_env_close noticed the (possibly implicit) Environment being flagged with
+	 * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
+	 * operation until the last ham_close has been called explicitly.
+	 *
+	 * This bit is introduced to help the C++ and other HamsterDB interface wrappers
+	 * produce deterministic (and above all non-fatal) results when they cannot
+	 * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
+	 * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
+	 * @ref ham_cursor_close will occur.
+	 */
+	unsigned _close_is_pending: 1;
+
+	/**
+	 * non-zero when @ref ham_env_delete noticed the (possibly implicit) Environment being flagged with
+	 * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
+	 * operation until the last ham_close has been called explicitly.
+	 *
+	 * This bit is introduced to help the C++ and other HamsterDB interface wrappers
+	 * produce deterministic (and above all non-fatal) results when they cannot
+	 * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
+	 * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
+	 * @ref ham_cursor_close will occur.
+	 */
+	unsigned _delete_is_pending: 1;
+
+    /** linked list of all file-level filters */
     ham_file_filter_t *_file_filters;
 
 	/**
