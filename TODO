@@ -19,10 +19,12 @@ o decrease logging threshold; no need to have it so high
 
 o add changes from Bhautik (low heap mode, embedded platform)
 
+o win32: also can add Andy's changes for pread/pwrite
+
 o add to webpage (doesn't need precompiled win32 files)
     o with comparison table of the two versions
     o Wiki: "Which version should i choose?"
-    o add MPIC32 as a (non-supported) platform
+    o add MPIC32 as a platform
 
 o fix big-endian conversion issue, add as unittest (also to 2.0)
 
