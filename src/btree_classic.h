@@ -67,7 +67,7 @@ struct ham_btree_t
      */
     ham_u16_t _maxkeys;
 
-	ham_u16_t _alignment_padding_dummy1;
+    ham_u16_t _alignment_padding_dummy1;
 };
 
 
@@ -139,9 +139,9 @@ HAM_PACK_0 struct HAM_PACK_1 btree_node_t
     /**
      * @ref btree_node_flags flags of this node - flags are always the first member
      * of every page - regardless of the backend.
-	 *
+     *
      * Currently only used for the page type.
-	 *
+     *
      * @sa btree_node_flags
      */
     ham_u16_t _flags;
@@ -369,9 +369,9 @@ btree_in_node_get_key_ref(common_btree_datums_t *btdata, const ham_page_t *page,
     {
         ham_u8_t *arr = (ham_u8_t *)node;
 
-		ham_assert(btdata->offset_to_keyarr > 0, (0));
-		arr += btdata->offset_to_keyarr;
-		ham_assert(arr == (ham_u8_t *)&node->_entries[0], (0));
+        ham_assert(btdata->offset_to_keyarr > 0, (0));
+        arr += btdata->offset_to_keyarr;
+        ham_assert(arr == (ham_u8_t *)&node->_entries[0], (0));
 
         ham_assert(((ham_offset_t)arr) % 8 == 0, ("Checking alignment"));
         ham_assert(slot >= 0, (0));
@@ -379,7 +379,7 @@ btree_in_node_get_key_ref(common_btree_datums_t *btdata, const ham_page_t *page,
 #if defined(FIX_PEDANTIC_64BIT_ALIGNMENT_REQUIREMENT)
         ham_assert(keywidth % 8 == 0u, ("Checking alignment, see int_key_t definition"));
 #endif
-		return (int_key_t *)&arr[slot * keywidth];
+        return (int_key_t *)&arr[slot * keywidth];
     }
 }
 
@@ -407,12 +407,12 @@ btree_move_key_series(common_btree_datums_t * const btdata, ham_page_t * const l
     ham_assert(dev == page_get_device(rhs_page), (0));
     ham_assert(device_get_env(dev) == db_get_env(page_get_owner(rhs_page)), (0));
 
-	ham_assert(count >= 0, (0));
-	ham_assert(count <= btree_node_get_count(rhs_node), (0));
+    ham_assert(count >= 0, (0));
+    ham_assert(count <= btree_node_get_count(rhs_node), (0));
 
-	ham_assert(!has_fast_index, (0));
+    ham_assert(!has_fast_index, (0));
 
-	memmove(bte_lhs, bte_rhs, keywidth * count);
+    memmove(bte_lhs, bte_rhs, keywidth * count);
 }
 
 

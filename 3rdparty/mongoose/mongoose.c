@@ -1257,7 +1257,7 @@ int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *at
   return 0;
 }
 
-#define PTHREAD_RWLOCK_INITIALIZER			{ RTL_SRWLOCK_INIT }
+#define PTHREAD_RWLOCK_INITIALIZER          { RTL_SRWLOCK_INIT }
 
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
     // empty

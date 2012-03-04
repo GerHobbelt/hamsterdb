@@ -64,8 +64,8 @@ btree_enumerate(common_btree_datums_t *btdata, ham_enumerate_cb_t cb,
 
     ham_status_t cb_st = CB_CONTINUE;
 
-	ham_cb_enum_data_t cb_data = { 0 };
-	cb_data.context = context;
+    ham_cb_enum_data_t cb_data = { 0 };
+    cb_data.context = context;
 
     ham_assert(btree_get_rootpage(be) != 0, ("invalid root page"));
     ham_assert(cb != 0, ("invalid parameter"));
@@ -103,11 +103,11 @@ btree_enumerate(common_btree_datums_t *btdata, ham_enumerate_cb_t cb,
         by this page 'pinning' countermeasure.
         */
         page_add_ref(page);
-		cb_data.event_code = ENUM_EVENT_DESCEND;
-		cb_data.page = page;
-		cb_data.level = level;
-		cb_data.node_count = count;
-		cb_data.node_is_leaf = btree_node_is_leaf(node);
+        cb_data.event_code = ENUM_EVENT_DESCEND;
+        cb_data.page = page;
+        cb_data.level = level;
+        cb_data.node_count = count;
+        cb_data.node_is_leaf = btree_node_is_leaf(node);
         st = cb(&cb_data);
         page_release_ref(page);
         if (st != CB_CONTINUE)
@@ -160,15 +160,15 @@ my_enumerate_level(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_data,
     ham_env_t * const env = btdata->env;
     ham_db_t * const db = btdata->db;
 
-	ham_page_t *page = cb_data->page;
+    ham_page_t *page = cb_data->page;
 
     while (page)
     {
         /*
          * enumerate the page
          */
-		cb_data->page = page;
-		cb_data->page_level_sibling_index = count;
+        cb_data->page = page;
+        cb_data->page_level_sibling_index = count;
         cb_st = be->_fun_in_node_enumerate(btdata, cb_data, cb);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
@@ -206,7 +206,7 @@ btree_in_node_enumerate(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_da
 {
     ham_size_t i;
     ham_size_t count;
-	ham_page_t *page = cb_data->page;
+    ham_page_t *page = cb_data->page;
     //ham_db_t *db=page_get_owner(page);
     //ham_btree_t *be = (ham_btree_t *)db_get_backend(db);
     int_key_t *bte;
@@ -238,10 +238,10 @@ btree_in_node_enumerate(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_da
     by this page 'pinning' countermeasure.
     */
     page_add_ref(page);
-	cb_data->event_code = ENUM_EVENT_PAGE_START;
-	cb_data->node_count = count;
-	//cb_data->page = page;
-	cb_data->node_is_leaf = btree_node_is_leaf(node);
+    cb_data->event_code = ENUM_EVENT_PAGE_START;
+    cb_data->node_count = count;
+    //cb_data->page = page;
+    cb_data->node_is_leaf = btree_node_is_leaf(node);
     cb_st = cb(cb_data);
     page_release_ref(page);
     if (cb_st == CB_STOP || cb_st < 0 /* error */)
@@ -252,15 +252,15 @@ btree_in_node_enumerate(common_btree_datums_t *btdata, ham_cb_enum_data_t *cb_da
     {
         bte = btree_in_node_get_key_ref(btdata, page, i);
 
-		cb_data->event_code = ENUM_EVENT_ITEM;
-		cb_data->key = bte;
-		cb_data->key_index = i;
+        cb_data->event_code = ENUM_EVENT_ITEM;
+        cb_data->key = bte;
+        cb_data->key_index = i;
         cb_st = cb(cb_data);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
     }
 
-	cb_data->event_code = ENUM_EVENT_PAGE_STOP;
+    cb_data->event_code = ENUM_EVENT_PAGE_STOP;
     cb_st2 = cb(cb_data);
     page_release_ref(page);
 

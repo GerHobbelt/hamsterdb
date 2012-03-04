@@ -51,7 +51,7 @@ btree_find_cursor(common_btree_datums_t *btdata,
     ham_bt_cursor_t * const cursor = btdata->cursor;
     //const ham_size_t keywidth = btdata->keywidth;
     common_hints_t * const hints = &btdata->hints;
-	const ham_u32_t flags = btdata->flags;
+    const ham_u32_t flags = btdata->flags;
     const ham_u32_t original_flags = hints->original_flags;
 
     db_update_global_stats_find_query(btdata, key->size);

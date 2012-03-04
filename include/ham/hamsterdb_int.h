@@ -197,8 +197,8 @@ When a maximum size is 'unknown' such is signalled by setting the value to @ref 
 */
 typedef struct ham_minmax_sizes_t
 {
-	ham_size_t minimum;
-	ham_size_t maximum;
+    ham_size_t minimum;
+    ham_size_t maximum;
 } ham_minmax_size_t;
 
 
@@ -208,10 +208,10 @@ page filter @ref class_info_cb callback method.
 */
 typedef struct ham_device_class_info_t
 {
-	/**
-	Descriptive name of the targeted device class. Will be a non-NULL pointer to a non-modyfiable ANSI string.
-	*/
-	const char *device_name;
+    /**
+    Descriptive name of the targeted device class. Will be a non-NULL pointer to a non-modyfiable ANSI string.
+    */
+    const char *device_name;
 
     /**
      @defgroup device_characteristics_flags The device type / characteristics flags
@@ -223,16 +223,16 @@ typedef struct ham_device_class_info_t
      @{
      */
 
-    unsigned is_physical_device: 1;						/**< can act as a physical end node */
-    unsigned is_virtual_device: 1;						/**< can act as a virtual device, i.e. requires at least 1 physical device 'downwind' */
-    unsigned adds_header_or_footer_per_page: 1;			/**< @sa header_size, footer_size */
-    unsigned adds_header_or_footer_in_first_page: 1;	/**< @sa first_extra_header_size, @sa first_extra_footer_size */
-    unsigned supports_direct_IO: 1;						/**< supports memory-mapping or other/similar non-copying I/O technology */
-    unsigned is_a_partitioner: 1;						/**< offers partitioning functionality, i.e. splits a flat range into multiple sections */
-    unsigned is_growth_front: 1;						/**< this device is allowed to 'grow' its storage space when the need to increase
-															 the storage space arises for hamsterdb. Can only be true when the device can grow its
-															 storage space: @sa can_be_growth_front */
-    unsigned can_be_growth_front: 1;					/**< this device can 'grow' its storage space when the need arises. */
+    unsigned is_physical_device: 1;                     /**< can act as a physical end node */
+    unsigned is_virtual_device: 1;                      /**< can act as a virtual device, i.e. requires at least 1 physical device 'downwind' */
+    unsigned adds_header_or_footer_per_page: 1;         /**< @sa header_size, footer_size */
+    unsigned adds_header_or_footer_in_first_page: 1;    /**< @sa first_extra_header_size, @sa first_extra_footer_size */
+    unsigned supports_direct_IO: 1;                     /**< supports memory-mapping or other/similar non-copying I/O technology */
+    unsigned is_a_partitioner: 1;                       /**< offers partitioning functionality, i.e. splits a flat range into multiple sections */
+    unsigned is_growth_front: 1;                        /**< this device is allowed to 'grow' its storage space when the need to increase
+                                                             the storage space arises for hamsterdb. Can only be true when the device can grow its
+                                                             storage space: @sa can_be_growth_front */
+    unsigned can_be_growth_front: 1;                    /**< this device can 'grow' its storage space when the need arises. */
 
     /**
     @}
@@ -271,9 +271,9 @@ typedef struct ham_device_class_info_t
     */
     ham_minmax_size_t first_extra_header_size;
 
-	/**
-	As for @ref first_extra_header_size: the minimum/maximum footer size occupied in the first database page.
-	*/
+    /**
+    As for @ref first_extra_header_size: the minimum/maximum footer size occupied in the first database page.
+    */
     ham_minmax_size_t first_extra_footer_size;
 
     /**
@@ -308,12 +308,12 @@ typedef struct ham_device_class_info_t
     @}
     */
 
-	/**
-	(For internal use)
-	
-	The reference count, i.e. how many device instances of this class have been generated (including possibly hidden instances).
-	*/
-	ham_size_t instance_count;
+    /**
+    (For internal use)
+    
+    The reference count, i.e. how many device instances of this class have been generated (including possibly hidden instances).
+    */
+    ham_size_t instance_count;
 
 } ham_device_class_info_t;
 
@@ -379,7 +379,7 @@ typedef struct ham_device_info_t
     ham_offset_t base_offset; /**< lower bound of addressable range (inclusive) */
     ham_offset_t upper_bound_offset; /**< upper bound of addressable range (inclusive!); <code>~(ham_offset_t)0</code> means 'infinity' */
 
-#define HAM_DEVICE_OFFSET_INFINITY    HAM_MAX_OFFSET_T 
+#define HAM_DEVICE_OFFSET_INFINITY    HAM_MAX_OFFSET_T
 
     /**
     The size of the header added by this device/filter for each page of data
@@ -1038,28 +1038,28 @@ ham_param2str(char *buf, ham_size_t buflen, ham_u32_t name);
 
 typedef struct
 {
-	/** The actual number of bytes allocated. */
-	ham_size_t alloc_size;
+    /** The actual number of bytes allocated. */
+    ham_size_t alloc_size;
 
-	/** 
-	 * flags which provide additional info about the allocated space.
-	 * when @ref HAM_DIRECT_ACCESS is set, hamster is signalling that the allocated storage space is 
-	 * 'direct access', e.g. backed by a memory-mapped sorage space.
-	 */
-	ham_u32_t flags;
+    /**
+     * flags which provide additional info about the allocated space.
+     * when @ref HAM_DIRECT_ACCESS is set, hamster is signalling that the allocated storage space is
+     * 'direct access', e.g. backed by a memory-mapped sorage space.
+     */
+    ham_u32_t flags;
 
-	/** Points at the start of the allocated space */
-	void *data;
+    /** Points at the start of the allocated space */
+    void *data;
 
-	/**
-	 * The 'record ID' (RID) which is a reference to the storage space / location which can 
-	 * itself be persisted, e.g. by storing this RID as part of a key or record in a database.
-	 *
-	 * You'll need to pass this RID to @ref ham_fetch_dedicated_storage_space in any future run
-	 * to obtain access to the data you persisted though @ref ham_alloc_dedicated_storage_space 
-	 * plus @ref ham_flush_dedicated_storage_space .
-	 */
-	ham_pers_rid_t rid;
+    /**
+     * The 'record ID' (RID) which is a reference to the storage space / location which can
+     * itself be persisted, e.g. by storing this RID as part of a key or record in a database.
+     *
+     * You'll need to pass this RID to @ref ham_fetch_dedicated_storage_space in any future run
+     * to obtain access to the data you persisted though @ref ham_alloc_dedicated_storage_space
+     * plus @ref ham_flush_dedicated_storage_space .
+     */
+    ham_pers_rid_t rid;
 
 } ham_dedicated_storage_space_t;
 
@@ -1075,7 +1075,7 @@ typedef struct
  *
  * When you allocate the storage space, this function delivers a pointer to the user space. Note that each reserved storage space
  * is preceeded by a page header identifying the storage as such, so you will not receive an entire page's worth of bytes
- * for each allocated page. 
+ * for each allocated page.
  *
  * The actually allocated space size is returned in the variable referenced by the @a alloc_size_ref reference
  * reference. The hamster will allocate an suitable series of disc pages to fit your request size, so the returned size
@@ -1091,9 +1091,9 @@ typedef struct
  *          data which must be persisted, but where fast access to the persisted storage is the prevalent factor and
  *          recovery and transaction safety measures are either handled at the application level or neglected entirely.
  *
- * @sa ham_release_dedicated_storage_space 
- * @sa ham_fetch_dedicated_storage_space 
- * @sa ham_flush_dedicated_storage_space 
+ * @sa ham_release_dedicated_storage_space
+ * @sa ham_fetch_dedicated_storage_space
+ * @sa ham_flush_dedicated_storage_space
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_alloc_dedicated_storage_space(ham_env_t *env, ham_dedicated_storage_space_t *storage_info_ref, ham_size_t request_size);
@@ -1105,7 +1105,7 @@ HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_release_dedicated_storage_space(ham_env_t *env, ham_dedicated_storage_space_t *storage_info_ref);
 
 /**
- * Load the dedicated direct access persisted storage space from the hamsterdb database store which was previously allocated 
+ * Load the dedicated direct access persisted storage space from the hamsterdb database store which was previously allocated
  * through a call to @ref ham_alloc_dedicated_storage_space
  *
  * The storage space is identified by the 'record ID' (a.k.a. RID) which was returned as part of the original allocation request
@@ -1122,7 +1122,7 @@ ham_fetch_dedicated_storage_space(ham_env_t *env, ham_dedicated_storage_space_t 
  * Write/flush the modified data in the allocated direct access storage space to persisted storage.
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
-ham_flush_dedicated_storage_space(ham_env_t *env, ham_pers_rid_t rid); 
+ham_flush_dedicated_storage_space(ham_env_t *env, ham_pers_rid_t rid);
 
 
 /**

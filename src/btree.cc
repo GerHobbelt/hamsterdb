@@ -124,7 +124,7 @@ btree_calc_maxkeys(ham_u16_t dam, ham_size_t pagesize, ham_u32_t flags, ham_u16_
     ham_size_t k;
     ham_size_t max;
     ham_u16_t keysize = (keysize_ref ? *keysize_ref : 1);
-	ham_bool_t fast_index = (should_have_fastindex_ref ? *should_have_fastindex_ref : HAM_FALSE);
+    ham_bool_t fast_index = (should_have_fastindex_ref ? *should_have_fastindex_ref : HAM_FALSE);
 
     /*
      * a btree page is always P bytes long, where P is the pagesize of
@@ -150,59 +150,59 @@ btree_calc_maxkeys(ham_u16_t dam, ham_size_t pagesize, ham_u32_t flags, ham_u16_
     max = p / k;
     max = (max & 1 ? max-1 : max);
 
-	if (fast_index)
-	{
-	    ham_size_t index_width = max * sizeof(ham_u16_t);
+    if (fast_index)
+    {
+        ham_size_t index_width = max * sizeof(ham_u16_t);
 
-		/* round the size of the index indirection array to ensure 8-byte alignment of the keys that follow it: */
-		index_width += 7;
-		index_width &= ~(8-1);
-		p -= index_width;
-		k -= sizeof(ham_u16_t);
+        /* round the size of the index indirection array to ensure 8-byte alignment of the keys that follow it: */
+        index_width += 7;
+        index_width &= ~(8-1);
+        p -= index_width;
+        k -= sizeof(ham_u16_t);
 
-		/* recalculate the maximum number of keys that fit in the page: we may be off due to the alignment requirement of the indirection array: */
-		max = p / k;
-		max = (max & 1 ? max-1 : max);
-	}
+        /* recalculate the maximum number of keys that fit in the page: we may be off due to the alignment requirement of the indirection array: */
+        max = p / k;
+        max = (max & 1 ? max-1 : max);
+    }
 
-	/*
-	 * Now that we know how many keys we can store in the page, advise the caller about the
-	 * optimum (~ maximum) keysize for that setting: after all, it's a shame to waste
-	 * those storage bytes. ;-)
-	 */
-	if (max > 0)
-	{
-		k = p / max;
+    /*
+     * Now that we know how many keys we can store in the page, advise the caller about the
+     * optimum (~ maximum) keysize for that setting: after all, it's a shame to waste
+     * those storage bytes. ;-)
+     */
+    if (max > 0)
+    {
+        k = p / max;
 
-		/*
-		 * and make sure the advised keysize produces the desired int_key_t alignment at 8 bytes:
-		 */
-		k &= ~(8 - 1);
-	}
+        /*
+         * and make sure the advised keysize produces the desired int_key_t alignment at 8 bytes:
+         */
+        k &= ~(8 - 1);
+    }
 
-	k -= db_get_int_key_header_size();
+    k -= db_get_int_key_header_size();
 
-	/*
-	 * Determine whether we would benefit from having a 'fast index' using a simple heuristic:
-	 *
-	 * When we can expect to memmove() a lot of keys in a page on insert/delete, a 'fast index'
-	 * is advised. When you've specified that you expect 'sequential insert' to happen, we also
-	 * assume you won't be deleting a lot of 'random' keys either and then we won't be
-	 * memmove()ing a lot of key data anyway, so a 'fast index' would then only slow us down,
-	 * thanks to the extra level of indirection it would introduce.
-	 */
-	if ((max >= 16 || k >= 512) && !fast_index && (dam & HAM_DAM_SEQUENTIAL_INSERT) == 0)
-	{
-		fast_index = HAM_TRUE;
-	}
+    /*
+     * Determine whether we would benefit from having a 'fast index' using a simple heuristic:
+     *
+     * When we can expect to memmove() a lot of keys in a page on insert/delete, a 'fast index'
+     * is advised. When you've specified that you expect 'sequential insert' to happen, we also
+     * assume you won't be deleting a lot of 'random' keys either and then we won't be
+     * memmove()ing a lot of key data anyway, so a 'fast index' would then only slow us down,
+     * thanks to the extra level of indirection it would introduce.
+     */
+    if ((max >= 16 || k >= 512) && !fast_index && (dam & HAM_DAM_SEQUENTIAL_INSERT) == 0)
+    {
+        fast_index = HAM_TRUE;
+    }
 
-	if (should_have_fastindex_ref)
-		*should_have_fastindex_ref = fast_index;
+    if (should_have_fastindex_ref)
+        *should_have_fastindex_ref = fast_index;
 
-	if (keysize_ref)
-		*keysize_ref = k;
+    if (keysize_ref)
+        *keysize_ref = k;
 
-	return max;
+    return max;
 }
 
 /**
@@ -256,7 +256,7 @@ my_fun_create(ham_btree_t *be, ham_u16_t keysize, ham_u32_t flags)
     ham_status_t st;
     ham_page_t *root;
     ham_size_t maxkeys;
-	ham_u16_t advised_keysize = keysize;
+    ham_u16_t advised_keysize = keysize;
     dev_alloc_request_info_ex_t info = {0};
     ham_db_t *db = be_get_db(be);
     ham_env_t *env = db_get_env(db);
@@ -521,15 +521,15 @@ my_fun_find(ham_btree_t *be, ham_key_t *key, ham_record_t *record, ham_u32_t fla
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     ham_assert(key, ("invalid parameter"));
@@ -567,15 +567,15 @@ my_fun_insert(ham_btree_t *be, ham_key_t *key, ham_record_t *record, ham_u32_t f
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     return btree_insert_cursor(&btdata, key, record);
@@ -603,15 +603,15 @@ my_fun_erase(ham_btree_t *be, ham_key_t *key, ham_u32_t flags)
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     return btree_erase_cursor(&btdata, key);
@@ -638,15 +638,15 @@ my_fun_enumerate(ham_btree_t *be, ham_enumerate_cb_t cb, void *context)
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     return btree_enumerate(&btdata, cb, context);
@@ -673,15 +673,15 @@ my_fun_check_integrity(ham_btree_t *be)
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     return btree_check_integrity(&btdata);
@@ -742,14 +742,14 @@ free_extkey_in_node_cb(ham_cb_enum_data_t *cb_data)
     ham_assert(db, ("Must be set as page owner when this is a Btree page"));
     c = db_get_extkey_cache(db);
 
-	switch (cb_data->event_code)
+    switch (cb_data->event_code)
     {
     case ENUM_EVENT_PAGE_START:
         //context->page = param1;
         return CB_CONTINUE;
 
     case ENUM_EVENT_ITEM:
-		bte = cb_data->key;
+        bte = cb_data->key;
 
         if (key_get_flags(bte) & KEY_IS_EXTENDED)
         {
@@ -798,15 +798,15 @@ my_fun_free_page_extkeys(ham_btree_t *be, ham_page_t *page, ham_u32_t flags)
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
 
@@ -827,16 +827,16 @@ my_fun_free_page_extkeys(ham_btree_t *be, ham_page_t *page, ham_u32_t flags)
         if (page_type == PAGE_TYPE_B_ROOT || page_type == PAGE_TYPE_B_INDEX)
         {
             extkey_cache_t *c;
-			ham_cb_enum_data_t cb_data = {0};
+            ham_cb_enum_data_t cb_data = {0};
 
             ham_assert(db, ("Must be set as page owner when this is a Btree page"));
             ham_assert(db == page_get_owner(page), (0));
             c = db_get_extkey_cache(db);
 
-			cb_data.page = page;
-			cb_data.context = &btdata;
-			ham_assert(cb_data.level == 0, (0));
-			ham_assert(cb_data.node_count == 0, (0));
+            cb_data.page = page;
+            cb_data.context = &btdata;
+            ham_assert(cb_data.level == 0, (0));
+            ham_assert(cb_data.node_count == 0, (0));
             return be->_fun_in_node_enumerate(&btdata, &cb_data, free_extkey_in_node_cb);
         }
     }
@@ -866,15 +866,15 @@ my_fun_nuke_statistics(ham_btree_t *be, ham_page_t *page, ham_u32_t reason)
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     stats_page_is_nuked(&btdata, page, reason);
@@ -1024,8 +1024,8 @@ btree_traverse_tree(ham_page_t **page_ref, ham_s32_t *idxptr,
     }
     else
     {
-		ham_assert(slot >= 0, (0));
-		ham_assert(slot < btree_node_get_count(node), (0));
+        ham_assert(slot >= 0, (0));
+        ham_assert(slot < btree_node_get_count(node), (0));
         bte = btree_in_node_get_key_ref(btdata, page, (ham_u16_t)slot);
         ham_assert(key_get_flags(bte) == 0 ||
                 key_get_flags(bte) == KEY_IS_EXTENDED,

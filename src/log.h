@@ -316,7 +316,7 @@ struct ham_log_t
  */
 extern ham_status_t
 ham_log_create(mem_allocator_t *alloc, ham_env_t *env,
-		const char *dbpath,
+        const char *dbpath,
         ham_u32_t mode, ham_u32_t flags, ham_log_t **log);
 
 /**
@@ -324,8 +324,8 @@ ham_log_create(mem_allocator_t *alloc, ham_env_t *env,
  */
 extern ham_status_t
 ham_log_open(mem_allocator_t *alloc, ham_env_t *env,
-		const char *dbpath,
-		ham_u32_t flags, ham_log_t **log);
+        const char *dbpath,
+        ham_u32_t flags, ham_log_t **log);
 
 /**
  * returns true if the log is empty

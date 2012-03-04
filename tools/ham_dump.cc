@@ -115,20 +115,20 @@ static option_t opts[]={
 
 typedef struct dbclone_db_cfg_t
 {
-    ham_s32_t dbname;				/* -1: default for all DBs */
+    ham_s32_t dbname;               /* -1: default for all DBs */
 
-	ham_u32_t db_create_flags;
-	ham_parameter_t *db_create_params;
+    ham_u32_t db_create_flags;
+    ham_parameter_t *db_create_params;
 
-	ham_u32_t key_insert_flags;
-	ham_compare_func_t *key_cmp_fn;
-	ham_duplicate_compare_func_t *dupe_cmp_fn;
+    ham_u32_t key_insert_flags;
+    ham_compare_func_t *key_cmp_fn;
+    ham_duplicate_compare_func_t *dupe_cmp_fn;
 } dbclone_db_cfg_t;
 
 typedef struct dbclone_env_cfg_t
 {
-	dbclone_db_cfg_t *db_cfg;
-	ham_size_t db_cfg_count;
+    dbclone_db_cfg_t *db_cfg;
+    ham_size_t db_cfg_count;
 } dbclone_env_cfg_t;
 
 
@@ -155,7 +155,7 @@ typedef struct dbdata_t
     const char *licensee;
     const char *product;
 
-	dbclone_env_cfg_t *dbclone_cfg;
+    dbclone_env_cfg_t *dbclone_cfg;
 
 } dbdata_t;
 
@@ -869,14 +869,14 @@ main(int argc, char **argv)
                 printf("Invalid parameter `filename': cannot be empty.\n");
                 return (-1);
             }
-			if (cfg.sourcefilename)
-			{
-				cfg.targetfilename = strdup(param);
-			}
-			else
-			{
-				cfg.sourcefilename = strdup(param);
-			}
+            if (cfg.sourcefilename)
+            {
+                cfg.targetfilename = strdup(param);
+            }
+            else
+            {
+                cfg.sourcefilename = strdup(param);
+            }
             break;
 
         case ARG_HELP:
@@ -920,11 +920,11 @@ main(int argc, char **argv)
         printf("Source filename is missing. Enter `ham_dump --help' for usage.\n");
         return (-1);
     }
-	if (!cfg.targetfilename && cfg.cmd == ARG_CLONE)
-	{
+    if (!cfg.targetfilename && cfg.cmd == ARG_CLONE)
+    {
         printf("Target filename is missing: we do not know where you want to clone to. Enter `ham_dump --help' for usage.\n");
         return (-1);
-	}
+    }
 
     /*
     set up defaults, which have not been overwritten by the user yet
@@ -1066,7 +1066,7 @@ main(int argc, char **argv)
         st = ham_env_new(&cfg.env);
         if (st)
             error("ham_env_new", st);
-		st = ham_env_create(cfg.env, cfg.sourcefilename, HAM_USE_BTREE, 0644);
+        st = ham_env_create(cfg.env, cfg.sourcefilename, HAM_USE_BTREE, 0644);
         if (st)
             error("ham_env_create", st);
 

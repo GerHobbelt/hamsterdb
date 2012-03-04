@@ -1119,7 +1119,7 @@ __freel_search_bits_ex(ham_device_t *dev, ham_env_t *env,
 
             /* report our failure to find a free slot */
             if (bm_l >= bm_r) {
-            	db_update_freelist_stats_fail(dev, env, entry, f, hints);
+                db_update_freelist_stats_fail(dev, env, entry, f, hints);
                 return (-1);
             }
 

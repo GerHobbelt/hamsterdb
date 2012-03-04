@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -32,8 +32,8 @@
 static option_t opts[]={
     {
         ARG_HELP,               // symbolic name of this option
-        "h",                    // short option 
-        "help",                 // long option 
+        "h",                    // short option
+        "help",                 // long option
         "this help screen",     // help string
         0 },                    // no flags
     { 0, 0, 0, 0, 0 } /* terminating element */
@@ -43,7 +43,7 @@ static option_t opts[]={
 class LogEntry : public log_entry_t
 {
 public:
-    LogEntry(log_entry_t *entry) { 
+    LogEntry(log_entry_t *entry) {
         memcpy(&m_entry, entry, sizeof(m_entry));
     }
 
@@ -84,14 +84,14 @@ public:
 
 typedef std::vector<LogEntry> log_vector_t;
 
-static void 
+static void
 error(const char *foo, ham_status_t st)
 {
     printf("%s() returned error %d: %s\n", foo, st, ham_strerror(st));
     exit(-1);
 }
 
-static log_vector_t 
+static log_vector_t
 readLog(ham_env_t *env, const char *filename)
 {
     ham_status_t st;
@@ -143,7 +143,7 @@ printLog(log_vector_t &vec)
     }
 }
 
-int 
+int
 main(int argc, char **argv)
 {
     unsigned opt;

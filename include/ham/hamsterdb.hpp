@@ -521,7 +521,7 @@ protected:
     friend class env;
 
     /* Copy Constructor. Is protected and should not be used, except by class env methods. */
-	db(ham_db_t *db, class env &e);
+    db(ham_db_t *db, class env &e);
 
 private:
     ham_db_t *m_db;

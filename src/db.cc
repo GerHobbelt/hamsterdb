@@ -417,8 +417,8 @@ db_get_extended_key(ham_db_t *db, const ham_u8_t *key_data,
 
     ext_key->size = (ham_u16_t)key_length;
 
-	ham_nuke_stack_space(rid);
-	ham_nuke_stack_space(record);
+    ham_nuke_stack_space(rid);
+    ham_nuke_stack_space(record);
     return HAM_SUCCESS;
 }
 
@@ -763,14 +763,14 @@ db_alloc_page(ham_page_t **page_ref, ham_u32_t flags,
                     ("page id %llu is not aligned", tellpos));
             /* try to fetch the page from the txn */
             if (env_get_txn(env))
-			{
+            {
                 page=txn_get_page(env_get_txn(env), tellpos);
                 if (page)
                     goto done;
             }
             /* try to fetch the page from the cache */
             if (cache)
-			{
+            {
                 page = cache_get_page(cache, tellpos, 0);
                 if (page)
                     goto done;
@@ -946,7 +946,7 @@ done:
     }
 
     if (env_get_txn(env))
-	{
+    {
         st=txn_add_page(env_get_txn(env), page, HAM_TRUE);
         if (st) {
             return st;
@@ -1005,13 +1005,13 @@ done:
         }
 #endif
         if (flags & DB_NEW_PAGE_DOES_THRASH_CACHE)
-		{
+        {
             /* give it an 'antique' age so this one will get flushed pronto */
             page_set_cache_cntr(page, cache->_timeslot - HAM_MAX_S32 / 2);
             page_set_cache_hit_freq(page, 0);
         }
         else
-		{
+        {
             cache_update_page_access_counter(page, cache);
         }
     }
@@ -1096,7 +1096,7 @@ db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u
     {
         page=txn_get_page(env_get_txn(env), address);
         if (page)
-		{
+        {
             cache_check_history(env, page, 1);
             *page_ref = page;
             ham_assert(page_get_pers(page), (0));
@@ -1111,15 +1111,15 @@ db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u
      * fetch the page from the cache
      */
     if (cache)
-	{
+    {
         page = cache_get_page(cache, address, CACHE_NOREMOVE);
         if (page)
-		{
+        {
             if (env_get_txn(env))
-			{
+            {
                 st=txn_add_page(env_get_txn(env), page, HAM_TRUE);
                 if (st)
-				{
+                {
                     return st;
                 }
             }
@@ -1138,7 +1138,7 @@ db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u
 
 #if HAM_DEBUG
     if (cache)
-	{
+    {
         ham_assert(cache_get_page(cache, address, 0)==0, (0));
     }
 #endif
@@ -1163,7 +1163,7 @@ db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u
     ham_assert(page_get_pers(page), (0));
 
     if (env_get_txn(env))
-	{
+    {
         st=txn_add_page(env_get_txn(env), page, HAM_TRUE);
         if (st) {
             (void)page_delete(page);
@@ -1172,21 +1172,21 @@ db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u
     }
 
     if (cache)
-	{
+    {
         st=cache_put_page(cache, page);
         if (st)
-		{
+        {
             (void)page_delete(page);
             return st;
         }
         if (flags & DB_NEW_PAGE_DOES_THRASH_CACHE)
-		{
+        {
             /* give it an 'antique' age so this one will get flushed pronto */
             page_set_cache_cntr(page, cache->_timeslot - HAM_MAX_S32 / 2);
             page_set_cache_hit_freq(page, 0);
         }
         else
-		{
+        {
             cache_update_page_access_counter(page, cache);
         }
     }
@@ -1242,21 +1242,21 @@ db_flush_all(ham_cache_t *cache, ham_u32_t flags)
 
         /* don't touch pages which are currently in use by a transaction */
         if (page_get_refcount(head)==0)
-		{
+        {
             /*
-			 * don't remove the page from the cache, if flag NODELETE
+             * don't remove the page from the cache, if flag NODELETE
              * is set (this flag is used i.e. in ham_flush())
-	         */
-	        if (!(flags & DB_FLUSH_NODELETE))
-			{
-	            ham_assert(page_get_refcount(head)==0,
-	                ("page is in use, but database is closing"));
-				// [i_a] Christoph's fix is better than mine; removed code here as removal-from-cache is now correctly done in db_write_page_and_delete()!
-			}
+             */
+            if (!(flags & DB_FLUSH_NODELETE))
+            {
+                ham_assert(page_get_refcount(head)==0,
+                    ("page is in use, but database is closing"));
+                // [i_a] Christoph's fix is better than mine; removed code here as removal-from-cache is now correctly done in db_write_page_and_delete()!
+            }
 
-	        st = db_write_page_and_delete(head, flags);
-	        if (!st2) st2 = st;
-		}
+            st = db_write_page_and_delete(head, flags);
+            if (!st2) st2 = st;
+        }
 
         head=next;
     }
@@ -1281,7 +1281,7 @@ db_write_page_and_delete(ham_page_t *page, ham_u32_t flags)
     ham_assert(env, (0));
     if (page_is_dirty(page)
             && !(env_get_rt_flags(env) & HAM_IN_MEMORY_DB))
-	{
+    {
         st=page_flush(page);
         if (st)
             return st;
@@ -1333,29 +1333,29 @@ db_resize_record_allocdata(ham_db_t *db, ham_size_t size)
     else if (size > db_get_record_allocsize(db))
     {
 #if 0 /* huge blob test profiling --> 8.1% spent in realloc through here, while malloc is much cheaper and we don't need the content intact anyway */
-		void *newdata=allocator_realloc(allocator,
+        void *newdata=allocator_realloc(allocator,
                 db_get_record_allocdata(db), size);
 #else
-		void *newdata;
-		/*
-		Also improve performance in race conditions (such as the blob unittests) by
-		bumping the storage reserved for the record by a power curve, so that 'slow
-		growth' doesn't hammer this code section.
+        void *newdata;
+        /*
+        Also improve performance in race conditions (such as the blob unittests) by
+        bumping the storage reserved for the record by a power curve, so that 'slow
+        growth' doesn't hammer this code section.
 
-		After all, we only allocate space for a single record here, so allocating
-		a little 'too much' doesn't harm.
-		*/
+        After all, we only allocate space for a single record here, so allocating
+        a little 'too much' doesn't harm.
+        */
 #if 01
-		ham_size_t new_size = db_get_record_allocsize(db) * 3 / 2; // factor 1.5 instead of the more brutal 2
+        ham_size_t new_size = db_get_record_allocsize(db) * 3 / 2; // factor 1.5 instead of the more brutal 2
 #else
-		ham_size_t new_size = db_get_record_allocsize(db) * 2;
+        ham_size_t new_size = db_get_record_allocsize(db) * 2;
 #endif
-		if (size < new_size)
-			size = new_size;
+        if (size < new_size)
+            size = new_size;
 
         if (db_get_record_allocdata(db))
-	        allocator_free(allocator, db_get_record_allocdata(db));
-		newdata = allocator_alloc(allocator, size);
+            allocator_free(allocator, db_get_record_allocdata(db));
+        newdata = allocator_alloc(allocator, size);
 #endif
         db_set_record_allocdata(db, newdata);
         db_set_record_allocsize(db, size);

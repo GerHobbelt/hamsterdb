@@ -122,9 +122,9 @@ extern "C" {
  * macro to help diagnose stack references outside the stack frame where they reside.
  */
 #if defined(HAM_DEBUG)
-#define ham_nuke_stack_space(elem)		memset(&(elem), 0xA5U, sizeof(elem))
+#define ham_nuke_stack_space(elem)      memset(&(elem), 0xA5U, sizeof(elem))
 #else
-#define ham_nuke_stack_space(elem)		/**/
+#define ham_nuke_stack_space(elem)      /**/
 #endif
 
 
@@ -150,7 +150,7 @@ extern "C" {
 } // extern "C" {
 #endif
 
-#endif 
+#endif
 
 /**
 * @endcond

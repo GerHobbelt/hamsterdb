@@ -259,7 +259,7 @@ btree_verify_single_node(ham_page_t *parent, ham_page_t *leftsib, ham_page_t *pa
         ham_size_t sibnode_keycount = btree_node_get_count(sibnode);
         int_key_t *sibentry;
 
-		ham_assert(sibnode_keycount > 0, (0));
+        ham_assert(sibnode_keycount > 0, (0));
         sibentry = btree_in_node_get_key_ref(btdata, leftsib, sibnode_keycount - 1);
         bte = btree_in_node_get_key_ref(btdata, page, 0);
 

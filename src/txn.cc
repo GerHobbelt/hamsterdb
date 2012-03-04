@@ -149,7 +149,7 @@ txn_commit(ham_txn_t *txn, ham_u32_t flags)
 
     /* flush the file handle */
     if (env_get_rt_flags(env) & HAM_WRITE_THROUGH)
-		return device->flush(device);
+        return device->flush(device);
 
     /* now it's the time to purge caches */
     env_purge_cache(env, cache_get_cur_elements(env_get_cache(env)) / 2);
@@ -240,7 +240,7 @@ txn_abort(ham_txn_t *txn, ham_u32_t flags)
                 return st;
         }
         else if (page_get_dirty_txn(head) == txn_get_id(txn))
-		{
+        {
             /* remove the 'delete pending' flag */
             page_remove_npers_flags(head, PAGE_NPERS_DELETE_PENDING);
 

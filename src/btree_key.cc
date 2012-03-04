@@ -134,7 +134,7 @@ key_insert_extended(ham_offset_t *rid_ref, ham_db_t *db, ham_page_t *page,
 
     *rid_ref = blobid;
 
-	ham_nuke_stack_space(rec);
+    ham_nuke_stack_space(rec);
     return HAM_SUCCESS;
 }
 
@@ -207,7 +207,7 @@ key_set_record(ham_db_t *db, int_key_t *key, const ham_record_t *record,
                 key_set_flags(key, key_get_flags(key)|KEY_BLOB_SIZE_SMALL);
             }
             key_set_ptr_direct_ref(key, rid);
-			ham_nuke_stack_space(rid);
+            ham_nuke_stack_space(rid);
         }
         else
         {
@@ -319,7 +319,7 @@ key_set_record(ham_db_t *db, int_key_t *key, const ham_record_t *record,
                 key_set_flags(key, key_get_flags(key)|KEY_BLOB_SIZE_SMALL);
             }
             key_set_ptr_direct_ref(key, rid);
-			ham_nuke_stack_space(rid);
+            ham_nuke_stack_space(rid);
         }
     }
     else
@@ -403,7 +403,7 @@ key_set_record(ham_db_t *db, int_key_t *key, const ham_record_t *record,
                 dupe_entry_set_flags(&entries[i], KEY_BLOB_SIZE_SMALL);
             }
             dupe_entry_set_rid_direct_ref(&entries[i], rid);
-			ham_nuke_stack_space(rid);
+            ham_nuke_stack_space(rid);
         }
         else
         {
@@ -445,7 +445,7 @@ key_set_record(ham_db_t *db, int_key_t *key, const ham_record_t *record,
             if (rid)
                 key_set_ptr(key, rid);
         }
-		ham_nuke_stack_space(entries);
+        ham_nuke_stack_space(entries);
     }
 
     return HAM_SUCCESS;

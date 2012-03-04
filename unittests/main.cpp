@@ -294,48 +294,48 @@ template <> class bfc_visitor<test> /* bfc_test_visitor */
 class hamster_fixture_visitor : public bfc_visitor<fixture>
 {
 protected:
-	bfc_run_state_t *m_run_or_list;
+    bfc_run_state_t *m_run_or_list;
 
 public:
-	virtual bfc_run_state_t operator()(fixture &t_ref, const std::string &name)
-	{
-		fprintf(stderr, "fixture name: %s\n", name.c_str());
+    virtual bfc_run_state_t operator()(fixture &t_ref, const std::string &name)
+    {
+        fprintf(stderr, "fixture name: %s\n", name.c_str());
 
-		return (m_run_or_list ? *m_run_or_list : CONTINUE_RUN);
-	}
+        return (m_run_or_list ? *m_run_or_list : CONTINUE_RUN);
+    }
 
-	virtual operator bool()
-	{
-		return true;
-	}
+    virtual operator bool()
+    {
+        return true;
+    }
 
 public:
-	hamster_fixture_visitor(bfc_run_state_t *run_or_list = NULL) : m_run_or_list(run_or_list)
-	{
-	}
+    hamster_fixture_visitor(bfc_run_state_t *run_or_list = NULL) : m_run_or_list(run_or_list)
+    {
+    }
 };
 class hamster_test_visitor : public bfc_visitor<test>
 {
 protected:
-	bfc_run_state_t *m_run_or_list;
+    bfc_run_state_t *m_run_or_list;
 
 public:
-	virtual bfc_run_state_t operator()(test &t_ref, const std::string &name)
-	{
-		fprintf(stderr, "fixture name: %s\n", name.c_str());
+    virtual bfc_run_state_t operator()(test &t_ref, const std::string &name)
+    {
+        fprintf(stderr, "fixture name: %s\n", name.c_str());
 
-		return (m_run_or_list ? *m_run_or_list : CONTINUE_RUN);
-	}
+        return (m_run_or_list ? *m_run_or_list : CONTINUE_RUN);
+    }
 
-	virtual operator bool()
-	{
-		return true;
-	}
+    virtual operator bool()
+    {
+        return true;
+    }
 
 public:
-	hamster_test_visitor(bfc_run_state_t *run_or_list = NULL) : m_run_or_list(run_or_list)
-	{
-	}
+    hamster_test_visitor(bfc_run_state_t *run_or_list = NULL) : m_run_or_list(run_or_list)
+    {
+    }
 };
 
 
@@ -481,9 +481,9 @@ main(int argc, char **argv)
     // call init_run() here.
     testrunner::get_instance()->init_run();
     unsigned int r;
-	bfc_run_state_t run_mode = CONTINUE_RUN;
-	hamster_fixture_visitor fv(&run_mode);
-	hamster_test_visitor tv(&run_mode);
+    bfc_run_state_t run_mode = CONTINUE_RUN;
+    hamster_fixture_visitor fv(&run_mode);
+    hamster_test_visitor tv(&run_mode);
 
     if (new_argc > 1)
     {
@@ -500,13 +500,13 @@ main(int argc, char **argv)
             if (i < new_argc)
             {
                 option_name = new_argv[i];
-				if (option_name[0] == '-')
-				{
-					if (option_name == "-h"
-						|| option_name == "-?"
-						|| option_name == "--help")
-					{
-						fprintf(stderr,
+                if (option_name[0] == '-')
+                {
+                    if (option_name == "-h"
+                        || option_name == "-?"
+                        || option_name == "--help")
+                    {
+                        fprintf(stderr,
 "unittests [options]\n"
 "\n"
 "Executes the suite of HamsterDB unittests. The default is to execute all\n"
@@ -556,14 +556,14 @@ main(int argc, char **argv)
 "    APIv110Test::getDefaultDbParamsTest\n"
 "~ execute the APIv110Test::getDefaultDbParamsTest unittest.\n"
 );
-						return r;
-					}
-					if (option_name == "--list")
-					{
-						run_mode = SKIP_THIS_TEST;
-						continue;
-					}
-				}
+                        return r;
+                    }
+                    if (option_name == "--list")
+                    {
+                        run_mode = SKIP_THIS_TEST;
+                        continue;
+                    }
+                }
                 fixture_name = new_argv[i];
             }
 
@@ -571,7 +571,7 @@ main(int argc, char **argv)
             {
                 // lead or tail or chain?
                 lead = true;
-				fixture_name.clear();
+                fixture_name.clear();
             }
             else
             {
@@ -585,14 +585,14 @@ main(int argc, char **argv)
                     {
                         test_name.erase(pos, 1);
                     }
-					if (test_name == "*")
-					{
-						test_name.clear();
-					}
-					if (fixture_name == "*")
-					{
-						fixture_name.clear();
-					}
+                    if (test_name == "*")
+                    {
+                        test_name.clear();
+                    }
+                    if (fixture_name == "*")
+                    {
+                        fixture_name.clear();
+                    }
                 }
 
                 if (!lead && (i < new_argc)
@@ -600,7 +600,7 @@ main(int argc, char **argv)
                 {
                     // single case:
                     r = testrunner::get_instance()->run(
-							fv, tv,
+                            fv, tv,
                             fixture_name.c_str(), test_name.c_str(),
                             false);
                     inclusive_begin = true;
@@ -608,7 +608,7 @@ main(int argc, char **argv)
                 else if (lead)
                 {
                     r = testrunner::get_instance()->run(
-							fv, tv,
+                            fv, tv,
                             lead_fixture, lead_test,
                             fixture_name, test_name,
                             inclusive_begin,

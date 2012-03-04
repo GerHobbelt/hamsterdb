@@ -192,7 +192,7 @@ struct ham_device_t {
      */
     ham_status_t (*get_device_info)(ham_device_t *self, ham_device_info_t *pinfo, ham_bool_t inclusive);
 
-	/**
+    /**
      Retrieve device class info, i.e. info which is common for all device instances of this device type.
 
      @note The @ref ham_device_class_info_t @a info struct must be initialized before invoking this

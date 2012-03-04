@@ -1443,12 +1443,12 @@ __get_sorted_position(ham_db_t *db, dupe_table_t *table, const ham_record_t *rec
                  |KEY_BLOB_SIZE_TINY
                  |KEY_BLOB_SIZE_EMPTY));
 #if 01 /* Christoph patch 19/jan ? */
-		/*
-		 * rid: same as record->_rid; however, if key is TINY/SMALL and
-		 * HAM_DIRECT_ACCESS is set, we need a direct pointer to the original
-		 * record ID
-		 *
-		*/
+        /*
+         * rid: same as record->_rid; however, if key is TINY/SMALL and
+         * HAM_DIRECT_ACCESS is set, we need a direct pointer to the original
+         * record ID
+         *
+        */
         st=util_read_record(db, &item_record, dupe_entry_get_rid_direct_ref(e), flags);
         if (st)
             return (st);
@@ -1530,7 +1530,7 @@ __get_sorted_position(ham_db_t *db, dupe_table_t *table, const ham_record_t *rec
     ham_assert(m <= dupe_table_get_count(table), (0));
     *position_ref = m;
 
-	ham_nuke_stack_space(item_record);
+    ham_nuke_stack_space(item_record);
     return HAM_SUCCESS;
 }
 
@@ -1815,7 +1815,7 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
                     +(dupe_table_get_capacity(table)-1)*sizeof(dupe_entry_t);
 
         st = blob_overwrite(env, table_id, &rec, 0, &info, rid);
-		ham_nuke_stack_space(rec);
+        ham_nuke_stack_space(rec);
     }
     else if (!table_id)
     {
@@ -1835,7 +1835,7 @@ blob_duplicate_insert(ham_db_t *db, ham_offset_t table_id,
                     +(dupe_table_get_capacity(table)-1)*sizeof(dupe_entry_t);
 
         st = blob_allocate(env, &rec, 0, &info, NULL, rid);
-		ham_nuke_stack_space(rec);
+        ham_nuke_stack_space(rec);
     }
     else if (table_id && page)
     {
@@ -1928,7 +1928,7 @@ blob_duplicate_erase(ham_db_t *db, int_key_t *table_key,
         if (new_table_id)
             *new_table_id=0;
 
-		ham_nuke_stack_space(rec);
+        ham_nuke_stack_space(rec);
         return HAM_SUCCESS;
     }
     else
@@ -1957,7 +1957,7 @@ blob_duplicate_erase(ham_db_t *db, int_key_t *table_key,
             ((dupe_table_get_count(table)-position)-1)*sizeof(dupe_entry_t));
         dupe_table_set_count(table, dupe_table_get_count(table)-1);
 
-		memset(&rec, 0, sizeof(rec));
+        memset(&rec, 0, sizeof(rec));
         rec.data=(ham_u8_t *)table;
         rec.size=sizeof(dupe_table_t)
                     +(dupe_table_get_capacity(table)-1)*sizeof(dupe_entry_t);
@@ -1978,7 +1978,7 @@ blob_duplicate_erase(ham_db_t *db, int_key_t *table_key,
             *new_table_id=0;
 
     allocator_free(env_get_allocator(env), table);
-	ham_nuke_stack_space(rec);
+    ham_nuke_stack_space(rec);
     return HAM_SUCCESS;
 }
 

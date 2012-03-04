@@ -130,9 +130,9 @@ public:
     {
         int i;
         ham_offset_t address;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -147,9 +147,9 @@ public:
     void allocFreeTest()
     {
         ham_page_t page;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;

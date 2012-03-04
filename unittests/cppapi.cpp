@@ -392,69 +392,69 @@ public:
         env.erase_db(2);
     }
 
-	// one instance per scope so that we have predictable order of the constructors
+    // one instance per scope so that we have predictable order of the constructors
     void envDestructorTest_ExplicitCstyleDestructOrder(void)
     {
         ham::env env;
-		{
-			ham::db db1;
+        {
+            ham::db db1;
 
-			env.create(BFC_OPATH(".test"));
-			db1=env.create_db(1);
+            env.create(BFC_OPATH(".test"));
+            db1=env.create_db(1);
 
-		    /* let the objects go out of scope */
-		}
+            /* let the objects go out of scope */
+        }
     }
 
-	// one instance per scope so that we have predictable order of the constructors:
-	//
-	// This one will exhibit coredumping behaviour similar to #3 which is the usual way
-	// you'ld declare C++ instances (all in a single scope): the hamster dislikes you very much
-	// when you close the ENV and AFTERWARDS try to close/access the DBs as well: the ENV would
-	// have nuked those, if we hadn't added refcounting at the C level to ensure that the
-	// 'close order' is stable.
+    // one instance per scope so that we have predictable order of the constructors:
+    //
+    // This one will exhibit coredumping behaviour similar to #3 which is the usual way
+    // you'ld declare C++ instances (all in a single scope): the hamster dislikes you very much
+    // when you close the ENV and AFTERWARDS try to close/access the DBs as well: the ENV would
+    // have nuked those, if we hadn't added refcounting at the C level to ensure that the
+    // 'close order' is stable.
     void envDestructorTest_InverseDestructOrder(void)
     {
-		ham::db db1;
+        ham::db db1;
 
-		{
-	        ham::env env;
+        {
+            ham::env env;
 
-			env.create(BFC_OPATH(".test"));
-			db1=env.create_db(2);
+            env.create(BFC_OPATH(".test"));
+            db1=env.create_db(2);
 
-		    /* let the objects go out of scope */
-		}
+            /* let the objects go out of scope */
+        }
     }
 
     void envDestructorTest_CompilerDeterminesDestructOrder(void)
     {
-		ham::db db1;
-	    ham::env env;
+        ham::db db1;
+        ham::env env;
 
-		env.create(BFC_OPATH(".test"));
-		db1=env.create_db(3);
+        env.create(BFC_OPATH(".test"));
+        db1=env.create_db(3);
 
-		/* let the objects go out of scope */
+        /* let the objects go out of scope */
     }
 
-	// and this is us anticipating reference counters in env PLUS a flag to delete on refcount drop to zero:
+    // and this is us anticipating reference counters in env PLUS a flag to delete on refcount drop to zero:
     void envDestructorTestRefCounting(void)
     {
-		ham::db db1;
-		ham::db db2;
-		ham::db db3;
+        ham::db db1;
+        ham::db db2;
+        ham::db db3;
 
-		{
-	        ham::env env;
+        {
+            ham::env env;
 
-			env.create(BFC_OPATH(".test"));
-			db1=env.create_db(2);
-			db2=env.create_db(3);
-			db3=env.create_db(4);
+            env.create(BFC_OPATH(".test"));
+            db1=env.create_db(2);
+            db2=env.create_db(3);
+            db3=env.create_db(4);
 
-		    /* let the objects go out of scope */
-		}
+            /* let the objects go out of scope */
+        }
     }
 
     void envGetDatabaseNamesTest(void)

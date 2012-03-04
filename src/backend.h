@@ -53,23 +53,23 @@ extern "C" {
  */
 typedef enum ham_cb_event_t
 {
-	/**
-	 * descend one level;
-	 * @ref ham_cb_enum_data_t.level is an integer value with the new level,
-	 * while @ref ham_cb_enum_data_t.node_count contains the number of keys stored
-	 * in the current node, which is located in the given @ref ham_cb_enum_data_t.page
-	 */
-	ENUM_EVENT_DESCEND      = 1,
+    /**
+     * descend one level;
+     * @ref ham_cb_enum_data_t.level is an integer value with the new level,
+     * while @ref ham_cb_enum_data_t.node_count contains the number of keys stored
+     * in the current node, which is located in the given @ref ham_cb_enum_data_t.page
+     */
+    ENUM_EVENT_DESCEND      = 1,
 
-	/** start of a new page; @ref ham_cb_enum_data_t.page points to the page */
-	ENUM_EVENT_PAGE_START   = 2,
+    /** start of a new page; @ref ham_cb_enum_data_t.page points to the page */
+    ENUM_EVENT_PAGE_START   = 2,
 
-	/** end of a new page; @ref ham_cb_enum_data_t.page points to the page */
-	ENUM_EVENT_PAGE_STOP    = 3,
+    /** end of a new page; @ref ham_cb_enum_data_t.page points to the page */
+    ENUM_EVENT_PAGE_STOP    = 3,
 
-	/** an item in the page; @ref ham_cb_enum_data_t.key points to the key; @ref ham_cb_enum_data_t.key_index is the index
-	 * of the key in the page */
-	ENUM_EVENT_ITEM         = 4
+    /** an item in the page; @ref ham_cb_enum_data_t.key points to the key; @ref ham_cb_enum_data_t.key_index is the index
+     * of the key in the page */
+    ENUM_EVENT_ITEM         = 4
 } ham_cb_event_t;
 
 
@@ -81,22 +81,22 @@ typedef enum ham_cb_event_t
  */
 typedef struct ham_cb_enum_data_t
 {
-	ham_u32_t level;
+    ham_u32_t level;
 
-	/** one of the @ref ham_cb_event_t state codes */
-	ham_cb_event_t event_code;
+    /** one of the @ref ham_cb_event_t state codes */
+    ham_cb_event_t event_code;
 
-	ham_bool_t node_is_leaf;
-	ham_u16_t _alignment_padding_dummy1;
-	ham_size_t node_count;
-	ham_size_t page_level_sibling_index;
-	ham_page_t *page;
+    ham_bool_t node_is_leaf;
+    ham_u16_t _alignment_padding_dummy1;
+    ham_size_t node_count;
+    ham_size_t page_level_sibling_index;
+    ham_page_t *page;
 
-	int_key_t *key;
-	ham_size_t key_index;
+    int_key_t *key;
+    ham_size_t key_index;
 
-	/** equals the context pointer passed by the caller of the _fun_enumerate backend method. */
-	void *context;
+    /** equals the context pointer passed by the caller of the _fun_enumerate backend method. */
+    void *context;
 } ham_cb_enum_data_t;
 
 /**
@@ -254,8 +254,8 @@ typedef struct
      * enumerate a single page                                          \
      */                                                                 \
     ham_status_t (*_fun_in_node_enumerate)(int_clss *btdata,            \
-                ham_cb_enum_data_t *cb_data,							\
-                ham_enumerate_cb_t cb);									\
+                ham_cb_enum_data_t *cb_data,                            \
+                ham_enumerate_cb_t cb);                                 \
                                                                         \
     /**                                                                 \
      * the keysize of this backend index                                \

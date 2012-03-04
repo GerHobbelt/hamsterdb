@@ -143,9 +143,9 @@ os_get_pagesize(void)
     SYSTEM_INFO info;
     GetSystemInfo(&info);
 #if 01 // alt for Win32 when you accept that you're gonna loose 64K-4K = 60K addressing space per mapped page!!!
-	return (ham_size_t)info.dwPageSize;
+    return (ham_size_t)info.dwPageSize;
 #else
-	return (ham_size_t)info.dwAllocationGranularity;
+    return (ham_size_t)info.dwAllocationGranularity;
 #endif
 }
 
@@ -372,11 +372,11 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
                     ? GENERIC_READ
                     : (GENERIC_READ|GENERIC_WRITE));
 #if 0
-	USHORT dont_compress = COMPRESSION_FORMAT_LZNT1;
+    USHORT dont_compress = COMPRESSION_FORMAT_LZNT1;
 #else
     USHORT dont_compress = COMPRESSION_FORMAT_NONE;
 #endif
-	DWORD newsize;
+    DWORD newsize;
 
 #ifdef UNICODE
     mem_allocator_t *a = ham_get_default_allocator_template();

@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -32,7 +32,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
 
@@ -54,7 +54,7 @@ configuration flags
 
 /**
 The hash table stores the master hash with each key; for larger keys (or when 'extended keys' are
-supported) this will speed up the key comparisons, thus speeding up the find/insert/erase 
+supported) this will speed up the key comparisons, thus speeding up the find/insert/erase
 operations.
 */
 #define HAM_INDEX_STORES_MASTERHASHES       0x1000
@@ -93,7 +93,7 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_pers_cuckoo_hash_t
 {
     ham_u64_t          hash64[1+MAX(4,CUCKOO_K_ARITY)/4];
     ham_u32_t          hash32[2+MAX(4,CUCKOO_K_ARITY)/2];
-    HAM_PACK_0 struct HAM_PACK_1 
+    HAM_PACK_0 struct HAM_PACK_1
     {
         ham_u16_t flags;
         ham_u16_t page_addr[3];
@@ -203,7 +203,7 @@ typedef struct hashtable_root_node_t
 
     /**
     The expansion ratio numerator; must be larger than the denominator; is twice the
-    denominator when this implementation acts as a linear hash instrad of a spiral hash 
+    denominator when this implementation acts as a linear hash instrad of a spiral hash
     dynamic index.
     */
     ham_u8_t _expansion_ratio_numerator;
@@ -218,7 +218,7 @@ typedef struct hashtable_root_node_t
     */
     ham_u16_t _level;
 
-	ham_u16_t _alignment_padding_dummy1;
+    ham_u16_t _alignment_padding_dummy1;
 
     /**
     Position of the split point in the first segment.
@@ -239,7 +239,7 @@ typedef struct hashtable_root_node_t
 
     /**
     And the reference to the third histogram which is tracking the current
-    state of affairs so that the next expansion cycle can adjust its key 
+    state of affairs so that the next expansion cycle can adjust its key
     distribution accordingly.
     */
     hashtable_segment_histogram_t *_next_hist_ref;
@@ -373,7 +373,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 hashtable_pers_root_node_t
 
     /**
     The expansion ratio numerator; must be larger than the denominator; is twice the
-    denominator when this implementation acts as a linear hash instrad of a spiral hash 
+    denominator when this implementation acts as a linear hash instrad of a spiral hash
     dynamic index.
     */
     ham_u8_t _expansion_ratio_numerator;
@@ -401,25 +401,25 @@ typedef HAM_PACK_0 struct HAM_PACK_1 hashtable_pers_root_node_t
     (Approximate) number of keys stored in the hash table.
 
     @note Though one might believe in strict adherence and update the root node for every
-    transaction, this can become a quite costly activity. As the root node only really 
+    transaction, this can become a quite costly activity. As the root node only really
     <em>must</em> be updated when another (partial) page expansion has been performed,
     we only flush the root node to persisted storage at those moments and leave it
     as-is in the RAM cache.
 
-    Assuming a crash or other fatal failure, we can be certain the number of keys reported 
+    Assuming a crash or other fatal failure, we can be certain the number of keys reported
     here is only an approximation as several possible updates of the number didn't make
     it to persisted storage before the hypothetical crash. But we do not mind as here we
     knowingly choose performance over data accuracy. Hence this number can only serve for
-    statistical approximations and a 
+    statistical approximations and a
             SELECT COUNT(*) FROM TABLE
     query must therefore still scan the hash table when an exact number is required.
 
     Incidentally, the same reasoning applies to the histograms stored in this node: they
     are a (close) approximation of reality.
 
-    Errors in the histograms do not accumulate as each update/erase operation will 
+    Errors in the histograms do not accumulate as each update/erase operation will
     update the data in a history-independent fashion, so previous errors in these numbers
-    are (at least partially) gone as soon as the root node is saved to persisted storage 
+    are (at least partially) gone as soon as the root node is saved to persisted storage
     once again after such update/erase activity.
     */
     ham_pers_size64_t _total_key_count;
@@ -435,7 +435,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 hashtable_pers_root_node_t
     * <em>without</em> a segment structure preceding it. In other words: the third histogram
     * immediately follows the second histogram in the persisted root node.
     *
-    * The size of the histograms depends on the storage page size: the histograms are 
+    * The size of the histograms depends on the storage page size: the histograms are
     * dimensioned to ensure the root node record spans more than one persistent storage page.
     */
     hashtable_pers_homepage_segment_t _segments[1];
@@ -527,7 +527,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 hashtable_pers_homepage_t
     Depending on the configuration settings, we either store the master hash with each key
     or require a recalculation of the hash for every access.
     */
-    HAM_PACK_0 union HAM_PACK_1 
+    HAM_PACK_0 union HAM_PACK_1
     {
         hashed_key_t hash;
         int_key_t raw_key;
@@ -571,7 +571,7 @@ device (which may employ this information for partitioning and other storage lay
 other items are just kept in here to cut down on the number of dereferences through pages, cursors, etc.
 to get at them.
 
-The prime directive for this structure is always: attempt to cut down on the run-time cost in the 
+The prime directive for this structure is always: attempt to cut down on the run-time cost in the
 backend, either through nested or repetitive dereferences in one of more internal functions or through
 reducing the stack frame construction effort as a result of pushing many function arguments on the stack
 as those are passed around.
@@ -591,7 +591,7 @@ struct common_hashtable_datums_t
     ham_record_t *in_rec;
 
     /**
-    * A pointer to a cursor; if this is a valid pointer, then this 
+    * A pointer to a cursor; if this is a valid pointer, then this
     * cursor will point to the new inserted / located (found) item.
     */
     ham_ch_cursor_t *cursor;
@@ -606,13 +606,13 @@ struct common_hashtable_datums_t
 
     unsigned has_fast_index : 1;
 
-	unsigned _alignment_padding_dummy1 : 31;
+    unsigned _alignment_padding_dummy1 : 31;
 
     ham_size_t offset_to_fastindex;
 
     ham_size_t offset_to_keyarr;
 
-    common_hashtable_hints_t hints; 
+    common_hashtable_hints_t hints;
 
     /** The ratio where a node is split: (maxkeys * ratio) */
     ham_float_t split_ratio;
@@ -632,7 +632,7 @@ struct common_hashtable_datums_t
 /**
 * "constructor" - initializes a new ham_spiral_hashtable_t object
 *
-* @return a pointer to a new created dynamic hash table backend 
+* @return a pointer to a new created dynamic hash table backend
 *         instance in @a backend_ref
 *
 * @remark flags are from @ref ham_env_open_db() or @ref ham_env_create_db()
@@ -646,11 +646,11 @@ spiral_hashtable_create(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t fla
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_CUCKOO_HASH_H__ */
 
 /**
-* @endcond 
+* @endcond
 */
 

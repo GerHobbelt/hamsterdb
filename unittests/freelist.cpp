@@ -129,9 +129,9 @@ public:
         ham_size_t ps=env_get_pagesize(m_env);
         ham_txn_t *txn;
         ham_offset_t addr;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -163,9 +163,9 @@ public:
         ham_size_t ps=env_get_pagesize(m_env);
         ham_txn_t *txn;
         ham_offset_t addr;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -186,9 +186,9 @@ public:
         ham_size_t ps=env_get_pagesize(m_env);
         ham_txn_t *txn;
         ham_offset_t addr;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -220,9 +220,9 @@ public:
         ham_offset_t offset=ps;
         ham_txn_t *txn;
         ham_offset_t addr;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -256,9 +256,9 @@ public:
         ham_offset_t o=env_get_usable_pagesize(m_env)*8*DB_CHUNKSIZE;
         ham_txn_t *txn;
         ham_offset_t addr;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -303,9 +303,9 @@ public:
         ham_offset_t addr;
         ham_offset_t o=env_get_usable_pagesize(m_env)*8*DB_CHUNKSIZE;
         ham_txn_t *txn;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -366,9 +366,9 @@ public:
         ham_offset_t addr;
         ham_offset_t o=HAM_MAX_S32 - 1024;
         ham_txn_t *txn;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -476,9 +476,9 @@ public:
         ham_offset_t addr;
         ham_size_t ps=env_get_pagesize(m_env);
         ham_txn_t *txn;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -501,9 +501,9 @@ public:
         ham_offset_t addr;
         ham_size_t ps=env_get_pagesize(m_env);
         ham_txn_t *txn;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -529,9 +529,9 @@ public:
         ham_offset_t addr;
         ham_size_t ps=env_get_pagesize(m_env);
         ham_txn_t *txn;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;

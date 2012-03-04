@@ -174,8 +174,8 @@ typedef struct
     /** The size of the record data, in bytes. See also the discussion at
      * @ref HAM_PARTIAL : this value always records the size of the
      * <em>entire</em> record.
-	 *
-	 * @sa HAM_MAX_RECORD_SIZE_T */
+     *
+     * @sa HAM_MAX_RECORD_SIZE_T */
     ham_size_t size;
 
     /** The record flags; see @ref HAM_RECORD_USER_ALLOC and @ref HAM_PARTIAL */
@@ -191,12 +191,12 @@ typedef struct
     ham_size_t partial_size;
 
     /**
-	 * For internal use;
+     * For internal use;
      *
-	 * This element MUST be able to carry sizeof(@ref ham_pers_rid_t) bytes, as it is also
-	 * used to keep a permanent copy of the key in case of TINY/SMALL keys.
-	 */
-	ham_rid_t _rid;
+     * This element MUST be able to carry sizeof(@ref ham_pers_rid_t) bytes, as it is also
+     * used to keep a permanent copy of the key in case of TINY/SMALL keys.
+     */
+    ham_rid_t _rid;
 
 } ham_record_t;
 
@@ -245,11 +245,11 @@ typedef struct
     void *data;
 
     /** The size of the key, in bytes.
-	 *
-	 * @sa HAM_MAX_KEY_SIZE_T */
+     *
+     * @sa HAM_MAX_KEY_SIZE_T */
     ham_u16_t size;
 
-	ham_u16_t _alignment_padding_dummy1;
+    ham_u16_t _alignment_padding_dummy1;
 
     /** The key flags; see @ref HAM_KEY_USER_ALLOC */
     ham_u32_t flags;
@@ -284,11 +284,11 @@ typedef void *ham_parameter_function_t(ham_env_t *env, ham_db_t *db, ham_u32_t f
  */
 typedef struct
 {
-	ham_u16_t dbname; /**< the database 'name' i.e. the database identifier */
+    ham_u16_t dbname; /**< the database 'name' i.e. the database identifier */
 
-	ham_u32_t create_flags; /**< the database flags which were persisted at create time */
+    ham_u32_t create_flags; /**< the database flags which were persisted at create time */
 
-	/** maximum keys in an internal page */
+    /** maximum keys in an internal page */
     ham_u32_t max_key_count_per_page;
 
     /** configured key size */
@@ -304,15 +304,15 @@ typedef struct
  */
 typedef struct
 {
-	ham_size_t db_count; /**< the number of databases currently available */
-	ham_size_t max_db_count; /**< the maximum number of databases you can create within this environment */
+    ham_size_t db_count; /**< the number of databases currently available */
+    ham_size_t max_db_count; /**< the maximum number of databases you can create within this environment */
 
-	ham_u8_t version_info[4]; /**< environment/database was created by a hamsterdb version: major, minor, revision, build */
-	ham_u32_t serial_no; /**< environment was created by a licensed hamsterdb with license code X */
+    ham_u8_t version_info[4]; /**< environment/database was created by a hamsterdb version: major, minor, revision, build */
+    ham_u32_t serial_no; /**< environment was created by a licensed hamsterdb with license code X */
 
-	ham_u32_t pagesize; /**< environment was created with a configured page size value X */
+    ham_u32_t pagesize; /**< environment was created with a configured page size value X */
 
-	ham_bool_t is_legacy_db; /**< this is an environment/database created by a hamsterdb release at or before v1.0.9 */
+    ham_bool_t is_legacy_db; /**< this is an environment/database created by a hamsterdb release at or before v1.0.9 */
 } ham_env_info_t;
 
 
@@ -342,11 +342,11 @@ struct ham_parameter_t {
     {
         ham_offset_t n;
 
-		//void *p;
+        //void *p;
         const char **str_ref;
 
-		ham_db_info_t *db_info_ref;
-		ham_env_info_t *env_info_ref;
+        ham_db_info_t *db_info_ref;
+        ham_env_info_t *env_info_ref;
         ham_statistics_t *stats_ref;
 
         ham_parameter_function_t *fn;
@@ -3154,7 +3154,7 @@ of the database on insert.
 
 @warning Only applicable for In-Memory Databases!
          (I.e. databases / environments which have been created
-		 with the @ref HAM_IN_MEMORY_DB flag set.)
+         with the @ref HAM_IN_MEMORY_DB flag set.)
  */
 #define HAM_DIRECT_ACCESS               0x0040u
 

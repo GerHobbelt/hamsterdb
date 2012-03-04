@@ -58,7 +58,7 @@ struct ham_cache_t
     /**
      * a 'timer' counter used to set/check the age of cache entries:
      * higher values represent newer / more important entries, where
-	 * 'higher' is regarding this number as an UNSIGNED entity.
+     * 'higher' is regarding this number as an UNSIGNED entity.
      */
     ham_s32_t _timeslot;
 
@@ -190,7 +190,7 @@ cache_put_page(ham_cache_t *cache, ham_page_t *page);
 static __inline void
 cache_update_page_access_counter(ham_page_t *page, ham_cache_t *cache)
 {
-	cache->_timeslot++;
+    cache->_timeslot++;
     page_set_cache_cntr(page, cache->_timeslot);
     page_increment_cache_hit_freq(page);
 }

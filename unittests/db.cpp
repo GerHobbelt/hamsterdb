@@ -285,7 +285,7 @@ public:
     void allocPageTest(void)
     {
         ham_page_t *page;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
@@ -303,14 +303,14 @@ public:
     void fetchPageTest(void)
     {
         ham_page_t *p1, *p2;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
 
-		BFC_ASSERT_EQUAL(0,
+        BFC_ASSERT_EQUAL(0,
                 db_alloc_page(&p1, PAGE_IGNORE_FREELIST, &info));
         BFC_ASSERT_EQUAL(m_db, page_get_owner(p1));
         BFC_ASSERT_EQUAL(0,
@@ -326,9 +326,9 @@ public:
         ham_page_t *p3, *p4;
         ham_offset_t a1, a3;
         ham_cache_t *cache=cache_new(m_env, 1);
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -375,9 +375,9 @@ public:
         ham_page_t *p3, *p4;
         ham_offset_t a1, a3;
         ham_cache_t *cache=cache_new(m_env, 2);
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -421,9 +421,9 @@ public:
         ham_page_t *page;
         ham_offset_t address;
         ham_u8_t *p;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -453,7 +453,7 @@ public:
 
             st = db_fetch_page(&page, m_env, address, 0);
             BFC_ASSERT_NOTNULL(page);
-	        BFC_ASSERT_EQUAL(address, page_get_self(page));
+            BFC_ASSERT_EQUAL(address, page_get_self(page));
             p=page_get_raw_payload(page);
             for (int i=0; i<16; i++)
                 BFC_ASSERT_EQUAL_I(p[i], 0, i);
@@ -492,9 +492,9 @@ public:
         BFC_ASSERT_EQUAL(sizeof(dupe_entry_t), 16U);
         BFC_ASSERT_EQUAL(sizeof(dupe_table_t), 8 + sizeof(dupe_entry_t));
 #if 0
-		BFC_ASSERT_EQUAL(sizeof(ham_btree_t) - OFFSETOF(ham_btree_t, _rootpage), 8U + 2);
+        BFC_ASSERT_EQUAL(sizeof(ham_btree_t) - OFFSETOF(ham_btree_t, _rootpage), 8U + 2);
 #endif
-		BFC_ASSERT_EQUAL(sizeof(btree_node_t), 28 + sizeof(int_key_t));
+        BFC_ASSERT_EQUAL(sizeof(btree_node_t), 28 + sizeof(int_key_t));
         BFC_ASSERT_EQUAL(sizeof(int_key_t), 12U);
         BFC_ASSERT_EQUAL(sizeof(env_header_t), 20U);
         BFC_ASSERT_EQUAL(sizeof(db_indexdata_t), 32U);
@@ -518,7 +518,7 @@ public:
         BFC_ASSERT_EQUAL(sizeof(ham_perm_page_union_t), 20U);
         ham_perm_page_union_t p;
         BFC_ASSERT_EQUAL(sizeof(p._s), 20U);
-		BFC_ASSERT_EQUAL(sizeof(p._s._payload), 8U);
+        BFC_ASSERT_EQUAL(sizeof(p._s._payload), 8U);
         BFC_ASSERT_EQUAL(page_get_persistent_header_size(), 12U);
 
         BFC_ASSERT_EQUAL(OFFSETOF(btree_node_t, _entries), 28U);
@@ -559,15 +559,15 @@ public:
                 btree_get_maxkeys(&be.btree),
                 be_get_keysize(&be.btree) + db_get_int_key_header_size(),
                 has_fast_index,
-				0,
+                0,
                 OFFSETOF(btree_node_t, _entries),
                 OFFSETOF(btree_node_t, _entries)
                 + (has_fast_index
                 ? btree_get_maxkeys(&be.btree) * sizeof(ham_u16_t)
                 : 0),
                 {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-				MK_HAM_FLOAT(0.5),
-				MK_HAM_FLOAT(0.33) // i.e. 1/3
+                MK_HAM_FLOAT(0.5),
+                MK_HAM_FLOAT(0.33) // i.e. 1/3
             };
             int_key_t *key = btree_in_node_get_key_ref(&btdata, &page, (ham_u16_t)i);
 
@@ -607,9 +607,9 @@ public:
         ham_offset_t address2;
         ham_u8_t *p;
         int i;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;

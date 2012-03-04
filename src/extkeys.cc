@@ -112,7 +112,7 @@ __extkey_cache_purge_one_cacheline(extkey_cache_t *cache, ham_size_t line_index)
         extkey_t *e;
         extkey_t *next;
         extkey_t *prev;
-		extkey_t *sentinel;
+        extkey_t *sentinel;
 
         /*
         The oldest entries in the list are at the back, so traverse the 'prev' chain,
@@ -122,39 +122,39 @@ __extkey_cache_purge_one_cacheline(extkey_cache_t *cache, ham_size_t line_index)
         it takes O(1) to get at the oldest entry now!
         */
         e = extkey_get_prev(base);
-		ham_assert(extkey_get_next(e) == NULL, (0)); // oldest must have NULL next.
-		if (EXTKEY_MAX_CHAIN_LENGTH > 2)
-		{
-			int i;
+        ham_assert(extkey_get_next(e) == NULL, (0)); // oldest must have NULL next.
+        if (EXTKEY_MAX_CHAIN_LENGTH > 2)
+        {
+            int i;
 
-			sentinel = base;
-			for (i = 0; i < EXTKEY_MAX_CHAIN_LENGTH && sentinel; i++)
-			{
-				sentinel = extkey_get_next(sentinel);
-			}
-		}
-		else
-		{
-			sentinel = NULL;
-		}
+            sentinel = base;
+            for (i = 0; i < EXTKEY_MAX_CHAIN_LENGTH && sentinel; i++)
+            {
+                sentinel = extkey_get_next(sentinel);
+            }
+        }
+        else
+        {
+            sentinel = NULL;
+        }
 
         for (;;)
         {
             if (env_get_txn_id(env) - extkey_get_txn_id(e) <= EXTKEY_MAX_AGE)
             {
                 /*
-				further entries are added later so will belong to a more recent TXN: skip 'em.
+                further entries are added later so will belong to a more recent TXN: skip 'em.
 
-				Unless, that is, when we've set a limit to the maximum chain length as well:
-				*/
-				if (!sentinel)
-	                break;
+                Unless, that is, when we've set a limit to the maximum chain length as well:
+                */
+                if (!sentinel)
+                    break;
             }
 
-			if (sentinel == e)
-			{
-				sentinel = NULL;
-			}
+            if (sentinel == e)
+            {
+                sentinel = NULL;
+            }
 
             next = extkey_get_next(e);
             prev = extkey_get_prev(e);
@@ -334,54 +334,54 @@ extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid,
     if (!e)
         return (HAM_KEY_NOT_FOUND);
 
-	// and place the extkey entry at the top of the linked list:
+    // and place the extkey entry at the top of the linked list:
     top = extkey_cache_get_bucket(cache, h);
-	if (e != top)
-	{
-		extkey_t *ep = extkey_get_prev(e);
-		extkey_t *en = extkey_get_next(e);
-		extkey_t *tp = extkey_get_prev(top);
+    if (e != top)
+    {
+        extkey_t *ep = extkey_get_prev(e);
+        extkey_t *en = extkey_get_next(e);
+        extkey_t *tp = extkey_get_prev(top);
 
-		// drop 'e' from the chain ep -- e -- en:
-		ham_assert(ep, (0));
-		if (en)
-		{
-			// Note that for a top -- e -- .. chain, ep == top. But we're okay that way in here.
-			extkey_set_next(ep, en);
-			extkey_set_prev(en, ep);
+        // drop 'e' from the chain ep -- e -- en:
+        ham_assert(ep, (0));
+        if (en)
+        {
+            // Note that for a top -- e -- .. chain, ep == top. But we're okay that way in here.
+            extkey_set_next(ep, en);
+            extkey_set_prev(en, ep);
 
-			// inject e into the top chain as  tp -- e -- top -- tn:
-			ham_assert(tp, (0));
-			extkey_set_next(tp, NULL /* e */); // forward chain is NOT a loop!
-			extkey_set_next(e, top);
-			ham_assert(top, (0));
-			extkey_set_prev(top, e);
-			extkey_set_prev(e, tp);
-		}
+            // inject e into the top chain as  tp -- e -- top -- tn:
+            ham_assert(tp, (0));
+            extkey_set_next(tp, NULL /* e */); // forward chain is NOT a loop!
+            extkey_set_next(e, top);
+            ham_assert(top, (0));
+            extkey_set_prev(top, e);
+            extkey_set_prev(e, tp);
+        }
         else
         {
-			/*
-			As en == NULL, we know that e == tp
+            /*
+            As en == NULL, we know that e == tp
 
-			We MAY also encounter the scenario where the LL has only two nodes in all:
-			  top -- e
+            We MAY also encounter the scenario where the LL has only two nodes in all:
+              top -- e
 
-			Then ep == top, en == NULL, tp == e, tn == e
-			*/
-			ham_assert(e == tp, (0));
+            Then ep == top, en == NULL, tp == e, tn == e
+            */
+            ham_assert(e == tp, (0));
 
-       		extkey_set_next(ep, NULL /* en */);
-			/* remove entry at end of list: update NEW BASE->prev instead */
+            extkey_set_next(ep, NULL /* en */);
+            /* remove entry at end of list: update NEW BASE->prev instead */
             //extkey_set_prev(e, ep);
 
-			// inject e into the top chain as  tp -- e -- top -- tn:
-			ham_assert(tp, (0));
-			extkey_set_next(e, top);
+            // inject e into the top chain as  tp -- e -- top -- tn:
+            ham_assert(tp, (0));
+            extkey_set_next(e, top);
         }
 
-		// and update the 'most recent' a.k.a. start pointer for the chain:
-		extkey_cache_set_bucket(cache, h, e);
-	}
+        // and update the 'most recent' a.k.a. start pointer for the chain:
+        extkey_cache_set_bucket(cache, h, e);
+    }
 
     *size = extkey_get_size(e);
     *data = extkey_get_data(e);

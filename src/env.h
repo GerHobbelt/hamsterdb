@@ -188,42 +188,42 @@ struct ham_env_t
      */
     unsigned _is_legacy: 1;
 
-	/**
-	 * non-zero when @ref ham_env_close noticed the (possibly implicit) Environment being flagged with
-	 * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
-	 * operation until the last ham_close has been called explicitly.
-	 *
-	 * This bit is introduced to help the C++ and other HamsterDB interface wrappers
-	 * produce deterministic (and above all non-fatal) results when they cannot
-	 * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
-	 * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
-	 * @ref ham_cursor_close will occur.
-	 */
-	unsigned _close_is_pending: 1;
+    /**
+     * non-zero when @ref ham_env_close noticed the (possibly implicit) Environment being flagged with
+     * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
+     * operation until the last ham_close has been called explicitly.
+     *
+     * This bit is introduced to help the C++ and other HamsterDB interface wrappers
+     * produce deterministic (and above all non-fatal) results when they cannot
+     * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
+     * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
+     * @ref ham_cursor_close will occur.
+     */
+    unsigned _close_is_pending: 1;
 
-	/**
-	 * non-zero when @ref ham_env_delete noticed the (possibly implicit) Environment being flagged with
-	 * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
-	 * operation until the last ham_close has been called explicitly.
-	 *
-	 * This bit is introduced to help the C++ and other HamsterDB interface wrappers
-	 * produce deterministic (and above all non-fatal) results when they cannot
-	 * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
-	 * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
-	 * @ref ham_cursor_close will occur.
-	 */
-	unsigned _delete_is_pending: 1;
+    /**
+     * non-zero when @ref ham_env_delete noticed the (possibly implicit) Environment being flagged with
+     * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
+     * operation until the last ham_close has been called explicitly.
+     *
+     * This bit is introduced to help the C++ and other HamsterDB interface wrappers
+     * produce deterministic (and above all non-fatal) results when they cannot
+     * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
+     * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
+     * @ref ham_cursor_close will occur.
+     */
+    unsigned _delete_is_pending: 1;
 
     /** linked list of all file-level filters */
     ham_file_filter_t *_file_filters;
 
-	/**
-	 * some freelist algorithm specific run-time data
-	 *
-	 * This is done as a union as it will reduce code complexity
-	 * significantly in the common freelist processing areas.
-	 */
-	ham_runtime_statistics_globdata_t _perf_data;
+    /**
+     * some freelist algorithm specific run-time data
+     *
+     * This is done as a union as it will reduce code complexity
+     * significantly in the common freelist processing areas.
+     */
+    ham_runtime_statistics_globdata_t _perf_data;
 
     /*
      * following here: function pointers which implement access to

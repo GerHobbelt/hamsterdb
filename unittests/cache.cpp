@@ -362,7 +362,7 @@ public:
 
     void strictTest(void)
     {
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         ham_env_close(m_env, 0);
         ham_close(m_db, 0);

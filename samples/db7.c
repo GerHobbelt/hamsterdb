@@ -65,25 +65,25 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
 
         case HAM_PARAM_CUSTOM_DEVICE:
             printf("HAM_PARAM_CUSTOM_DEVICE: %p\n", db_params_out[i].value.fn);
-			if (db_params_out[i].value.fn)
-			{
-				ham_parameter_function_t *fn = db_params_out[i].value.fn;
-		        ham_device_t *dev;
+            if (db_params_out[i].value.fn)
+            {
+                ham_parameter_function_t *fn = db_params_out[i].value.fn;
+                ham_device_t *dev;
 
-				dev = (*fn)(env, db, 0, NULL);
-				if (dev)
-				{
-					/*TODO: find clean way to allow others to include 'internal' header files
-					        such as device.h, so they can, for instance, construct their
-							own devices. */
+                dev = (*fn)(env, db, 0, NULL);
+                if (dev)
+                {
+                    /*TODO: find clean way to allow others to include 'internal' header files
+                            such as device.h, so they can, for instance, construct their
+                            own devices. */
 #if defined(HAM_DEVICE_H__)
-					ham_device_class_info_t info = {0};
+                    ham_device_class_info_t info = {0};
 
-					dev->get_device_class_info(dev, &info);
-					printf("                         device name: %s\n", info.device_name);
+                    dev->get_device_class_info(dev, &info);
+                    printf("                         device name: %s\n", info.device_name);
 #endif
-				}
-			}
+                }
+            }
             continue;
 
         case HAM_PARAM_GET_FLAGS:
@@ -95,7 +95,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
             break;
 
         case HAM_PARAM_GET_FILENAME:
-			printf("HAM_PARAM_GET_FILENAME: %s\n", *db_params_out[i].value.str_ref);
+            printf("HAM_PARAM_GET_FILENAME: %s\n", *db_params_out[i].value.str_ref);
             continue;
 
         case HAM_PARAM_GET_KEYS_PER_PAGE:
@@ -124,7 +124,7 @@ main(int argc, char **argv)
         { HAM_PARAM_KEYSIZE, sizeof(approx_key) },
         {0,0},
     };
-	const char *filename_param_str = NULL;
+    const char *filename_param_str = NULL;
     ham_parameter_t db_params_out[] =
     {
         { HAM_PARAM_PAGESIZE, 0 },
@@ -149,7 +149,7 @@ main(int argc, char **argv)
         "e1 e2 e3 e4\n"
     };
 
-	db_params_out[7].value.str_ref = &filename_param_str;
+    db_params_out[7].value.str_ref = &filename_param_str;
 
     printf("This sample uses hamsterdb and approximate keys to list all words "
             "in the\noriginal order, together with their line number.\n");

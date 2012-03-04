@@ -575,15 +575,15 @@ bt_cursor_uncouple(ham_bt_cursor_t *c, ham_u32_t flags)
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, (ham_cursor_t *)c, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     if (bt_cursor_get_flags(c) & BT_CURSOR_FLAG_UNCOUPLED)
@@ -780,15 +780,15 @@ bt_cursor_overwrite(ham_bt_cursor_t *c, ham_record_t *record,
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, (ham_cursor_t *)c, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     /*
@@ -901,15 +901,15 @@ bt_cursor_move(ham_bt_cursor_t *c, ham_key_t *key,
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
         + (has_fast_index
         ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
         : 0),
         {flags, flags, (ham_cursor_t *)c, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     ham_assert(be, (0));
@@ -1060,15 +1060,15 @@ bt_cursor_find(ham_bt_cursor_t *c, ham_key_t *key, ham_record_t *record,
             btree_get_maxkeys(be),
             be_get_keysize(be) + db_get_int_key_header_size(),
             has_fast_index,
-			0,
+            0,
             OFFSETOF(btree_node_t, _entries),
             OFFSETOF(btree_node_t, _entries)
                 + (has_fast_index
                   ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
                   : 0),
             {flags, flags, (ham_cursor_t *)c, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-			MK_HAM_FLOAT(0.5),
-			MK_HAM_FLOAT(0.33) // i.e. 1/3
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
         };
 
         ham_assert(be, (0));
@@ -1117,15 +1117,15 @@ bt_cursor_insert(ham_bt_cursor_t *c, ham_key_t *key,
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
             + (has_fast_index
               ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
               : 0),
         {flags, flags, (ham_cursor_t *)c, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     ham_assert(be, (0));
@@ -1185,15 +1185,15 @@ bt_cursor_erase(ham_bt_cursor_t *c, ham_u32_t flags)
             btree_get_maxkeys(be),
             be_get_keysize(be) + db_get_int_key_header_size(),
             has_fast_index,
-			0,
+            0,
             OFFSETOF(btree_node_t, _entries),
             OFFSETOF(btree_node_t, _entries)
                 + (has_fast_index
                   ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
                   : 0),
             {flags, flags, (ham_cursor_t *)c, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-			MK_HAM_FLOAT(0.5),
-			MK_HAM_FLOAT(0.33) // i.e. 1/3
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
         };
 
         ham_assert(be, (0));
@@ -1284,15 +1284,15 @@ bt_cursor_get_duplicate_count(ham_cursor_t *db_cursor,
         btree_get_maxkeys(be),
         be_get_keysize(be) + db_get_int_key_header_size(),
         has_fast_index,
-		0,
+        0,
         OFFSETOF(btree_node_t, _entries),
         OFFSETOF(btree_node_t, _entries)
             + (has_fast_index
               ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
               : 0),
         {flags, flags, db_cursor, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-		MK_HAM_FLOAT(0.5),
-		MK_HAM_FLOAT(0.33) // i.e. 1/3
+        MK_HAM_FLOAT(0.5),
+        MK_HAM_FLOAT(0.33) // i.e. 1/3
     };
 
     ham_assert(be, (0));

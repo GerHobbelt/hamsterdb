@@ -86,7 +86,7 @@ struct common_btree_datums_t
 
     unsigned has_fast_index : 1;
 
-	unsigned _alignment_padding_dummy1 : 31;
+    unsigned _alignment_padding_dummy1 : 31;
 
     ham_size_t offset_to_fastindex;
 
@@ -95,9 +95,9 @@ struct common_btree_datums_t
     common_hints_t hints;
 
     /** The ratio where a node is split: (maxkeys * ratio)
-	 *
+     *
      * Classic HamsterDB/B+-tree: value = MK_HAM_FLOAT(0.5), i.e. split at midpoint.
-	 */
+     */
     ham_float_t split_ratio;
 
     /** The ratio where a node is merged: (maxkeys * ratio) */

@@ -153,7 +153,7 @@ btree_erase_cursor(common_btree_datums_t *btdata, ham_key_t * const key)
     ham_db_t * const db = btdata->db;
     ham_env_t * const env = btdata->env;
     ham_bt_cursor_t * const cursor = btdata->cursor;
-	const ham_u32_t flags = btdata->flags;
+    const ham_u32_t flags = btdata->flags;
 
     erase_scratchpad_t scratchpad =
     {
@@ -283,7 +283,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
 
     /*
      * mark the nodes which may need rebalancing.
-	 *
+     *
      * Always trigger rebalancing when the page contains 1 key (or rather: 'minkeys').
      */
 #if 0
@@ -309,7 +309,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
         ham_offset_t next_ranchor;
         ham_offset_t next_left;
         ham_offset_t next_right;
-	    ham_page_t *child;
+        ham_page_t *child;
 
         st = btree_traverse_tree(&child, &slot, btdata, page, key);
         ham_assert(child != 0, ("guru meditation error"));
@@ -328,7 +328,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
                 //int_key_t *keyarr;
                 int_key_t *bte;
                 btree_node_t *n;
-			    ham_page_t *tempp;
+                ham_page_t *tempp;
 
                 st=db_fetch_page(&tempp, env, left, 0);
                 ham_assert(st ? tempp == NULL : tempp != NULL, (0));
@@ -352,7 +352,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
                 //int_key_t *keyarr;
                 int_key_t *bte;
 
-				ham_assert(slot > 0, (0));
+                ham_assert(slot > 0, (0));
                 bte = btree_in_node_get_key_ref(btdata, page, (ham_u16_t)(slot - 1));
                 next_left=key_get_ptr(bte);
             }
@@ -360,7 +360,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
         }
 
         ham_assert(node_keycount == btree_node_get_count(node), (0));
-		ham_assert(node_keycount > 0, (0));
+        ham_assert(node_keycount > 0, (0));
         if (slot == node_keycount - 1)
         {
             if (!right)
@@ -372,7 +372,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
                 //int_key_t *keyarr;
                 int_key_t *bte;
                 btree_node_t *n;
-			    ham_page_t *tempp;
+                ham_page_t *tempp;
 
                 st=db_fetch_page(&tempp, env, right, 0);
                 ham_assert(st ? tempp == NULL : tempp != NULL, (0));
@@ -403,7 +403,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
                     next_ranchor, page, scratchpad);
         if (st)
             return st;
-		//ham_assert(newme ? newme == child : 1, (0));
+        //ham_assert(newme ? newme == child : 1, (0));
     }
     else
     {
@@ -425,7 +425,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
             int_key_t *bte;
             ham_key_t rhs;
 
-			ham_assert(slot >= 0, (0));
+            ham_assert(slot >= 0, (0));
             bte = btree_in_node_get_key_ref(btdata, page, (ham_u16_t)slot);
 
             st = db_prepare_ham_key_for_compare(db, 1, bte, &rhs);
@@ -470,60 +470,60 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
 
     /*
      * No need to rebalance in case of an error.
-	 *
-	 * Nor do we rebalance when we're in the middle of an 'uber fast' erase operation:
-	 * that'll save us time NOW (and possibly bite us in the ass later on, but alas...)
-	 *
-	 * Note that we MUST rebalance -- in order to prevent /serious/ trouble later on -- when
-	 * the node has become close to empty.
-	 *
-	 * Also note that we don't have to rebalance anything when all the erase did was
-	 * remove one of the duplicates for a given key, i.e. when the key count of the node
-	 * remains unchanged (after all, that count does not count duplicate keys).
+     *
+     * Nor do we rebalance when we're in the middle of an 'uber fast' erase operation:
+     * that'll save us time NOW (and possibly bite us in the ass later on, but alas...)
+     *
+     * Note that we MUST rebalance -- in order to prevent /serious/ trouble later on -- when
+     * the node has become close to empty.
+     *
+     * Also note that we don't have to rebalance anything when all the erase did was
+     * remove one of the duplicates for a given key, i.e. when the key count of the node
+     * remains unchanged (after all, that count does not count duplicate keys).
      */
     ham_assert(!st, (0));
 
-	if (hints->flags & (HAM_HINT_SEQUENTIAL | HAM_HINT_UBER_FAST_ACCESS))
-	{
-	    ham_u16_t node_keycount_new = btree_node_get_count(node);
+    if (hints->flags & (HAM_HINT_SEQUENTIAL | HAM_HINT_UBER_FAST_ACCESS))
+    {
+        ham_u16_t node_keycount_new = btree_node_get_count(node);
 
-		/*
-		heuristic:
+        /*
+        heuristic:
 
-		1) allow non-leaf pages to 'deteriorate' while their key count is still above 1/4 MAX.
+        1) allow non-leaf pages to 'deteriorate' while their key count is still above 1/4 MAX.
 
-		2) allow leaf pages to stay as is while their key count is >= 3, unless the hints are
-		   NOT 'super fast' in which case we allow a dip down to 1/4 MAX.
+        2) allow leaf pages to stay as is while their key count is >= 3, unless the hints are
+           NOT 'super fast' in which case we allow a dip down to 1/4 MAX.
 
-		3) as mentioned in the notes above: do not rebalance when only a duplicate was removed.
+        3) as mentioned in the notes above: do not rebalance when only a duplicate was removed.
 
-		Basically this means we're very aggressive in 'super fast' mode where it comes to
-		leaf pages: having those remain almost completely empty is considered 'okay', but we
-		are a little more conservative, i.e. desire a situation that's closer to maintaining
-		a fully balanced tree, where non-leaf (branch) nodes are concerned.
-		*/
-		if (node_keycount_new == node_keycount)
-		{
-			*page_ref = 0;
-			scratchpad->mergepage = 0;
-			return HAM_SUCCESS; /* case #3 */
-		}
-		else
-		{
-			const ham_size_t minkeys_quart = ((!btree_node_is_leaf(node) || (hints->flags & HAM_HINT_UBER_FAST_ACCESS) == 0)
-											? (maxkeys * MK_HAM_FLOAT(0.25) + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1		// round position value
-											: 3 - 1); // case #1
+        Basically this means we're very aggressive in 'super fast' mode where it comes to
+        leaf pages: having those remain almost completely empty is considered 'okay', but we
+        are a little more conservative, i.e. desire a situation that's closer to maintaining
+        a fully balanced tree, where non-leaf (branch) nodes are concerned.
+        */
+        if (node_keycount_new == node_keycount)
+        {
+            *page_ref = 0;
+            scratchpad->mergepage = 0;
+            return HAM_SUCCESS; /* case #3 */
+        }
+        else
+        {
+            const ham_size_t minkeys_quart = ((!btree_node_is_leaf(node) || (hints->flags & HAM_HINT_UBER_FAST_ACCESS) == 0)
+                                            ? (maxkeys * MK_HAM_FLOAT(0.25) + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1      // round position value
+                                            : 3 - 1); // case #1
 
-			/* keep in mind that the hinter might have produced a skewed merge_split ratio! */
-			if ((minkeys_quart < minkeys ? node_keycount_new > minkeys_quart : node_keycount_new > minkeys)
-				&& node_keycount_new >= 3)
-			{
-				*page_ref = 0;
-				scratchpad->mergepage = 0;
-				return HAM_SUCCESS; /* case #1+#2('unless ...') */
-			}
-		}
-	}
+            /* keep in mind that the hinter might have produced a skewed merge_split ratio! */
+            if ((minkeys_quart < minkeys ? node_keycount_new > minkeys_quart : node_keycount_new > minkeys)
+                && node_keycount_new >= 3)
+            {
+                *page_ref = 0;
+                scratchpad->mergepage = 0;
+                return HAM_SUCCESS; /* case #1+#2('unless ...') */
+            }
+        }
+    }
 
     return my_rebalance(page_ref, page, left, right, lanchor, ranchor, parent, scratchpad);
 }
@@ -561,7 +561,7 @@ my_collapse_root(ham_page_t *newroot, erase_scratchpad_t *scratchpad)
         /*
          * As we re-purpose a page, we do NOT reset its pagecounter as
          * well as the cache is merely interested in how 'important'
-		 * a page is, irrespective of purpose.
+         * a page is, irrespective of purpose.
          */
         ham_assert(cache, (0));
         cache_update_page_access_counter(newroot, cache); /* bump up */
@@ -853,7 +853,7 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
     {
         int_key_t *bte;
         ham_key_t key;
-	    ham_s32_t slot;
+        ham_s32_t slot;
 
         bte = btree_in_node_get_key_ref(btdata, sibpage, 0);
         memset(&key, 0, sizeof(key));
@@ -866,7 +866,7 @@ my_merge_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
             return st;
         }
 
-		ham_assert(slot >= 0, (0));
+        ham_assert(slot >= 0, (0));
         ham_assert(node_keycount == btree_node_get_count(node), (0));
         bte_lhs = btree_in_node_get_key_ref(btdata, page, node_keycount);
         bte_rhs = btree_in_node_get_key_ref(btdata, ancpage, slot);
@@ -1152,9 +1152,9 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
         }
 
         // split_ratio ???
-		//
-		// Hm, this is part of the rebalancing act, where keys are equally distributed among both pages.
-		// Question is: do we still want 'equally distributed' here when we've got hints/statistics?
+        //
+        // Hm, this is part of the rebalancing act, where keys are equally distributed among both pages.
+        // Question is: do we still want 'equally distributed' here when we've got hints/statistics?
         ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
         c = (sibnode_keycount - node_keycount) / 2;
         if (c==0)
@@ -1352,9 +1352,9 @@ my_shift_pages(ham_page_t **newpage_ref, ham_page_t *page, ham_page_t *sibpage, 
         }
 
         // split_ratio ???
-		//
-		// Hm, this is part of the rebalancing act, where keys are equally distributed among both pages.
-		// Question is: do we still want 'equally distributed' here when we've got hints/statistics?
+        //
+        // Hm, this is part of the rebalancing act, where keys are equally distributed among both pages.
+        // Question is: do we still want 'equally distributed' here when we've got hints/statistics?
         ham_assert(sibnode_keycount == btree_node_get_count(sibnode), (0));
         c = (node_keycount - sibnode_keycount)/2;
         if (c==0)
@@ -1515,35 +1515,35 @@ my_copy_key(common_btree_datums_t *btdata, int_key_t *lhs, int_key_t *rhs)
      * if the key is extended, we copy the extended blob; otherwise, we'd
      * have to add reference counting to the blob, because two keys are now
      * using the same blobid. this would be too complicated.
-	 *
-	 * [GHo] comment about that: my_copy_key() is only used to duplicate keys
-	 *       from child to parent nodes; you do NOT need reference counting
-	 *       when you simply make all extended keys in non-leaf nodes point
-	 *       to the extended key storage for the leaf node: after all, any
-	 *       key occurring in a non-leaf node MUST also appear in a leaf
-	 *       node somewhere.
-	 *       This approach would also improve merge/split speed a little
-	 *       as you don't need to copy the extended key data, ever.
-	 *
-	 *       Wicked scenarios with fail risk: when a key is 'updated', it's
-	 *       basically a 'delete-insert' cycle, so any key changes will
-	 *       be applied to all instances of that key in the B+-tree.
-	 *       Unless, that is, we introduce new optimized 'update' code
-	 *       which 'rewrites' a key in that special circumstance where changing
-	 *       it does not alter its place in the sort order, i.e. position
-	 *       in the tree. Now THAT would be an optimization for VERY RARE
-	 *       circumstances; I don't think it's useful to implement,
-	 *       as the rather more generic 'hold off tree rebalancing' idea
-	 *       will produce the same effect, and then some.
-	 *
-	 *       Conclusion: we can safely assume non-leaf node keys have their
-	 *       extkey data pointing at the same space as the same key in a
-	 *       leaf node.
-	 *
-	 *       Now all we need is a 'backwards compatible' approach which
-	 *       copes with older databases where each key would carry its own
-	 *       extkey copy... maybe a flag bit to signal the extkey data is
-	 *       NOT duplicated? Yeah, that should be enough...
+     *
+     * [GHo] comment about that: my_copy_key() is only used to duplicate keys
+     *       from child to parent nodes; you do NOT need reference counting
+     *       when you simply make all extended keys in non-leaf nodes point
+     *       to the extended key storage for the leaf node: after all, any
+     *       key occurring in a non-leaf node MUST also appear in a leaf
+     *       node somewhere.
+     *       This approach would also improve merge/split speed a little
+     *       as you don't need to copy the extended key data, ever.
+     *
+     *       Wicked scenarios with fail risk: when a key is 'updated', it's
+     *       basically a 'delete-insert' cycle, so any key changes will
+     *       be applied to all instances of that key in the B+-tree.
+     *       Unless, that is, we introduce new optimized 'update' code
+     *       which 'rewrites' a key in that special circumstance where changing
+     *       it does not alter its place in the sort order, i.e. position
+     *       in the tree. Now THAT would be an optimization for VERY RARE
+     *       circumstances; I don't think it's useful to implement,
+     *       as the rather more generic 'hold off tree rebalancing' idea
+     *       will produce the same effect, and then some.
+     *
+     *       Conclusion: we can safely assume non-leaf node keys have their
+     *       extkey data pointing at the same space as the same key in a
+     *       leaf node.
+     *
+     *       Now all we need is a 'backwards compatible' approach which
+     *       copes with older databases where each key would carry its own
+     *       extkey copy... maybe a flag bit to signal the extkey data is
+     *       NOT duplicated? Yeah, that should be enough...
      */
     if (key_get_flags(rhs) & KEY_IS_EXTENDED)
     {
@@ -1577,7 +1577,7 @@ my_copy_key(common_btree_datums_t *btdata, int_key_t *lhs, int_key_t *rhs)
         if (st)
             return (st);
         key_set_extended_rid(db, lhs, lhsblobid);
-		ham_nuke_stack_space(record);
+        ham_nuke_stack_space(record);
     }
 
     return HAM_SUCCESS;
@@ -1683,7 +1683,7 @@ my_replace_key(ham_page_t *page, ham_s32_t slot,
         if (st)
             return (st);
         key_set_extended_rid(db, lhs, lhsblobid);
-		ham_nuke_stack_space(record);
+        ham_nuke_stack_space(record);
     }
 
     key_set_size(lhs, key_get_size(rhs));

@@ -163,7 +163,7 @@ typedef unsigned char      ham_u8_t;
  */
 #if !defined(HAM_FAST_ONLY_32BIT)
 #ifdef HAM_64BIT
-#define HAM_FAST_ONLY_32BIT	1
+#define HAM_FAST_ONLY_32BIT 1
 #else
 #define HAM_FAST_ONLY_32BIT 0
 #endif
@@ -238,7 +238,7 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_pers_rid_t
     ham_u64_t          rid64;
 #endif
     ham_u32_t          rid32[2];
-	ham_u8_t           rid8[8]; /**< for direct 'tiny record' access */
+    ham_u8_t           rid8[8]; /**< for direct 'tiny record' access */
 } HAM_PACK_2 ham_pers_rid_t;
 
 #include <ham/packstop.h>
@@ -275,8 +275,8 @@ typedef ham_u32_t          ham_offset_t;
  */
 typedef union
 {
-	ham_offset_t rid;
-	ham_u8_t raw_data[8];
+    ham_offset_t rid;
+    ham_u8_t raw_data[8];
 } ham_rid_t;
 
 
@@ -429,7 +429,7 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_pers_multitype_t
 typedef ham_s32_t ham_float_t;
 
 /** The value 1.0 as represented in a @ref ham_float_t type instance */
-#define HAM_FLOAT_1					8192
+#define HAM_FLOAT_1                 8192
 
 /** Converts any value to a @ref ham_float_t value. */
 #define MK_HAM_FLOAT(val)           ((ham_float_t)((val) * HAM_FLOAT_1))
@@ -449,21 +449,21 @@ typedef ham_s32_t ham_float_t;
 /** absolute maximum value for @ref ham_u32_t, which is an unsigned type */
 #define HAM_MAX_U32             (~(ham_u32_t)0)
 /** absolute maximum value for @ref ham_s16_t, which is an signed type */
-#define HAM_MAX_S16             ((ham_s16_t)((~(ham_u16_t)0) >> 1))					// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MAX_S16             ((ham_s16_t)((~(ham_u16_t)0) >> 1))                 // make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute maximum value for @ref ham_s32_t, which is an signed type */
-#define HAM_MAX_S32             ((ham_s32_t)((~(ham_u32_t)0) >> 1))					// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MAX_S32             ((ham_s32_t)((~(ham_u32_t)0) >> 1))                 // make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute minimum value for @ref ham_s16_t, which is an signed type */
-#define HAM_MIN_S16             ((ham_s16_t)(((~(ham_u16_t)0) >> 1) + 1))				// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MIN_S16             ((ham_s16_t)(((~(ham_u16_t)0) >> 1) + 1))               // make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute minimum value for @ref ham_s32_t, which is an signed type */
-#define HAM_MIN_S32             ((ham_s32_t)(((~(ham_u32_t)0) >> 1) + 1))				// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MIN_S32             ((ham_s32_t)(((~(ham_u32_t)0) >> 1) + 1))               // make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute maximum value for @ref ham_size_t, which is an unsigned type */
 #define HAM_MAX_SIZE_T          (~(ham_size_t)0)
 /** absolute maximum value for @ref ham_offset_t, which is an unsigned type */
 #define HAM_MAX_OFFSET_T        (~(ham_offset_t)0)
 /** absolute maximum value for @ref ham_signed_off_t, which is an @e signed type */
-#define HAM_MAX_SIGNED_OFF_T    ((ham_signed_off_t)((~(ham_offset_t)0) >> 1))		// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MAX_SIGNED_OFF_T    ((ham_signed_off_t)((~(ham_offset_t)0) >> 1))       // make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute minimum value for @ref ham_signed_off_t, which is an @e signed type */
-#define HAM_MIN_SIGNED_OFF_T    ((ham_signed_off_t)(((~(ham_offset_t)0) >> 1) + 1))	// make sure the shift-right is a LOGICAL SHIFT RIGHT!
+#define HAM_MIN_SIGNED_OFF_T    ((ham_signed_off_t)(((~(ham_offset_t)0) >> 1) + 1)) // make sure the shift-right is a LOGICAL SHIFT RIGHT!
 /** absolute maximum value for @ref ham_float_t, which is an signed type */
 #define HAM_MAX_FLOAT           HAM_MAX_S32
 /** absolute minimum value for @ref ham_float_t, which is an signed type */

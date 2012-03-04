@@ -527,7 +527,7 @@ stats_page_is_nuked(ham_db_t *db, struct ham_page_t *page, ham_bool_t split)
         dbdata->lower_bound_set = HAM_FALSE;
     }
 
-	if (dbdata->upper_bound_page_address == page_get_self(page))
+    if (dbdata->upper_bound_page_address == page_get_self(page))
     {
         if (dbdata->upper_bound.data)
         {

@@ -1941,9 +1941,9 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
     {
         ham_page_t *page;
         ham_status_t st;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
@@ -1968,15 +1968,15 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             btree_get_maxkeys(be),
             be_get_keysize(be) + db_get_int_key_header_size(),
             has_fast_index,
-			0,
+            0,
             OFFSETOF(btree_node_t, _entries),
             OFFSETOF(btree_node_t, _entries)
             + (has_fast_index
             ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
             : 0),
             {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-			MK_HAM_FLOAT(0.5),
-			MK_HAM_FLOAT(0.33) // i.e. 1/3
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
         };
         int_key_t *key = btree_in_node_get_key_ref(&btdata, page, 0);
         int off=(int)(reinterpret_cast<ham_u8_t *>(key) - reinterpret_cast<ham_u8_t *>(page)); // btree_node_get_key_offset(page, 0);

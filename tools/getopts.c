@@ -44,12 +44,12 @@ getopts_usage(option_t *options)
 {
     printf("usage: %s <options>\n", g_program);
     for (; options->shortopt; options++) {
-		if (options->flags & GETOPTS_IS_ONLY_INFO)
-		{
-			/* just replace 'every' %s in there with the actual program name: */
+        if (options->flags & GETOPTS_IS_ONLY_INFO)
+        {
+            /* just replace 'every' %s in there with the actual program name: */
             printf(options->helpdesc, g_program, g_program, g_program, g_program, g_program, g_program, g_program, g_program);
-			printf("\n");
-		}
+            printf("\n");
+        }
         else if (options->flags & GETOPTS_NEED_ARGUMENT)
             printf("    -%s, --%s=<arg>: %s\n",
                 options->shortopt, options->longopt, options->helpdesc);
@@ -78,8 +78,8 @@ getopts(option_t *options, char **param)
         *param=&g_argv[g_a][2];
         for (; o->longopt || (o->flags & GETOPTS_IS_ONLY_INFO); o++) {
             int found=0;
-			if (o->flags & GETOPTS_IS_ONLY_INFO)
-				continue;
+            if (o->flags & GETOPTS_IS_ONLY_INFO)
+                continue;
             if (!strcmp(o->longopt, &g_argv[g_a][2]))
                 found=1;
             else if (strstr(&g_argv[g_a][2], o->longopt)==&g_argv[g_a][2]) {
@@ -120,8 +120,8 @@ getopts(option_t *options, char **param)
     else if (g_argv[g_a][0]=='-' || g_argv[g_a][0]=='/') {
         *param=&g_argv[g_a][1];
         for (; o->shortopt || (o->flags & GETOPTS_IS_ONLY_INFO); o++) {
-			if (o->flags & GETOPTS_IS_ONLY_INFO)
-				continue;
+            if (o->flags & GETOPTS_IS_ONLY_INFO)
+                continue;
             if (!strcmp(o->shortopt, &g_argv[g_a][1])) {
                 if (o->flags & GETOPTS_NEED_ARGUMENT) {
                     if (g_a==g_argc)

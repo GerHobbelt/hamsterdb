@@ -989,10 +989,10 @@ extern "C" {
 
 typedef enum bfc_run_state_t
 {
-	SKIP_THIS_TEST = 0x0001,
-	ABORT_THIS_RUN = 0x0002,
+    SKIP_THIS_TEST = 0x0001,
+    ABORT_THIS_RUN = 0x0002,
 
-	CONTINUE_RUN = 0
+    CONTINUE_RUN = 0
 } bfc_run_state_t;
 
 
@@ -1002,19 +1002,19 @@ typedef enum bfc_run_state_t
 template <class T> class bfc_visitor
 {
 public:
-	/// the visitor function (acts like the visitor is a functor)
-	virtual bfc_run_state_t operator()(T &t_ref, const std::string &name) = 0;
+    /// the visitor function (acts like the visitor is a functor)
+    virtual bfc_run_state_t operator()(T &t_ref, const std::string &name) = 0;
 
-	/**
-	 * Full implementations of this abstract base class should return 'true'.
-	 *
-	 * Return true when the callback is implemented / active, i.e. when the
-	 * visitor/callback should be invoked (through the operator ()).
-	 */
-	virtual operator bool()
-	{
-		return false;
-	}
+    /**
+     * Full implementations of this abstract base class should return 'true'.
+     *
+     * Return true when the callback is implemented / active, i.e. when the
+     * visitor/callback should be invoked (through the operator ()).
+     */
+    virtual operator bool()
+    {
+        return false;
+    }
 };
 
 typedef bfc_visitor<fixture> bfc_fixture_visitor;
@@ -1066,9 +1066,9 @@ protected:
 
         const fixture *active_fixture;
 
-		void *C4121_filler; // MSVC2010: alignment of a member was sensitive to packing: active_method
+        void *C4121_filler; // MSVC2010: alignment of a member was sensitive to packing: active_method
 
-		method active_method;
+        method active_method;
         std::string active_funcname;
         jmp_buf signal_return_point;
 
@@ -1080,7 +1080,7 @@ protected:
 
         bool sig_handlers_set;
 
-		testrunner *this_is_me;
+        testrunner *this_is_me;
     };
 
     static bfc_signal_context_t m_current_signal_context;
@@ -1119,46 +1119,46 @@ public:
     void print_errors(bool panic_flush = false);
 
     /**
-	 * run all tests - returns number of errors
-	 */
+     * run all tests - returns number of errors
+     */
     unsigned int run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
-			bool print_err_report = true);
+            bool print_err_report = true);
     /**
-	 * run all tests (optional fixture and/or test selection) - returns number of errors
-	 */
+     * run all tests (optional fixture and/or test selection) - returns number of errors
+     */
     unsigned int run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
-			const char *fixture_name, const char *test_name = NULL,
+            const char *fixture_name, const char *test_name = NULL,
             bool print_err_report = true);
 
     /**
-	 * run all tests in a given range (start in/exclusive, end inclusive)
-	 *
-	 * @return number of errors
-	 */
+     * run all tests in a given range (start in/exclusive, end inclusive)
+     *
+     * @return number of errors
+     */
     unsigned int run(
         bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
-		const std::string &begin_fixture, const std::string &begin_test,
+        const std::string &begin_fixture, const std::string &begin_test,
         const std::string &end_fixture, const std::string &end_test,
         bool inclusive_begin,
         bool is_not_a_series = false,
         bool print_err_report = true);
 
     /**
-	 * run all tests of a fixture
-	 */
+     * run all tests of a fixture
+     */
     unsigned int run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
-			fixture *f, const char *test_name = NULL, bool print_err_report = true);
+            fixture *f, const char *test_name = NULL, bool print_err_report = true);
 
     /**
-	 * run a single test of a fixture
-	 */
+     * run a single test of a fixture
+     */
     bool run(bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
-			fixture *f, const test *test, bfc_error_report_mode_t print_err_report = BFC_REPORT_IN_HERE);
+            fixture *f, const test *test, bfc_error_report_mode_t print_err_report = BFC_REPORT_IN_HERE);
 
 protected:
     /**
-	 * run a single test of a fixture
-	 */
+     * run a single test of a fixture
+     */
     bool exec_a_single_test(fixture *f, const test *test);
 
 public:

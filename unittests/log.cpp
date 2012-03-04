@@ -2124,19 +2124,19 @@ public:
             btree_get_maxkeys(be),
             be_get_keysize(be) + db_get_int_key_header_size(),
             has_fast_index,
-			0,
+            0,
             OFFSETOF(btree_node_t, _entries),
             OFFSETOF(btree_node_t, _entries)
             + (has_fast_index
             ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
             : 0),
             {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
-			MK_HAM_FLOAT(0.5),
-			MK_HAM_FLOAT(0.33) // i.e. 1/3
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
         };
         int_key_t *entry = btree_in_node_get_key_ref(&btdata, page, 0);
 
-		BFC_ASSERT_EQUAL((ham_u8_t)'a', key_get_key(entry)[0]);
+        BFC_ASSERT_EQUAL((ham_u8_t)'a', key_get_key(entry)[0]);
         key_get_key(entry)[0]='b';
         page_set_dirty(page, m_env);
         BFC_ASSERT_EQUAL(0, ham_txn_abort(txn, 0));

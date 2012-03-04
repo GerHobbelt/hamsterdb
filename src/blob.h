@@ -208,7 +208,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 dupe_entry_t
  * @sa dupe_entry_get_rid
  * @sa dupe_entry_get_rid_as_data
  */
-#define dupe_entry_get_rid_direct_ref(e)									\
+#define dupe_entry_get_rid_direct_ref(e)                                    \
            (&(e)->_rid)
 
 /**

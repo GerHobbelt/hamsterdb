@@ -19,7 +19,7 @@ filenamen: virtual nodes manipuleren die: \1, \2, etc. regex substitutie praktij
 /*
 Proof of concept
 
-Building, initializing and using a device driver graph, consisting of 
+Building, initializing and using a device driver graph, consisting of
 
 - 1 'entry point': the 'top' device driver
 
@@ -28,31 +28,31 @@ Building, initializing and using a device driver graph, consisting of
 - 1 or more 'physical device driver' nodes
 
 
-The idea is that the device driver nodes/layers each act as an object and together 
+The idea is that the device driver nodes/layers each act as an object and together
 form a 'device chain' which supports partitioned and disparate I/O storage access methods.
 
-'virtual' device driver layers are those device drivers which expect one or more 
-device drivers registered as children. In terms of the directed graph, a 'virtual' 
+'virtual' device driver layers are those device drivers which expect one or more
+device drivers registered as children. In terms of the directed graph, a 'virtual'
 node points to one or more other device driver nodes.
 
-'physical' device layers (nodes) are expected to read and write data to storage 
-devices available in the system. Network connections and other 
-'application-external' I/O data channels are regarded as just some other 
+'physical' device layers (nodes) are expected to read and write data to storage
+devices available in the system. Network connections and other
+'application-external' I/O data channels are regarded as just some other
 'storage device' each.
 
-In fact, a 'physical' device driver node is expected to be an end node of a directed 
-graph path, while 'virtual' device driver nodes are by definition NEVER end nodes of 
+In fact, a 'physical' device driver node is expected to be an end node of a directed
+graph path, while 'virtual' device driver nodes are by definition NEVER end nodes of
 a directed path.
 
 
 This proof of concept is meant to showcase two different aspects of this device driver
 setup:
 
-- the ability to split I/O across disparate devices in a non-uniform way (flexible 
+- the ability to split I/O across disparate devices in a non-uniform way (flexible
 multi-level partitioning schemes) -- of particular interest are the technical details
 ensuring a uniform page size presented at the 'top node' level, irrespective the
 underlying graph, second there's the need to transform a single flat space 64-bit
-top-level 'rid' atom address to an unambiguous address suitable for each device layer 
+top-level 'rid' atom address to an unambiguous address suitable for each device layer
 in the graph.
 
 - test performance and limitations of various virtual device drivers, such as crypto
@@ -62,7 +62,7 @@ layers, compression layers, cache layers, partitioners, etc.
 The design is done in an Object Oriented manner, where method-overloading and various
 design patterns are useful (e.g. the factory pattern).
 
-The implementation is done in portable C do allow easy migration into the HamsterDB 
+The implementation is done in portable C do allow easy migration into the HamsterDB
 code proper.
 */
 
@@ -90,7 +90,7 @@ Manage the device graph: add/remove/connect devices.
 
 
 /*
-Assume the user constructs his own device graph; that 
+Assume the user constructs his own device graph; that
 way he can construct arbitrary complex device graphs without us
 having to provide an API for such.
 
@@ -117,7 +117,7 @@ will happen when refcount finally drops back to zero. Presto.
 
 Should we provide helper functions for this graph construction stuff anyway?
 
-devices can be statically allocated, on the stack or on the heap. The allocator 
+devices can be statically allocated, on the stack or on the heap. The allocator
 and cleanup callback must cope with that. hamster should be oblivious to this.
 
 How do we link up devices in the directed graph? links. --> pointers. (to/from bidirectional or
@@ -185,20 +185,20 @@ typedef struct
 Nivasch:
 
 keep a stack of (x_i, i), where, at all times, both the i's and x_i's in the stack
-form strictly increasing sequences. 
+form strictly increasing sequences.
 
 The stack is initially empty.
 
 At each step j, pop from the stack all entries (x_i, i) where x_i > x_j. If an x_i == x_j
-is found in the stack, we are done; then the cycle length is 
+is found in the stack, we are done; then the cycle length is
 
   lambda = j - i
 
 Otherwise, push (x_j, j) on top of the sack and continue.
 */
-static ham_status_t 
-traverse_graph4check(traverse4check_data_t *data, 
-        ham_device_t *entry_node, ham_size_t call_depth, 
+static ham_status_t
+traverse_graph4check(traverse4check_data_t *data,
+        ham_device_t *entry_node, ham_size_t call_depth,
         ham_device_graph_check_report_t *report_output)
 {
     /*
@@ -268,7 +268,7 @@ traverse_graph4check(traverse4check_data_t *data,
             return st;
 
         case HAM_CYCLE_IN_DEVICE_GRAPH:
-            /* 
+            /*
             collect cycle sequence or try locate the start?
 
             As we matched x_i == x_j before, we know there's one ENTIRE cycle sitting in the call stack,
@@ -288,13 +288,13 @@ traverse_graph4check(traverse4check_data_t *data,
             }
             else if (data->cycle_seek_state == FIND_MU)
             {
-                /* 
-                check whether we are in the cycle; if not, then the 
+                /*
+                check whether we are in the cycle; if not, then the
                 inner call we just exited was element MU.
                 
                 This scan can be made a lot faster by using a hash table instead of
-                an array here, but we were lazy and this is fringe functionality, 
-                so no use expending a lot of breath on speeding up this baby any further. 
+                an array here, but we were lazy and this is fringe functionality,
+                so no use expending a lot of breath on speeding up this baby any further.
                 */
                 ham_size_t k;
 
@@ -319,7 +319,7 @@ traverse_graph4check(traverse4check_data_t *data,
                 call stack, so we have what we need by now.
                 */
             }
-            else 
+            else
             {
                 ham_assert(data->cycle_seek_state == MU_FOUND, (0));
             }
@@ -370,7 +370,7 @@ ham_status_t ham_validate_device_graph(ham_device_t *entry_node, ham_device_grap
 
     data.node_count = 1;
 
-    st = traverse_graph4check(&data, entry_node, 1, report_output); 
+    st = traverse_graph4check(&data, entry_node, 1, report_output);
 
     allocator_free(mm, data.stack);
     if (data.cycle)
@@ -391,6 +391,6 @@ Nivasch, 2004 algorithm derivative
 
 
 /**
-* @endcond 
+* @endcond
 */
 

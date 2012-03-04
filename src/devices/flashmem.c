@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -24,7 +24,7 @@ or other memory-based persisted storage.
 
 
 
-typedef struct 
+typedef struct
 {
     ham_u8_t *ptr;
     ham_offset_t alloc_size;
@@ -43,7 +43,7 @@ typedef struct
 typedef struct
 {
     /**
-     An array of @ref dev_flashmem_t pointers; the array of pointers instead an array of instances is required 
+     An array of @ref dev_flashmem_t pointers; the array of pointers instead an array of instances is required
      as the instances must stay pinned to their memory locations while the array may be redimensioned to accept
      more device instances alongside.
     */
@@ -139,11 +139,11 @@ static ham_status_t assign_me_a_free_slot(ham_device_t *dev)
         }
     }
 
-    return (t ? HAM_SUCCESS : HAM_IO_ERROR); 
+    return (t ? HAM_SUCCESS : HAM_IO_ERROR);
 }
 
-static ham_status_t 
-__fm_create(ham_device_t *self, const char *fname, ham_u32_t flags, 
+static ham_status_t
+__fm_create(ham_device_t *self, const char *fname, ham_u32_t flags,
             ham_u32_t mode)
 {
     ham_size_t file_index;
@@ -189,7 +189,7 @@ __fm_create(ham_device_t *self, const char *fname, ham_u32_t flags,
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_open(ham_device_t *self, const char *fname, ham_u32_t flags)
 {
     ham_size_t file_index;
@@ -221,7 +221,7 @@ __fm_close(ham_device_t *self)
     return assign_me_a_free_slot(self);
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_flush(ham_device_t *self)
 {
     //dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -231,7 +231,7 @@ __fm_flush(ham_device_t *self)
 
 
 
-static ham_status_t 
+static ham_status_t
 __fm_truncate(ham_device_t *self, ham_offset_t newsize)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -258,14 +258,14 @@ __fm_truncate(ham_device_t *self, ham_offset_t newsize)
     return HAM_SUCCESS;
 }
 
-static ham_bool_t 
+static ham_bool_t
 __fm_is_open(ham_device_t *self)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
     return (t->ptr != NULL);
 }
 
-static ham_size_t 
+static ham_size_t
 __fm_get_pagesize(ham_device_t *self)
 {
     ham_size_t s;
@@ -289,7 +289,7 @@ __fm_get_pagesize(ham_device_t *self)
 /**
  * get the size of the database file
  */
-static ham_status_t 
+static ham_status_t
 __fm_get_filesize(ham_device_t *self, ham_offset_t *length)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -298,8 +298,8 @@ __fm_get_filesize(ham_device_t *self, ham_offset_t *length)
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
-__fm_read(ham_device_t *self, ham_offset_t offset, 
+static ham_status_t
+__fm_read(ham_device_t *self, ham_offset_t offset,
         void *buffer, ham_offset_t size)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -328,9 +328,9 @@ __fm_read_page(ham_device_t *self, ham_page_t *page, ham_size_t size)
         size=self->get_pagesize(self);
     ham_assert(size, (0));
 
-    if (device_get_flags(self)&HAM_DISABLE_MMAP) 
+    if (device_get_flags(self)&HAM_DISABLE_MMAP)
     {
-        if (page_get_pers(page)==0) 
+        if (page_get_pers(page)==0)
         {
             ham_assert(size <= HAM_MAX_SIZE_T, ("ham_size_t overflow"));
             buffer=(ham_u8_t *)allocator_alloc(device_get_allocator(self), size);
@@ -344,7 +344,7 @@ __fm_read_page(ham_device_t *self, ham_page_t *page, ham_size_t size)
             ham_assert(!(page_get_npers_flags(page)&PAGE_NPERS_MALLOC), (0));
         }
 
-        return (__fm_read(self, page_get_self(page), 
+        return (__fm_read(self, page_get_self(page),
                     page_get_pers(page), size));
     }
 
@@ -354,14 +354,14 @@ __fm_read_page(ham_device_t *self, ham_page_t *page, ham_size_t size)
     ham_assert(size <= HAM_MAX_SIZE_T, ("no ham_size_t overflow"));
     if (offset > t->used || offset + size > t->used)
         return HAM_IO_ERROR;
-    //st=os_mmap(t->fd, page_get_mmap_handle_ptr(page), 
-    //        page_get_self(page), size, 
+    //st=os_mmap(t->fd, page_get_mmap_handle_ptr(page),
+    //        page_get_self(page), size,
     //        device_get_flags(self)&HAM_READ_ONLY, &buffer);
     page_set_pers(page, (ham_perm_page_union_t *)(t->ptr + offset));
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address,
           dev_alloc_request_info_ex_t *extra_dev_alloc_info)
 {
@@ -377,7 +377,7 @@ __fm_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address,
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_alloc_page(ham_device_t *self, ham_page_t *page, ham_size_t size,
                dev_alloc_request_info_ex_t *extra_dev_alloc_info)
 {
@@ -400,7 +400,7 @@ __fm_alloc_page(ham_device_t *self, ham_page_t *page, ham_size_t size,
 /**
  * seek position in a file
  */
-static ham_status_t 
+static ham_status_t
 __fm_seek(ham_device_t *self, ham_offset_t offset, int whence)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -437,7 +437,7 @@ __fm_seek(ham_device_t *self, ham_offset_t offset, int whence)
 /**
  * tell the position in a file
  */
-static ham_status_t 
+static ham_status_t
 __fm_tell(ham_device_t *self, ham_offset_t *offset)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -446,8 +446,8 @@ __fm_tell(ham_device_t *self, ham_offset_t *offset)
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
-__fm_write(ham_device_t *self, ham_offset_t offset, void *buffer, 
+static ham_status_t
+__fm_write(ham_device_t *self, ham_offset_t offset, void *buffer,
             ham_offset_t size)
 {
     dev_flashmem_t *t=(dev_flashmem_t *)device_get_private(self);
@@ -480,26 +480,26 @@ __fm_write(ham_device_t *self, ham_offset_t offset, void *buffer,
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_write_page(ham_device_t *self, ham_page_t *page)
 {
-    return __fm_write(self, page_get_self(page), 
+    return __fm_write(self, page_get_self(page),
                 page_get_pers(page), self->get_pagesize(self));
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_free_page(ham_device_t *self, ham_page_t *page)
 {
     ham_status_t st;
 
-    if (page_get_pers(page)) 
+    if (page_get_pers(page))
     {
-        if (page_get_npers_flags(page) & PAGE_NPERS_MALLOC) 
+        if (page_get_npers_flags(page) & PAGE_NPERS_MALLOC)
         {
             allocator_free(device_get_allocator(self), page_get_pers(page));
             page_remove_npers_flags(page, PAGE_NPERS_MALLOC);
         }
-        else 
+        else
         {
             st = 0;
         }
@@ -509,7 +509,7 @@ __fm_free_page(ham_device_t *self, ham_page_t *page)
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __fm_destroy(ham_device_t **self_ref)
 {
     ham_assert(self_ref, (0));
@@ -559,13 +559,13 @@ __fm_destroy(ham_device_t **self_ref)
 }
 
 
-static void 
+static void
 __fm_set_flags(ham_device_t *self, ham_u32_t flags)
 {
     device_set_flags(self, flags);
 }
 
-static ham_u32_t 
+static ham_u32_t
 __fm_get_flags(ham_device_t *self)
 {
     return device_get_flags(self);
@@ -574,27 +574,27 @@ __fm_get_flags(ham_device_t *self)
 
 
 /**
- * register another @a target device; adds an outgoing edge to the device 
+ * register another @a target device; adds an outgoing edge to the device
  * graph of which the current device is a part.
  *
  * @param self the current device instance (this function/method is part of this one)
  * @param partition_index is zero or higher and indicates which partition must be forwarded
  *        to the specified device. For non-partitioning devices, the @a partition_index
  *        should be set to zero(0).
- * @param target the device instance to add to the device graph, where the current 
+ * @param target the device instance to add to the device graph, where the current
  *        device (@a self) has an ougoing edge towards this @a target device.
  */
-static ham_status_t 
+static ham_status_t
 __fm_add_outgoing(ham_device_t *self, ham_u32_t partition_index, ham_device_t *target)
 {
     return HAM_SUCCESS;
 }
 
 /**
- * register another @a source device; adds an incoming edge to the device 
+ * register another @a source device; adds an incoming edge to the device
  * graph of which the current device is a part.
  */
-static ham_status_t 
+static ham_status_t
 __fm_add_incoming(ham_device_t *self, ham_device_t *source)
 {
     return HAM_SUCCESS;
@@ -608,7 +608,7 @@ __fm_add_incoming(ham_device_t *self, ham_device_t *source)
  @note The @ref ham_device_class_info_t @a info struct must be initialized before invoking this
  method, preferably with all zeroes.
  */
-static ham_status_t 
+static ham_status_t
 __fm_get_device_class_info(ham_device_t *self, ham_device_class_info_t *pinfo)
 {
     if (pinfo)
@@ -627,7 +627,7 @@ __fm_get_device_class_info(ham_device_t *self, ham_device_class_info_t *pinfo)
  @note The @ref ham_device_info_t @a info struct must be initialized before invoking this
  method, preferably with all zeroes.
  */
-static ham_status_t 
+static ham_status_t
 __fm_get_device_info(ham_device_t *self, ham_device_info_t *pinfo, ham_bool_t inclusive)
 {
     if (pinfo)
@@ -641,7 +641,7 @@ __fm_get_device_info(ham_device_t *self, ham_device_info_t *pinfo, ham_bool_t in
 /**
  * set the pagesize for this device
  */
-static ham_status_t 
+static ham_status_t
 __fm_set_pagesize(ham_device_t *self, ham_size_t pagesize)
 {
     ham_assert(self, (0));
@@ -695,7 +695,7 @@ ham_device_flashfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ha
     //device_set_private(dev, t);
 
     /*
-    always assign a flashmem item to the device; at create/open time this may be swapped for another. 
+    always assign a flashmem item to the device; at create/open time this may be swapped for another.
     
     simplifies the other callbacks: no need to check for NULL pointer
     */
@@ -730,7 +730,7 @@ ham_device_flashfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ha
 
     /*
      * initialize the pagesize with a default value - this will be
-     * overwritten i.e. by ham_open, ham_create when the pagesize 
+     * overwritten i.e. by ham_open, ham_create when the pagesize
      * of the file is known
      */
     (void)dev->get_pagesize(dev);
@@ -740,6 +740,6 @@ ham_device_flashfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ha
 
 
 /**
-* @endcond 
+* @endcond
 */
 

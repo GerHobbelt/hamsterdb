@@ -720,14 +720,14 @@ public:
         ham_key_t key;
         ham_record_t rec;
         ham_u8_t buffer[1024*8];
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         //info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
-		info.record = &rec;
-		info.key = &key;
+        info.record = &rec;
+        info.key = &key;
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
@@ -758,14 +758,14 @@ public:
         ham_record_t rec;
         ham_size_t ps=os_get_pagesize();
         ham_u8_t *buffer=(ham_u8_t *)malloc(ps*2);
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         //info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
-		info.record = &rec;
-		info.key = &key;
+        info.record = &rec;
+        info.key = &key;
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));
@@ -796,14 +796,14 @@ public:
         ham_key_t key;
         ham_record_t rec;
         ham_u8_t buffer[64];
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
-		info.db = m_db;
+        info.db = m_db;
         info.env = m_env;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_UNKNOWN;
-		info.record = &rec;
-		info.key = &key;
+        info.record = &rec;
+        info.key = &key;
 
         ::memset(&key, 0, sizeof(key));
         ::memset(&rec, 0, sizeof(rec));

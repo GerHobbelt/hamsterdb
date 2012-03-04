@@ -134,12 +134,12 @@ struct ham_txn_t
      */
     ham_page_t *_pagelist;
 
-	struct
-	{
-		ham_size_t alloc_size;	/**< the number of slots allocated, i.e. the size of the hash table */
-		ham_size_t count;       /**< the number of occupied slots. */
-	    ham_page_t *index;		/**< the hash table itself, where each slot is merely a pointer into the linked list. */
-	} _pagelist_hashtable;
+    struct
+    {
+        ham_size_t alloc_size;  /**< the number of slots allocated, i.e. the size of the hash table */
+        ham_size_t count;       /**< the number of occupied slots. */
+        ham_page_t *index;      /**< the hash table itself, where each slot is merely a pointer into the linked list. */
+    } _pagelist_hashtable;
 };
 
 /**
@@ -306,7 +306,7 @@ txn_add_page(ham_txn_t *txn, ham_page_t *page, ham_bool_t ignore_if_inserted)
     /*
      * not found? add the page
      */
-	txn_add_page_nocheck(txn, page);
+    txn_add_page_nocheck(txn, page);
 
     return (HAM_SUCCESS);
 }
@@ -405,7 +405,7 @@ txn_add_page(ham_txn_t *txn, ham_page_t *page, ham_bool_t ignore_if_inserted)
     /*
      * not found? add the page
      */
-	txn_add_page_nocheck(txn, page);
+    txn_add_page_nocheck(txn, page);
 
     return (HAM_SUCCESS);
 }

@@ -142,12 +142,12 @@ public:
         dupe_entry_set_flags(e, 0x13);
         BFC_ASSERT_EQUAL((ham_u8_t)0x13, dupe_entry_get_flags(e));
 
-		/*
-		setting a dupe record RID while that record has been flagged as tiny/small,
-		will trigger an assertion failure, at least in debug builds.
+        /*
+        setting a dupe record RID while that record has been flagged as tiny/small,
+        will trigger an assertion failure, at least in debug builds.
 
-		That's why we reset the flags above, before we do the next test.
-		*/
+        That's why we reset the flags above, before we do the next test.
+        */
         dupe_entry_set_flags(e, 0);
         dupe_entry_set_rid(e, (ham_offset_t)0x12345ull);
         BFC_ASSERT_EQUAL((ham_offset_t)0x12345ull,
@@ -159,11 +159,11 @@ public:
         ham_u8_t buffer[64];
         ham_offset_t blobid;
         ham_record_t record;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
-		info.record = &record;
+        info.record = &record;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_BLOB;
 
@@ -188,11 +188,11 @@ public:
         ham_u8_t buffer[64], buffer2[64];
         ham_offset_t blobid, blobid2;
         ham_record_t record;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
-		info.record = &record;
+        info.record = &record;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_BLOB;
 
@@ -227,11 +227,11 @@ public:
         ham_u8_t buffer[64], buffer2[128];
         ham_offset_t blobid, blobid2;
         ham_record_t record;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
-		info.record = &record;
+        info.record = &record;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_BLOB;
 
@@ -269,11 +269,11 @@ public:
         ham_offset_t blobid, blobid2;
         ham_offset_t addr;
         ham_record_t record;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
-		info.record = &record;
+        info.record = &record;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_BLOB;
 
@@ -328,11 +328,11 @@ public:
         ham_u8_t *buffer=(ham_u8_t *)malloc(ps*BLOCKS*2);
         ham_offset_t blobid, blobid2;
         ham_record_t record;
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
-		info.record = &record;
+        info.record = &record;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_BLOB;
 
@@ -381,11 +381,11 @@ public:
         ham_offset_t *blobid;
         ham_record_t record;
         ham_txn_t *txn = 0; /* need a txn object for the blob routines */
-		dev_alloc_request_info_ex_t info = {0};
+        dev_alloc_request_info_ex_t info = {0};
 
         info.db = m_db;
         info.env = m_env;
-		info.record = &record;
+        info.record = &record;
         info.entire_page = HAM_FALSE;
         info.space_type = PAGE_TYPE_BLOB;
 

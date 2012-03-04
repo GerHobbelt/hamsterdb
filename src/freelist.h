@@ -115,23 +115,23 @@ struct freelist_entry_t
  * by every freelist management class (i.e. oldskool_16, skiplist, etc).
  */
 #define FREELIST_DECLARATIONS(clss)                                     \
-	/**                                                                 \
+    /**                                                                 \
      * create and initialize a new class instance                       \
      */                                                                 \
     ham_status_t                                                        \
-	(*_constructor)(clss *be, ham_device_t *dev, ham_env_t *env);       \
+    (*_constructor)(clss *be, ham_device_t *dev, ham_env_t *env);       \
                                                                         \
     /**                                                                 \
      * release all freelist pages (and their statistics)                \
      */                                                                 \
-	ham_status_t                                                        \
-	(*_destructor)(ham_device_t *dev, ham_env_t *env);                  \
+    ham_status_t                                                        \
+    (*_destructor)(ham_device_t *dev, ham_env_t *env);                  \
                                                                         \
     /**                                                                 \
      * flush all freelist page statistics                               \
      */                                                                 \
-	ham_status_t                                                        \
-	(*_flush_stats)(ham_device_t *dev, ham_env_t *env);                 \
+    ham_status_t                                                        \
+    (*_flush_stats)(ham_device_t *dev, ham_env_t *env);                 \
                                                                         \
     /**                                                                 \
      * mark an area in the file as "free"                               \
@@ -143,10 +143,10 @@ struct freelist_entry_t
      * will assert that @a address and @a size are                      \
      * @ref DB_CHUNKSIZE-aligned!                                       \
      */                                                                 \
-	ham_status_t                                                        \
-	(*_mark_free)(ham_device_t *dev, ham_env_t *env, ham_db_t *db,      \
+    ham_status_t                                                        \
+    (*_mark_free)(ham_device_t *dev, ham_env_t *env, ham_db_t *db,      \
             ham_offset_t address, ham_size_t size,                      \
-			ham_bool_t overwrite);                                      \
+            ham_bool_t overwrite);                                      \
                                                                         \
     /**                                                                 \
      * try to allocate (possibly aligned) space from the freelist,      \
@@ -165,9 +165,9 @@ struct freelist_entry_t
      * Regardless, the lower address bound check will be performed      \
      * on a @ref DB_CHUNKSIZE boundary level anyhow.                    \
      */                                                                 \
-	ham_status_t                                                        \
-	(*_alloc_area)(ham_offset_t *addr_ref, ham_device_t *dev,			\
-			   ham_env_t *env, ham_db_t *db, ham_size_t size,           \
+    ham_status_t                                                        \
+    (*_alloc_area)(ham_offset_t *addr_ref, ham_device_t *dev,           \
+               ham_env_t *env, ham_db_t *db, ham_size_t size,           \
                ham_bool_t aligned, ham_offset_t lower_bound_address);   \
                                                                         \
     /**                                                                 \
@@ -178,9 +178,9 @@ struct freelist_entry_t
              when the given storage area is within the scope of the     \
              freelist.                                                  \
     */                                                                  \
-	ham_status_t                                                        \
-	(*_check_area_is_allocated)(ham_device_t *dev, ham_env_t *env,		\
-								ham_offset_t address, ham_size_t size);	\
+    ham_status_t                                                        \
+    (*_check_area_is_allocated)(ham_device_t *dev, ham_env_t *env,      \
+                                ham_offset_t address, ham_size_t size); \
                                                                         \
     /**                                                                 \
      * setup / initialize the proper performance data for this          \
@@ -190,10 +190,10 @@ struct freelist_entry_t
      * removed from the in-memory cache, unless the currently active    \
      * freelist algorithm persists this data to disc.                   \
      */                                                                 \
-	ham_status_t														\
-	(*_init_perf_data)(clss *be, ham_device_t *dev, ham_env_t *env,		\
-						freelist_entry_t *entry,						\
-						freelist_payload_t *payload)
+    ham_status_t                                                        \
+    (*_init_perf_data)(clss *be, ham_device_t *dev, ham_env_t *env,     \
+                        freelist_entry_t *entry,                        \
+                        freelist_payload_t *payload)
 
 
 
@@ -209,8 +209,8 @@ struct freelist_cache_t
     /** the cached freelist entries */
     freelist_entry_t *_entries;
 
-	/** class methods which handle all things freelist */
-	FREELIST_DECLARATIONS(struct freelist_cache_t);
+    /** class methods which handle all things freelist */
+    FREELIST_DECLARATIONS(struct freelist_cache_t);
 };
 
 
@@ -244,51 +244,51 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
      */
     ham_offset_t _overflow;
 
-	HAM_PACK_0 union HAM_PACK_1
-	{
-		/**
-		 * This structure represents the backwards compatible v1.0.9 freelist
-		 * payload layout, which can cope with up to 65535 chunks per page.
-		 */
-		HAM_PACK_0 struct HAM_PACK_1
-		{
-			/**
-			 * maximum number of bits for this page
-			 */
-			ham_u16_t _max_bits;
+    HAM_PACK_0 union HAM_PACK_1
+    {
+        /**
+         * This structure represents the backwards compatible v1.0.9 freelist
+         * payload layout, which can cope with up to 65535 chunks per page.
+         */
+        HAM_PACK_0 struct HAM_PACK_1
+        {
+            /**
+             * maximum number of bits for this page
+             */
+            ham_u16_t _max_bits;
 
-			/**
-			 * number of already allocated bits in the page
-			 */
-			ham_u16_t _allocated_bits;
+            /**
+             * number of already allocated bits in the page
+             */
+            ham_u16_t _allocated_bits;
 
-			/**
-			 * the bitmap; the size of the bitmap is _max_bits/8
-			 */
-			ham_u8_t _bitmap[1];
-		} HAM_PACK_2 _s16;
+            /**
+             * the bitmap; the size of the bitmap is _max_bits/8
+             */
+            ham_u8_t _bitmap[1];
+        } HAM_PACK_2 _s16;
 
-		HAM_PACK_0 struct HAM_PACK_1
-		{
-			/**
-			 * 'zero': must be 0; serves as a doublecheck we're not
-			 * processing an old-style 16-bit freelist page, where this
-			 * spot would have the ham_u16_t _max_bits, which would
-			 * always != 0 ...
-			 */
-			ham_u16_t _zero;
+        HAM_PACK_0 struct HAM_PACK_1
+        {
+            /**
+             * 'zero': must be 0; serves as a doublecheck we're not
+             * processing an old-style 16-bit freelist page, where this
+             * spot would have the ham_u16_t _max_bits, which would
+             * always != 0 ...
+             */
+            ham_u16_t _zero;
 
-			ham_u16_t _reserved;
+            ham_u16_t _reserved;
 
-			/**
-			 * maximum number of bits for this page
-			 */
-			ham_u32_t _max_bits;
+            /**
+             * maximum number of bits for this page
+             */
+            ham_u32_t _max_bits;
 
-			/**
-			 * number of already allocated bits in the page
-			 */
-			ham_u32_t _allocated_bits;
+            /**
+             * number of already allocated bits in the page
+             */
+            ham_u32_t _allocated_bits;
 
             /**
              * The persisted statistics.
@@ -308,14 +308,14 @@ HAM_PACK_0 struct HAM_PACK_1 freelist_payload_t
              *
              * TODO: A callback will be provided for that.
              */
-			freelist_page_statistics_t _statistics;
+            freelist_page_statistics_t _statistics;
 
-			/**
-			 * the algorithm-specific payload starts here.
-			 */
-			ham_u8_t _bitmap[1];
-		} HAM_PACK_2 _s32;
-	} HAM_PACK_2 _s;
+            /**
+             * the algorithm-specific payload starts here.
+             */
+            ham_u8_t _bitmap[1];
+        } HAM_PACK_2 _s32;
+    } HAM_PACK_2 _s;
 } HAM_PACK_2;
 
 #include "packstop.h"

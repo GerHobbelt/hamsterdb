@@ -83,8 +83,8 @@ typedef HAM_PACK_0 union HAM_PACK_1 ham_perm_page_union_t
          * the first one will only contain BLOB content and no header at all.
          *
          * Currently only used for the page type and the transaction page list:
-		 * in the latter case, the flag is set in each page which sits at the
-		 * start of a collision chain.
+         * in the latter case, the flag is set in each page which sits at the
+         * start of a collision chain.
          *
          * @sa page_type_codes
          */
@@ -719,12 +719,12 @@ page_list_insert(ham_page_t *head, int which, ham_page_t *page)
     ham_page_t *p;
 
     if (!head)
-	{
-	    page_set_next(page, which, 0);
-	    page_set_previous(page, which, page);
+    {
+        page_set_next(page, which, 0);
+        page_set_previous(page, which, page);
         return (page);
-	}
-	p = page_get_previous(head, which);
+    }
+    p = page_get_previous(head, which);
     page_set_previous(page, which, p);
 
     page_set_next(page, which, head);
@@ -744,42 +744,42 @@ page_list_remove(ham_page_t *head, int which, ham_page_t *page)
     ham_page_t *n, *p;
 
     if (page == head)
-	{
+    {
         p = page_get_previous(page, which);
         n = page_get_next(page, which);
         if (n)
-		{
+        {
             page_set_previous(n, which, p);
             //page_set_next(p, which, n);
-		}
-		else
-		{
+        }
+        else
+        {
             ham_assert(p == head, (0));
-		}
-		ham_assert(page_get_next(p, which) == NULL, (0));
+        }
+        ham_assert(page_get_next(p, which) == NULL, (0));
 
         page_set_next(page, which, 0);
         page_set_previous(page, which, 0);
         return (n);
     }
-	else
-	{
-		n = page_get_next(page, which);
-		p = page_get_previous(page, which);
-		page_set_next(p, which, n);
-		if (n)
-		{
-			page_set_previous(n, which, p);
-		}
-		else
-		{
-			ham_assert(page_get_previous(head, which) == page, (0));
-			page_set_previous(head, which, p);
-		}
-		page_set_next(page, which, 0);
-		page_set_previous(page, which, 0);
-		return (head);
-	}
+    else
+    {
+        n = page_get_next(page, which);
+        p = page_get_previous(page, which);
+        page_set_next(p, which, n);
+        if (n)
+        {
+            page_set_previous(n, which, p);
+        }
+        else
+        {
+            ham_assert(page_get_previous(head, which) == page, (0));
+            page_set_previous(head, which, p);
+        }
+        page_set_next(page, which, 0);
+        page_set_previous(page, which, 0);
+        return (head);
+    }
 }
 
 /**

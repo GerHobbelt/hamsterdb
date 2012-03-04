@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -21,14 +21,14 @@
 
 
 
-typedef struct 
+typedef struct
 {
     ham_fd_t fd;
     unsigned mmap_tested: 1;
 } dev_file_t;
 
-static ham_status_t 
-__f_create(ham_device_t *self, const char *fname, ham_u32_t flags, 
+static ham_status_t
+__f_create(ham_device_t *self, const char *fname, ham_u32_t flags,
             ham_u32_t mode)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -39,7 +39,7 @@ __f_create(ham_device_t *self, const char *fname, ham_u32_t flags,
     return (os_create(fname, flags, mode, &t->fd));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_open(ham_device_t *self, const char *fname, ham_u32_t flags)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -67,7 +67,7 @@ __f_close(ham_device_t *self)
     return (st);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_flush(ham_device_t *self)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -77,7 +77,7 @@ __f_flush(ham_device_t *self)
 
 
 
-static ham_status_t 
+static ham_status_t
 __f_truncate(ham_device_t *self, ham_offset_t newsize)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -85,14 +85,14 @@ __f_truncate(ham_device_t *self, ham_offset_t newsize)
     return (os_truncate(t->fd, newsize));
 }
 
-static ham_bool_t 
+static ham_bool_t
 __f_is_open(ham_device_t *self)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
     return (HAM_INVALID_FD!=t->fd);
 }
 
-static ham_size_t 
+static ham_size_t
 __f_get_pagesize(ham_device_t *self)
 {
     ham_size_t s;
@@ -116,7 +116,7 @@ __f_get_pagesize(ham_device_t *self)
 /**
  * get the size of the database file
  */
-static ham_status_t 
+static ham_status_t
 __f_get_filesize(ham_device_t *self, ham_offset_t *length)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -125,8 +125,8 @@ __f_get_filesize(ham_device_t *self, ham_offset_t *length)
     return os_get_filesize(t->fd, length);
 }
 
-static ham_status_t 
-__f_read(ham_device_t *self, ham_offset_t offset, 
+static ham_status_t
+__f_read(ham_device_t *self, ham_offset_t offset,
         void *buffer, ham_offset_t size)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -160,7 +160,7 @@ __f_read_page(ham_device_t *self, ham_page_t *page, ham_size_t size)
 retry_with_classic_rw:
     if (device_get_flags(self)&HAM_DISABLE_MMAP)
     {
-        if (page_get_pers(page)==0) 
+        if (page_get_pers(page)==0)
         {
             ham_assert(size <= HAM_MAX_SIZE_T, ("ham_size_t overflow"));
             buffer=(ham_u8_t *)allocator_alloc(device_get_allocator(self), size);
@@ -172,7 +172,7 @@ retry_with_classic_rw:
         else
             ham_assert(!(page_get_npers_flags(page)&PAGE_NPERS_MALLOC), (0));
 
-        return (__f_read(self, page_get_self(page), 
+        return (__f_read(self, page_get_self(page),
                     page_get_pers(page), size));
     }
 
@@ -180,28 +180,28 @@ retry_with_classic_rw:
     ham_assert(!(page_get_npers_flags(page)&PAGE_NPERS_MALLOC), (0));
 
     ham_assert(size <= HAM_MAX_SIZE_T, ("no ham_size_t overflow"));
-	/*
-	Win32 will only b0rk on small page sizes when the SECOND page is fetched, i.e. when the 
-	PAGE OFFSET is NOT PRPERLY ALIGNED.
+    /*
+    Win32 will only b0rk on small page sizes when the SECOND page is fetched, i.e. when the
+    PAGE OFFSET is NOT PRPERLY ALIGNED.
 
-	But /we/ need to know by the time we're fetching page 0, so we tweak the behaviour a 
-	little here by doing some chking of our own and fake an error when we recognize an error
-	condition lurking in the shadows there...
+    But /we/ need to know by the time we're fetching page 0, so we tweak the behaviour a
+    little here by doing some chking of our own and fake an error when we recognize an error
+    condition lurking in the shadows there...
 
-	As we try to load an entire page each time, we can check this one against the actual 
-	granularity.
-	*/
+    As we try to load an entire page each time, we can check this one against the actual
+    granularity.
+    */
     if (!t->mmap_tested && size == os_get_pagesize() && (size % os_get_granularity() != 0))
-	{
-		st = HAM_NOT_IMPLEMENTED;
-		buffer = NULL; // shut up MSVC compiler code flow analysis warning
-	}
-	else
-	{
-		st=os_mmap(t->fd, page_get_mmap_handle_ptr(page), 
-				   page_get_self(page), size, 
-				   device_get_flags(self)&HAM_READ_ONLY, &buffer);
-	}
+    {
+        st = HAM_NOT_IMPLEMENTED;
+        buffer = NULL; // shut up MSVC compiler code flow analysis warning
+    }
+    else
+    {
+        st=os_mmap(t->fd, page_get_mmap_handle_ptr(page),
+                   page_get_self(page), size,
+                   device_get_flags(self)&HAM_READ_ONLY, &buffer);
+    }
     if (st)
     {
         /*
@@ -211,7 +211,7 @@ retry_with_classic_rw:
         if (!t->mmap_tested && st == HAM_NOT_IMPLEMENTED)
         {
             device_set_flags(self, device_get_flags(self) | HAM_DISABLE_MMAP);
-		    env_modify_rt_flags(env, HAM_DISABLE_MMAP, 0);
+            env_modify_rt_flags(env, HAM_DISABLE_MMAP, 0);
             t->mmap_tested = HAM_TRUE;
             goto retry_with_classic_rw;
         }
@@ -224,7 +224,7 @@ retry_with_classic_rw:
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __f_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address,
           dev_alloc_request_info_ex_t *extra_dev_alloc_info)
 {
@@ -240,7 +240,7 @@ __f_alloc(ham_device_t *self, ham_size_t size, ham_offset_t *address,
     return HAM_SUCCESS;
 }
 
-static ham_status_t 
+static ham_status_t
 __f_alloc_page(ham_device_t *self, ham_page_t *page, ham_size_t size,
                dev_alloc_request_info_ex_t *extra_dev_alloc_info)
 {
@@ -263,7 +263,7 @@ __f_alloc_page(ham_device_t *self, ham_page_t *page, ham_size_t size,
 /**
  * seek position in a file
  */
-static ham_status_t 
+static ham_status_t
 __f_seek(ham_device_t *self, ham_offset_t offset, int whence)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -274,15 +274,15 @@ __f_seek(ham_device_t *self, ham_offset_t offset, int whence)
 /**
  * tell the position in a file
  */
-static ham_status_t 
+static ham_status_t
 __f_tell(ham_device_t *self, ham_offset_t *offset)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
     return os_tell(t->fd, offset);
 }
 
-static ham_status_t 
-__f_write(ham_device_t *self, ham_offset_t offset, void *buffer, 
+static ham_status_t
+__f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
             ham_offset_t size)
 {
     dev_file_t *t=(dev_file_t *)device_get_private(self);
@@ -294,28 +294,28 @@ __f_write(ham_device_t *self, ham_offset_t offset, void *buffer,
     return (os_pwrite(t->fd, offset, buffer, size));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_write_page(ham_device_t *self, ham_page_t *page)
 {
-    return (__f_write(self, page_get_self(page), 
+    return (__f_write(self, page_get_self(page),
                 page_get_pers(page), self->get_pagesize(self)));
 }
 
-static ham_status_t 
+static ham_status_t
 __f_free_page(ham_device_t *self, ham_page_t *page)
 {
     ham_status_t st;
 
-    if (page_get_pers(page)) 
+    if (page_get_pers(page))
     {
-        if (page_get_npers_flags(page) & PAGE_NPERS_MALLOC) 
+        if (page_get_npers_flags(page) & PAGE_NPERS_MALLOC)
         {
             allocator_free(device_get_allocator(self), page_get_pers(page));
             page_remove_npers_flags(page, PAGE_NPERS_MALLOC);
         }
-        else 
+        else
         {
-            st = os_munmap(page_get_mmap_handle_ptr(page), 
+            st = os_munmap(page_get_mmap_handle_ptr(page),
                     page_get_pers(page), self->get_pagesize(self));
             if (st)
                 return (st);
@@ -326,7 +326,7 @@ __f_free_page(ham_device_t *self, ham_page_t *page)
     return (HAM_SUCCESS);
 }
 
-static ham_status_t 
+static ham_status_t
 __f_destroy(ham_device_t **self_ref)
 {
     ham_assert(self_ref, (0));
@@ -344,13 +344,13 @@ __f_destroy(ham_device_t **self_ref)
 }
 
 
-static void 
+static void
 __f_set_flags(ham_device_t *self, ham_u32_t flags)
 {
     device_set_flags(self, flags);
 }
 
-static ham_u32_t 
+static ham_u32_t
 __f_get_flags(ham_device_t *self)
 {
     return (device_get_flags(self));
@@ -359,27 +359,27 @@ __f_get_flags(ham_device_t *self)
 
 
 /**
- * register another @a target device; adds an outgoing edge to the device 
+ * register another @a target device; adds an outgoing edge to the device
  * graph of which the current device is a part.
  *
  * @param self the current device instance (this function/method is part of this one)
  * @param partition_index is zero or higher and indicates which partition must be forwarded
  *        to the specified device. For non-partitioning devices, the @a partition_index
  *        should be set to zero(0).
- * @param target the device instance to add to the device graph, where the current 
+ * @param target the device instance to add to the device graph, where the current
  *        device (@a self) has an ougoing edge towards this @a target device.
  */
-static ham_status_t 
+static ham_status_t
 __f_add_outgoing(ham_device_t *self, ham_u32_t partition_index, ham_device_t *target)
 {
     return HAM_SUCCESS;
 }
 
 /**
- * register another @a source device; adds an incoming edge to the device 
+ * register another @a source device; adds an incoming edge to the device
  * graph of which the current device is a part.
  */
-static ham_status_t 
+static ham_status_t
 __f_add_incoming(ham_device_t *self, ham_device_t *source)
 {
     return HAM_SUCCESS;
@@ -392,7 +392,7 @@ __f_add_incoming(ham_device_t *self, ham_device_t *source)
  @note The @ref ham_device_class_info_t @a info struct must be initialized before invoking this
  method, preferably with all zeroes.
  */
-static ham_status_t 
+static ham_status_t
 __f_get_device_class_info(ham_device_t *self, ham_device_class_info_t *pinfo)
 {
     if (pinfo)
@@ -410,7 +410,7 @@ __f_get_device_class_info(ham_device_t *self, ham_device_class_info_t *pinfo)
  @note The @ref ham_device_info_t @a info struct must be initialized before invoking this
  method, preferrably with all zeroes.
  */
-static ham_status_t 
+static ham_status_t
 __f_get_device_info(ham_device_t *self, ham_device_info_t *pinfo, ham_bool_t inclusive)
 {
     if (pinfo)
@@ -424,7 +424,7 @@ __f_get_device_info(ham_device_t *self, ham_device_info_t *pinfo, ham_bool_t inc
 /**
  * set the pagesize for this device
  */
-static ham_status_t 
+static ham_status_t
 __f_set_pagesize(ham_device_t *self, ham_size_t pagesize)
 {
     ham_assert(self, (0));
@@ -484,7 +484,7 @@ ham_device_flatfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham
 
     /*
      * initialize the pagesize with a default value - this will be
-     * overwritten i.e. by ham_open, ham_create when the pagesize 
+     * overwritten i.e. by ham_open, ham_create when the pagesize
      * of the file is known
      */
     (void)dev->get_pagesize(dev);
@@ -494,6 +494,6 @@ ham_device_flatfile_new(ham_env_t *env, ham_db_t *db, ham_u32_t flags, const ham
 
 
 /**
-* @endcond 
+* @endcond
 */
 

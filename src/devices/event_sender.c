@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -60,7 +60,7 @@ typedef enum
     HAM_EVENT_CUSTOM = 32768, /* custom events from devices start numbering here... */
 } ham_device_event_id_t;
 
-typedef struct 
+typedef struct
 {
     int event_id;
 
@@ -80,14 +80,14 @@ typedef struct
 } ham_event_info_t;
 
 
-/** 
-generic function prototype for all and any event listeners (user defined callback functions) 
+/**
+generic function prototype for all and any event listeners (user defined callback functions)
 
 Single event listeners can be registered with multiple devices and/or action types, but the
-event manager will trigger a HAM_EVENT_DESTROY event for each registration, i.e. the 
-application programmer (a.k.a. user) is responsible for keeping a registration refcount 
+event manager will trigger a HAM_EVENT_DESTROY event for each registration, i.e. the
+application programmer (a.k.a. user) is responsible for keeping a registration refcount
 around and only destroying event listener internal data when such refcount drops to zero,
-that is: when the last HAM_EVENT_DESTROY event was fired ~ each registration has been matched 
+that is: when the last HAM_EVENT_DESTROY event was fired ~ each registration has been matched
 by a HAM_EVENT_DESTROY event.
 */
 typedef ham_status_t ham_device_action_event_cb_t(ham_event_info_t *info, int groupId, void *propagate);
@@ -144,7 +144,7 @@ typedef struct ham_listener_collective_t
 ham_listener_collective_t *event_queue_new(ham_device_invocation_t *caller)
 {
     ham_listener_collective_t *lst;
-	mem_allocator_t *allocator = device_get_allocator(caller->me);
+    mem_allocator_t *allocator = device_get_allocator(caller->me);
 
     lst = (ham_listener_collective_t *)allocator_calloc(allocator, sizeof(*lst));
     if (!lst)
@@ -158,7 +158,7 @@ ham_listener_collective_t *event_queue_new(ham_device_invocation_t *caller)
 
 ham_status_t event_queue_destroy(ham_listener_collective_t *lst)
 {
-	mem_allocator_t *allocator = evtqueue_get_allocator(lst);
+    mem_allocator_t *allocator = evtqueue_get_allocator(lst);
 
     if (lst->event_hash_table)
     {
@@ -205,8 +205,8 @@ ham_status_t event_queue_destroy(ham_listener_collective_t *lst)
 
 groupid, callback, propagate, array of event ids to subscribe to
 */
-ham_status_t event_queue_insert(ham_listener_collective_t *lst, 
-                                int *actionIdSet, ham_size_t actionIdSet_size, 
+ham_status_t event_queue_insert(ham_listener_collective_t *lst,
+                                int *actionIdSet, ham_size_t actionIdSet_size,
                                 ham_device_action_event_cb_t *listener, int groupId, void *propagate)
 {
 
@@ -223,8 +223,8 @@ but upon removal we tolerate 'partial keys' as long as those are unambiguous:
 all the non-zero fields; when such matching produces multiple hits, the 'partial key' is found to be
 ambiguous and the removal function will return an error instead.
 */
-ham_status_t event_queue_remove(ham_listener_collective_t *lst, 
-                                int *actionIdSet, ham_size_t actionIdSet_size, 
+ham_status_t event_queue_remove(ham_listener_collective_t *lst,
+                                int *actionIdSet, ham_size_t actionIdSet_size,
                                 ham_device_action_event_cb_t *listener, int groupId, void *propagate)
 {
 
@@ -259,6 +259,6 @@ X hash iterations for each event in order to find the matching list in the hash 
 
 
 /**
-* @endcond 
+* @endcond
 */
 

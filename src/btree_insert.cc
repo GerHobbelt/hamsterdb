@@ -429,16 +429,16 @@ __insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
         btree_set_rootpage(be, page_get_self(newroot));
         be_set_dirty(be, HAM_TRUE);
         env_set_dirty(env);
-		/* [i_a] Christoph added the flush + txn_add_page below, but somehow I get the feeling that he's been
-		         patching the side-effect of other bugs through enforced flush; my code had
-				 the env_set_dirty() and his didn't; also I seem to recall that 1.1.6 (which
-				 was when I wrote this code, not this comment!) had several spots where
-				 the dirty-marking of the ENV was neglected and a flush also corrects
-				 those mistakes, unless I am mistaken.
+        /* [i_a] Christoph added the flush + txn_add_page below, but somehow I get the feeling that he's been
+                 patching the side-effect of other bugs through enforced flush; my code had
+                 the env_set_dirty() and his didn't; also I seem to recall that 1.1.6 (which
+                 was when I wrote this code, not this comment!) had several spots where
+                 the dirty-marking of the ENV was neglected and a flush also corrects
+                 those mistakes, unless I am mistaken.
 
-				 Anyway, merged. We'll see what happens en when I've got time again, we'll do
-				 another flow review all over again.
-		*/
+                 Anyway, merged. We'll see what happens en when I've got time again, we'll do
+                 another flow review all over again.
+        */
 
         be->_fun_flush(be);
 
@@ -447,7 +447,7 @@ __insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
             /*
              * As we re-purpose a page, we do NOT reset its pagecounter
              * as well as the cache is merely interested in how 'important'
-			 * a page is, irrespective of purpose.
+             * a page is, irrespective of purpose.
              */
             cache_update_page_access_counter(root, env_get_cache(env));
         }
@@ -458,7 +458,7 @@ __insert_cursor(insert_scratchpad_t *scratchpad, ham_key_t *key,
         /* the root page was modified (btree_set_rootpage) - make sure that
          * it's logged */
         if (env_get_rt_flags(env) & HAM_ENABLE_RECOVERY)
-		{
+        {
             st=txn_add_page(env_get_txn(env), env_get_header_page(env), HAM_TRUE);
             if (st)
                 return (st);
@@ -805,15 +805,15 @@ __insert_nosplit(ham_page_t *page, ham_key_t *key,
                 return st;
 
 #if 0
-			memmove(((char *)bte)+keywidth, bte, keywidth * (count-slot));
+            memmove(((char *)bte)+keywidth, bte, keywidth * (count-slot));
 #else
-			{
-				int_key_t *bte_lhs = btree_in_node_get_key_ref(btdata, page, slot + 1);
+            {
+                int_key_t *bte_lhs = btree_in_node_get_key_ref(btdata, page, slot + 1);
 
-				btree_move_key_series(btdata, page, page, bte_lhs, bte, count - slot); // memmove(((char *)bte)+keywidth, bte, keywidth * (count-slot));
-			}
+                btree_move_key_series(btdata, page, page, bte_lhs, bte, count - slot); // memmove(((char *)bte)+keywidth, bte, keywidth * (count-slot));
+            }
 #endif
-		}
+        }
 
         /*
          * if a new key is created or inserted: initialize it with zeroes
@@ -1063,28 +1063,28 @@ __insert_split(ham_page_t *page, ham_key_t *key,
         ham_assert((count * split_ratio) / HAM_FLOAT_1 < HAM_MAX_U16, (0));
         ham_assert(split_ratio == MK_HAM_FLOAT(0.5), (0)); // old 1/2 ratio
         pivot = (count * split_ratio + MK_HAM_FLOAT(0.5)) / HAM_FLOAT_1; // round the value
-		if (btree_node_is_leaf(obtp))
-		{
-			if (pivot < 2)
-			{
-				pivot = 2;
-			}
-			else if (count < pivot + 2)
-			{
-				pivot = count - 2;
-			}
-		}
-		else
-		{
-			if (pivot < 2)
-			{
-				pivot = 2;
-			}
-			else if (count < pivot + 2 + 1)
-			{
-				pivot = count - 3;
-			}
-		}
+        if (btree_node_is_leaf(obtp))
+        {
+            if (pivot < 2)
+            {
+                pivot = 2;
+            }
+            else if (count < pivot + 2)
+            {
+                pivot = count - 2;
+            }
+        }
+        else
+        {
+            if (pivot < 2)
+            {
+                pivot = 2;
+            }
+            else if (count < pivot + 2 + 1)
+            {
+                pivot = count - 3;
+            }
+        }
     }
 
     /*
@@ -1102,25 +1102,25 @@ __insert_split(ham_page_t *page, ham_key_t *key,
     if (btree_node_is_leaf(obtp))
     {
 #if 0
-		memcpy((char *)nbte,
+        memcpy((char *)nbte,
                ((char *)obte)+keywidth*pivot,
                keywidth*(count-pivot));
 #else
         int_key_t *bte_rhs = btree_in_node_get_key_ref(btdata, page, pivot);
-		btree_move_key_series(btdata, newpage, page, nbte, bte_rhs, count - pivot);
+        btree_move_key_series(btdata, newpage, page, nbte, bte_rhs, count - pivot);
 #endif
-	}
+    }
     else
     {
 #if 0
-		memcpy((char *)nbte,
+        memcpy((char *)nbte,
                ((char *)obte)+keywidth*(pivot+1),
                keywidth*(count-pivot-1));
 #else
         int_key_t *bte_rhs = btree_in_node_get_key_ref(btdata, page, pivot + 1);
-		btree_move_key_series(btdata, newpage, page, nbte, bte_rhs, count - pivot - 1);
+        btree_move_key_series(btdata, newpage, page, nbte, bte_rhs, count - pivot - 1);
 #endif
-	}
+    }
 
     /*
      * store the pivot element, we'll need it later to propagate it

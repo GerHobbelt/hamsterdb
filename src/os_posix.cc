@@ -87,8 +87,8 @@ os_get_pagesize(void)
 #else
     ham_size_t ps = (ham_size_t)getpagesize();
     if (ps > 16*1024)
-		return (1024*16);
-	return ps;
+        return (1024*16);
+    return ps;
 #endif
 }
 

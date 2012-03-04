@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -30,7 +30,7 @@ We are mapping 64-bit addresses to 64-bit offsets (addresses) through an augment
 As addresses are assigned in semi-sequential order, we 'know' the trie will exist at the left edge
 first and slowly grow towards the outer right edge. To keep trie storage consumption to a minimum,
 each node is marked as either 'terminating' or not. Terminating nodes are those which do NOT contain
-any valid pointers to other nodes (yet). Non-terminating nodes will contain a set of addresses, 
+any valid pointers to other nodes (yet). Non-terminating nodes will contain a set of addresses,
 which, depending on the current depth, either point to another trie node (making this trie node a
 'branch') or list the target address/offset ('leaf node entry').
 
@@ -40,13 +40,13 @@ The digital trie is split on a 8-bit basis, resulting in an absolute maximum tri
 The initial storage demand will be 256*64 bits = 2K bytes.
 
 (offset/address -1 is used as a special marker. So is -2, etc., which aids in keeping the trie nodes
-at a 2K alignment everywhere. Initially, only the depth=8, left-most node is created and declared 
+at a 2K alignment everywhere. Initially, only the depth=8, left-most node is created and declared
 'root': the actual 'root' node is always at uDB offset 0, so, once the uDB node count needs to grow
 beyond that initial 256 count, the previous 'root' can be copied to another page and the new 'root'
 can point the appropriate pointer/address-offset to that node.
 
 As the largest trie can span the 64-bit address range, where each node uses 8 bytes, the maximum number
-of nodes that can be stored in this trie is 
+of nodes that can be stored in this trie is
      N + ... == 2^64 / 8  ==>  N < 2^61
 
 1
@@ -92,7 +92,7 @@ Multiple pagesize 'reductions' ranges can be created and managed, where a page l
 depending on the current compression ratio attained.
 
 Still, the page rid must be mapped to those ranges as the destination addressing is now also dependent on
-current compression ratio, which is dependent on ALL content, so a basic partitioning scheme cannot be 
+current compression ratio, which is dependent on ALL content, so a basic partitioning scheme cannot be
 employed, as partitioners assume a STABLE address during the entire lifetime of the chunk / page.
 
 Nevertheless, the 'reduced pagesize' ranges can be managed by individual device drivers when the compressor
@@ -106,6 +106,6 @@ also acts as a special purpose partitioner.
 
 
 /**
-* @endcond 
+* @endcond
 */
 

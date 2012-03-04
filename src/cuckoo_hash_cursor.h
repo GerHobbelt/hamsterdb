@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -13,7 +13,7 @@
 * @cond ham_internals
 */
 
-/** 
+/**
  * @brief cuckoo_hash cursors
  *
  */
@@ -29,7 +29,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 
 /**
@@ -248,7 +248,7 @@ ch_cursor_overwrite(ham_ch_cursor_t *cu, ham_record_t *record,
  * on this key
  */
 ham_status_t
-ch_cursor_find(ham_ch_cursor_t *cu, ham_key_t *key, ham_record_t *record, 
+ch_cursor_find(ham_ch_cursor_t *cu, ham_key_t *key, ham_record_t *record,
                 ham_u32_t flags);
 
 /**
@@ -267,24 +267,24 @@ ch_cursor_erase(ham_ch_cursor_t *cu, ham_u32_t flags);
 /**
  * returns true if a cursor points to this key, otherwise false
  */
-ham_bool_t 
+ham_bool_t
 ch_cursor_points_to(ham_ch_cursor_t *cursor, int_key_t *key);
 
 /*
  * get number of duplicates of this key
  */
 ham_status_t
-ch_cursor_get_duplicate_count(ham_cursor_t *cursor, 
+ch_cursor_get_duplicate_count(ham_cursor_t *cursor,
                 ham_size_t *count, ham_u32_t flags);
 
 
 #ifdef __cplusplus
 } // extern "C"
-#endif 
+#endif
 
 #endif /* HAM_CH_CURSORS_H__ */
 
 /**
-* @endcond 
+* @endcond
 */
 

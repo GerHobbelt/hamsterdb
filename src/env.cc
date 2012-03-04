@@ -105,18 +105,18 @@ env_purge_cache(ham_env_t *env, ham_size_t purge_depth)
                 {
                     if (!fast_scan_mode)
                     {
-				        cur = cache_get_cur_elements(cache);
+                        cur = cache_get_cur_elements(cache);
 
-						/* only yak about CACHE FULL when there really is no space left any more! */
-						if (cur >= max)
-						{
-							return HAM_CACHE_FULL;
-						}
-						else
-						{
-							/* we still have 1 or more slots left to use... */
-							return HAM_SUCCESS;
-						}
+                        /* only yak about CACHE FULL when there really is no space left any more! */
+                        if (cur >= max)
+                        {
+                            return HAM_CACHE_FULL;
+                        }
+                        else
+                        {
+                            /* we still have 1 or more slots left to use... */
+                            return HAM_SUCCESS;
+                        }
                     }
                     else
                     {

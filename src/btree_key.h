@@ -62,7 +62,7 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
     ham_u8_t _flags8;
 
 #if 0
-	/*
+    /*
     WARNING WARNING WARNING WARNING WARNING WARNING
 
     ALIGNMENT ISSUE (Motorola MC68000, DEC ALPHA, ...)
@@ -130,7 +130,7 @@ HAM_PACK_0 struct HAM_PACK_1 int_key_t
  * @sa key_get_ptr
  * @sa key_get_ptr_as_data
  */
-#define key_get_ptr_direct_ref(k)												\
+#define key_get_ptr_direct_ref(k)                                               \
                                     (&(k)->_ptr)
 
 /**

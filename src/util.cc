@@ -53,26 +53,26 @@ util_copy_key(ham_db_t *db, const ham_key_t *source, ham_key_t *dest)
         dest->_flags = source->_flags & ~KEY_IS_EXTENDED;
     }
     else if (source->size)
-	{
+    {
         if (!(dest->flags & HAM_KEY_USER_ALLOC))
-		{
-			if (!dest->data || dest->size < source->size)
-			{
-				if (dest->data)
-					allocator_free(env_get_allocator(db_get_env(db)), dest->data);
-				dest->data = (ham_u8_t *)allocator_alloc(env_get_allocator(db_get_env(db)), source->size);
-				if (!dest->data)
-				{
-					return HAM_OUT_OF_MEMORY;
-				}
-			}
-		}
+        {
+            if (!dest->data || dest->size < source->size)
+            {
+                if (dest->data)
+                    allocator_free(env_get_allocator(db_get_env(db)), dest->data);
+                dest->data = (ham_u8_t *)allocator_alloc(env_get_allocator(db_get_env(db)), source->size);
+                if (!dest->data)
+                {
+                    return HAM_OUT_OF_MEMORY;
+                }
+            }
+        }
         memcpy(dest->data, source->data, source->size);
         dest->size=source->size;
         dest->_flags=source->_flags;
     }
     else
-	{
+    {
         /* key.size is 0 */
         if (!(dest->flags & HAM_KEY_USER_ALLOC)) {
             if (dest->data)
@@ -108,15 +108,15 @@ util_copy_key_int2pub(ham_db_t *db, const int_key_t *source, ham_key_t *dest)
     }
     else if (key_get_size(source)) {
         if (!(dest->flags & HAM_KEY_USER_ALLOC)) {
-			if (!dest->data || dest->size < key_get_size(source)) {
-				if (dest->data)
-					allocator_free(alloc, dest->data);
-				dest->data = (ham_u8_t *)allocator_alloc(alloc,
+            if (!dest->data || dest->size < key_get_size(source)) {
+                if (dest->data)
+                    allocator_free(alloc, dest->data);
+                dest->data = (ham_u8_t *)allocator_alloc(alloc,
                             key_get_size(source));
-				if (!dest->data)
-					return HAM_OUT_OF_MEMORY;
-			}
-		}
+                if (!dest->data)
+                    return HAM_OUT_OF_MEMORY;
+            }
+        }
 
         memcpy(dest->data, key_get_key(source), key_get_size(source));
         dest->size=key_get_size(source);
