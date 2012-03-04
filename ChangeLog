@@ -1,4 +1,49 @@
-Jul 09, 2011 - chris ---------------------------------------------------
+Jan 29, 2012 - chris ---------------------------------------------------
+o bugfix: when the Environment was flushed (which always happens when a 
+	Transaction is committed), all unused pages were deleted. This thrashed 
+	the caches and degraded performance (thanks, Mark)
+
+Dec 05, 2011 - chris ---------------------------------------------------
+o Added the iOS port in the contrib directory. Written by Peter Liu,
+    https://github.com/yeahren, http://www.yeahren.com/ - THANKS!
+
+Nov 08, 2011 - chris ---------------------------------------------------
+                      release of hamsterdb-1.1.15
+
+Nov 08, 2011 - chris ---------------------------------------------------
+o fixed a bug when using HAM_PARAM_CACHESIZE with values > 2GB; cachesize
+	was truncated to 32bit (thanks, Jake)
+
+Oct 11, 2011 - chris ---------------------------------------------------
+                      release of hamsterdb-1.1.14
+
+Oct 09, 2011 - chris ---------------------------------------------------
+o fixed a bug when erasing extended keys; sometimes this would try to
+    load extended keys which do not exist (thanks, Andi Weber)
+
+Oct 08, 2011 - chris ---------------------------------------------------
+o removed two expensive memcpy's in the logging routines (thanks, Jake)
+o all modified ("dirty") pages are now tracked in their own list for
+    performance improvements (thanks, Jake)
+o added ham_cursor_get_record_size to the c++ API
+
+Oct 01, 2011 - chris ---------------------------------------------------
+o added a new function ham_cursor_get_record_size; retrieves the record 
+	size of the current item
+
+Sep 27, 2011 - chris ---------------------------------------------------
+o the cache size is now a 64bit variable; cachesize can be > 4 GB
+
+Aug 25, 2011 - chris ---------------------------------------------------
+o configure.in: AM_INIT_AUTOMAKE requests now version 1.10 (thanks, Ger)
+
+Aug 25, 2011 - chris ---------------------------------------------------
+o enabled large file support for 32bit linux (thanks, liheyuan)
+
+Aug 22, 2011 - chris ---------------------------------------------------
+                      release of hamsterdb-1.1.13
+
+Aug 09, 2011 - chris ---------------------------------------------------
 o bugfix: when aborting a transaction, modified pages would be recreated from 
     the log even if the current transaction was read-only. This caused a 
     performance regression compared to 1.1.9 (thanks, Jake)

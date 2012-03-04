@@ -21,7 +21,7 @@
 #endif
 #include <ham/hamsterdb.h>
 
-#define LOOP 100
+#define LOOP 10
 
 void 
 error(const char *foo, ham_status_t st)
@@ -80,8 +80,8 @@ main(int argc, char **argv)
         key.data=&i;
         key.size=sizeof(i);
 
-        record.data=&i;
-        record.size=sizeof(i);
+        record.size=key.size;
+        record.data=key.data;
 
         st=ham_insert(db, 0, &key, &record, 0);
 		if (st!=HAM_SUCCESS)

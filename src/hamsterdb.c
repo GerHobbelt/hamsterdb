@@ -502,17 +502,17 @@ __prepare_record(ham_record_t *record)
     return HAM_TRUE;
 }
 
-ham_status_t
-__check_create_parameters(ham_env_t *env, ham_db_t *db, const char *filename,
-        ham_u32_t *pflags, const ham_parameter_t *param,
-        ham_size_t *ppagesize, ham_u16_t *pkeysize,
-        ham_size_t *pcachesize, ham_u16_t *pdbname,
+ham_status_t 
+__check_create_parameters(ham_env_t *env, ham_db_t *db, const char *filename, 
+        ham_u32_t *pflags, const ham_parameter_t *param, 
+        ham_size_t *ppagesize, ham_u16_t *pkeysize, 
+        ham_u64_t *pcachesize, ham_u16_t *pdbname,
         ham_u16_t *pmaxdbs, ham_u16_t *pdata_access_mode, ham_bool_t create)
 {
     ham_size_t pagesize=0;
     ham_u16_t keysize=0;
     ham_u16_t dbname=HAM_DEFAULT_DATABASE_NAME;
-    ham_size_t cachesize=0;
+    ham_u64_t cachesize=0;
     ham_bool_t no_mmap=HAM_FALSE;
     ham_u16_t dbs=0;
     ham_u16_t dam=0;
@@ -638,7 +638,7 @@ __check_create_parameters(ham_env_t *env, ham_db_t *db, const char *filename,
             switch (param->name) {
             case HAM_PARAM_CACHESIZE:
                 if (pcachesize) {
-                    cachesize=(ham_size_t)param->value;
+                    cachesize=param->value;
                     if (cachesize > 0) {
                         if (env && env_get_cache(env)
                                 && cachesize != env_get_cachesize(env)) {
@@ -1143,7 +1143,7 @@ ham_env_create_ex(ham_env_t *env, const char *filename,
     ham_status_t st;
     ham_size_t pagesize = 0;
     ham_u16_t keysize = 0;
-    ham_size_t cachesize = 0;
+    ham_u64_t cachesize = 0;
     ham_u16_t maxdbs = 0;
 
     if (!env) {
@@ -1314,7 +1314,7 @@ ham_env_open_ex(ham_env_t *env, const char *filename,
         ham_u32_t flags, const ham_parameter_t *param)
 {
     ham_status_t st;
-    ham_size_t cachesize=0;
+    ham_u64_t cachesize=0;
 
     if (!env) {
         ham_trace(("parameter 'env' must not be NULL"));
@@ -1748,7 +1748,6 @@ ham_new(ham_db_t **db)
 ham_status_t HAM_CALLCONV
 ham_delete(ham_db_t *db)
 {
-    ham_env_t *env;
     ham_status_t st;
     ham_status_t st2 = HAM_SUCCESS;
 
@@ -1756,7 +1755,6 @@ ham_delete(ham_db_t *db)
         ham_trace(("parameter 'db' must not be NULL"));
         return HAM_INV_PARAMETER;
     }
-    env = db_get_env(db);
 
     /* trash all DB performance data */
     stats_trash_dbdata(db, db_get_db_perf_data(db));
@@ -1795,7 +1793,7 @@ ham_open_ex(ham_db_t *db, const char *filename,
 {
     ham_status_t st;
     ham_u16_t dbname=HAM_FIRST_DATABASE_NAME;
-    ham_size_t cachesize=0;
+    ham_u64_t cachesize=0;
     ham_u16_t dam = 0;
     ham_env_t *env;
     ham_u32_t env_flags;
@@ -1911,7 +1909,7 @@ ham_create_ex(ham_db_t *db, const char *filename,
     ham_u16_t maxdbs = 0;
     ham_u16_t keysize = 0;
     ham_u16_t dbname = HAM_DEFAULT_DATABASE_NAME;
-    ham_size_t cachesize = 0;
+    ham_u64_t cachesize = 0;
     ham_env_t *env=0;
     ham_u32_t env_flags;
     ham_parameter_t env_param[8]={{0, 0}};
@@ -3113,7 +3111,6 @@ ham_cursor_insert(ham_cursor_t *cursor, ham_key_t *key,
             ham_record_t *record, ham_u32_t flags)
 {
     ham_db_t *db;
-    ham_env_t *env;
 
     if (!cursor) {
         ham_trace(("parameter 'cursor' must not be NULL"));
@@ -3143,7 +3140,6 @@ ham_cursor_insert(ham_cursor_t *cursor, ham_key_t *key,
         ham_trace(("parameter 'cursor' must be linked to a valid database"));
         return HAM_INV_PARAMETER;
     }
-    env = db_get_env(db);
 
     if (db_get_rt_flags(db)&HAM_READ_ONLY) {
         ham_trace(("cannot insert to a read-only database"));
@@ -3246,7 +3242,6 @@ ham_status_t HAM_CALLCONV
 ham_cursor_erase(ham_cursor_t *cursor, ham_u32_t flags)
 {
     ham_db_t *db;
-    ham_env_t *env;
 
     if (!cursor) {
         ham_trace(("parameter 'cursor' must not be NULL"));
@@ -3259,7 +3254,6 @@ ham_cursor_erase(ham_cursor_t *cursor, ham_u32_t flags)
         ham_trace(("parameter 'cursor' must be linked to a valid database"));
         return HAM_INV_PARAMETER;
     }
-    env = db_get_env(db);
 
     if (db_get_rt_flags(db)&HAM_READ_ONLY) {
         ham_trace(("cannot erase from a read-only database"));
@@ -3314,6 +3308,36 @@ ham_cursor_get_duplicate_count(ham_cursor_t *cursor,
 
     return (db_set_error(db,
                 db->_fun_cursor_get_duplicate_count(cursor, count, flags)));
+}
+
+ham_status_t HAM_CALLCONV
+ham_cursor_get_record_size(ham_cursor_t *cursor, ham_offset_t *size)
+{
+    ham_db_t *db;
+
+    if (!cursor) {
+        ham_trace(("parameter 'cursor' must not be NULL"));
+        return (HAM_INV_PARAMETER);
+    }
+    db=cursor_get_db(cursor);
+    if (!db || !db_get_env(db)) {
+        ham_trace(("parameter 'cursor' must be linked to a valid database"));
+        return (HAM_INV_PARAMETER);
+    }
+    if (!size) {
+        ham_trace(("parameter 'size' must not be NULL"));
+        return (db_set_error(db, HAM_INV_PARAMETER));
+    }
+
+    *size=0;
+
+    if (!db->_fun_cursor_get_record_size) {
+        ham_trace(("Database was not initialized"));
+        return (db_set_error(db, HAM_NOT_INITIALIZED));
+    }
+
+    return (db_set_error(db, 
+                db->_fun_cursor_get_record_size(cursor, size)));
 }
 
 ham_status_t HAM_CALLCONV

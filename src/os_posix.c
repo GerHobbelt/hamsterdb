@@ -20,6 +20,9 @@
 #if HAVE_MMAP
 #  include <sys/mman.h>
 #endif
+#ifdef HAVE_WRITEV
+#  include <sys/uio.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/file.h>
@@ -65,7 +68,7 @@ __lock_exclusive(int fd, ham_bool_t lock)
 }
 
 static void
-my_enable_largefile(int fd)
+__enable_largefile(int fd)
 {
     /*
      * not available on cygwin...
@@ -140,7 +143,7 @@ os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size)
 
 #ifndef HAVE_PREAD
 static ham_status_t
-my_os_read(ham_fd_t fd, ham_u8_t *buffer, ham_offset_t bufferlen)
+__os_read(ham_fd_t fd, ham_u8_t *buffer, ham_offset_t bufferlen)
 {
     int r;
     ham_size_t total=0;
@@ -185,7 +188,7 @@ os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
     st=os_seek(fd, addr, HAM_OS_SEEK_SET);
     if (st)
         return (st);
-    st=my_os_read(fd, buffer, bufferlen);
+    st=__os_read(fd, buffer, bufferlen);
     return (st);
 #endif
 }
@@ -228,7 +231,7 @@ os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
 
     if (total!=bufferlen)
         return (HAM_IO_ERROR);
-    return (os_seek(fd, addr+total, HAM_OS_SEEK_SET)); // [i_a] october fix by Christoph after I messed up; log shouldn't be using os_pwrite but os_write? TODO / CHECK AGAIN!
+    return (os_seek(fd, addr+total, HAM_OS_SEEK_SET));
 #else
     ham_status_t st;
 
@@ -239,6 +242,40 @@ os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
     return (st);
 #endif
 }
+
+ham_status_t
+os_writev(ham_fd_t fd, const void *buffer1, ham_offset_t buffer1_len, 
+                const void *buffer2, ham_offset_t buffer2_len)
+{
+#ifdef HAVE_WRITEV
+    struct iovec vec[2]={
+        { (void *)buffer1, buffer1_len },
+        { (void *)buffer2, buffer2_len }
+    };
+
+    int w=writev(fd, &vec[0], 2);
+    if (w==-1) {
+        ham_log(("writev failed with status %u (%s)", errno, strerror(errno)));
+        return (HAM_IO_ERROR);
+    }
+    if (w!=buffer1_len+buffer2_len) {
+        ham_log(("writev short write, status %u (%s)", errno, strerror(errno)));
+        return (HAM_IO_ERROR);
+    }
+    return (0);
+#else
+    ham_status_t st=os_write(fd, buffer1, buffer1_len);
+    if (st)
+        return (st);
+    st=os_write(fd, buffer2, buffer2_len);
+    if (st) {
+        /* rollback the previous change */
+        (void)os_seek(fd, buffer1_len, HAM_OS_SEEK_END);
+    }
+    return (st);
+#endif
+}
+
 
 ham_status_t
 os_seek(ham_fd_t fd, ham_offset_t offset, int whence)
@@ -294,17 +331,13 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
         return (HAM_IO_ERROR);
     }
 
-    /*
-     * lock the file - this is default behaviour since 1.1.0
-     */
+    /* lock the file - this is default behaviour since 1.1.0 */
     st=__lock_exclusive(*fd, HAM_TRUE);
     if (st)
         return (st);
 
-    /*
-     * enable O_LARGEFILE support
-     */
-    my_enable_largefile(*fd);
+    /* enable O_LARGEFILE support */
+    __enable_largefile(*fd);
 
     return (HAM_SUCCESS);
 }
@@ -347,17 +380,13 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
         return (errno==ENOENT ? HAM_FILE_NOT_FOUND : HAM_IO_ERROR);
     }
 
-    /*
-     * lock the file - this is default behaviour since 1.1.0
-     */
+    /* lock the file - this is default behaviour since 1.1.0 */
     st=__lock_exclusive(*fd, HAM_TRUE);
     if (st)
         return (st);
 
-    /*
-     * enable O_LARGEFILE support
-     */
-    my_enable_largefile(*fd);
+    /* enable O_LARGEFILE support */
+    __enable_largefile(*fd);
 
     return (HAM_SUCCESS);
 }
@@ -367,9 +396,7 @@ os_close(ham_fd_t fd, ham_u32_t flags)
 {
     ham_status_t st;
 
-    /*
-     * unlock the file - this is default behaviour since 1.1.0
-     */
+    /* unlock the file - this is default behaviour since 1.1.0 */
     st=__lock_exclusive(fd, HAM_FALSE);
     if (st)
         return (st);
@@ -378,3 +405,4 @@ os_close(ham_fd_t fd, ham_u32_t flags)
         return (HAM_IO_ERROR);
     return (HAM_SUCCESS);
 }
+

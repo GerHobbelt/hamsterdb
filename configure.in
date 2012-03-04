@@ -7,10 +7,10 @@ dnl information
 dnl
 
 dnl Initialize autoconf/automake
-AC_INIT(hamsterdb, 1.1.13)
+AC_INIT(hamsterdb, 1.1.15)
 AC_CONFIG_SRCDIR(src/hamsterdb.c)
 AC_CONFIG_AUX_DIR(build/scripts)
-AM_INIT_AUTOMAKE(hamsterdb, 1.1.13)
+AM_INIT_AUTOMAKE(hamsterdb, 1.10)
 
 AM_CONFIG_HEADER(config.h)
 
@@ -23,7 +23,7 @@ AC_PROG_INSTALL
 AC_HEADER_STDC
 AC_C_CONST
 AC_TYPE_SIZE_T
-AC_CHECK_FUNCS(mmap munmap getpagesize fdatasync fsync)
+AC_CHECK_FUNCS(mmap munmap getpagesize fdatasync fsync writev)
 AC_CHECK_HEADERS(fcntl.h unistd.h malloc.h)
 AC_TYPE_OFF_T
 AC_FUNC_MMAP
@@ -198,6 +198,7 @@ int main(void) {
 }],ac_cv_largefile=yes,ac_cv_largefile=no,ac_cv_largefile=no)])
 if test $ac_cv_largefile = yes; then
     AC_DEFINE(HAVE_O_LARGEFILE,1,[flag O_LARGEFILE is supported])
+    CFLAGS="${CFLAGS} -D_FILE_OFFSET_BITS=64"
 fi
 
 #

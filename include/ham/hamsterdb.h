@@ -13,7 +13,7 @@
  * @file hamsterdb.h
  * @brief Include file for hamsterdb Embedded Storage
  * @author Christoph Rupp, chris@crupp.de
- * @version 1.1.13
+ * @version 1.1.15
  *
  * @mainpage
  *
@@ -1755,7 +1755,7 @@ ham_enable_compression(ham_db_t *db, ham_u32_t level, ham_u32_t flags);
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated or freed. The flag @ref 
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
  * @ref ham_find can not search for duplicate keys. If @a key has
@@ -2342,7 +2342,7 @@ ham_cursor_clone(ham_cursor_t *src, ham_cursor_t **dest);
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated or freed. The flag @ref 
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
  * You can write only portions of the record by specifying the flag 
@@ -2472,7 +2472,7 @@ ham_cursor_overwrite(ham_cursor_t *cursor, ham_record_t *record,
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated or freed. The flag @ref 
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
  * When either or both @ref HAM_FIND_LT_MATCH and/or @ref HAM_FIND_GT_MATCH
@@ -2604,7 +2604,7 @@ ham_cursor_find(ham_cursor_t *cursor, ham_key_t *key, ham_u32_t flags);
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point
  * directly to the record that is stored in hamsterdb; the data can be modified,
- * but the pointer must not be reallocated of freed. The flag @ref 
+ * but the pointer must not be reallocated or freed. The flag @ref 
  * HAM_DIRECT_ACCESS is only allowed in In-Memory Databases.
  *
  * You can read only portions of the record by specifying the flag 
@@ -2955,6 +2955,21 @@ ham_cursor_erase(ham_cursor_t *cursor, ham_u32_t flags);
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_cursor_get_duplicate_count(ham_cursor_t *cursor, 
         ham_size_t *count, ham_u32_t flags);
+
+/**
+ * Returns the record size of the current key
+ *
+ * Returns the record size of the item to which the Cursor currently refers.
+ *
+ * @param cursor A valid Cursor handle
+ * @param size Returns the record size, in bytes
+ *
+ * @return @ref HAM_SUCCESS upon success
+ * @return @ref HAM_CURSOR_IS_NIL if the Cursor does not point to an item
+ * @return @ref HAM_INV_PARAMETER if @a cursor or @a size is NULL
+ */
+HAM_EXPORT ham_status_t HAM_CALLCONV
+ham_cursor_get_record_size(ham_cursor_t *cursor, ham_offset_t *size);
 
 /**
  * Closes a Database Cursor
