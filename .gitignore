@@ -2,6 +2,12 @@
 *~
 *.lo
 *.la
+*.a
+*.obj
+*.psess
+*.vsp
+*.sdf
+*.opensdf
 .libs
 .deps
 
