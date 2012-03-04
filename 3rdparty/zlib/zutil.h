@@ -10,8 +10,8 @@
 
 /* @(#) $Id$ */
 
-#ifndef ZUTIL_H
-#define ZUTIL_H
+#ifndef _Z_UTIL_H /* [i_a] */
+#define _Z_UTIL_H
 
 #define ZLIB_INTERNAL
 #include "zlib.h"
@@ -23,6 +23,9 @@
 #  include <string.h>
 #  include <stdlib.h>
 #endif
+
+#include <stdio.h>   /* [i_a] added AFTER zconf.h is loaded through zlib.h */
+
 #ifdef NO_ERRNO_H
 #   ifdef _WIN32_WCE
       /* The Microsoft C Run-Time Library for Windows CE doesn't have
@@ -31,6 +34,9 @@
        * avoid conflict with other libraries that use the same workaround.
        */
 #     define errno z_errno
+
+#    include <string.h>  /* [i_a] make sure we include the prototype for strerror()! */
+
 #   endif
     extern int errno;
 #else
@@ -266,4 +272,4 @@ void   zcfree  OF((voidpf opaque, voidpf ptr));
 #define ZFREE(strm, addr)  (*((strm)->zfree))((strm)->opaque, (voidpf)(addr))
 #define TRY_FREE(s, p) {if (p) ZFREE(s, p);}
 
-#endif /* ZUTIL_H */
+#endif /* _Z_UTIL_H */

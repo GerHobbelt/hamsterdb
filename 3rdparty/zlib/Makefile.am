@@ -1,5 +1,7 @@
 
 # INCLUDES = 
+AM_CPPFLAGS = -DNO_DUMMY_DECL \
+	-I$(top_srcdir)/include
 
 noinst_LTLIBRARIES = libzlib.la
 
@@ -15,3 +17,6 @@ libzlib_la_SOURCES = adler32.c \
 					infback.c \
 					inftrees.c \
 					inffast.c
+
+
+

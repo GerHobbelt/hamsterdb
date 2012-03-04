@@ -49,11 +49,11 @@
 
     Input parameters:
     sourceStart - pointer to a pointer to the source buffer.
-        The contents of this are modified on return so that
-        it points at the next thing to be converted.
+                  The contents of this are modified on return so that
+                  it points at the next thing to be converted.
     targetStart - similarly, pointer to pointer to the target buffer.
     sourceEnd, targetEnd - respectively pointers to the ends of the
-        two buffers, for overflow checking only.
+                  two buffers, for overflow checking only.
 
     These conversion functions take a ConversionFlags argument. When this
     flag is set to strict, both irregular sequences and isolated surrogates
@@ -78,7 +78,7 @@
 
     Author: Mark E. Davis, 1994.
     Rev History: Rick McGowan, fixes & updates May 2001.
-         Fixes & updates, Sept 2001.
+                 Fixes & updates, Sept 2001.
 
 ------------------------------------------------------------------------ */
 
@@ -91,17 +91,17 @@
 ------------------------------------------------------------------------ */
 
 
-typedef unsigned int    UTF32;  /* at least 32 bits */
-typedef unsigned short  UTF16;  /* at least 16 bits */
-typedef unsigned char   UTF8;   /* typically 8 bits */
+typedef unsigned long   UTF32;   /* at least 32 bits */
+typedef unsigned short  UTF16;   /* at least 16 bits */
+typedef unsigned char   UTF8;    /* typically 8 bits */
 typedef unsigned char   Boolean; /* 0 or 1 */
 
 /* Some fundamental constants */
 #define UNI_REPLACEMENT_CHAR (UTF32)0x0000FFFD
-#define UNI_MAX_BMP (UTF32)0x0000FFFF
-#define UNI_MAX_UTF16 (UTF32)0x0010FFFF
-#define UNI_MAX_UTF32 (UTF32)0x7FFFFFFF
-#define UNI_MAX_LEGAL_UTF32 (UTF32)0x0010FFFF
+#define UNI_MAX_BMP          (UTF32)0x0000FFFF
+#define UNI_MAX_UTF16        (UTF32)0x0010FFFF
+#define UNI_MAX_UTF32        (UTF32)0x7FFFFFFF
+#define UNI_MAX_LEGAL_UTF32  (UTF32)0x0010FFFF
 
 typedef enum {
     conversionOK,       /* conversion successful */
@@ -127,7 +127,7 @@ ConversionResult ConvertUTF8toUTF16 (
 ConversionResult ConvertUTF16toUTF8 (
         const UTF16** sourceStart, const UTF16* sourceEnd,
         UTF8** targetStart, UTF8* targetEnd, ConversionFlags flags);
-        
+
 ConversionResult ConvertUTF8toUTF32 (
         const UTF8** sourceStart, const UTF8* sourceEnd,
         UTF32** targetStart, UTF32* targetEnd, ConversionFlags flags);
@@ -135,7 +135,7 @@ ConversionResult ConvertUTF8toUTF32 (
 ConversionResult ConvertUTF32toUTF8 (
         const UTF32** sourceStart, const UTF32* sourceEnd,
         UTF8** targetStart, UTF8* targetEnd, ConversionFlags flags);
-        
+
 ConversionResult ConvertUTF16toUTF32 (
         const UTF16** sourceStart, const UTF16* sourceEnd,
         UTF32** targetStart, UTF32* targetEnd, ConversionFlags flags);
@@ -146,10 +146,15 @@ ConversionResult ConvertUTF32toUTF16 (
 
 Boolean isLegalUTF8Sequence(const UTF8 *source, const UTF8 *sourceEnd);
 
+
+/* intended to work the same as g_utf8_validate */
+Boolean tr_utf8_validate( const char * str, int max_len, const char ** end );
+
+
 #ifdef __cplusplus
 }
 #endif
 
 /* --------------------------------------------------------------------- */
 
-#endif // CONVERT_UNICODE_H
+#endif /* CONVERT_UNICODE_H */
