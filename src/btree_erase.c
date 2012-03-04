@@ -332,7 +332,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
 
                 st=db_fetch_page(&tempp, env, left, 0);
                 ham_assert(st ? tempp == NULL : tempp != NULL, (0));
-                if (!page)
+                if (!tempp)
                 {
                     return st ? st : HAM_INTERNAL_ERROR;
                 }
@@ -376,7 +376,7 @@ my_erase_recursive(ham_page_t ** const page_ref, ham_page_t * const page, ham_of
 
                 st=db_fetch_page(&tempp, env, right, 0);
                 ham_assert(st ? tempp == NULL : tempp != NULL, (0));
-                if (!page)
+                if (!tempp)
                 {
                     return st ? st : HAM_INTERNAL_ERROR;
                 }
@@ -1532,7 +1532,7 @@ my_copy_key(common_btree_datums_t *btdata, int_key_t *lhs, int_key_t *rhs)
 	 *       which 'rewrites' a key in that special circumstance where changing
 	 *       it does not alter its place in the sort order, i.e. position
 	 *       in the tree. Now THAT would be an optimization for VERY RARE
-	 *       circumstances; I don't think think it's useful to implement,
+	 *       circumstances; I don't think it's useful to implement,
 	 *       as the rather more generic 'hold off tree rebalancing' idea
 	 *       will produce the same effect, and then some.
 	 *

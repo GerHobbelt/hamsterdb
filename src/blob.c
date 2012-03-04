@@ -581,14 +581,14 @@ blob_allocate(ham_env_t *env, const ham_record_t *record,
             if pagesize != size, and the remaining chunk is large enough:
             move it to the freelist. This extra check is needed as the decision to
             go through the cache is not exclusively taken for 'tiny' blobs
-            (i.e. blobs which are significacntly smaller than a page); not checking
+            (i.e. blobs which are significantly smaller than a page); not checking
             implies we'd accept littering the freelist with tiny, costly to use, free
             slots at the end of pages. 'Costly to use' as such free chunks can only
             be used by blobs which will then span two pages at least, even if the blob
             itself would be tiny, as even the tiniest blob (SMALLEST_CHUNK_SIZE)
             would be larger than the freed slot at the end of the page.
 
-            To reduce the number of page I/Os it is then better to keep such suferfluous
+            To reduce the number of page I/Os it is then better to keep such superfluous
             space with the allocating blob itself.
             */
             {
