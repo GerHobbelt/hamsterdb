@@ -7,501 +7,274 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
-#include "config.h"
+/**
+* @cond ham_internals
+*/
 
-#include <string.h>
+#include "internal_preparation.h"
 
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "btree_key.h"
-#include "txn.h"
-#include "txn_cursor.h"
-#include "cursor.h"
 
-/* stuff for rb.h */
-#ifndef __ssize_t_defined
-typedef signed ssize_t;
-#endif
-#ifndef __cplusplus
-typedef int bool;
-#define true 1
-#define false (!true)
-#endif /* __cpluscplus */
 
-static int
-__cmpfoo(void *vlhs, void *vrhs)
-{
-    ham_compare_func_t foo;
-    txn_opnode_t *lhs=(txn_opnode_t *)vlhs;
-    txn_opnode_t *rhs=(txn_opnode_t *)vrhs;
-    Database *db=txn_opnode_get_db(lhs);
 
-    ham_assert(txn_opnode_get_db(lhs)==txn_opnode_get_db(rhs), (""));
-    if (lhs==rhs)
-        return (0);
 
-    foo=db->get_compare_func();
 
-    return (foo((ham_db_t *)db,
-                (ham_u8_t *)txn_opnode_get_key(lhs)->data,
-                txn_opnode_get_key(lhs)->size,
-                (ham_u8_t *)txn_opnode_get_key(rhs)->data,
-                txn_opnode_get_key(rhs)->size));
-}
+/**
+BIG FAT WARNING:
 
-rb_wrap(static, rbt_, txn_optree_t, txn_opnode_t, node, __cmpfoo)
+This routine should NEVER be used like this:
 
-void
-txn_op_add_cursor(txn_op_t *op, struct txn_cursor_t *cursor)
-{
-    ham_assert(!txn_cursor_is_nil(cursor), (""));
+  ham_txn_t txn;
+  txn_begin(&txn, env, 0);
+  ...
+  txn_commit/abort(&txn);
 
-    txn_cursor_set_coupled_next(cursor, txn_op_get_cursors(op));
-    txn_cursor_set_coupled_previous(cursor, 0);
+in any (C/C++) environment where the code in the '...' may trigger out of band jumps, such as longjmp()
+to an outer layer or a C++ exception, as the transaction 'txn' will be bound to the 'db' structure
+internally and cause a CORE DUMP once the 'db' structure is closed (and cleaned up) as then, in the
+outer layer exception handler, the 'txn' stack space will have been NUKED.
 
-    if (txn_op_get_cursors(op)) {
-        txn_cursor_t *old=txn_op_get_cursors(op);
-        txn_cursor_set_coupled_previous(old, cursor);
-    }
+This shortcutting style of coding was used throughout the unittests and it was waiting for the axe to fall...
 
-    txn_op_set_cursors(op, cursor);
-}
+It is also used within the hamsterdb C code itself, which is perfectly fine as this library does not
+call any exception throwing code... UNLESS OF COURSE such sort of code is to be found in ANY of the
+registered hooks/callbacks!
 
-void
-txn_op_remove_cursor(txn_op_t *op, struct txn_cursor_t *cursor)
-{
-    ham_assert(!txn_cursor_is_nil(cursor), (""));
-
-    if (txn_op_get_cursors(op)==cursor) {
-        txn_op_set_cursors(op, txn_cursor_get_coupled_next(cursor));
-        if (txn_cursor_get_coupled_next(cursor))
-            txn_cursor_set_coupled_previous(txn_cursor_get_coupled_next(cursor),
-                            0);
-    }
-    else {
-        if (txn_cursor_get_coupled_next(cursor))
-            txn_cursor_set_coupled_previous(txn_cursor_get_coupled_next(cursor),
-                            txn_cursor_get_coupled_previous(cursor));
-        if (txn_cursor_get_coupled_previous(cursor))
-            txn_cursor_set_coupled_next(txn_cursor_get_coupled_previous(cursor),
-                            txn_cursor_get_coupled_next(cursor));
-    }
-    txn_cursor_set_coupled_next(cursor, 0);
-    txn_cursor_set_coupled_previous(cursor, 0);
-}
-
-ham_bool_t
-txn_op_conflicts(txn_op_t *op, ham_txn_t *current_txn)
-{
-    ham_txn_t *optxn=txn_op_get_txn(op);
-    if (txn_get_flags(optxn)&TXN_STATE_ABORTED)
-        return (HAM_FALSE);
-    else if ((txn_get_flags(optxn)&TXN_STATE_COMMITTED)
-            || (current_txn==optxn))
-        return (HAM_FALSE);
-    else /* txn is still active */
-        return (HAM_TRUE);
-}
-
-void
-txn_tree_init(Database *db, txn_optree_t *tree)
-{
-    txn_optree_set_db(tree, db);
-    rbt_new(tree);
-}
-
-txn_opnode_t *
-txn_tree_get_first(txn_optree_t *tree)
-{
-    if (tree)
-        return (rbt_first(tree));
-    else
-        return (0);
-}
-
-txn_opnode_t *
-txn_tree_get_last(txn_optree_t *tree)
-{
-    if (tree)
-        return (rbt_last(tree));
-    else
-        return (0);
-}
-
-txn_opnode_t *
-txn_opnode_get_next_sibling(txn_opnode_t *node)
-{
-    return (rbt_next(txn_opnode_get_tree(node), node));
-}
-
-txn_opnode_t *
-txn_opnode_get_previous_sibling(txn_opnode_t *node)
-{
-    return (rbt_prev(txn_opnode_get_tree(node), node));
-}
-
-void
-txn_tree_enumerate(txn_optree_t *tree, txn_tree_enumerate_cb cb, void *data)
-{
-    txn_opnode_t *node=rbt_first(tree);
-
-    while (node) {
-        cb(node, data);
-        node=rbt_next(tree, node);
-    }
-}
-
-static void *
-__copy_key_data(Allocator *alloc, ham_key_t *key)
-{
-    void *data=0;
-
-    if (key->data && key->size) {
-        data=(void *)alloc->alloc(key->size);
-        if (!data)
-            return (0);
-        memcpy(data, key->data, key->size);
-    }
-
-    return (data);
-}
-
-txn_opnode_t *
-txn_opnode_get(Database *db, ham_key_t *key, ham_u32_t flags)
-{
-    txn_opnode_t *node=0, tmp;
-    txn_optree_t *tree=db->get_optree();
-    int match=0;
-
-    if (!tree)
-        return (0);
-
-    /* create a temporary node that we can search for */
-    memset(&tmp, 0, sizeof(tmp));
-    txn_opnode_set_key(&tmp, key);
-    txn_opnode_set_db(&tmp, db);
-
-    /* search if node already exists - if yes, return it */
-    if ((flags&HAM_FIND_GEQ_MATCH)==HAM_FIND_GEQ_MATCH) {
-        node=rbt_nsearch(tree, &tmp);
-        if (node)
-            match=__cmpfoo(&tmp, node);
-    }
-    else if ((flags&HAM_FIND_LEQ_MATCH)==HAM_FIND_LEQ_MATCH) {
-        node=rbt_psearch(tree, &tmp);
-        if (node)
-            match=__cmpfoo(&tmp, node);
-    }
-    else if (flags&HAM_FIND_GT_MATCH) {
-        node=rbt_search(tree, &tmp);
-        if (node)
-            node=txn_opnode_get_next_sibling(node);
-        else
-            node=rbt_nsearch(tree, &tmp);
-        match=1;
-    }
-    else if (flags&HAM_FIND_LT_MATCH) {
-        node=rbt_search(tree, &tmp);
-        if (node)
-            node=txn_opnode_get_previous_sibling(node);
-        else
-            node=rbt_psearch(tree, &tmp);
-        match=-1;
-    }
-    else
-        return (rbt_search(tree, &tmp));
-
-    /* tree is empty? */
-    if (!node)
-        return (0);
-
-    /* approx. matching: set the key flag */
-    if (match<0)
-        ham_key_set_intflags(key, (ham_key_get_intflags(key)
-                        & ~KEY_IS_APPROXIMATE) | KEY_IS_LT);
-    else if (match>0)
-        ham_key_set_intflags(key, (ham_key_get_intflags(key)
-                        & ~KEY_IS_APPROXIMATE) | KEY_IS_GT);
-
-    return (node);
-}
-
-txn_opnode_t *
-txn_opnode_create(Database *db, ham_key_t *key)
-{
-    txn_opnode_t *node=0;
-    txn_optree_t *tree=db->get_optree();
-    Allocator *alloc=db->get_env()->get_allocator();
-
-    /* make sure that a node with this key does not yet exist */
-    ham_assert(txn_opnode_get(db, key, 0)==0, (""));
-
-    /* create the new node (with a copy for the key) */
-    node=(txn_opnode_t *)alloc->alloc(sizeof(*node));
-    if (!node)
-        return (0);
-    memset(node, 0, sizeof(*node));
-    txn_opnode_set_key(node, key);
-    txn_opnode_get_key(node)->data=__copy_key_data(alloc, key);
-    txn_opnode_set_db(node, db);
-    txn_opnode_set_tree(node, tree);
-
-    /* store the node in the tree */
-    rbt_insert(tree, node);
-
-    return (node);
-}
-
-txn_op_t *
-txn_opnode_append(ham_txn_t *txn, txn_opnode_t *node, ham_u32_t orig_flags,
-                    ham_u32_t flags, ham_u64_t lsn, ham_record_t *record)
-{
-    Allocator *alloc=txn_get_env(txn)->get_allocator();
-    txn_op_t *op;
-
-    /* create and initialize a new txn_op_t structure */
-    op=(txn_op_t *)alloc->alloc(sizeof(*op));
-    if (!op)
-        return (0);
-    memset(op, 0, sizeof(*op));
-    txn_op_set_flags(op, flags);
-    txn_op_set_orig_flags(op, orig_flags);
-    txn_op_set_lsn(op, lsn);
-    txn_op_set_txn(op, txn);
-    txn_op_set_node(op, node);
-
-    /* create a copy of the record structure */
-    if (record) {
-        ham_record_t *oprec=txn_op_get_record(op);
-        *oprec=*record;
-        if (record->size && record->data) {
-            oprec->data=alloc->alloc(record->size);
-            if (!oprec->data) {
-                alloc->free(op);
-                return (0);
-            }
-            memcpy(oprec->data, record->data, record->size);
-        }
-        else {
-            oprec->size=0;
-            oprec->data=0;
-        }
-    }
-
-    /* store it in the chronological list which is managed by the node */
-    if (!txn_opnode_get_newest_op(node)) {
-        ham_assert(txn_opnode_get_oldest_op(node)==0, (""));
-        txn_opnode_set_newest_op(node, op);
-        txn_opnode_set_oldest_op(node, op);
-    }
-    else {
-        txn_op_t *newest=txn_opnode_get_newest_op(node);
-        txn_op_set_next_in_node(newest, op);
-        txn_op_set_previous_in_node(op, newest);
-        txn_opnode_set_newest_op(node, op);
-    }
-
-    /* store it in the chronological list which is managed by the transaction */
-    if (!txn_get_newest_op(txn)) {
-        ham_assert(txn_get_oldest_op(txn)==0, (""));
-        txn_set_newest_op(txn, op);
-        txn_set_oldest_op(txn, op);
-    }
-    else {
-        txn_op_t *newest=txn_get_newest_op(txn);
-        txn_op_set_next_in_txn(newest, op);
-        txn_op_set_previous_in_txn(op, newest);
-        txn_set_newest_op(txn, op);
-    }
-
-    return (op);
-}
-
+Hence any callbacks which get registered with hamsterDB should NEVER allow any C longjmp() or C++ exception
+to pass /through/ the hamsterdb layer itself, or a core dump at ham_close/ham_env_close invocation
+will be your share.
+*/
 ham_status_t
-txn_begin(ham_txn_t **ptxn, Environment *env, const char *name, ham_u32_t flags)
+txn_begin(ham_txn_t *txn, ham_env_t *env, ham_u32_t flags)
 {
-    ham_status_t st=0;
-    ham_txn_t *txn;
-
-    txn=(ham_txn_t *)env->get_allocator()->alloc(sizeof(ham_txn_t));
-    if (!txn)
-        return (HAM_OUT_OF_MEMORY);
+    ham_status_t st = HAM_SUCCESS;
 
     memset(txn, 0, sizeof(*txn));
-    txn_set_id(txn, env->get_txn_id()+1);
-    txn_set_flags(txn, flags);
-    if (name) {
-        char *p=(char *)env->get_allocator()->alloc(strlen(name)+1);
-        strcpy(p, name);
-        txn_set_name(txn, p);
+
+    /* for hamsterdb 1.0.4 - only support one transaction */
+    if (env_get_txn(env)) {
+        ham_trace(("only one concurrent transaction is supported"));
+        return (HAM_LIMITS_REACHED);
     }
-    env->set_txn_id(txn_get_id(txn));
 
-    /* link this txn with the Environment */
-    env_append_txn(env, txn);
+    txn_set_env(txn, env);
+    txn_set_id(txn, env_get_txn_id(env)+1);
+    txn_set_flags(txn, flags);
+    env_set_txn(env, txn);
+    env_set_txn_id(env, txn_get_id(txn));
 
-    *ptxn=txn;
+    if (env_get_log(env) && !(flags&HAM_TXN_READ_ONLY))
+        st=ham_log_append_txn_begin(env_get_log(env), txn);
 
-    return (st);
+    return st;
 }
 
 ham_status_t
 txn_commit(ham_txn_t *txn, ham_u32_t flags)
 {
-    Environment *env=txn_get_env(txn);
+    ham_status_t st;
+    ham_env_t *env = txn_get_env(txn);
+    ham_device_t *device=env_get_device(env);
 
-    /* are cursors attached to this txn? if yes, fail */
-    ham_assert(txn_get_cursor_refcount(txn)==0, (""));
+    /*
+     * are cursors attached to this txn? if yes, fail
+     */
+    if (txn_get_cursor_refcount(txn)) {
+        ham_trace(("transaction cannot be committed till all attached "
+                    "cursors are closed"));
+        return HAM_CURSOR_STILL_OPEN;
+    }
 
-    /* this transaction is now committed!  */
-    txn_set_flags(txn, txn_get_flags(txn)|TXN_STATE_COMMITTED);
+    /*
+     * in case of logging: write after-images of all modified pages,
+     * if they were modified by this transaction;
+     * then write the transaction boundary
+     */
+    if (env_get_log(env) && !(txn_get_flags(txn)&HAM_TXN_READ_ONLY))
+    {
+        ham_page_t *head=txn_get_pagelist(txn);
+        while (head) {
+            ham_page_t *next;
 
-    /* now flush all committed Transactions to disk */
-    if (!(env->get_flags()&DB_DISABLE_AUTO_FLUSH))
-        return (env_flush_committed_txns(env));
-    else
-        return (0);
+            next=page_get_next(head, PAGE_LIST_TXN);
+            if (page_get_dirty_txn(head)==txn_get_id(txn)
+                    || page_get_dirty_txn(head)==PAGE_DUMMY_TXN_ID)
+            {
+                st=ham_log_add_page_after(head);
+                if (st)
+                    return st;
+            }
+            head=next;
+        }
+
+        st=ham_log_append_txn_commit(env_get_log(env), txn);
+        if (st)
+            return st;
+    }
+
+    /*
+     * flush the pages
+     *
+     * shouldn't use local var for the list head, as
+     * txn_get_pagelist(txn) should be kept up to date and correctly
+     * formatted while we call db_free_page() et al.
+     */
+    while (txn_get_pagelist(txn))
+    {
+        ham_page_t *head = txn_get_pagelist(txn);
+
+        txn_set_pagelist(txn, page_list_remove(head, PAGE_LIST_TXN, head));
+
+        /* page is no longer in use */
+        page_release_ref(head);
+
+        /*
+         * delete the page?
+         */
+        if (page_get_npers_flags(head) & PAGE_NPERS_DELETE_PENDING) {
+            /* remove page from cache, add it to garbage list */
+            page_set_undirty(head);
+
+            st=db_free_page(head, DB_MOVE_TO_FREELIST);
+            if (st)
+                return (st);
+        }
+    }
+
+    ham_assert(txn_get_pagelist(txn)==0, (0));
+    txn_set_env(txn, 0);
+    //txn_set_pagelist(txn, 0);
+    env_set_txn(env, 0);
+
+    /* flush the file handle */
+    if (env_get_rt_flags(env) & HAM_WRITE_THROUGH)
+        return device->flush(device);
+
+    /* now it's the time to purge caches */
+    env_purge_cache(env, cache_get_cur_elements(env_get_cache(env)) / 2);
+
+    return HAM_SUCCESS;
 }
 
 ham_status_t
 txn_abort(ham_txn_t *txn, ham_u32_t flags)
 {
+    ham_status_t st;
+    ham_env_t *env=txn_get_env(txn);
+    ham_device_t *device=env_get_device(env);
+
     /*
      * are cursors attached to this txn? if yes, fail
      */
     if (txn_get_cursor_refcount(txn)) {
-        ham_trace(("Transaction cannot be aborted till all attached "
-                    "Cursors are closed"));
-        return (HAM_CURSOR_STILL_OPEN);
+        ham_trace(("transaction cannot be aborted till all attached "
+                    "cursors are closed"));
+        return HAM_CURSOR_STILL_OPEN;
+    }
+
+    if (env_get_log(env) && !(txn_get_flags(txn)&HAM_TXN_READ_ONLY)) {
+        st=ham_log_append_txn_abort(env_get_log(env), txn);
+        if (st)
+            return st;
     }
 
     /*
-     * this transaction is now aborted!
+     * undo all operations from this transaction
+     *
+     * this includes allocated pages (they're moved to the freelist),
+     * deleted pages (they're un-deleted) and other modifications (will
+     * re-create the original page from the logfile)
+     *
+     * keep txn_get_pagelist(txn) intact during every round, so no
+     * local var for this one.
      */
-    txn_set_flags(txn, txn_get_flags(txn)|TXN_STATE_ABORTED);
+    while (txn_get_pagelist(txn))
+    {
+        ham_page_t *head = txn_get_pagelist(txn);
 
-    /* immediately release memory of the cached operations */
-    txn_free_ops(txn);
+        if (!(flags & DO_NOT_NUKE_PAGE_STATS))
+        {
+            /*
+             * nuke critical statistics, such as tracked outer bounds; imagine,
+             * for example, a failing erase transaction which, through erasing
+             * the top-most key, lowers the actual upper bound, after which
+             * the transaction fails at some later point in life. Now if we
+             * wouldn't 'rewind' our bounds-statistics, we would have a
+             * situation where a subsequent out-of-bounds insert (~ append)
+             * would possibly FAIL due to the hinter using incorrect bounds
+             * information then!
+             *
+             * Hence we 'reverse' our statistics here and the easiest route
+             * is to just nuke the critical bits; subsequent find/insert/erase
+             * operations will ensure that the stats will get updated again,
+             * anyhow. All we loose then is a few subsequent operations, which
+             * might have been hinted if we had played a smarter game of
+             * statistics 'reversal'. Soit.
+             */
+            ham_db_t *db = page_get_owner(head);
 
-    /* clean up the changeset */
-    txn_get_env(txn)->get_changeset().clear();
+            /*
+             * only need to do this for index pages anyhow, and those are the
+             * ones which have their 'ownership' set.
+             */
+            if (db)
+            {
+                ham_backend_t *be = db_get_backend(db);
 
-    return (0);
-}
+                be->_fun_nuke_statistics(be, head, REASON_ABORT);
+            }
+        }
 
-void
-txn_free_optree(txn_optree_t *tree)
-{
-    Environment *env=txn_optree_get_db(tree)->get_env();
-    txn_opnode_t *node;
+        ham_assert(page_is_in_list(txn_get_pagelist(txn), head, PAGE_LIST_TXN),
+                             (0));
+        txn_set_pagelist(txn, page_list_remove(head, PAGE_LIST_TXN, head));
 
-    while ((node=rbt_last(tree))) {
-        txn_opnode_free(env, node);
+        /* if this page was allocated by this transaction, then we can
+         * move the whole page to the freelist */
+        if (page_get_alloc_txn_id(head)==txn_get_id(txn))
+        {
+            st = freel_mark_free(env, page_get_self(head),
+                    env_get_pagesize(env), HAM_TRUE);
+            if (st)
+                return st;
+        }
+        else if (page_get_dirty_txn(head) == txn_get_id(txn))
+        {
+            /* remove the 'delete pending' flag */
+            page_remove_npers_flags(head, PAGE_NPERS_DELETE_PENDING);
+
+            /* if the page is dirty and was modified in this transaction:
+             * recreate the original, unmodified page from the log */
+            if (env_get_log(env) && page_is_dirty(head))
+            {
+                st=ham_log_recreate(env_get_log(env), head);
+                if (st)
+                    return (st);
+            }
+        }
+
+        /* page is no longer in use */
+        page_release_ref(head);
     }
 
-    txn_tree_init(txn_optree_get_db(tree), tree);
+    ham_assert(txn_get_pagelist(txn)==0, (0));
+    txn_set_env(txn, 0);
+    //txn_set_pagelist(txn, 0);
+    env_set_txn(env, 0);
+
+    /* now it's the time to purge caches */
+    env_purge_cache(env, cache_get_cur_elements(env_get_cache(env)) / 2);
+
+    /* flush the file handle */
+    if (env_get_rt_flags(env) & HAM_WRITE_THROUGH)
+        return (device->flush(device));
+
+    return HAM_SUCCESS;
 }
 
-void
-txn_opnode_free(Environment *env, txn_opnode_t *node)
-{
-    ham_key_t *key;
 
-    txn_optree_t *tree=txn_opnode_get_tree(node);
-    rbt_remove(tree, node);
-
-    key=txn_opnode_get_key(node);
-    if (key->data)
-        env->get_allocator()->free(key->data);
-
-    env->get_allocator()->free(node);
-}
-
-static void
-txn_op_free(Environment *env, ham_txn_t *txn, txn_op_t *op)
-{
-    ham_record_t *rec;
-    txn_op_t *next, *prev;
-    txn_opnode_t *node;
-
-    rec=txn_op_get_record(op);
-    if (rec->data) {
-        env->get_allocator()->free(rec->data);
-        rec->data=0;
-    }
-
-    /* remove 'op' from the two linked lists */
-    next=txn_op_get_next_in_node(op);
-    prev=txn_op_get_previous_in_node(op);
-    if (next)
-        txn_op_set_previous_in_node(next, prev);
-    if (prev)
-        txn_op_set_next_in_node(prev, next);
-
-    next=txn_op_get_next_in_txn(op);
-    prev=txn_op_get_previous_in_txn(op);
-    if (next)
-        txn_op_set_previous_in_txn(next, prev);
-    if (prev)
-        txn_op_set_next_in_txn(prev, next);
-
-    /* remove this op from the node */
-    node=txn_op_get_node(op);
-    if (txn_opnode_get_oldest_op(node)==op)
-        txn_opnode_set_oldest_op(node, txn_op_get_next_in_node(op));
-
-    /* if the node is empty: remove the node from the tree */
-    if (txn_opnode_get_oldest_op(node)==0)
-        txn_opnode_free(env, node);
-
-    env->get_allocator()->free(op);
-}
-
-void
-txn_free_ops(ham_txn_t *txn)
-{
-    Environment *env=txn_get_env(txn);
-    txn_op_t *n, *op=txn_get_oldest_op(txn);
-
-    while (op) {
-        n=txn_op_get_next_in_txn(op);
-        txn_op_free(env, txn, op);
-        op=n;
-    }
-
-    txn_set_oldest_op(txn, 0);
-    txn_set_newest_op(txn, 0);
-}
-
-void
-txn_free(ham_txn_t *txn)
-{
-    Environment *env=txn_get_env(txn);
-
-    txn_free_ops(txn);
-
-    /* fix double linked transaction list */
-    if (txn_get_older(txn))
-        txn_set_newer(txn_get_older(txn), txn_get_newer(txn));
-    if (txn_get_newer(txn))
-        txn_set_older(txn_get_newer(txn), txn_get_older(txn));
-
-#if DEBUG
-    memset(txn, 0, sizeof(*txn));
-#endif
-
-    if (txn_get_name(txn))
-        env->get_allocator()->free(txn_get_name(txn));
-
-    env->get_allocator()->free(txn);
-}
+/**
+* @endcond
+*/
 

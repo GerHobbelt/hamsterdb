@@ -47,6 +47,22 @@
 
 #if defined(_MSC_VER)
 #include <windows.h>    // __try/__except support API
+
+/* [i_a] make sure crtdbg.h is loaded before malloc.h */
+#if defined(WIN32) || defined(__WIN32)
+
+#if defined(DEBUG) || defined(_DEBUG)
+#if !defined(_CRTDBG_MAP_ALLOC)
+#define _CRTDBG_MAP_ALLOC 1
+#endif
+#endif
+#if _MSC_VER >= 1400 && _MSC_VER < 1500 /* bloody MSVC2005 b0rks on crtdbg.h otherwise! */
+#include <cstdlib>
+#endif
+#include <crtdbg.h>
+
+#endif
+
 #endif
 
 #include <string.h>
@@ -84,7 +100,7 @@ typedef void (fixture::*method)();
 #define BFC_ASSERT(expr)  \
                     do { \
                         ditch_all_caught_values(); \
-                        if (catch_value(0, expr)==0) { \
+                        if (!catch_value(0, expr)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
@@ -99,11 +115,10 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)!=catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" != "#act \
-                            "; actual values: '%s' == '%s'", \
+                            "assertion failed in expr "#exp" == "#act \
+                            "; actual values: '%s' != '%s'", \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
-                        ditch_all_caught_values(); \
                     } while (0)
 
 #define BFC_ASSERT_NOTEQUAL(exp, act) \
@@ -112,8 +127,20 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)==catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" == "#act \
-                            "; actual values: '%s' != '%s'", \
+                            "assertion failed in expr "#exp" != "#act \
+                            "; actual values: '%s' == '%s'", \
+                            get_caught_value_string(0), \
+                            get_caught_value_string(1)); } \
+                    } while (0)
+
+#define BFC_ASSERT_CMP(exp, comparator, act) \
+                    do { \
+                        ditch_all_caught_values(); \
+                        if (!(catch_value(0, exp) comparator catch_value(1, act))) { \
+                            throw_bfc_error(__FILE__, __LINE__, \
+                            __FUNCTION__, \
+                            "assertion failed in expr "#exp" "#comparator" "#act \
+                            "; actual values: '%s' <-> '%s'", \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
                     } while (0)
@@ -121,19 +148,7 @@ typedef void (fixture::*method)();
 #define BFC_ASSERT_NULL(expr)  \
                     do { \
                         ditch_all_caught_values(); \
-                        if (catch_value(0, expr)!=0) { \
-                            throw_bfc_error(__FILE__, __LINE__, \
-                            __FUNCTION__, \
-                            "assertion failed in expr "#expr \
-                            " != NULL" \
-                            "; actual value: '%s' == NULL", \
-                            get_caught_value_string(0)); } \
-                    } while (0)
-
-#define BFC_ASSERT_NOTNULL(expr)  \
-                    do { \
-                        ditch_all_caught_values(); \
-                        if (catch_value(0, expr)==0) { \
+                        if (catch_value(0, expr)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
@@ -142,11 +157,23 @@ typedef void (fixture::*method)();
                             get_caught_value_string(0)); } \
                     } while (0)
 
+#define BFC_ASSERT_NOTNULL(expr)  \
+                    do { \
+                        ditch_all_caught_values(); \
+                        if (!catch_value(0, expr)) { \
+                            throw_bfc_error(__FILE__, __LINE__, \
+                            __FUNCTION__, \
+                            "assertion failed in expr "#expr \
+                            " != NULL" \
+                            "; actual value: '%s' == NULL", \
+                            get_caught_value_string(0)); } \
+                    } while (0)
+
 // for checks within loops: report round # as 'scenario #'
 #define BFC_ASSERT_I(expr, scenario)  \
                     do { \
                         ditch_all_caught_values(); \
-                        if (catch_value(0, expr)==0) { \
+                        if (!catch_value(0, expr)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
@@ -162,9 +189,9 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)!=catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" != "#act \
+                            "assertion failed in expr "#exp" == "#act \
                             " for scenario #%d" \
-                            "; actual values: '%s' == '%s'", \
+                            "; actual values: '%s' != '%s'", \
                             int(scenario), \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
@@ -176,9 +203,9 @@ typedef void (fixture::*method)();
                         if (catch_value(0, exp)==catch_value(1, act)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
-                            "assertion failed in expr "#exp" == "#act \
+                            "assertion failed in expr "#exp" != "#act \
                             " for scenario #%d" \
-                            "; actual values: '%s' != '%s'", \
+                            "; actual values: '%s' == '%s'", \
                             int(scenario), \
                             get_caught_value_string(0), \
                             get_caught_value_string(1)); } \
@@ -187,21 +214,7 @@ typedef void (fixture::*method)();
 #define BFC_ASSERT_NULL_I(expr, scenario)  \
                     do { \
                         ditch_all_caught_values(); \
-                        if (catch_value(0, expr)!=0) { \
-                            throw_bfc_error(__FILE__, __LINE__, \
-                            __FUNCTION__, \
-                            "assertion failed in expr "#expr \
-                            " != NULL" \
-                            " for scenario #%d" \
-                            "; actual value: '%s' == NULL", \
-                            int(scenario), \
-                            get_caught_value_string(0)); } \
-                    } while (0)
-
-#define BFC_ASSERT_NOTNULL_I(expr, scenario)  \
-                    do { \
-                        ditch_all_caught_values(); \
-                        if (catch_value(0, expr)==0) { \
+                        if (catch_value(0, expr)) { \
                             throw_bfc_error(__FILE__, __LINE__, \
                             __FUNCTION__, \
                             "assertion failed in expr "#expr \
@@ -212,10 +225,39 @@ typedef void (fixture::*method)();
                             get_caught_value_string(0)); } \
                     } while (0)
 
+#define BFC_ASSERT_NOTNULL_I(expr, scenario)  \
+                    do { \
+                        ditch_all_caught_values(); \
+                        if (!catch_value(0, expr)) { \
+                            throw_bfc_error(__FILE__, __LINE__, \
+                            __FUNCTION__, \
+                            "assertion failed in expr "#expr \
+                            " != NULL" \
+                            " for scenario #%d" \
+                            "; actual value: '%s' == NULL", \
+                            int(scenario), \
+                            get_caught_value_string(0)); } \
+                    } while (0)
+
+#define BFC_ASSERT_CMP_I(exp, comparator, act, scenario) \
+                    do { \
+                        ditch_all_caught_values(); \
+                        if (!(catch_value(0, exp) comparator catch_value(1, act))) { \
+                            throw_bfc_error(__FILE__, __LINE__, \
+                            __FUNCTION__, \
+                            "assertion failed in expr "#exp" "#comparator" "#act \
+                            " for scenario #%d" \
+                            "; actual values: '%s' <-> '%s'", \
+                            int(scenario), \
+                            get_caught_value_string(0), \
+                            get_caught_value_string(1)); } \
+                    } while (0)
+
+
 struct test
 {
-    std::string name;
     method foo;
+    std::string name;
 };
 
 class error
@@ -231,6 +273,7 @@ public:
     error(const char *f, int l, fixture &fix, const char *t,
             const char *m, va_list args);
     error(const error &src);
+    error();
     ~error();
     void vfmt_message(const char *msg, va_list args);
     void fmt_message(const char *msg, ...);
@@ -243,7 +286,7 @@ public:
     std::string m_message;
 };
 
-/*
+/**
  * State used to signal the (UNIX, [Win32/64]) hardware exception
  * handler setup code where we are in the testing process, as we
  * are pushing and popping custom, BFC-specific signal handlers
@@ -308,17 +351,19 @@ public:
 class bfc_value_catcher_bool : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_bool(bool v) {
+    bfc_value_catcher_bool(bool v)
+    {
         _v = v;
     }
 
 protected:
     bool _v;
-    char _msg[5];
+    char _msg[7];
 
 public:
     virtual ~bfc_value_catcher_bool() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         if (_v)
             strcpy(_msg, "YES");
         else
@@ -330,21 +375,27 @@ public:
 class bfc_value_catcher_char : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_char(signed char v) {
+    bfc_value_catcher_char(signed char v)
+    {
         _v = v;
     }
 
 protected:
     char _v;
-    char _msg[10];
+    char _msg[11];
 
 public:
     virtual ~bfc_value_catcher_char() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         if (_v > 32 && _v < 127)
+        {
             sprintf(_msg, "%c", _v);
+        }
         else
+        {
             sprintf(_msg, "\\x%02X", (unsigned int)((unsigned char)_v));
+        }
         return _msg;
     }
 };
@@ -352,21 +403,27 @@ public:
 class bfc_value_catcher_uchar : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_uchar(unsigned char v) {
+    bfc_value_catcher_uchar(unsigned char v)
+    {
         _v = v;
     }
 
 protected:
     unsigned char _v;
-    char _msg[10];
+    char _msg[11];
 
 public:
     virtual ~bfc_value_catcher_uchar() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         if (_v > 32 && _v < 127)
+        {
             sprintf(_msg, "%c", _v);
+        }
         else
+        {
             sprintf(_msg, "\\x%02X", (unsigned int)_v);
+        }
         return _msg;
     }
 };
@@ -374,17 +431,19 @@ public:
 class bfc_value_catcher_short : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_short(signed short v) {
+    bfc_value_catcher_short(signed short v)
+    {
         _v = v;
     }
 
 protected:
     signed short _v;
-    char _msg[28];
+    char _msg[30];
 
 public:
     virtual ~bfc_value_catcher_short() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%d", (int)_v);
         return _msg;
     }
@@ -393,17 +452,19 @@ public:
 class bfc_value_catcher_ushort : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_ushort(unsigned short v) {
+    bfc_value_catcher_ushort(unsigned short v)
+    {
         _v = v;
     }
 
 protected:
     unsigned short _v;
-    char _msg[28];
+    char _msg[30];
 
 public:
     virtual ~bfc_value_catcher_ushort() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%u", (unsigned int)_v);
         return _msg;
     }
@@ -412,7 +473,8 @@ public:
 class bfc_value_catcher_int : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_int(signed int v) {
+    bfc_value_catcher_int(signed int v)
+    {
         _v = v;
     }
 
@@ -422,7 +484,8 @@ protected:
 
 public:
     virtual ~bfc_value_catcher_int() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%d", _v);
         return _msg;
     }
@@ -431,7 +494,8 @@ public:
 class bfc_value_catcher_uint : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_uint(unsigned int v) {
+    bfc_value_catcher_uint(unsigned int v)
+    {
         _v = v;
     }
 
@@ -441,7 +505,8 @@ protected:
 
 public:
     virtual ~bfc_value_catcher_uint() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%u", _v);
         return _msg;
     }
@@ -450,7 +515,8 @@ public:
 class bfc_value_catcher_long : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_long(signed long v) {
+    bfc_value_catcher_long(signed long v)
+    {
         _v = v;
     }
 
@@ -460,7 +526,8 @@ protected:
 
 public:
     virtual ~bfc_value_catcher_long() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%ld", _v);
         return _msg;
     }
@@ -469,8 +536,9 @@ public:
 class bfc_value_catcher_ulong : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_ulong(unsigned long v) {
-        _v = v;
+    bfc_value_catcher_ulong(unsigned long v)
+    : _v(v) {
+        _msg[0] = 0;
     }
 
 protected:
@@ -479,7 +547,8 @@ protected:
 
 public:
     virtual ~bfc_value_catcher_ulong() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%lu", _v);
         return _msg;
     }
@@ -489,17 +558,19 @@ public:
 class bfc_value_catcher_longlong : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_longlong(signed long long v) {
-        _v = v;
+    bfc_value_catcher_longlong(signed long long v)
+    : _v(v) {
+        _msg[0] = 0;
     }
 
 protected:
     signed long long _v;
-    char _msg[28];
+    char _msg[32];
 
 public:
     virtual ~bfc_value_catcher_longlong() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%lld", _v);
         return _msg;
     }
@@ -509,17 +580,19 @@ public:
 class bfc_value_catcher_ulonglong : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_ulonglong(unsigned long long v) {
-        _v = v;
+    bfc_value_catcher_ulonglong(unsigned long long v)
+    : _v(v) {
+        _msg[0] = 0;
     }
 
 protected:
     unsigned long long _v;
-    char _msg[28];
+    char _msg[32];
 
 public:
     virtual ~bfc_value_catcher_ulonglong() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         sprintf(_msg, "%llu", _v);
         return _msg;
     }
@@ -530,18 +603,20 @@ public:
 class bfc_value_catcher_int64 : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_int64(signed __int64 v) {
-        _v = v;
+    bfc_value_catcher_int64(signed __int64 v)
+    : _v(v) {
+        _msg[0] = 0;
     }
 
 protected:
     signed __int64 _v;
-    char _msg[28];
+    char _msg[32];
 
 public:
     virtual ~bfc_value_catcher_int64() {};
-    virtual const char *value(void) {
-        sprintf(_msg, "%L64d", _v);
+    virtual const char *value(void)
+    {
+        sprintf(_msg, "%I64d", _v);
         return _msg;
     }
 };
@@ -549,18 +624,20 @@ public:
 class bfc_value_catcher_uint64 : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_uint64(unsigned __int64 v) {
-        _v = v;
+    bfc_value_catcher_uint64(unsigned __int64 v)
+    : _v(v) {
+        _msg[0] = 0;
     }
 
 protected:
     unsigned __int64 _v;
-    char _msg[28];
+    char _msg[32];
 
 public:
     virtual ~bfc_value_catcher_uint64() {};
-    virtual const char *value(void) {
-        sprintf(_msg, "%L64u", _v);
+    virtual const char *value(void)
+    {
+        sprintf(_msg, "%I64u", _v);
         return _msg;
     }
 };
@@ -570,8 +647,8 @@ public:
 class bfc_value_catcher_charptr : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_charptr(const char *v) {
-        _v = v;
+    bfc_value_catcher_charptr(const char *v)
+    : _v(v) {
     }
 
 protected:
@@ -579,7 +656,8 @@ protected:
 
 public:
     virtual ~bfc_value_catcher_charptr() {};
-    virtual const char *value(void) {
+    virtual const char *value(void)
+    {
         if (_v)
             return _v;
         return "(NULL)";
@@ -589,8 +667,9 @@ public:
 class bfc_value_catcher_voidptr : public bfc_value_catcher
 {
 public:
-    bfc_value_catcher_voidptr(const void *v) {
-        _v = v;
+    bfc_value_catcher_voidptr(const void *v)
+    : _v(v) {
+        _msg[0] = 0;
     }
 
 protected:
@@ -599,8 +678,10 @@ protected:
 
 public:
     virtual ~bfc_value_catcher_voidptr() {};
-    virtual const char *value(void) {
-        if (_v) {
+    virtual const char *value(void)
+    {
+        if (_v)
+        {
             sprintf(_msg, "%p", _v);
             return _msg;
         }
@@ -609,16 +690,44 @@ public:
 };
 
 
+class bfc_value_catcher_string : public bfc_value_catcher
+{
+public:
+    bfc_value_catcher_string(const std::string &v)
+    : _v(v) {
+    }
+protected:
+    std::string _v;
+public:
+    virtual ~bfc_value_catcher_string() {};
+    virtual const char *value(void)
+    {
+        return _v.c_str();
+    }
+};
+
+
+
+
+
+
+
+
+
+
 class fixture
 {
 public:
     fixture(const char *name)
         : m_name(name),
-          _caught_values(5)
+        _caught_values(NULL),
+        _caught_values_size(0)
     { }
 
-    virtual ~fixture() {
+    virtual ~fixture()
+    {
         ditch_all_caught_values();
+        clear_tests();
     }
 
     const char *get_name() const { return m_name; }
@@ -641,9 +750,10 @@ public:
      * @return
      *  Return TRUE when an exception occurred and the bfc::error ex
      *  instance is filled accordingly, FALSE otherwise (~ successful test).
-     **/
+     */
     virtual bool FUT_invoker(testrunner *me, method m,
-            const char *funcname, bfc_state_t state, error &ex) {
+			const char *funcname, bfc_state_t state, error &ex)
+    {
         (this->*m)();
         return false;
     }
@@ -651,12 +761,12 @@ public:
     virtual void throw_bfc_error(const char *file, int line,
             const char *function, const char *message, ...);
 
-    // clear all tests
+    /** clear all tests */
     void clear_tests() {
         m_tests.resize(0);
     }
 
-    // register a new test function
+    /** register a new test function */
     void register_test(const char *name, method foo);
 
     std::vector<test> &get_tests() {
@@ -664,113 +774,199 @@ public:
     }
 
 private:
-    const char *m_name;
-    std::vector<test> m_tests;
+    typedef std::deque<bfc_assert_monitor *> assert_monitor_stack_t;
 
 protected:
-    std::vector<bfc_value_catcher *> _caught_values;
+    /**
+     Adds a assertion monitor to the queue.
 
-    virtual void add_caught_value(unsigned int idx, bfc_value_catcher *c) {
-        if (_caught_values.size()<=idx)
-            _caught_values.resize(idx+5);
-        _caught_values[idx]=c;
+     @note As monitors are removed immediately after they have been invoked
+     when a @ref BFC_ASSERT fired (see also the notes for @ref bfc_assert_monitor)
+     you must re-register them after they've been invoked and you wish them to
+     remain 'active'. To reduce BFC user code complexity, the need to check whether
+     a given monitor has already been registered or not is not the responsibility
+     of the BFC user but is handled in this method instead.
+    */
+    void push_assert_monitor(bfc_assert_monitor &handler);
+    void pop_assert_monitor(void);
+
+private:
+    const char *m_name;
+    std::vector<test> m_tests;
+    assert_monitor_stack_t m_assert_monitors;
+
+protected:
+    bfc_value_catcher **_caught_values;
+    size_t _caught_values_size;
+
+    virtual void add_caught_value(unsigned int idx, bfc_value_catcher *c)
+    {
+        if (!_caught_values)
+        {
+            _caught_values_size = idx + 1;
+            _caught_values = (bfc_value_catcher **)calloc(_caught_values_size, sizeof(_caught_values[0]));
+            if (_caught_values == NULL)
+            {
+                /* panic! */
+                _caught_values = NULL;
+                _caught_values_size = 0;
+            }
+        }
+        else if (_caught_values_size <= idx)
+        {
+            size_t n = idx + 1;
+            _caught_values = (bfc_value_catcher **)realloc((void *)_caught_values, n * sizeof(_caught_values[0]));
+            if (_caught_values == NULL)
+            {
+                /* panic! */
+                _caught_values = NULL;
+                _caught_values_size = 0;
+            }
+            else
+            {
+                memset(_caught_values + _caught_values_size, 0, (n - _caught_values_size) * sizeof(_caught_values[0]));
+                _caught_values_size = n;
+            }
+        }
+        if (_caught_values)
+            _caught_values[idx] = c;
     }
 
-    virtual const char *get_caught_value_string(unsigned int idx) {
-        if (idx>=_caught_values.size())
+    virtual const char *get_caught_value_string(unsigned int idx)
+    {
+        if (idx >= _caught_values_size)
             return "(NULL)";
-        if (NULL==_caught_values[idx])
+        if (NULL == _caught_values[idx])
             return "(NULL)";
         return _caught_values[idx]->value();
     }
 
-    virtual void ditch_all_caught_values(void) {
-        for (unsigned i=0; i<_caught_values.size(); i++) {
-            if (_caught_values[i]) {
-                delete _caught_values[i];
-                _caught_values[i]=0;
+    virtual void ditch_all_caught_values(void)
+    {
+        if (_caught_values) /* BUGFIX */
+        {
+            for (size_t i = 0; i < _caught_values_size; i++)
+            {
+                if (_caught_values[i])
+                    delete _caught_values[i];
             }
+            free((void *)_caught_values);
         }
-        //_caught_values.resize(0); -- removed to increase performance
+        _caught_values = NULL;
+        _caught_values_size = 0;
     }
 
-    bool catch_value(int idx, bool v) {
+    bool catch_value(unsigned int idx, bool v)
+    {
         bfc_value_catcher_bool *c = new bfc_value_catcher_bool(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    signed char catch_value(int idx, signed char v) {
+    signed char catch_value(unsigned int idx, signed char v)
+    {
         bfc_value_catcher_char *c = new bfc_value_catcher_char(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    unsigned char catch_value(int idx, unsigned char v) {
+    unsigned char catch_value(unsigned int idx, unsigned char v)
+    {
         bfc_value_catcher_uchar *c = new bfc_value_catcher_uchar(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    signed int catch_value(int idx, signed int v) {
+    signed int catch_value(unsigned int idx, signed int v)
+    {
         bfc_value_catcher_int *c = new bfc_value_catcher_int(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    unsigned int catch_value(int idx, unsigned int v) {
+    unsigned int catch_value(unsigned int idx, unsigned int v)
+    {
         bfc_value_catcher_uint *c = new bfc_value_catcher_uint(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    signed long catch_value(int idx, signed long v) {
+    signed short int catch_value(unsigned int idx, signed short int v)
+    {
+        bfc_value_catcher_int *c = new bfc_value_catcher_int(v);
+        add_caught_value(idx, c);
+        return v;
+    }
+
+    unsigned short int catch_value(unsigned int idx, unsigned short int v)
+    {
+        bfc_value_catcher_uint *c = new bfc_value_catcher_uint(v);
+        add_caught_value(idx, c);
+        return v;
+    }
+
+    signed long int catch_value(unsigned int idx, signed long int v)
+    {
         bfc_value_catcher_long *c = new bfc_value_catcher_long(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    unsigned long catch_value(int idx, unsigned long v) {
+    unsigned long int catch_value(unsigned int idx, unsigned long int v)
+    {
         bfc_value_catcher_ulong *c = new bfc_value_catcher_ulong(v);
         add_caught_value(idx, c);
         return v;
     }
 
 #ifndef _MSC_VER
-    signed long long catch_value(int idx, signed long long v) {
+    signed long long catch_value(unsigned int idx, signed long long v)
+    {
         bfc_value_catcher_longlong *c = new bfc_value_catcher_longlong(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    unsigned long long catch_value(int idx, unsigned long long v) {
+    unsigned long long catch_value(unsigned int idx, unsigned long long v)
+    {
         bfc_value_catcher_ulonglong *c = new bfc_value_catcher_ulonglong(v);
         add_caught_value(idx, c);
         return v;
     }
 
 #else
-    signed __int64 catch_value(int idx, signed __int64 v) {
+    signed __int64 catch_value(unsigned int idx, signed __int64 v)
+    {
         bfc_value_catcher_int64 *c = new bfc_value_catcher_int64(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    unsigned __int64 catch_value(int idx, unsigned __int64 v) {
+    unsigned __int64 catch_value(unsigned int idx, unsigned __int64 v)
+    {
         bfc_value_catcher_uint64 *c = new bfc_value_catcher_uint64(v);
         add_caught_value(idx, c);
         return v;
     }
 #endif
 
-    const char *catch_value(int idx, const char *v) {
+    const char *catch_value(unsigned int idx, const char *v)
+    {
         bfc_value_catcher_charptr *c = new bfc_value_catcher_charptr(v);
         add_caught_value(idx, c);
         return v;
     }
 
-    const void *catch_value(int idx, const void *v) {
+    const void *catch_value(unsigned int idx, const void *v)
+    {
         bfc_value_catcher_voidptr *c = new bfc_value_catcher_voidptr(v);
+        add_caught_value(idx, c);
+        return v;
+    }
+
+    const std::string &catch_value(unsigned int idx, const std::string &v)
+    {
+        bfc_value_catcher_string *c = new bfc_value_catcher_string(v);
         add_caught_value(idx, c);
         return v;
     }
@@ -786,8 +982,9 @@ typedef enum
 
 
 extern "C" {
-    /*
-     * WARNING: some systems have 'int' returning signal handlers, others
+    /**
+     * @warning
+     * some systems have 'int' returning signal handlers, others
      * have 'void' returning signal handlers. Since the ones, which expect
      * a 'void' return type, will silently ignore the return value
      * at run-time anyhow, we can keep things simple here and just
@@ -806,6 +1003,43 @@ extern "C" {
      */
     typedef int (*signal_handler_f)(int signal_code, int sub_code);
 }
+
+
+
+
+typedef enum bfc_run_state_t
+{
+    SKIP_THIS_TEST = 0x0001,
+    ABORT_THIS_RUN = 0x0002,
+
+    CONTINUE_RUN = 0
+} bfc_run_state_t;
+
+
+/**
+ * The base class visitor for callbacks of the @ref testrunner::list() method.
+ */
+template <class T> class bfc_visitor
+{
+public:
+    /// the visitor function (acts like the visitor is a functor)
+    virtual bfc_run_state_t operator()(T &t_ref, const std::string &name) = 0;
+
+    /**
+     * Full implementations of this abstract base class should return 'true'.
+     *
+     * Return true when the callback is implemented / active, i.e. when the
+     * visitor/callback should be invoked (through the operator ()).
+     */
+    virtual operator bool()
+    {
+        return false;
+    }
+};
+
+typedef bfc_visitor<fixture> bfc_fixture_visitor;
+typedef bfc_visitor<test> bfc_test_visitor;
+
 
 class testrunner
 {
@@ -835,11 +1069,13 @@ protected:
     static const int m_signals_to_catch[];
 
     // MSVC: #define NSIG 23     /* maximum signal number + 1 */
-    struct bfc_signal_context_t {
+    struct bfc_signal_context_t
+    {
         bfc_signal_context_t();
         ~bfc_signal_context_t();
 
-        struct {
+        struct
+        {
             signal_handler_f handler;
 #ifdef UNDER_CE
         } old_sig_handlers[1];
@@ -853,8 +1089,10 @@ protected:
          * (see also [APitUE, pp. 292])
          */
 
-        testrunner *this_is_me;
         const fixture *active_fixture;
+
+        void *C4121_filler; // MSVC2010: alignment of a member was sensitive to packing: active_method
+
         method active_method;
         std::string active_funcname;
         jmp_buf signal_return_point;
@@ -867,6 +1105,8 @@ protected:
         volatile bool error_set;
 
         bool sig_handlers_set;
+
+        testrunner *this_is_me;
     };
 
     static bfc_signal_context_t m_current_signal_context;
@@ -877,17 +1117,17 @@ protected:
     static const char *bfc_sigdescr(int signal_code);
 
 public:
-    // register a new test fixture
+    /** register a new test fixture */
     void register_fixture(fixture *f) {
         m_fixtures.push_back(f);
     }
 
-    // add an error
+    /** add an error */
     void add_error(const error *e) {
         m_errors.push_back(*e);
     }
 
-    // add a successful run
+    /** add a successful run */
     void add_success(void) {
         m_success++;
     }
@@ -908,13 +1148,16 @@ public:
     /**
      * run all tests - returns number of errors
      */
-    unsigned int run(bool print_err_report = true);
-
+    unsigned int run(bfc_fixture_visitor &callback_per_fixture,
+			bfc_test_visitor &callback_per_test,
+            bool print_err_report = true);
     /**
-     * run all tests (optional fixture and/or test selection) -
-     * returns number of errors
+     * run all tests (optional fixture and/or test selection)
+	 * - returns number of errors
      */
-    unsigned int run(const char *fixture_name, const char *test_name = NULL,
+    unsigned int run(bfc_fixture_visitor &callback_per_fixture,
+			bfc_test_visitor &callback_per_test,
+            const char *fixture_name, const char *test_name = NULL,
             bool print_err_report = true);
 
     /**
@@ -923,38 +1166,55 @@ public:
      * @return number of errors
      */
     unsigned int run(
+	        bfc_fixture_visitor &callback_per_fixture, bfc_test_visitor &callback_per_test,
             const std::string &begin_fixture, const std::string &begin_test,
             const std::string &end_fixture, const std::string &end_test,
             bool inclusive_begin,
             bool is_not_a_series = false,
             bool print_err_report = true);
 
-    // run all tests of a fixture
-    unsigned int run(fixture *f, const char *test_name = NULL,
-            bool print_err_report = true);
+    /**
+     * run all tests of a fixture
+     */
+    unsigned int run(bfc_fixture_visitor &callback_per_fixture,
+			bfc_test_visitor &callback_per_test,
+            fixture *f, const char *test_name = NULL,
+			bool print_err_report = true);
 
-    // run a single test of a fixture
-    bool run(fixture *f, const test *test, bfc_error_report_mode_t
-            print_err_report = BFC_REPORT_IN_HERE);
+    /**
+     * run a single test of a fixture
+     */
+    bool run(bfc_fixture_visitor &callback_per_fixture,
+			bfc_test_visitor &callback_per_test,
+            fixture *f, const test *test,
+			bfc_error_report_mode_t print_err_report = BFC_REPORT_IN_HERE);
 
 protected:
-    // run a single test of a fixture
+    /**
+     * run a single test of a fixture
+     */
     bool exec_a_single_test(fixture *f, const test *test);
 
 public:
-    // singleton:
+    /** singleton: */
     static testrunner *get_instance();
     static void delete_instance(void);
 
-    bool catch_coredumps(int catch_coredumps = -1) {
+    bool catch_coredumps(int catch_coredumps = -1)
+    {
         if (catch_coredumps >= 0)
-            m_catch_coredumps = catch_coredumps;
+        {
+            m_catch_coredumps = !!catch_coredumps;
+        }
         return m_catch_coredumps;
     }
 
-    bool catch_exceptions(int catch_exceptions = -1) {
+    bool catch_exceptions(int catch_exceptions = -1)
+    {
         if (catch_exceptions >= 0)
-            m_catch_exceptions = catch_exceptions;
+        {
+            m_catch_exceptions = !!catch_exceptions;
+        }
         return m_catch_exceptions;
     }
 

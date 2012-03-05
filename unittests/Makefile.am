@@ -1,9 +1,11 @@
 
 EXTRA_DIST      = valgrind.supp
 
+
+
 noinst_PROGRAMS = test bfc_sample recovery
 
-AM_CPPFLAGS     = -I$(top_builddir)/include
+AM_CFLAGS       = -I$(top_builddir)/include
 
 test_SOURCES    = log.cpp \
                   journal.cpp \
@@ -50,7 +52,7 @@ test_LDADD      = $(top_builddir)/src/libhamsterdb.la -lboost_thread-mt -lpthrea
 
 if ENABLE_REMOTE
 test_SOURCES   += remote.cpp
-CFLAGS         += -DHAM_ENABLE_REMOTE
+AM_CFLAGS      += -DHAM_ENABLE_REMOTE
 test_LDADD     += $(top_builddir)/src/server/libhamserver.la
 endif
 
@@ -58,7 +60,7 @@ bfc_sample_SOURCES = bfc-sample.cpp \
                   empty_sample.cpp \
                   bfc-testsuite.cpp \
                   bfc-testsuite.hpp \
-		  		  os.hpp \
+  		  os.hpp \
                   bfc-signal.h \
                   bfc-signal.c
 

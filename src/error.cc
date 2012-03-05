@@ -7,21 +7,21 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
-#include "config.h"
+/**
+* @cond ham_internals
+*/
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "internal_preparation.h"
 
-#include <ham/hamsterdb.h>
 
+<<<<<<< HEAD:src/error.cc
 #include "error.h"
 #include "mem.h"
 #include "util.h"
+=======
+>>>>>>> flash-bang-grenade:src/error.cc
 
 static int         g_level   =0;
 static const char *g_file    =0;
@@ -40,12 +40,12 @@ my_snprintf(char *str, size_t size, const char *format, ...)
     va_start(ap, format);
     s=util_vsnprintf(str, size, format, ap);
     va_end(ap);
-    
+
     return (s);
 }
 
 static void HAM_CALLCONV
-my_errhandler(int level, const char *message)
+my_errhandler(int level, const char *file, int line, const char *function, const char *message)
 {
 #ifndef HAM_DEBUG
     if (level==HAM_DEBUG_LEVEL_DEBUG)
@@ -106,7 +106,11 @@ dbg_log(const char *format, ...)
 #endif
     va_end(ap);
 
+<<<<<<< HEAD:src/error.cc
     g_hand(g_level, buffer);
+=======
+    g_hand(g_level, g_file, g_line, g_function, buffer);
+>>>>>>> flash-bang-grenade:src/error.cc
 }
 
 void
@@ -128,9 +132,12 @@ dbg_verify_failed(const char *format, ...)
         util_vsnprintf(buffer+s, sizeof(buffer)-s, format, ap);
         va_end(ap);
     }
-    
-    g_hand(g_level, buffer);
 
+<<<<<<< HEAD:src/error.cc
+=======
+    g_hand(g_level, g_file, g_line, g_function, buffer);
+
+>>>>>>> flash-bang-grenade:src/error.cc
     /* [i_a] ALWAYS offer the user-def'able abort
      * handler (unittests depend on this) */
     if (ham_test_abort) {
@@ -144,4 +151,9 @@ dbg_verify_failed(const char *format, ...)
 #endif
     }
 }
+
+
+/**
+* @endcond
+*/
 

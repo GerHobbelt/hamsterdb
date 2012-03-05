@@ -1,0 +1,63 @@
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ *
+ * See files COPYING.* for License information.
+ */
+/*! \page tuning Performance Tuning The Hamster
+
+This chapter discusses various items to consider when you are working on tuning the hamster for
+maximum performance in your environment.
+
+Before we extoll on the delicious gains one can achieve using the various tuning 
+options judiciously, I'd like to take a reverse route, where we answer the question 'which
+hamster features do slow it down significantly?'
+
+As we answer that question first you will quickly recognize where you should consider your
+feature wishlist and performance demands and decide on a fitting compromize, as most performance
+features are optimizations for one, but slowdowns for other scenarios and condition sets.
+
+
+\section how_to_make_hamster_slow How can I make the hamster crawl like treacle?
+
+Well, the biggest perfromance hit is obtained by turning on crash recovery (@ref HAM_ENABLE_RECOVERY,
+@ref HAM_AUTO_RECOVERY). In reality, the key factor here is turning on anything that will
+cause the log files to be used.
+
+As these log files serve as crash recovery logs and are transaction oriented, it happens 
+to be true that turning on transaction support (@ref HAM_ENABLE_TRANSACTIONS) implies
+enabling support for crash recovery, so this one too will do very well indeed when it comes
+to slowing down the hamster.
+
+
+
+
+
+
+
+
+
+and here's all about those HINT flags and their order of precedence 
+when it comes to env and db-wide DAM modes and and and ...
+
+\subsection gains_and_spoils The Gains, The Spoils
+
+a few performance metrics comparing a few use cases and what happens with and without certain flags, maybe?
+
+
+
+\subsection unfortunate_consequences The Unfortunate Consequences
+
+I'm a 'risk analysis' guy part of the time and my mindset is focused on 
+'what can go wrong' almost all the time, so this is the perfect place for
+a sermon on The Dire Consequences: databases growing faster than you might 
+want; performance loss in the long term when you keep on doing it like
+that and then change usage scenario where traveling up a rubenesque database
+isn't suddenly all that much fun any more... yada yada
+
+
+*/

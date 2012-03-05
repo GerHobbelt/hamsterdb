@@ -169,7 +169,7 @@ hlog(int level, const char *format, ...)
     va_end(ap);
 
     if (foreground) {
-        fprintf(stderr, "%s", &buffer[0]);
+        fprintf(stderr, "%s", buffer);
     }
     else {
 #ifdef WIN32
@@ -277,7 +277,11 @@ read_config(const char *configfile, config_table_t **params)
     len=ftell(fp);
     fseek(fp, 0, SEEK_SET);
     buf=(char *)malloc(len+1); /* for zero-terminating byte */
-    fread(buf, 1, len, fp);
+    if (fread(buf, 1, len, fp)!=len) {
+        hlog(LOG_FATAL, "Failed to read config file %s: %s\n",
+                configfile, strerror(errno));
+        exit(-1);
+    }
     fclose(fp);
     buf[len]='\0';
 
@@ -389,7 +393,7 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
          * created */
         if (created_env) {
             ham_db_t *db;
-    
+
             for (d=0; d<params->envs[e].db_count; d++) {
                 ham_u32_t flags=format_flags(params->envs[e].dbs[d].flags);
 

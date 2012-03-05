@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,21 +11,31 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
-#include <vector>
 #include <ham/hamsterdb.h>
+#include "../src/mem.h"
+#include "../src/btree_classic.h"
 #include "../src/btree_cursor.h"
 #include "../src/db.h"
+#include "../src/env.h"
 #include "../src/page.h"
 #include "../src/error.h"
 #include "../src/btree.h"
+<<<<<<< HEAD:unittests/btree_cursor.cpp
 #include "../src/env.h"
 #include "../src/cursor.h"
+=======
+#include "memtracker.h"
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+#include <vector>
+#include <errno.h>
+
 
 using namespace bfc;
 
@@ -37,8 +47,14 @@ public:
     BtreeCursorTest(bool inmemory=false, ham_size_t pagesize=0,
                     const char *name="BtreeCursorTest")
     :   hamsterDB_fixture(name),
+<<<<<<< HEAD:unittests/btree_cursor.cpp
         m_db(0), m_inmemory(inmemory), m_pagesize(pagesize)
+=======
+        m_db(NULL), m_env(NULL), m_alloc(NULL), m_inmemory(inmemory), m_pagesize(pagesize)
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(BtreeCursorTest, createCloseTest);
         BFC_REGISTER_TEST(BtreeCursorTest, cloneTest);
@@ -55,6 +71,8 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
+    mem_allocator_t *m_alloc;
+    //ham_device_t *m_dev;
     bool m_inmemory;
     ham_size_t m_pagesize;
 
@@ -73,12 +91,18 @@ public:
 
         os::unlink(BFC_OPATH(".test"));
 
+        m_alloc = memtracker_new();
+        ham_set_default_allocator_template(m_alloc);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"),
                     HAM_ENABLE_DUPLICATES|(m_inmemory?HAM_IN_MEMORY_DB:0),
                     0664, params));
+<<<<<<< HEAD:unittests/btree_cursor.cpp
 
         m_env=ham_get_env(m_db);
+=======
+        m_env = db_get_env(m_db);
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
     }
 
     virtual void teardown()
@@ -87,14 +111,26 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+<<<<<<< HEAD:unittests/btree_cursor.cpp
+=======
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
     }
 
     void createCloseTest(void)
     {
+<<<<<<< HEAD:unittests/btree_cursor.cpp
         ham_cursor_t *c;
 
         BFC_ASSERT(ham_cursor_create(m_db, 0, 0, &c)==0);
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
+=======
+        ham_cursor_t *cursor;
+
+        BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
+        BFC_ASSERT(cursor!=0);
+        BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
     }
 
     void cloneTest(void)
@@ -103,8 +139,12 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT(cursor!=0);
+<<<<<<< HEAD:unittests/btree_cursor.cpp
         Cursor *c=new Cursor(*(Cursor *)cursor);
         clone=(ham_cursor_t *)c;
+=======
+        BFC_ASSERT(ham_cursor_clone(cursor, &clone)==0);
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
         BFC_ASSERT(clone!=0);
         BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
@@ -112,6 +152,7 @@ public:
 
     void overwriteTest(void)
     {
+        ham_status_t st;
         ham_cursor_t *cursor;
         ham_key_t key;
         ham_record_t rec;
@@ -127,12 +168,21 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_insert(cursor, &key, &rec, 0));
         BFC_ASSERT_EQUAL(0, ham_cursor_overwrite(cursor, &rec, 0));
 
+<<<<<<< HEAD:unittests/btree_cursor.cpp
         ham_btree_t *be=(ham_btree_t *)((Database *)m_db)->get_backend();
         Page *page;
         BFC_ASSERT_EQUAL(0,
                 db_fetch_page(&page, (Database *)m_db, btree_get_rootpage(be), 0));
         BFC_ASSERT(page!=0);
         BFC_ASSERT_EQUAL(0, page->uncouple_all_cursors());
+=======
+        ham_btree_t *be=(ham_btree_t *)db_get_backend(m_db);
+        ham_page_t *page;
+        st=db_fetch_page(&page, m_env, btree_get_rootpage(be), 0);
+        BFC_ASSERT_NOTNULL(page);
+        BFC_ASSERT_EQUAL(st, HAM_SUCCESS);
+        BFC_ASSERT_EQUAL(0, db_uncouple_all_cursors(page, 0));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
 
         BFC_ASSERT_EQUAL(0, ham_cursor_overwrite(cursor, &rec, 0));
 
@@ -153,11 +203,17 @@ public:
         memset(&rec, 0, sizeof(rec));
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+<<<<<<< HEAD:unittests/btree_cursor.cpp
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         (m_inmemory ? HAM_IN_MEMORY_DB : 0),
                         0664, &params[0]));
         m_env=ham_get_env(m_db);
+=======
+        BFC_ASSERT_EQUAL(0, ham_create_ex(m_db, BFC_OPATH(".test"),
+                    /*HAM_ENABLE_DUPLICATES|*/ (m_inmemory ? HAM_IN_MEMORY_DB : 0),
+                    0664, &params[0]));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor2));
@@ -172,6 +228,7 @@ public:
             BFC_ASSERT_EQUAL(0, ham_insert(m_db, 0, &key, &rec, 0));
         }
 
+        memset(&rec, 0, sizeof(rec));
         BFC_ASSERT_EQUAL(0,
                 ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_FIRST));
         BFC_ASSERT_EQUAL(0, *(int *)key.data);
@@ -247,11 +304,12 @@ public:
 
     void linkedListTest(void)
     {
-        ham_cursor_t *cursor[5], *clone;
+        ham_cursor_t *cursor[5]={0}, *clone=0;
 
         BFC_ASSERT_EQUAL((ham_cursor_t *)0, ((Database *)m_db)->get_cursors());
 
         for (int i=0; i<5; i++) {
+<<<<<<< HEAD:unittests/btree_cursor.cpp
             BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor[i]));
             BFC_ASSERT_EQUAL(cursor[i], ((Database *)m_db)->get_cursors());
         }
@@ -259,6 +317,16 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_clone(cursor[0], &clone));
         BFC_ASSERT(clone!=0);
         BFC_ASSERT_EQUAL(clone, ((Database *)m_db)->get_cursors());
+=======
+            BFC_ASSERT_EQUAL_I(0, ham_cursor_create(m_db, 0, 0, &cursor[i]), i);
+            BFC_ASSERT_NOTNULL_I(cursor[i], i);
+            BFC_ASSERT_EQUAL_I(cursor[i], db_get_cursors(m_db), i);
+        }
+
+        BFC_ASSERT_EQUAL(0, ham_cursor_clone(cursor[0], &clone));
+        BFC_ASSERT_NOTNULL(clone);
+        BFC_ASSERT_EQUAL(clone, db_get_cursors(m_db));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
 
         for (int i=0; i<5; i++) {
             BFC_ASSERT_EQUAL(0,
@@ -271,11 +339,12 @@ public:
 
     void linkedListReverseCloseTest(void)
     {
-        ham_cursor_t *cursor[5], *clone;
+        ham_cursor_t *cursor[5] = {0}, *clone = 0;
 
         BFC_ASSERT_EQUAL((ham_cursor_t *)0, ((Database *)m_db)->get_cursors());
 
         for (int i=0; i<5; i++) {
+<<<<<<< HEAD:unittests/btree_cursor.cpp
             BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor[i]));
             BFC_ASSERT(cursor[i]!=0);
             BFC_ASSERT_EQUAL(cursor[i], ((Database *)m_db)->get_cursors());
@@ -285,6 +354,16 @@ public:
         BFC_ASSERT(clone!=0);
         BFC_ASSERT_EQUAL((ham_cursor_t *)clone,
                 ((Database *)m_db)->get_cursors());
+=======
+            BFC_ASSERT_EQUAL_I(0, ham_cursor_create(m_db, 0, 0, &cursor[i]), i);
+            BFC_ASSERT_NOTNULL_I(cursor[i], i);
+            BFC_ASSERT_EQUAL_I(cursor[i], db_get_cursors(m_db), i);
+        }
+
+        BFC_ASSERT_EQUAL(0, ham_cursor_clone(cursor[0], &clone));
+        BFC_ASSERT_NOTNULL(clone);
+        BFC_ASSERT_EQUAL(clone, db_get_cursors(m_db));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
 
         for (int i=4; i>=0; i--) {
             BFC_ASSERT_EQUAL(0,
@@ -292,8 +371,12 @@ public:
         }
         BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
 
+<<<<<<< HEAD:unittests/btree_cursor.cpp
         BFC_ASSERT_EQUAL((ham_cursor_t *)0,
                 ((Database *)m_db)->get_cursors());
+=======
+        BFC_ASSERT_NULL(db_get_cursors(m_db));
+>>>>>>> flash-bang-grenade:unittests/btree_cursor.cpp
     }
 
     void cursorGetErasedItemTest(void)

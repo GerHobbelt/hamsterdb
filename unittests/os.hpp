@@ -25,7 +25,11 @@
 
 #include <ham/types.h>
 #include <../src/error.h>
+<<<<<<< HEAD
 #include <../src/util.h>
+=======
+#include <../src/os.h>
+>>>>>>> flash-bang-grenade
 
 class os
 {
@@ -44,6 +48,13 @@ protected:
                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                       (LPSTR)buf, buflen, NULL);
         buf[buflen-1]=0;
+<<<<<<< HEAD
+=======
+        // trim trailing CR/LF/whitespace:
+        for (buflen = strlen(buf); buflen > 0 && strchr("\r\n\t ", buf[buflen-1]); buflen--)
+            ;
+        buf[buflen]=0;
+>>>>>>> flash-bang-grenade
 #endif
         return buf;
     }
@@ -74,7 +85,11 @@ public:
                     "DeleteFileA('%s') failed with OS status %u (%s)",
                     path, st, DisplayError(buf, sizeof(buf), st));
                 buf2[sizeof(buf2)-1] = 0;
+<<<<<<< HEAD
                 ham_log(("%s", buf2));
+=======
+                ham_logerr(("%s", buf2));
+>>>>>>> flash-bang-grenade
             }
             return false;
         }
@@ -109,7 +124,11 @@ public:
                 "CopyFileA('%s', '%s') failed with OS status %u (%s)",
                 src, dest, st, DisplayError(buf, sizeof(buf), st));
             buf2[sizeof(buf2)-1] = 0;
+<<<<<<< HEAD
             ham_log(("%s", buf2));
+=======
+            ham_logerr(("%s", buf2));
+>>>>>>> flash-bang-grenade
             return false;
         }
         return true;

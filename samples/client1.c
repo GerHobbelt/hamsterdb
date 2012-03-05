@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,8 +7,9 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * A simple example which connects to a hamsterdb server (see server1.c),
  * creates a database, inserts some values, looks them up and erases them.
  */
@@ -75,7 +76,7 @@ main(int argc, char **argv)
         record.data=key.data;
 
         st=ham_insert(db, 0, &key, &record, 0);
-		if (st!=HAM_SUCCESS)
+        if (st!=HAM_SUCCESS)
             error("ham_insert", st);
     }
 
@@ -136,6 +137,6 @@ main(int argc, char **argv)
     ham_delete(db);
 
     printf("success!\n");
-	return (0);
+    return (0);
 }
 

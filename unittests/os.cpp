@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,13 +11,15 @@
 
 #include "../src/config.h"
 
-#include <cstring>
 #include <ham/hamsterdb.h>
 #include "../src/os.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <cstring>
+
 
 using namespace bfc;
 
@@ -151,7 +153,11 @@ public:
         BFC_ASSERT_EQUAL(0, os_create(BFC_OPATH(".test"),
                     HAM_LOCK_EXCLUSIVE, 0664, &fd));
         BFC_ASSERT_EQUAL(0, os_close(fd, HAM_LOCK_EXCLUSIVE));
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0,
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd));
         BFC_ASSERT_EQUAL(HAM_WOULD_BLOCK,
@@ -247,7 +253,11 @@ public:
         BFC_ASSERT_EQUAL(0, os_pread(fd, 0, page, ps));
         /* compare */
         BFC_ASSERT_EQUAL(0x13, page[0]);
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, os_close(fd, 0));
         free(page);
     }

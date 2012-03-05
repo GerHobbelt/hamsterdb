@@ -99,62 +99,77 @@ o when using HAM_PARTIAL and the record->size is <= 8 then error
     access.
 
 Sep 15, 2010 - chris ---------------------------------------------------
-                      release of hamsterdb-1.1.6
+                      branching off to create hamster v2
+							
+							
+							
+							
+							
+							
+	
+	
+	
+	
+	
+	
+	
+	
 
+Aug 2011 - Ger Hobbelt
 
-Oct 11, 2011 - chris ---------------------------------------------------
-                      release of hamsterdb-2.0.0rc2
+o feature: added HAM_PARAM_GET_ENVIRONMENT_INFO and HAM_PARAM_GET_DATABASE_INFO
+  parameter choices; new interface removes the need for ham_info to have access 
+  to all sorts of hamsterdb internal headers.
 
-Oct 09, 2011 - chris ---------------------------------------------------
-o fixed a bug when erasing extended keys; sometimes this would try to
-    load extended keys which do not exist (thanks, Andi Weber)
+o improved the page cache system; included several fixes to my own older 
+  (timestamp + frequency.of.use) aging system which popped up in the latest test 
+  runs.  
 
-Oct 02, 2011 - chris ---------------------------------------------------
-o added a new function ham_cursor_get_record_size; retrieves the record
-    size of the current item
+  
+Jul/Aug 2011 - Ger Hobbelt
 
-Sep 27, 2011 - chris ---------------------------------------------------
-o the cache size is now 64bit, allowing caches > 4 GB
-
-Aug 25, 2011 - chris ---------------------------------------------------
-o configure.in: AM_INIT_AUTOMAKE requests now version 1.10 (thanks, Ger)
-o enabled large file support for 32bit linux (thanks, liheyuan)
-
-Jul 25, 2011 - chris ---------------------------------------------------
-                      release of hamsterdb-2.0.0rc1
-
-Jun 02, 2011 - chris
-o the ./configure switch --enable-internal is now obsolte and enabled by
-	default
-
-Apr 18, 2011 - chris
-o HAM_SORT_DUPLICATES is now disabled if Transactions are enabled.
-    In such cases hamsterdb will return HAM_INV_PARAMETER. 
-
-Dec 29, 2010 - chris
-o Approx. matching is now disabled if Transactions are enabled. 
-    In such cases functions will return HAM_INV_PARAMETER. 
-o Direct access (HAM_DIRECT_ACCESS) is now disabled if Transactions are 
-    enabled. In such cases functions will return HAM_INV_PARAMETER. 
-    In previous versions Direct Access was anyway not possible in combination
-    with Transactions, because Transactions were not possible with In-Memory
-    Databases.
-
-Dec 27, 2010 - chris
-o when using HAM_PARTIAL in combination with Transactions, HAM_INV_PARAMETER
-    is now returned. In previous versions of hamsterdb, this combination was
-    allowed. If you need this implemented then please tell me.
-
-Dec 26, 2010 - chris
-o when using HAM_PARTIAL and the record->size is <= 8 then error 
-    HAM_INV_PARAMETER is returned. In previous versions, this combination
-    returned false results. Reason is because hamsterdb uses a compressed,
-    efficient storage for such records, and they do not support partial
-    access.
-
-Sep 15, 2010 - chris ---------------------------------------------------
-                      release of hamsterdb-1.1.6
-
+o bugfix/feature: rewrote the freelist management code once more to introduce 
+    better performance and eradicate a few nasty, yet subtle, bugs alongside.
+									     
+o feature: merging old work of mine into 1.1.16, including augmented unit tests 
+        and a few more performance improvements.
+	
+	Added features (WIP):
+	
+	- arbitrary device chains for storage management: currently the original
+	  file and heap memory device drivers are supported, alongside a 
+	  Flash-memory sample device which would serve as a base for use of the
+	  hamsterdb in deep embedded environments.
+	  
+	- further abstraction of the backend, so that arbitrary database backends
+	  become a possibility.
+	  
+	- enhanced ham_get_parameters()
+	
+	- improved B-tree performance (I hope :-) ) by better use of the statistics
+	  gatherer and (still minimal) hinting engine.
+	  
+	- measurably improved hamsterdb performance by speeding the internal
+	  db_resize_record_allocdata() call; blob unittests are now faster.
+	  
+	- included compile-time 'HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL' levels
+	  to allow reasonable profiling results while profiling 'debug builds':
+	  major debug-only time consumers such as the heap integrity validation
+	  are disabled at higher levels, while almost all assertions remain
+	  compiled in. This permits a mixed profile/debug run series during
+	  development. (default HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL is configured 
+	  in config.h, which can be overruled by a command line #define entry
+	  at compile-time.
+	  
+	- Improved the BFC unittests environment: the command line usage is now
+	  finally documented and you can list the available unittests as well
+	  to help determine what the comman dline options should be this time
+	  around.
+	  
+Jul 09, 2011 - chris ---------------------------------------------------
+o bugfix: when aborting a transaction, modified pages would be recreated from 
+    the log even if the current transaction was read-only. This caused a 
+    performance regression compared to 1.1.9 (thanks, Jake)
 
 Jul 01, 2011 - chris ---------------------------------------------------
                       release of hamsterdb-1.1.12
@@ -371,7 +386,32 @@ Apr 29, 2010 - chris
 o ham_env_get_parameters and ham_get_parameters do no longer accept
     NULL pointers as the first parameter; instead, they will fail with
     HAM_INV_PARAMETER
+    [Edit GHO: these calls *still* accept NULL pointers, as that situation is used to obtain default settings from the hamster]
 
+Apr 26, 2010 - Ger Hobbelt
+
+- recno handling edit: removed duplicated effort in db and be (backend); since it's the backend which
+  gets marked as 'dirty' when db-persisted bits are changed, the recno will stay in the backend and the 
+  copy in ham_db_t will be removed.
+  
+  Also edited the ham_find / ham_insert / etc. code to make sure the code can compile on platforms which do not support
+  64-bit integers; the recno is copied to a stack-local copy and little<->big endian swaps are performed on the copy;
+  any edits are copied back to the data space pointed at by the caller once the hamsterdb is done with the recno -
+  which has to remain in persistent format (Little Endian) for the duration.
+  
+  The code changes make sure the recno editing/swapping is never visible on the outside, even when an error
+  occurs in the hamsterdb code itself. 
+
+- updates the Doxygen documentation in several places.
+
+- collision with system 'endian.h' on Linux (Ubuntu); local version
+  renamed to ham_endian.h as a fast solution for compilers (e.g. gcc)
+  which don't use different search paths for #include "..." and
+  #include <...> when additional paths are specced though -I<path>
+
+- collision when compiling cache.c and devices/cache.c - resolved by renaming latter to cachedev.c (MSVC)
+  
+  
 Apr 22, 2010 - chris
 o Fixed compilation for MacOSX SnowLeopard (thanks, Olisa)
 
@@ -431,6 +471,20 @@ o Added a new function to get the Environment handle of a Database
 Feb 10, 2010 - chris ---------------------------------------------------
                       release of hamsterdb-1.1.2
 
+
+10/Feb/2010 GerH
+
+- HAM_DISABLE_VAR_KEYLEN is one of the /persisted/ flags according to the docs; made it so.
+
+- reverted some of my own changes on our way towards flexible backends and device graphs... the
+  result is that you'll have implement more code per B-tree variant -- if you intend to 
+  create several of 'em at least -- but this way the code remains readable. The alternative
+  was just horrible with too many callbacks and intermediate interface cruft.
+  
+- added filter to the ENV flags value for the implicit ENV create/open in ham_create / ham_open.
+  Otherwise, the env create API would b0rk on some otherwise valid flags bitsets.
+  
+
 Feb 07, 2010 - chris
 o Added documentation target; there's now one target for public documentation,
     one for internal and one for BFC (unittest framework) - thanks, Ger
@@ -452,6 +506,76 @@ Jan 19, 2010 - chris
 o duplicate keys can now be sorted. The default sort order is based on 
     memcmp(), but can be overwritten with ham_set_duplicate_compare_func.
 
+
+16/Jan/2010 GerH
+
+- btree_node_get_key_offset() obsoleted; was only used in unittests anyway
+
+- btree_node_get_key() obsoleted; provided a half-way substitute btree_node_get_key_arrptr()
+  as a first step towards a potential btree node insert/delete speedup, which is based
+  on using an offset index table per Btree node in order to cut down memmove() costs
+  linked to the required ordered insert and delete operations: instead of moving M
+  keys up and down 1 key space (M being, on average, near K/2 where K is the maximum 
+  number of keys per Btree node ~ keys per page). This memcopy() reduction should be
+  especially noticable for large keys, i.e. for tables (databases) which have a relatively
+  large HAM_PARAM_KEYSIZE value, but the default key size @ 21 bytes per key (+ 11 bytes
+  overhead) is already quite sizeable in this aspect: 
+  
+  that's 32 bytes per key, with a usual 4K page size on Linux and 64K page size on Windows (any smaller and you don't get the
+  benefit of memory mapped I/O on those platforms, so cross-platform databases really should
+  use a 64Kbyte minimum page size) means the rough number for K ~ 4096/32 = 128 and 64K/32 ~ 2K
+  keys per page, which means the average overhead per key insert or delete (erase) is 
+  K/2 --> 64..1K keys being moved around for each single key insert/delete.
+  
+  With the addition of the index table, which uses a 16-bit word offset per key to point
+  to the actual position of the key in the key array, the memmove overhead is cut down to
+  K/2*16bits ~ 64..1K words, which, at the default keysize @ 21 (+11) means a memcopy reduction
+  factor of 32:2 ~ 16! Even only accounting for the 11 bytes overhead per key, thus assuming zero(!)
+  length keys, the gain is 11:2 ~ 5.5 (!) as the only part that needs to be moved around to
+  maintain sorted order is the index array: keys can be appended to the end as their index 
+  position is the only part which needs to exhibit sorted order, while deletes (erasures)
+  are simply performed through overwriting the key position with the key at the end of the array and 
+  decrementing the 'used size' of the array, thus keeping the array 'packed'.
+  
+  The index table related extra cost applies to all key accesses, which includes all search operations
+  and is one extra index operation per key access and a simple bitshift to multiply the original
+  key index by the now hardwired factor of 2 (16-bit word per element --> multiply index by 2).
+  The address calculation using one multiply and an addition were already needed with the original
+  key array layout, so these don't count as /extra/ costs: the only thing that changed is that the
+  index is now 'indirected' through the index array.
+  
+  The index array has one index for each key location within the node so it is of fixed length
+  and can be determined entirely at the time of database initialization: we know the key size,
+  we know the page size then, so we can calculate the number of keys which fit in a Btree node
+  when such an index table is used by calculating 11+2=13 bytes overhead per key instead of the
+  value 11.
+
+- hinting structures unified into common_hints_t as a first step towards parameter bloat reduction:
+  the various performance improvements and statistics gathering codes have added a plethora of
+  additional function call parameters which is deleterious on run-time performance on register challenged
+  hardware such as the i86 CPU series (Intel/AMD/...).
+  
+  common_hints_t initialization has been unified as well.
+  
+- backend code has been simplified a bit (readability wise) using the following adjustment:
+
+  # all datums which are constant during a backend operation (db, env, backend pointers and various 
+    keysize, etc. measures which are calculated time and again in a lot of macro invocations)
+    as calculated only once and stored in the common_btree_datums_t struct, which is passed
+    everywhere (no more db/env/etc. parameters in the backend)
+    
+  # functions which use these 'constant' values can make local 'const'ified copies to help
+    readability (you get tired quickly reading all those 'dbdata->ref' dereferencing codes) and
+    this might help the compiler optimizer as well.
+
+  # added benefit: a lot of data which is required by various device calls is available now too
+    without further adding to the various function call parameter lists in order to propagate those
+    datums!
+    
+- insert_scratchpad_t and erase_scratchpad_t now include this common_btree_datums_t as a reference
+  for easy data transport with a minimum of copying and dereferencing.
+    
+
 Jan 15, 2010 - chris
 o fixed crash on Linux 64bit/gcc 4.4.1 caused by some statements which broke
     compiler optimization
@@ -459,6 +583,212 @@ o fixed crash on Linux 64bit/gcc 4.4.1 caused by some statements which broke
 Jan 14, 2010 - chris
 o fixed compiler problems with g++ 4.4.x in the unittests (some header files
     were missing)
+
+
+14/Jan/2010 GerH
+
+- coupling the extkey cache purge to the page flush was not a dumb idea; it
+  works nicely, untill you start to delete key/record tuples and need 
+  random access into extkey cache entry reference lists (which were maintained
+  per cached page: each page had a stack of cached extkey entry references).
+  
+  Reverted the extkey cache code to have its own purge call.
+  
+- Adjusted the extkey cache purge code to two scenarios, which was needed as
+  we are a bit short on 'DB' handles at those places as we are mostly 'pure ENV'
+  now:
+  
+  1) either you have a page cache, which means we get a DB handle when we
+     flush Btree index pages, which is the perfect time to intermediate-flush 
+     the extkey cache.
+     
+  2) or you don't have a page cache at all, which means we need to wing it:
+     we do so by traversing all open DBs and flushing each extkey cache we can
+     find that way.
+     
+- unittests memtracker_t changed to become a true copy/derivative of the mem_allocator_t,
+  which now includes both constructor (for cloning/instancing) and destructor methods.
+  
+  Added a few mem.h-based calls which allow someone to replace the default mam_allocator_t
+  (such as the unittests) so that no more hacky replacement for db_get_allocator() et al
+  is required; a simple call to ham_set_default_allocator_template() suffices.
+  
+- page_set_type() --> page_set_pers_type() to better represent /where/ this bit of info is
+  stored
+  
+- fixed a page header wipe in db_alloc_page(): as the RAW payload was memset-zeroed, the
+  page type written to the page header was destroyed after it was set up; also, the page type
+  was set up /before/ the 'before' page image was written to log which would produce an
+  invisible/hard to diagnose recovery failure as the original content was altered before
+  being written to the recovery log.
+  
+- __blob_from_cache() --> __must_alloc_blob_through_cache() : better name for this check function
+
+- added the dev_alloc_request_info_ex_t info struct for device allocation requests:
+  this one is the first step towards partitioning devices, etc. which need (some of)
+  these info components to decide which partition and hence which freelist manager
+  is going to handle the allocation request -- this is very important and the allocation
+  request and the freelist manager handling that request determine in the end where
+  the space will be allocated. 
+  
+  When you want to be able to have partitioning based
+  on database name (id), key data, purpose (e.g. separate storage for records and 
+  indexes), etc., you need this data to travel into the device graph at allocation 
+  request time.
+
+     
+11/Jan/2010 GerH
+
+- reorganized a couple of headers and code after moving freelist to an 
+  entire device+ENV based codeline ('all that had to be done' was kill 
+  off the ever-present db_get_env(db) implicit and explicit indirections)
+  
+- moved all env-related macro functions to env.h, and made sure no more 
+  db_... equivalents exist to force the code to a pure ENV codeline.
+  (implicit db_get_env() indirections eradicated)
+
+- renamed db_get_persistent_header_size() to page_get_persistent_header_size() 
+  and moved to page.h, where it belongs as the types it references are defined
+  in page.h
+  
+- freelist_statistics.c also to migrated to a pure-ENV codeline. Note that the
+  statistics.c manages erase/insert/find stats which are db-specific, so those
+  must remain DB-oriented.
+  
+- coding standard enforcement where error codes are consistently propagated and
+  never 'inferred' from null pointers and other paraphernalia; this uncovered a
+  few out-of-memory crash risks in the code. See for one example the use of
+  __freel_cache_get_entry()
+  
+  coding standard: the return code is ALWAYS a ham_status_t, so other returns
+  are fed back to the caller through references in C RTL style, i.e. the first
+  function argument(s) are those [output] references.
+  
+  Furthermore, such call-by-reference parameters MUST be initialized by the callee
+  AT ALL TIMES. This means that the referenced variable is set before ANY exit
+  point of the method (function).
+  
+  This had to be done as large chunks of the code have been migrated to a pure
+  ENV based codeline, so the db_set_error() macro was thus implicitly rendered 
+  obsolete.
+  
+- [PARTIALLY DONE] Doxygen doesn't like multiline macros formatted as
+
+  #define f()  bla \
+               bla bla
+               
+  but generates correct output for this format instead:
+  
+  #define f()      \
+               bla \
+               bla bla
+
+- nasty naming similarity with completely different underlying functionality 
+  removed: db_get_max_databases() checks the headerpage --> PERSISTENT storage,
+  while env_get_max_databases() uses a (faster) ham_env_t member.
+  
+  The db_get_max_databases() was used in a few places where it really shouldn't
+  as a result; now renamed to env_get_persistent_max_databases() so the
+  naming is in line with the other persistent storage element accessors (which
+  are Endian-neutral).
+
+- renamed and moved be_get_db() --> be_get_db() (backend.h) where it belongs.
+
+- more backend cleaning: moved the db_page_free() section which removes related
+  extended keys from the DB-specific extkey cache (we have one such cache per DB
+  to remove yet another DB bottleneck for when we support parallel access to 
+  multiple DBs within an ENV) to the backend through an additional callback/method:
+  
+	_fun_uncouple_all_cursors
+
+- db_get_indexdata_arrptr() --> env_get_indexdata_arrptr()
+  db_get_indexdata_ptr()    --> env_get_indexdata_ptr()
+
+- page_new() is now also ENV based, as is all page-oriented code: only backend-related
+  material needs a DB reference instead of an ENV.
+  
+  The page_new() edit is a bit more complex than that, as it also set the page owner:
+  a datum which is really only required by the DB backend code to derive the DB/ENV
+  back from a PAGE reference; besides, ownership of key/record/blob/freelist storing 
+  pages is VERY disputable as multiple databases will share arbitrary pieces of such 
+  pages. The header page is another such item: it is not really 'ownable' by ANY
+  database.
+  
+  So ownership management is now moved to the database backend code and handled there.
+  
+- given that ownership for several pages does not exist no more, another way had to be
+  found to extract ENV from PAGE, and it was waiting for us :-)
+  
+	device_get_env(page_get_device(page)) == db_get_env(page_get_owner(page))
+
+- key comparison routines also cannot use the obsoleted db_get_error/db_set_error macros
+  any longer, but this has been easily resolved: error codes are less than -2 and are
+  returned as the comparison result as is. See key_compare_pub_to_int et al.
+  
+  NOTE: the documentation states 'return -1, 0, +1 or higher positive values are the 
+        result of a successful key comparison' as that text anticipates the future where
+        the B+-tree is further optimized, performance-wise, when we move towards
+        using Patricia tries or other methodologies instead of classic arrays (and a lot of key space 
+        memmove()-ing), similar to 'String B-trees', ...
+        
+- ham_mem_alloc series has been (temporarily?) obsoleted.
+
+- There was an issue with the TXN checkpoint logic: here only the database 'owning'
+  the TXN would get its pages flushed, while a TXN can span multiple databases within
+  the same environment. This leads to a possible logical recovery corruption as 
+  relevant pages are not flushed when the checkpoint is written to the log.
+  --> ham_env_flush() has been introduced to flush all open databases and their pages.
+
+- backend _fun_delete destructor method was never invoked. Now done always in 
+  ham_close().
+  
+- ham_assert showstopper for release builds would cause altered code flow as release
+  builds would _remove_ the ham_assert statement entirely and that is fatal for code flow
+  in a coding style without curly braces:
+  
+  if (c)
+    stmt;
+  else
+    ham_assert(...); // removed in !defined(HAM_DEBUG) builds
+  followup; // moves into the else branch at compile time then :-(
+  
+  The ham_assert() has been fixed to ensure it ALWAYS represents exactly ONE(1)
+  statement in any build.
+  
+- As ham_env_t and ham_key_t instances are not created the usual env_get_allocator()
+  class, these have been fitted with destructor methods which call the matching free()
+  for the malloc() which was invoked in ham_new() and ham_env_new().
+  
+  NOTE:
+  
+  app code which initializes their own stack-based or other env/db instances must 
+  configure their own destructor methods there, though ham_close/ham_delete/ham_env_close/ham_env_delete
+  will cope with a NULL destructor method.
+  
+- added ham_env_get_user_context() and ham_env_set_user_context() APIs to match the
+  DB-based ones -- this allows for better C++ and other language support where
+  OO wrappers around ham_env_t are employed.
+  
+- ham_close and ham_env_close try to complete despite intermediate error reports.
+  Nevertheless, such error reports will be propagated to the output (return code).
+  
+  Idem for ham_delete / ham_env_delete.
+  
+  Some other functions have also seen some further error propagatation updates.
+  
+- the per-DB extkeys cache is not forcibly flushed together with the general page
+  flush invocations; the idea is that the cached extkeys are removed from the relevant
+  extkey cache anyhow as their corresponding page is removed from the ENV-based
+  page cache.
+  
+  This approach has two expected benefits: 
+  1) the flush routines don't have to jump through hoops any longer to get a
+     handle on the TXN-related DB databases, which results in code simplification.
+  2) As extkeys are not destroyed using some immutable heuristic (the entire extkey
+     cache was destroyed indiscriminately every 5 page cache flush invocations)
+     but are directly related to their related page being cached (or not any more),
+     the extkey cache will hopefully see a performance improvement as well.
+
 
 Jan 09, 2010 - chris
 o bugfix in unittest - HamsterdbTest::nearFindTest fails if internal
@@ -1120,7 +1450,7 @@ o added HAM_DISABLE_FREELIST_FLUSH - when a freelist page is modified, it
 
 Nov 23, 2006 - chris 
 o fixed a small leak - if records are overwritten, and the new record size
-    is smaller then sizeof(ham_offset_t), the old blob was not added to 
+    is smaller then sizeof(ham_pers_rid_t), the old blob was not added to 
     the freelist
 
 Nov 22, 2006 - chris 
@@ -1172,7 +1502,7 @@ o fixed a bug: when allocating pages, and the page was removed from the
 Oct 12, 2006 - chris
 o fixed a bug in blob_allocate when allocating big blobs
 o fixed a bug when overwriting keys, and the blob was empty, tiny or 
-    small (<=sizeof(ham_offset_t))
+    small (<=sizeof(ham_pers_rid_t))
 
 Oct 8, 2006 - chris
 o completely rewrote the test environment (./dbtest.py)

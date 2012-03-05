@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,8 +7,9 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * This sample uses hamsterdb to read data from stdin into a "record number"
  * database; every word is inserted into the database in the order of
  * its processing. Then a cursor is used to print all words in the
@@ -46,7 +47,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * second step: create a new hamsterdb "record number" Database
+     * second step: create a new hamsterdb "record number" database
      *
      * we could create an in-memory-database to speed up the sorting.
      */
@@ -75,8 +76,10 @@ main(int argc, char **argv)
             key.size=sizeof(recno);
 
             record.data=p;
-            record.size=(ham_size_t)strlen(p)+1; /* also store terminating 0 */
+            record.size=(ham_size_t)strlen(p)+1; /* also store the terminating 0-byte */
 
+            /* note: the second parameter of ham_insert() is reserved; set it
+             * to NULL */
             st=ham_insert(db, 0, &key, &record, 0);
             if (st!=HAM_SUCCESS && st!=HAM_DUPLICATE_KEY) {
                 printf("ham_insert() failed with error %d\n", st);

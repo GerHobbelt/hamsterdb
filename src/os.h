@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief operating-system specific functions (mostly I/O stuff)
  *
  */
@@ -22,6 +26,14 @@
 #include <stdio.h>
 #include <limits.h>
 
+<<<<<<< HEAD
+=======
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+>>>>>>> flash-bang-grenade
 /**
  * read data from a file with mmap
  *
@@ -30,6 +42,9 @@
  * the file itself.
  *
  * @remark win32 needs a second handle for CreateFileMapping
+ *
+ * @return @ref HAM_NOT_IMPLEMENTED when memory mapping is not available
+ *         for the given file, file system or platform.
  */
 extern ham_status_t
 os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
@@ -39,19 +54,22 @@ os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
  * unmap a buffer
  *
  * @remark win32 needs a second handle for CreateFileMapping
+ *
+ * @return @ref HAM_NOT_IMPLEMENTED when memory mapping is not available
+ *         for the given file, file system or platform.
  */
 extern ham_status_t
 os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size);
 
 /**
- * read data from a file
+ * read data from a file from the specified file offset
  */
 extern ham_status_t
 os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
         ham_offset_t bufferlen);
 
 /**
- * write data to a file
+ * write data to a file at the specified file offset
  */
 extern ham_status_t
 os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
@@ -146,4 +164,16 @@ extern ham_status_t
 os_close(ham_fd_t fd, ham_u32_t flags);
 
 
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+>>>>>>> flash-bang-grenade
 #endif /* HAM_OS_H__ */
+
+/**
+* @endcond
+*/
+

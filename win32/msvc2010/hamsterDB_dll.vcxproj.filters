@@ -1,0 +1,590 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\blob.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\whole_program_code_optimization.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_check.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_cursor.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_enum.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_erase.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_find.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_insert.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_time_compressed_a_la_PI.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cache.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cuckoo_hash.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\db.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\env.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\error.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extkeys.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\freelist.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\freelist_statistics.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\freelist_v2.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hamsterdb.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\keys.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\log.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\mem.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os_posix.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os_win32.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\page.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\statistics.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\txn.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\udb_digital_trie.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\compression.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\cachedev.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\crypter.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\device.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\event_sender.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\field_partitioner.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\file_per_rid.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\flashmem.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\flatfile.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\graph_mgr.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\https.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\key_partitioner.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\logger_swapper.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\rid_partitioner.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\stream_compression.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\db_partitioner.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\devices\mallocmem.c">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\precompiled_headers.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\backend.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\version.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\blob.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\btree.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\btree_classic.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\btree_cursor.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\cache.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\config.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\config.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\cuckoo_hash.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\cuckoo_hash_cursor.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\cursor.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\db.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\device.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\endianswap.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\env.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\error.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extkeys.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\freelist.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\freelist_statistics.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\internal_fwd_decl.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\keys.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\log.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\mem.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\page.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\statistics.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\txn.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\util.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb_stats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb_int.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb_srv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\packstop.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\packstart.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\messages.pb-c.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\inline_utils.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\freelist_v2.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fraction.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\db_locking.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\serial.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\internal_preparation.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\os.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\unittests\valgrind.supp">
+      <Filter>Misc</Filter>
+    </None>
+    <None Include="..\..\documentation\appendix_gfdl.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\architecture.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\appendix_gpl2.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\appendix_gpl3.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\AUTHORS">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\ChangeLog">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\bootstrap">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\compare.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\bootstrap.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\compare.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\configure.in">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\config.h.in">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\COPYING">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\CREDITS">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\COPYING.GPL2">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\COPYING.GPL3">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\db1.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\db1.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\db1.db">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\db1-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\db1-0xf000.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\db1-0xf000-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\documentation\Doxyfile">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\Doxyfile.BFC">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\Doxyfile.internal">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\Doxyfile.www">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-1-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3-1-keynumeric.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3-1.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-1.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-2-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3-2-keynumeric-maxrec4.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3-2-keynumeric-recstring.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-2.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3-2.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-3-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3-3.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-3.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\env3-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\env3.db">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\env3.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\extkeys.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\extkeys-0xf000-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\extkeys-0xf000.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\extkeys-f.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\extkeys-keystring-maxkey3-maxrec2000.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\extkeys-keystring-maxkey3.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\extkeys-keystring-maxkey3000.txt">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\tools\tests\extkeys.db">
+      <Filter>Misc\tests</Filter>
+    </None>
+    <None Include="..\..\documentation\faq.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\features.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\footer.html">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\got_geek.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_info\generate.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\tools\tests\ham_dump\generate.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\documentation\hamster.jpg">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\hamsterdb-main.jpg">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\hamsterdb-main-low.jpg">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\hamsterdb.css">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\header.html">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\history.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\index.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\licensing.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\platforms.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\page-filters.ppt">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\href.pl">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\INSTALL">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\unittests\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\src\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\tools\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\include\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\samples\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\lib\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\..\include\ham\Makefile.am">
+      <Filter>Misc\GNU auto</Filter>
+    </None>
+    <None Include="..\README.TXT">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\README">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\NEWS">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\TODO">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\TODO-GER.txt">
+      <Filter>Misc\ChangeLog, TODO, etc.</Filter>
+    </None>
+    <None Include="..\..\documentation\make_www.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\tools\tests\prepare.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="..\..\documentation\samples.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\starting.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\trouble.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\tuning.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\documentation\tutorial.doc">
+      <Filter>Misc\doxygen-docu</Filter>
+    </None>
+    <None Include="..\..\tools\tests\test.sh">
+      <Filter>Misc\scripts</Filter>
+    </None>
+    <None Include="hamsterdb_dll_debug.def">
+      <Filter>Source files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source files">
+      <UniqueIdentifier>{674ae31d-49db-45e1-926e-c44c638c6a68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{3641ad18-485a-4995-9bb2-64d9e4f3e687}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc">
+      <UniqueIdentifier>{96d6e10a-8174-4f96-8a05-60d5d401418a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source files\Devices">
+      <UniqueIdentifier>{0d9faf07-470f-4d16-b416-daddb20447a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Internal">
+      <UniqueIdentifier>{d13c844d-cf35-4e72-a3a4-1e84b820f2c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\doxygen-docu">
+      <UniqueIdentifier>{7de2b59c-a553-4bb4-b281-dde7b17dd316}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\ChangeLog, TODO, etc.">
+      <UniqueIdentifier>{7afe074c-969d-489e-82b2-8fbab699304e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\scripts">
+      <UniqueIdentifier>{3239b96b-907a-4e28-b871-a5fab90db48f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\GNU auto">
+      <UniqueIdentifier>{b8855da3-e757-459b-bc08-31105b199999}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc\tests">
+      <UniqueIdentifier>{a6666fc8-ebe1-4a8e-8084-d7c8e33b82ac}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

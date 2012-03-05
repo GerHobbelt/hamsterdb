@@ -1,0 +1,31 @@
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ *
+ * See files COPYING.* for License information.
+ */
+/*! \page licensing HamsterDB Licenses 
+
+la la lala la laaaaaa ....
+
+well, didn't set this whole show up just to show a singing web page. 
+
+Sigh. 
+
+
+
+hamsterdb is licensed under either the GPL+GFDL or a commercial license. When you have not purchased a commercial license for hamsterdb, all hamsterdb source code and miscelleneous is subject to the GPL, either version \ref appendix_gpl2 "2" or \ref appendix_gpl3 "3", depending on your preference, while this documentation (and its sources in the documentation/ directory) is subject to the \ref appendix_gnu_free_doc_license :
+
+<ul>
+<li>\ref appendix_gpl2
+<li>\ref appendix_gpl3
+<li>\ref appendix_gnu_free_doc_license
+
+<li>yada yada reference to FOSS EX + COMMERZ licenses; I'm too lazy now to rip that off the site and plonk it in here. Good enough so far.
+</ul>
+
+*/

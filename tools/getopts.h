@@ -83,7 +83,7 @@
  * Now the parameters can be checked with getopts(). getopts() will return
  * the symbolic name of the parameter, or one of the predefined constants
  * defined below (i.e. GETOPTS_UNKNOWN for an unknown parameter).
- 
+
     unsigned int opt;
     char *param;
     while ((opt=getopts(&opts[0], &param))) {
@@ -156,7 +156,13 @@ typedef struct
  * "program -f <filename>" or "program --file:<filename>" or
  * "program --file=<filename>" or "program --file <filename>".
  */
-#define GETOPTS_NEED_ARGUMENT                 1
+#define GETOPTS_NEED_ARGUMENT                 0x0001
+
+/**
+ * an option_t flag; set this flag if this option is merely there to assist
+ * as additional info to be printed by @ref getopts_usage()
+ */
+#define GETOPTS_IS_ONLY_INFO                  0x0002
 
 /**
  * getopts_init()
@@ -199,20 +205,20 @@ getopts(const option_t *options, const char **param);
 /**
  * return value of getopts(), if you forgot to call getopts_init()
  */
-#define GETOPTS_NO_INIT              0xffffffff
+#define GETOPTS_NO_INIT              0xffffffffu
 
 /**
  * return value of getopts() for unknown options. The offending option is
  * written to the 'param' argument.
  */
-#define GETOPTS_UNKNOWN              0xfffffffe
+#define GETOPTS_UNKNOWN              0xfffffffeu
 
 /**
  * return value of getopts() if user entered an option which expected
  * a parameter, but the parameter is missing. The offending option is
  * written to the 'param' argument.
  */
-#define GETOPTS_MISSING_PARAM        0xfffffffc
+#define GETOPTS_MISSING_PARAM        0xfffffffcu
 
 /**
  * found a parameter which is not an option (i.e. doesn't start with
@@ -220,7 +226,7 @@ getopts(const option_t *options, const char **param);
  * i.e. in "grep pattern", "pattern" is not an option but a simple
  * parameter.. The parameter is stored in the 'param' argument.
  */
-#define GETOPTS_PARAMETER            0xfffffffb
+#define GETOPTS_PARAMETER            0xfffffffbu
 
 #ifdef __cplusplus
 } // extern "C"

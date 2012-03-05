@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief a base-"class" for cursors
  *
  * A Cursor is an object which is used to traverse a Database.
@@ -145,10 +149,17 @@ class DupeCacheLine
     txn_op_t *m_op;
 };
 
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+extern "C" {
+#endif
+>>>>>>> flash-bang-grenade
 
 /**
  * The dupecache is a cache for duplicate keys
  */
+<<<<<<< HEAD
 class DupeCache {
   public:
     /* default constructor - creates an empty dupecache with room for 8
@@ -205,6 +216,83 @@ class DupeCache {
     std::vector<DupeCacheLine> m_elements;
 
 };
+=======
+#define CURSOR_DECLARATIONS(clss)                                       \
+    /**                                                                 \
+     * clone an existing cursor                                         \
+     */                                                                 \
+    ham_status_t (*_fun_clone)(clss *cu, clss **newit);                 \
+                                                                        \
+    /**                                                                 \
+     * close an existing cursor                                         \
+     */                                                                 \
+    ham_status_t (*_fun_close)(clss *cu);                               \
+                                                                        \
+    /**                                                                 \
+     * overwrite the record of this cursor                              \
+     */                                                                 \
+    ham_status_t (*_fun_overwrite)(clss *cu, ham_record_t *record,      \
+            ham_u32_t flags);                                           \
+                                                                        \
+    /**                                                                 \
+     * move the cursor                                                  \
+     */                                                                 \
+    ham_status_t (*_fun_move)(clss *cu, ham_key_t *key,                 \
+            ham_record_t *record, ham_u32_t flags);                     \
+                                                                        \
+    /**                                                                 \
+     * find a key in the index and positions the cursor                 \
+     * on this key                                                      \
+     */                                                                 \
+    ham_status_t (*_fun_find)(clss *cu, ham_key_t *key,                 \
+                    ham_record_t *record, ham_u32_t flags);             \
+                                                                        \
+    /**                                                                 \
+     * insert (or update) a key in the index                            \
+     */                                                                 \
+    ham_status_t (*_fun_insert)(clss *cu, ham_key_t *key,               \
+            ham_record_t *record, ham_u32_t flags);                     \
+                                                                        \
+    /**                                                                 \
+     * erases the key from the index and positions the cursor to the    \
+     * next key                                                         \
+     */                                                                 \
+    ham_status_t (*_fun_erase)(clss *cu, ham_u32_t flags);              \
+                                                                        \
+    /**                                                                 \
+     * Count the number of records stored with the referenced key.      \
+     */                                                                 \
+    ham_status_t (*_fun_get_duplicate_count)(ham_cursor_t *cursor,      \
+            ham_size_t *count, ham_u32_t flags);                        \
+                                                                        \
+    /**                                                                 \
+     * pointer to the Database object                                   \
+     */                                                                 \
+    ham_db_t *_db;                                                      \
+                                                                        \
+    /**                                                                 \
+     * pointer to the memory allocator                                  \
+     */                                                                 \
+    mem_allocator_t *_allocator;                                        \
+                                                                        \
+    /**                                                                 \
+     * pointer to the transaction object (not yet used)                 \
+     */                                                                 \
+    ham_txn_t *_txn;                                                    \
+                                                                        \
+    /** the remote database handle */                                   \
+    ham_u64_t _remote_handle;                                           \
+                                                                        \
+    /**                                                                 \
+     * linked list of all cursors                                       \
+     */                                                                 \
+    clss *_next, *_previous;                                            \
+                                                                        \
+    /**                                                                 \
+     * linked list of cursors which point to the same page              \
+     */                                                                 \
+    clss *_next_in_page, *_previous_in_page
+>>>>>>> flash-bang-grenade
 
 
 /**
@@ -251,14 +339,27 @@ class Cursor
     /** flag for cursor_set_lastop */
     static const unsigned CURSOR_LOOKUP_INSERT = 0x10000;
 
+<<<<<<< HEAD
   public:
     /** Constructor; retrieves pointer to db and txn, initializes all
      * fields */
     Cursor(Database *db, ham_txn_t *txn=0, ham_u32_t flags=0);
+=======
+/**
+ * set the 'next' pointer of the linked list
+ */
+#define cursor_set_next_in_page(c, n)                                       \
+    do {                                                                    \
+        if (n)                                                              \
+            ham_assert((c)->_previous_in_page!=(n), (0));                   \
+        (c)->_next_in_page=(n);                                             \
+    } while (0)
+>>>>>>> flash-bang-grenade
 
     /** Copy constructor; used for cloning a Cursor */
     Cursor(Cursor &other);
 
+<<<<<<< HEAD
     /**
      * Returns true if a cursor is nil (Not In List - does not point to any key)
      *
@@ -270,6 +371,17 @@ class Cursor
     bool is_coupled_to_btree(void) {
         return (!(get_flags()&_CURSOR_COUPLED_TO_TXN));
     }
+=======
+/**
+ * set the 'previous' pointer of the linked list
+ */
+#define cursor_set_previous_in_page(c, p)                                   \
+    do {                                                                    \
+        if (p)                                                              \
+            ham_assert((c)->_next_in_page!=(p), (0));                       \
+        (c)->_previous_in_page=(p);                                         \
+    } while (0)
+>>>>>>> flash-bang-grenade
 
     /** Returns true if a cursor is coupled to a txn-op */
     bool is_coupled_to_txnop(void) {
@@ -614,5 +726,16 @@ class Cursor
     bool m_is_first_use;
 };
 
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+} // extern "C"
+#endif
+>>>>>>> flash-bang-grenade
 
 #endif /* HAM_CURSORS_H__ */
+
+/**
+* @endcond
+*/
+

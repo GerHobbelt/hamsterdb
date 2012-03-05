@@ -1,11 +1,12 @@
 
+AM_CFLAGS 	 = -I$(top_builddir)/include
+
 #
 # make sure that our modified CFLAGS are also respected by g++
 #
-CFLAGS         += -DHAM_ENABLE_REMOTE
-AM_CXXFLAGS     = $(CFLAGS)
-CXXFLAGS        = $(CFLAGS)
-AM_CPPFLAGS 	= -I$(top_builddir)/include
+AM_CFLAGS         += -DHAM_ENABLE_REMOTE
+#AM_CXXFLAGS     = $(CFLAGS)
+#CXXFLAGS        = $(CFLAGS)
 
 # INCLUDES = 
 

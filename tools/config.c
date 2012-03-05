@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,13 +15,13 @@
 #include <malloc.h>
 
 #include "config.h"
+#include "error.h"
+#include "util.h"
 
 #define STATE_NONE            0
 #define STATE_GLOBAL          1
 #define STATE_ENVIRONMENTS    2
 #define STATE_DATABASES       3
-
-extern void hlog(int level, const char *format, ...);
 
 static int
 __parser_cb(void *ctx, int type, const struct JSON_value_struct *value)
@@ -210,7 +210,7 @@ config_parse_string(const char *string, config_table_t **params)
     while (*string) {
         if (!JSON_parser_char(jc, *string)) {
             delete_JSON_parser(jc);
-            hlog(3, "JSON syntax error in byte %u\n", count);
+            ham_log(("JSON syntax error in byte %u: %s", count, string));
             config_clear_table(p);
             return (HAM_INV_PARAMETER);
         }
@@ -220,6 +220,7 @@ config_parse_string(const char *string, config_table_t **params)
 
     if (!JSON_parser_done(jc)) {
         delete_JSON_parser(jc);
+        ham_log(("JSON syntax error"));
         config_clear_table(p);
         return (HAM_INV_PARAMETER);
     }

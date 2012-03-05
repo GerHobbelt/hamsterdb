@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief btree cursors
  *
  * A Btree-Cursor is an object which is used to traverse a Btree.
@@ -34,6 +38,7 @@
 #include "internal_fwd_decl.h"
 #include "blob.h"
 
+<<<<<<< HEAD
 
 /**
  * the Cursor structure for a b+tree cursor
@@ -56,12 +61,44 @@ typedef struct btree_cursor_t
     ham_size_t _dupe_id;
 
     /** cached flags and record ID of the current duplicate */
+=======
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+/**
+ * The cursor structure for a B+tree.
+ */
+struct ham_bt_cursor_t
+{
+    /**
+     * The common declarations of all cursors.
+     */
+    CURSOR_DECLARATIONS(ham_bt_cursor_t);
+
+    /**
+     * Internal cursor flags.
+     */
+    ham_u32_t _flags;
+
+    /**
+     * The id of the duplicate key.
+     */
+    ham_size_t _dupe_id;
+
+    /**
+     * Cached flags and record ID of the current duplicate.
+     */
+>>>>>>> flash-bang-grenade
     dupe_entry_t _dupe_cache;
 
     /**
      * "coupled" or "uncoupled" states; coupled means that the
      * cursor points into a Page object, which is in
      * memory. "uncoupled" means that the cursor has a copy
+<<<<<<< HEAD
      * of the key on which it points (i.e. because the coupled page was
      * flushed to disk and removed from the cache)
      */
@@ -71,12 +108,33 @@ typedef struct btree_cursor_t
             Page *_page;
 
             /* the offset of the key in the page */
+=======
+     * of the key on which it points.
+     */
+    union ham_bt_cursor_union_t {
+        struct ham_bt_cursor_coupled_t {
+            /**
+             * The page we're pointing to.
+             */
+            ham_page_t *_page;
+
+            /**
+             * The offset of the key in the page.
+             */
+>>>>>>> flash-bang-grenade
             ham_size_t _index;
 
         } _coupled;
 
+<<<<<<< HEAD
         struct btree_cursor_uncoupled_t {
             /* a copy of the key at which we're pointing */
+=======
+        struct ham_bt_cursor_uncoupled_t {
+            /**
+             * A copy of the key at which we're pointing.
+             */
+>>>>>>> flash-bang-grenade
             ham_key_t *_key;
 
         } _uncoupled;
@@ -85,6 +143,7 @@ typedef struct btree_cursor_t
 
 } btree_cursor_t;
 
+<<<<<<< HEAD
 /** cursor flag: the cursor is coupled */
 #define BTREE_CURSOR_FLAG_COUPLED              1
 
@@ -143,14 +202,62 @@ typedef struct btree_cursor_t
 
 /**
  * Create a new cursor
+=======
+/**
+ * Cursor flag: the cursor is coupled.
+ */
+#define BT_CURSOR_FLAG_COUPLED              1
+
+/**
+ * Cursor flag: the cursor is uncoupled.
+ */
+#define BT_CURSOR_FLAG_UNCOUPLED            2
+
+/**
+ * Get the database pointer.
+ */
+#define bt_cursor_get_db(cu)                (cu)->_db
+
+/**
+ * Set the database pointer.
+ */
+#define bt_cursor_set_db(cu, db)            (cu)->_db=(db)
+
+/**
+ * Get the txn pointer.
+ */
+#define bt_cursor_get_txn(cu)               (cu)->_txn
+
+/**
+ * Set the txn pointer.
+ */
+#define bt_cursor_set_txn(cu, txn)          (cu)->_txn=(txn)
+
+/**
+* Get the allocator.
+*/
+#define bt_cursor_get_allocator(cu)         (cu)->_allocator
+
+/**
+* Set the allocator.
+*/
+#define bt_cursor_set_allocator(cu, a)      (cu)->_allocator=(a)
+
+/**
+ * Get the flags.
+>>>>>>> flash-bang-grenade
  */
 extern void
 btree_cursor_create(Database *db, ham_txn_t *txn, ham_u32_t flags,
                 btree_cursor_t *cursor, Cursor *parent);
 
 /**
+<<<<<<< HEAD
  * Clone an existing cursor
  * the dest structure is already allocated
+=======
+ * Set the flags.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_clone(btree_cursor_t *src, btree_cursor_t *dest,
@@ -163,110 +270,173 @@ extern ham_status_t
 btree_cursor_set_to_nil(btree_cursor_t *c);
 
 /**
+<<<<<<< HEAD
  * Returns true if the cursor is nil, otherwise false
+=======
+ * Get the page we're pointing to - if the cursor is coupled.
+>>>>>>> flash-bang-grenade
  */
 extern ham_bool_t
 btree_cursor_is_nil(btree_cursor_t *cursor);
 
 /**
+<<<<<<< HEAD
  * Couple the cursor to the same item as another (coupled!) cursor
  *
  * @remark will assert that the other cursor is coupled; will set the
  * current cursor to nil
+=======
+ * Set the page we're pointing to - if the cursor is coupled.
+>>>>>>> flash-bang-grenade
  */
 extern void
 btree_cursor_couple_to_other(btree_cursor_t *c, btree_cursor_t *other);
 
 /**
+<<<<<<< HEAD
  * Uncouple the cursor
  *
  * @remark to uncouple a page the cursor HAS to be coupled!
+=======
+ * Get the key index we're pointing to - if the cursor is coupled.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_uncouple(btree_cursor_t *c, ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
  * flag for @ref btree_cursor_uncouple: uncouple from the page, but do not
  * call @ref Page::remove_cursor()
+=======
+ * Set the key index we're pointing to - if the cursor is coupled.
+>>>>>>> flash-bang-grenade
  */
 #define BTREE_CURSOR_UNCOUPLE_NO_REMOVE        1
 
 /**
+<<<<<<< HEAD
  * returns true if a cursor points to this btree key, otherwise false
+=======
+ * Get the duplicate key we're pointing to - if the cursor is coupled.
+>>>>>>> flash-bang-grenade
  */
 extern bool
 btree_cursor_points_to(btree_cursor_t *cursor, btree_key_t *key);
 
 /**
+<<<<<<< HEAD
  * returns true if a cursor points to this external key, otherwise false
+=======
+ * Set the duplicate key we're pointing to - if the cursor is coupled.
+>>>>>>> flash-bang-grenade
  */
 extern bool
 btree_cursor_points_to_key(btree_cursor_t *cursor, ham_key_t *key);
 
 /**
+<<<<<<< HEAD
  * uncouple all cursors from a page
  *
  * @remark this is called whenever the page is deleted or becoming invalid
+=======
+ * Get the duplicate key's cache.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_uncouple_all_cursors(Page *page, ham_size_t start);
 
 /**
+<<<<<<< HEAD
  * Inserts a key/record pair with a cursor
+=======
+ * Get the key we're pointing to - if the cursor is uncoupled.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_insert(btree_cursor_t *c, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
  * Positions the cursor on a key and retrieves the record (if @a record
  * is a valid pointer)
+=======
+ * Set the key we're pointing to - if the cursor is uncoupled.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_find(btree_cursor_t *c, ham_key_t *key, ham_record_t *record,
                 ham_u32_t flags);
 
+<<<<<<< HEAD
 /**
  * Erases the key from the index; afterwards, the cursor points to NIL
+=======
+/*
+ * Set a cursor to NIL.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_erase(btree_cursor_t *c, ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
  * Moves the cursor to the first, last, next or previous element
+=======
+ * Couple the cursor.
+ *
+ * @remark To couple a page, it has to be uncoupled!
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_move(btree_cursor_t *c, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
  * Count the number of records stored with the referenced key, i.e.
  * count the number of duplicates for the current key.
+=======
+ * Uncouple the cursor.
+ *
+ * @remark To uncouple a page, it has to be coupled!
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_get_duplicate_count(btree_cursor_t *c, ham_size_t *count,
                 ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
  * Overwrite the record of this cursor
+=======
+ * Flag for @ref bt_cursor_uncouple: uncouple from the page, but do not
+ * call @ref page_remove_cursor()
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_overwrite(btree_cursor_t *c, ham_record_t *record,
                 ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
  * retrieves the duplicate table of the current key; memory in ptable has
  * to be released by the caller.
  *
  * if key has no duplicates, *ptable is NULL.
  *
  * @warning memory has to be freed by the caller IF needs_free is true!
+=======
+ * Create a new cursor.
+>>>>>>> flash-bang-grenade
  */
 extern ham_status_t
 btree_cursor_get_duplicate_table(btree_cursor_t *c, dupe_table_t **ptable,
                 ham_bool_t *needs_free);
 
 /**
+<<<<<<< HEAD
  * retrieves the record size of the current record
  */
 extern ham_status_t
@@ -280,3 +450,29 @@ btree_cursor_close(btree_cursor_t *cursor);
 
 
 #endif /* HAM_BTREE_CURSORS_H__ */
+=======
+ * Returns @ref HAM_TRUE if a cursor points to this key, @ref HAM_FALSE if it is not
+ * an an negative error code when an error occurred.
+ */
+ham_status_t
+bt_cursor_points_to(common_btree_datums_t *btdata, ham_bt_cursor_t *cursor, int_key_t *key);
+
+/**
+* Uncouple all cursors from a page.
+*
+* @remark This is called whenever the page is deleted or becoming invalid.
+*/
+ham_status_t
+bt_uncouple_all_cursors(ham_page_t *page, ham_size_t start);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif /* HAM_BT_CURSORS_H__ */
+
+/**
+* @endcond
+*/
+
+>>>>>>> flash-bang-grenade

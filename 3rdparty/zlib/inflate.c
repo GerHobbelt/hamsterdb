@@ -100,7 +100,7 @@ local int updatewindow OF((z_streamp strm, unsigned out));
 local unsigned syncsearch OF((unsigned FAR *have, unsigned char FAR *buf,
                               unsigned len));
 
-int ZEXPORT inflateReset(
+int ZEXPORT inflateResetKeep(
 z_streamp strm)
 {
     struct inflate_state FAR *state;

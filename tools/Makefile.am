@@ -1,5 +1,5 @@
 
-INCLUDES		    = -I$(top_builddir)/include -I$(top_builddir)/src \
+AM_CFLAGS		    = -I$(top_builddir)/include -I$(top_builddir)/src \
 					  -I$(top_builddir)/3rdparty/json
 
 hamzilla_SOURCES    = hamzilla.c getopts.c config.c
@@ -15,8 +15,14 @@ ham_dump_LDADD      = $(top_builddir)/src/libhamsterdb.la
 ham_recover_SOURCES = ham_recover.cc getopts.c
 ham_recover_LDADD   = $(top_builddir)/src/libhamsterdb.la
 
+ham_log_SOURCES     = ham_log.cpp getopts.c
+ham_log_LDADD       = $(top_builddir)/src/libhamsterdb.la
+
 bin_PROGRAMS        = ham_info ham_dump ham_recover
 if ENABLE_REMOTE
 bin_PROGRAMS        += hamzilla
 endif
+
+noinst_PROGRAMS		= ham_log
+noinst_BIN      	= ham_log
 

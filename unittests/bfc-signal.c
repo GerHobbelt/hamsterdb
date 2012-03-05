@@ -1,6 +1,6 @@
-/**
-  Copyright (C) 2009 Ger Hobbelt, www.hebbut.net
-  Copyright (C) 2009 Christoph Rupp, www.crupp.de
+/*
+ * Copyright (C) 2009-2010 Ger Hobbelt, www.hebbut.net
+ * Copyright (C) 2009-2010 Christoph Rupp, www.crupp.de
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -13,14 +13,14 @@
 #include "bfc-signal.h"
 
 
-/*
+/**
    For a complete run-down on UNIX [hardware] exception handling intricacies, see
    [APitUE], pp. 263..324, Chapter 10.
 
    NOTE THAT WE KNOWINGLY TAKE SEVERAL SHORTCUTS IN THIS IMPLEMENTATION, CUTTING A FEW
    DANGEROUS CORNERS REGARDING QUEUED UNRELIABLE & RELIABLE SIGNALS HERE. However,
    we feel this is permissible for two reasons:
-   
+
    1) the signals we catch/handle here, all assume some type of failure
        occurring within the Function-Under-Test (or it's accompanying fixture
        setup or teardown code), WHILE WE ASSUME THAT THE BFC FRAMEWORK ITSELF WILL
@@ -34,12 +34,12 @@
        additional, significant GNU configure / etc. code portability
        configuration effort. By chosing the path of the Lowest Common Denominator
        here, we introduce an implicit requirement for BFC and some risk as well:
-   
+
    2a) FUTs which come with their own signal setup/teardown code, may do so,
        but this MAY clash with our 'rig' here. When you've got FUTs/fixtures like
        that, YOU ARE IMPLICITLY ASSUMED TO KNOW WHAT YOU ARE DOING. In other
        words: Caveat Emptor.
-   
+
        (Hint: you may wish to #define
                 BFC_HAS_CUSTOM_SIGNAL_SETUP
        in your project to disable this default implementation.)
@@ -77,8 +77,8 @@
 
 
 
-/*
-Use this *C* function to prevent compiler errors due to different
+/**
+Use this 'C' function to prevent compiler errors due to different
 function types being passed around here.
 
 We know what we're doing here. ;-)
@@ -106,7 +106,7 @@ bfc_signal(int code, signal_handler_f handler)
 #if defined(UNDER_CE)
     return 0;
 #else
-    return (0);//signal_handler_f)signal(code, (__sighandler_t)handler);
+    return (signal_handler_f)signal(code, handler);
 #endif
 
 #if defined(_MSC_VER)

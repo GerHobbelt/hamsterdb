@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -9,19 +9,27 @@
  * See files COPYING.* for License information.
  */
 
-#include <stdexcept>
-#include <cstring>
-#include <cassert>
+#include "../src/config.h"
+
 #include <ham/hamsterdb_int.h>
 #include "../src/error.h"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
 
+#include <stdexcept>
+#include <cstring>
+#include <cassert>
+
+
 using namespace bfc;
 
 static void HAM_CALLCONV
+<<<<<<< HEAD
 my_handler(int level, const char *msg)
+=======
+my_handler(int level, const char *file, int line, const char *function, const char *msg)
+>>>>>>> flash-bang-grenade
 {
     static int i=0;
     static const char *s[]={
@@ -78,7 +86,7 @@ public:
     {
         ham_trace(("hello world"));
         ham_set_errhandler(0);
-        ham_log(("testing error handler - hello world\n"));
+        ham_logerr(("testing error handler - hello world\n"));
     }
 
     void verifyTest()

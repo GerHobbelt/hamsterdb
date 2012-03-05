@@ -1,4 +1,5 @@
 *.o
+<<<<<<< HEAD
 *~
 *.lo
 *.la
@@ -9,6 +10,13 @@
 
 documentation/html
 documentation/latex
+=======
+*.bak
+*.a
+*.la
+*.obj
+*~
+>>>>>>> flash-bang-grenade
 Makefile
 Makefile.in
 aclocal.m4
@@ -21,6 +29,7 @@ config.status
 configure
 libtool
 stamp-h1
+<<<<<<< HEAD
 m4
 config.guess
 config.sub
@@ -28,4 +37,17 @@ depcomp
 install-sh
 ltmain.sh
 missing
+=======
+*.o
+*.lo
+*.la
+.libs
+.deps
+messages.pb.cc
+messages.pb.h
+*.psess
+*.vsp
+*.sdf
+*.opensdf
+>>>>>>> flash-bang-grenade
 

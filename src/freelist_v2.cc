@@ -7,6 +7,7 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
+<<<<<<< HEAD
  *
  */
 
@@ -23,15 +24,45 @@ __freel_flush_stats32(Device *device, Environment *env)
 
     ham_assert(!(env->get_flags()&HAM_IN_MEMORY_DB), (0));
     ham_assert(device->get_freelist_cache(), (0));
+=======
+ */
+
+/**
+* @cond ham_internals
+*/
+
+#include "internal_preparation.h"
+
+
+#define IMPLEMENT_MODERN_FREELIST32
+
+#include "freelist.c"
+
+ham_status_t
+__freel_flush_stats32(ham_device_t *dev, ham_env_t *env)
+{
+    ham_status_t st;
+
+    ham_assert(!(env_get_rt_flags(env)&HAM_IN_MEMORY_DB), (0));
+    ham_assert(device_get_freelist_cache(dev), (0));
+>>>>>>> flash-bang-grenade
 
     /*
      * do not update the statistics in a READ ONLY database!
      */
+<<<<<<< HEAD
     if (!(env->get_flags() & HAM_READ_ONLY)) {
         freelist_cache_t *cache;
         freelist_entry_t *entries;
 
         cache=device->get_freelist_cache();
+=======
+    if (!(env_get_rt_flags(env) & HAM_READ_ONLY)) {
+        freelist_cache_t *cache;
+        freelist_entry_t *entries;
+
+        cache=device_get_freelist_cache(dev);
+>>>>>>> flash-bang-grenade
         ham_assert(cache, (0));
 
         entries = freel_cache_get_entries(cache);
@@ -43,7 +74,11 @@ __freel_flush_stats32(Device *device, Environment *env)
              * if freelist_v2 is used, the file is always 1.1.+ format.
              */
             ham_size_t i;
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> flash-bang-grenade
             for (i = freel_cache_get_count(cache); i-- > 0; ) {
                 freelist_entry_t *entry = entries + i;
 
@@ -53,23 +88,37 @@ __freel_flush_stats32(Device *device, Environment *env)
 
                     if (!freel_entry_get_page_id(entry)) {
                         /* header page */
+<<<<<<< HEAD
                         fp = env->get_freelist();
                         env->set_dirty(true);
+=======
+                        fp = env_get_freelist(env);
+                        env_set_dirty(env);
+>>>>>>> flash-bang-grenade
                     }
                     else {
                         /*
                          * otherwise just fetch the page from the cache or the
                          * disk
                          */
+<<<<<<< HEAD
                         Page *page;
                         
+=======
+                        ham_page_t *page;
+
+>>>>>>> flash-bang-grenade
                         st = env_fetch_page(&page, env,
                                 freel_entry_get_page_id(entry), 0);
                         if (!page)
                             return st ? st : HAM_INTERNAL_ERROR;
                         fp = page_get_freelist(page);
                         ham_assert(freel_get_start_address(fp) != 0, (0));
+<<<<<<< HEAD
                         page->set_dirty(true);
+=======
+                        page_set_dirty(page, env);
+>>>>>>> flash-bang-grenade
                     }
 
                     ham_assert(fp->_s._s32._zero == 0, (0));
@@ -88,12 +137,23 @@ __freel_flush_stats32(Device *device, Environment *env)
         }
     }
 
+<<<<<<< HEAD
     if (env->get_flags()&HAM_ENABLE_RECOVERY)
         return (env->get_changeset().flush(DUMMY_LSN));
 
     env->get_changeset().clear();
 
+=======
+>>>>>>> flash-bang-grenade
     return (0);
 }
 
 
+<<<<<<< HEAD
+=======
+
+/**
+* @endcond
+*/
+
+>>>>>>> flash-bang-grenade

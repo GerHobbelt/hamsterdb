@@ -1,5 +1,7 @@
 
 # INCLUDES = 
+AM_CPPFLAGS = -DNO_DUMMY_DECL \
+	-I$(top_srcdir)/include
 
 noinst_LTLIBRARIES = libzlib.la
 

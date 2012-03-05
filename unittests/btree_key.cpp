@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,19 +11,28 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
 #include <ham/hamsterdb.h>
-#include "../src/db.h"
 #include "../src/btree.h"
+<<<<<<< HEAD:unittests/btree_key.cpp
 #include "../src/btree_key.h"
-#include "../src/util.h"
-#include "../src/page.h"
+=======
+#include "../src/btree_classic.h"
+#include "../src/cache.h"
+#include "../src/db.h"
+#include "../src/device.h"
 #include "../src/env.h"
+#include "../src/keys.h"
+#include "../src/mem.h"
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
+#include "../src/util.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+
 
 using namespace bfc;
 
@@ -33,7 +42,7 @@ class KeyTest : public hamsterDB_fixture
 
 public:
     KeyTest()
-    :   hamsterDB_fixture("KeyTest")
+    :   hamsterDB_fixture("KeyTest"), m_db(NULL), m_env(NULL), m_alloc(NULL)
     {
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(KeyTest, structureTest);
@@ -52,6 +61,10 @@ protected:
     ham_db_t *m_db;
     Database *m_dbp;
     ham_env_t *m_env;
+<<<<<<< HEAD:unittests/btree_key.cpp
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
 
 public:
     virtual void setup()
@@ -60,6 +73,7 @@ public:
 
         os::unlink(BFC_OPATH(".test"));
 
+<<<<<<< HEAD:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), 0, 0644));
 
@@ -67,16 +81,30 @@ public:
         m_env=ham_get_env(m_db);
     }
     
+=======
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
+        BFC_ASSERT_EQUAL(0, ham_new(&m_db));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), 0, 0644));
+        m_env = db_get_env(m_db);
+    }
+
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
     virtual void teardown()
     {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+<<<<<<< HEAD:unittests/btree_key.cpp
         ham_delete(m_db);
+=======
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
     }
 
     void structureTest(void)
     {
+<<<<<<< HEAD:unittests/btree_key.cpp
         Page *page=new Page((Environment *)m_env);
         BFC_ASSERT(page!=0);
         BFC_ASSERT_EQUAL(0, page->allocate());
@@ -84,6 +112,50 @@ public:
         ::memset(node, 0, ((Environment *)m_env)->get_usable_pagesize());
 
         btree_key_t *key=btree_node_get_key(m_dbp, node, 0);
+=======
+        ham_page_t *page=page_new(m_env);
+        dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+        info.entire_page = HAM_TRUE;
+        info.space_type = PAGE_TYPE_B_INDEX;
+
+        BFC_ASSERT(page!=0);
+        BFC_ASSERT_EQUAL(0, page_alloc(page, env_get_pagesize(m_env), &info));
+        btree_node_t *node=ham_page_get_btree_node(page);
+        ::memset(node, 0, env_get_usable_pagesize(m_env));
+
+        ham_btree_t *be = (ham_btree_t *)db_get_backend(m_db);
+        //ham_size_t keywidth = be_get_keysize(be) + db_get_int_key_header_size();
+        ham_bool_t has_fast_index = HAM_FALSE;
+        common_btree_datums_t btdata =
+        {
+            be,
+            m_db,
+            m_env,
+            env_get_device(m_env),
+            NULL,
+            NULL,
+            NULL,
+            0,
+            be_get_keysize(be),
+            btree_get_maxkeys(be),
+            be_get_keysize(be) + db_get_int_key_header_size(),
+            has_fast_index,
+            0,
+            OFFSETOF(btree_node_t, _entries),
+            OFFSETOF(btree_node_t, _entries)
+            + (has_fast_index
+            ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
+            : 0),
+            {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
+        };
+        int_key_t *key = btree_in_node_get_key_ref(&btdata, page, 0);
+
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(key));
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(key));
         BFC_ASSERT_EQUAL((ham_u8_t)'\0', *key_get_key(key));
@@ -100,6 +172,7 @@ public:
 
     void extendedRidTest(void)
     {
+<<<<<<< HEAD:unittests/btree_key.cpp
         Page *page=new Page((Environment *)m_env);
         BFC_ASSERT(page!=0);
         BFC_ASSERT_EQUAL(0, page->allocate());
@@ -110,6 +183,53 @@ public:
 
         btree_key_t *key=btree_node_get_key(m_dbp, node, 0);
         blobid=key_get_extended_rid(m_dbp, key);
+=======
+        ham_page_t *page=page_new(m_env);
+        dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+        info.entire_page = HAM_TRUE;
+        info.space_type = PAGE_TYPE_B_INDEX;
+
+        BFC_ASSERT(page!=0);
+        BFC_ASSERT_EQUAL(0, page_alloc(page, env_get_pagesize(m_env), &info));
+        btree_node_t *node=ham_page_get_btree_node(page);
+        ::memset(node, 0, env_get_usable_pagesize(m_env));
+
+        ham_offset_t blobid;
+
+        ham_btree_t *be = (ham_btree_t *)db_get_backend(m_db);
+        //ham_size_t keywidth = be_get_keysize(be) + db_get_int_key_header_size();
+        ham_bool_t has_fast_index = HAM_FALSE;
+        common_btree_datums_t btdata =
+        {
+            be,
+            m_db,
+            m_env,
+            env_get_device(m_env),
+            NULL,
+            NULL,
+            NULL,
+            0,
+            be_get_keysize(be),
+            btree_get_maxkeys(be),
+            be_get_keysize(be) + db_get_int_key_header_size(),
+            has_fast_index,
+            0,
+            OFFSETOF(btree_node_t, _entries),
+            OFFSETOF(btree_node_t, _entries)
+            + (has_fast_index
+            ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
+            : 0),
+            {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
+        };
+        int_key_t *key = btree_in_node_get_key_ref(&btdata, page, 0);
+
+        blobid=key_get_extended_rid(m_db, key);
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_offset_t)0, blobid);
 
         key_set_extended_rid(m_dbp, key, (ham_offset_t)0xbaadbeef);
@@ -119,7 +239,7 @@ public:
         BFC_ASSERT_EQUAL(0, page->free());
         delete page;
     }
-    
+
     void endianTest(void)
     {
         ham_u8_t buffer[64]={
@@ -137,9 +257,15 @@ public:
 
         BFC_ASSERT_EQUAL((ham_offset_t)0x0123456789abcdefull,
                 key_get_ptr(key));
+<<<<<<< HEAD:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_u8_t)0xf0, key_get_flags(key));
         BFC_ASSERT_EQUAL((ham_offset_t)0xfedcba9876543210ull,
                 key_get_extended_rid(m_dbp, key));
+=======
+        BFC_ASSERT_EQUAL((ham_u8_t)0xf0u, key_get_flags(key));
+        BFC_ASSERT_EQUAL((ham_offset_t)0xfedcba9876543210ull,
+                key_get_extended_rid(m_db, key));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
     }
 
     void getSetExtendedKeyTest(void)
@@ -148,9 +274,15 @@ public:
         btree_key_t *key=(btree_key_t *)buffer;
         memset(buffer, 0, sizeof(buffer));
 
+<<<<<<< HEAD:unittests/btree_key.cpp
         key_set_extended_rid(m_dbp, key, 0x12345);
         BFC_ASSERT_EQUAL((ham_offset_t)0x12345,
                 key_get_extended_rid(m_dbp, key));
+=======
+        key_set_extended_rid(m_db, key, 0x12345);
+        BFC_ASSERT_EQUAL((ham_offset_t)0x12345,
+                key_get_extended_rid(m_db, key));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
     }
 
     void insertEmpty(btree_key_t *key, ham_u32_t flags)
@@ -161,10 +293,14 @@ public:
             memset(key, 0, sizeof(*key));
         memset(&rec, 0, sizeof(rec));
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_set_record(m_dbp, key, &rec, 0, flags, 0));
+=======
+                key_set_record(m_db, key, &rec, 0, flags, 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         if (!(flags&HAM_DUPLICATE))
             BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(key));
-        
+
         if (!(flags&HAM_DUPLICATE)) {
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_BLOB_SIZE_EMPTY,
                     key_get_flags(key));
@@ -203,7 +339,11 @@ public:
         rec.size=size;
 
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_set_record(m_dbp, key, &rec, 0, flags, 0));
+=======
+                key_set_record(m_db, key, &rec, 0, flags, 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         if (!(flags&HAM_DUPLICATE)) {
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_BLOB_SIZE_TINY,
                 key_get_flags(key));
@@ -214,9 +354,15 @@ public:
         }
 
         if (!(flags&HAM_DUPLICATE)) {
+<<<<<<< HEAD:unittests/btree_key.cpp
             rec2._intflags=key_get_flags(key);
             rec2._rid=key_get_ptr(key);
             BFC_ASSERT_EQUAL(0, btree_read_record(m_dbp, &rec2, &rec2._rid, 0));
+=======
+            ham_record_set_intflags(&rec2, key_get_flags(key));
+            memcpy(ham_record_get_rid_direct_ref(&rec2), key_get_ptr_direct_ref(key), sizeof(ham_pers_rid_t));
+            BFC_ASSERT_EQUAL(0, util_read_record(m_db, &rec2, ham_record_get_rid_direct_ref(&rec2), 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
             BFC_ASSERT_EQUAL(rec.size, rec2.size);
             BFC_ASSERT_EQUAL(0, memcmp(rec.data, rec2.data, rec.size));
         }
@@ -246,10 +392,14 @@ public:
         memset(&rec, 0, sizeof(rec));
         memset(&rec2, 0, sizeof(rec2));
         rec.data=(void *)data;
-        rec.size=sizeof(ham_offset_t);
+        rec.size=sizeof(ham_pers_rid_t);
 
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_set_record(m_dbp, key, &rec, 0, flags, 0));
+=======
+                key_set_record(m_db, key, &rec, 0, flags, 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         if (!(flags&HAM_DUPLICATE)) {
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_BLOB_SIZE_SMALL,
                 key_get_flags(key));
@@ -260,9 +410,15 @@ public:
         }
 
         if (!(flags&HAM_DUPLICATE)) {
+<<<<<<< HEAD:unittests/btree_key.cpp
             rec2._intflags=key_get_flags(key);
             rec2._rid=key_get_ptr(key);
             BFC_ASSERT_EQUAL(0, btree_read_record(m_dbp, &rec2, &rec2._rid, 0));
+=======
+            ham_record_set_intflags(&rec2, key_get_flags(key));
+            memcpy(ham_record_get_rid_direct_ref(&rec2), key_get_ptr_direct_ref(key), sizeof(ham_pers_rid_t));
+            BFC_ASSERT_EQUAL(0, util_read_record(m_db, &rec2, ham_record_get_rid_direct_ref(&rec2), 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
             BFC_ASSERT_EQUAL(rec.size, rec2.size);
             BFC_ASSERT_EQUAL(0, memcmp(rec.data, rec2.data, rec.size));
         }
@@ -296,15 +452,25 @@ public:
         rec.size=size;
 
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_set_record(m_dbp, key, &rec, 0, flags, 0));
+=======
+                key_set_record(m_db, key, &rec, 0, flags, 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         if (flags&HAM_DUPLICATE)
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_HAS_DUPLICATES,
                     key_get_flags(key));
 
         if (!(flags&HAM_DUPLICATE)) {
+<<<<<<< HEAD:unittests/btree_key.cpp
             rec2._intflags=key_get_flags(key);
             rec2._rid=key_get_ptr(key);
             BFC_ASSERT_EQUAL(0, btree_read_record(m_dbp, &rec2, &rec2._rid, 0));
+=======
+            ham_record_set_intflags(&rec2, key_get_flags(key));
+            memcpy(ham_record_get_rid_direct_ref(&rec2), key_get_ptr_direct_ref(key), sizeof(ham_pers_rid_t));
+            BFC_ASSERT_EQUAL(0, util_read_record(m_db, &rec2, ham_record_get_rid_direct_ref(&rec2), 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
             BFC_ASSERT_EQUAL(rec.size, rec2.size);
             BFC_ASSERT_EQUAL(0, memcmp(rec.data, rec2.data, rec.size));
         }
@@ -339,7 +505,7 @@ public:
         prepareSmall(&key, "12345678");
 
         /* set normal record */
-        prepareNormal(&key, "1234567812345678", sizeof(ham_offset_t)*2);
+        prepareNormal(&key, "1234567812345678", 16);
     }
 
     void overwriteRecordTest(void)
@@ -391,7 +557,11 @@ public:
         overwriteNormal(&key, "1234123456785678", 16);
     }
 
+<<<<<<< HEAD:unittests/btree_key.cpp
     void checkDupe(btree_key_t *key, int position,
+=======
+    void checkDupe(int_key_t *key, int position,
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
             const char *data, ham_size_t size)
     {
         BFC_ASSERT_EQUAL((ham_u8_t)KEY_HAS_DUPLICATES, key_get_flags(key));
@@ -404,9 +574,15 @@ public:
         ham_record_t rec;
         memset(&rec, 0, sizeof(rec));
 
+<<<<<<< HEAD:unittests/btree_key.cpp
         rec._intflags=dupe_entry_get_flags(&entry);
         rec._rid=dupe_entry_get_rid(&entry);
         BFC_ASSERT_EQUAL(0, btree_read_record(m_dbp, &rec, &rec._rid, 0));
+=======
+        ham_record_set_intflags(&rec, dupe_entry_get_flags(&entry));
+        memcpy(ham_record_get_rid_direct_ref(&rec), dupe_entry_get_rid_direct_ref(&entry), sizeof(ham_pers_rid_t));
+        BFC_ASSERT_EQUAL(0, util_read_record(m_db, &rec, ham_record_get_rid_direct_ref(&rec), 0));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL(rec.size, size);
         if (size) {
             BFC_ASSERT_EQUAL(0, memcmp(rec.data, data, rec.size));
@@ -556,7 +732,11 @@ public:
         checkDupe(&key, 0, 0, 0);
         checkDupe(&key, 1, "abc4567812345678", 16);
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_erase_record(m_dbp, &key, 0, HAM_ERASE_ALL_DUPLICATES));
+=======
+                key_erase_record(m_db, &key, 0, BLOB_FREE_ALL_DUPES));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
 
@@ -566,7 +746,11 @@ public:
         checkDupe(&key, 0, "1234", 4);
         checkDupe(&key, 1, "abc4567812345678", 16);
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_erase_record(m_dbp, &key, 0, HAM_ERASE_ALL_DUPLICATES));
+=======
+                key_erase_record(m_db, &key, 0, BLOB_FREE_ALL_DUPES));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
 
@@ -576,7 +760,11 @@ public:
         checkDupe(&key, 0, "12345678", 8);
         checkDupe(&key, 1, "abc4567812345678", 16);
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_erase_record(m_dbp, &key, 0, HAM_ERASE_ALL_DUPLICATES));
+=======
+                key_erase_record(m_db, &key, 0, BLOB_FREE_ALL_DUPES));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
 
@@ -586,7 +774,11 @@ public:
         checkDupe(&key, 0, "1234123456785678", 16);
         checkDupe(&key, 1, "abc4567812345678", 16);
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD:unittests/btree_key.cpp
                 key_erase_record(m_dbp, &key, 0, HAM_ERASE_ALL_DUPLICATES));
+=======
+                key_erase_record(m_db, &key, 0, BLOB_FREE_ALL_DUPES));
+>>>>>>> flash-bang-grenade:unittests/btree_key.cpp
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
     }

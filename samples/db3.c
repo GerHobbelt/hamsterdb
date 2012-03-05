@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,8 +7,9 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * This sample uses hamsterdb to sort data from stdin;
  * every word is inserted into the database (duplicate words are ignored).
  * Then a cursor is used to print all words in sorted order.
@@ -45,7 +46,7 @@ main(int argc, char **argv)
     printf("Reading from stdin...\n");
 
     /*
-     * first step: create a new hamsterdb handle
+     * first step: create a new hamsterdb object
      */
     st=ham_new(&db);
     if (st!=HAM_SUCCESS) {
@@ -88,9 +89,11 @@ main(int argc, char **argv)
          */
         while ((p=strtok(start, " \t\r\n"))) {
             key.data=p;
-            key.size=(ham_size_t)strlen(p)+1; /* also store the terminating
+            key.size=(ham_u16_t)strlen(p)+1; /* also store the terminating
                                                 0-byte */
 
+            /* note: the second parameter of ham_insert() is reserved; set it
+             * to NULL */
             st=ham_insert(db, 0, &key, &record, 0);
             if (st!=HAM_SUCCESS && st!=HAM_DUPLICATE_KEY) {
                 printf("ham_insert() failed with error %d\n", st);
@@ -114,7 +117,7 @@ main(int argc, char **argv)
     /*
      * iterate over all items with HAM_CURSOR_NEXT, and print the words
      */
-    while (1) {
+    for (;;) {
         st=ham_cursor_move(cursor, &key, &record, HAM_CURSOR_NEXT);
         if (st!=HAM_SUCCESS) {
             /* reached end of the database? */

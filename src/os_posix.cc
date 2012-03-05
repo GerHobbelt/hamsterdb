@@ -7,8 +7,11 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
+
+/**
+* @cond ham_internals
+*/
 
 #include "config.h"
 
@@ -54,7 +57,7 @@ __lock_exclusive(int fd, ham_bool_t lock)
         flags=LOCK_UN;
 
     if (0!=flock(fd, flags)) {
-        ham_log(("flock failed with status %u (%s)", errno, strerror(errno)));
+        ham_logerr(("flock failed with status %u (%s)", errno, strerror(errno)));
         /* it seems that linux does not only return EWOULDBLOCK, as stated
          * in the documentation (flock(2)), but also other errors... */
         if (errno)
@@ -63,7 +66,7 @@ __lock_exclusive(int fd, ham_bool_t lock)
         return (HAM_IO_ERROR);
     }
 
-    return (0);
+    return HAM_SUCCESS;
 #endif
 }
 
@@ -85,7 +88,10 @@ os_get_pagesize(void)
 #ifdef __CYGWIN__
     return ((ham_size_t)getpagesize());
 #else
-    return (1024*16);
+    ham_size_t ps = (ham_size_t)getpagesize();
+    if (ps > 16*1024)
+        return (1024*16);
+    return ps;
 #endif
 }
 
@@ -109,12 +115,15 @@ os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
     *buffer=(ham_u8_t *)mmap(0, size, prot, MAP_PRIVATE, fd, position);
     if (*buffer==(void *)-1) {
         *buffer=0;
-        ham_log(("mmap failed with status %d (%s)", errno, strerror(errno)));
+        ham_logerr(("mmap failed with status %d (%s)", errno, strerror(errno)));
+        if (errno == ENOMEM) /* out of mmap memory */
+            return (HAM_OUT_OF_MEMORY);
         return (HAM_IO_ERROR);
     }
 
     return (HAM_SUCCESS);
 #else
+    ham_logerr(("mmap is not supported on this platform"));
     return (HAM_NOT_IMPLEMENTED);
 #endif
 }
@@ -128,7 +137,11 @@ os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size)
 #if HAVE_MUNMAP
     r=munmap(buffer, size);
     if (r) {
+<<<<<<< HEAD:src/os_posix.cc
         ham_log(("munmap failed with status %d (%s)", errno,
+=======
+        ham_logerr(("munmap failed with status %d (%s)", errno,
+>>>>>>> flash-bang-grenade:src/os_posix.cc
                     strerror(errno)));
         return (HAM_IO_ERROR);
     }
@@ -169,7 +182,11 @@ os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
     while (total<bufferlen) {
         r=pread(fd, (ham_u8_t *)buffer+total, bufferlen-total, addr+total);
         if (r<0) {
+<<<<<<< HEAD:src/os_posix.cc
             ham_log(("os_pread failed with status %u (%s)",
+=======
+            ham_logerr(("os_pread failed with status %u (%s)",
+>>>>>>> flash-bang-grenade:src/os_posix.cc
                     errno, strerror(errno)));
             return (HAM_IO_ERROR);
         }
@@ -367,7 +384,7 @@ os_get_filesize(ham_fd_t fd, ham_offset_t *size)
     st=os_tell(fd, size);
     if (st)
         return (st);
-    return (0);
+    return HAM_SUCCESS;
 }
 
 ham_status_t
@@ -393,7 +410,7 @@ os_create(const char *filename, ham_u32_t flags, ham_u32_t mode, ham_fd_t *fd)
 
     *fd=open(filename, osflags, mode);
     if (*fd<0) {
-        ham_log(("creating file %s failed with status %u (%s)", filename,
+        ham_logerr(("creating file %s failed with status %u (%s)", filename,
                 errno, strerror(errno)));
         return (HAM_IO_ERROR);
     }
@@ -418,6 +435,7 @@ os_flush(ham_fd_t fd)
 {
     /* unlike fsync(), fdatasync() does not flush the metadata unless
      * it's really required. it's therefore a lot faster. */
+<<<<<<< HEAD:src/os_posix.cc
 #if HAVE_FDATASYNC
     if (fdatasync(fd)==-1) {
 #else
@@ -428,6 +446,24 @@ os_flush(ham_fd_t fd)
         return (HAM_IO_ERROR);
     }
     return (0);
+=======
+#if defined(HAVE_FDATASYNC)
+    if (fdatasync(fd)==-1)
+    {
+        ham_logerr(("fdatasync failed with status %u (%s)",
+                errno, strerror(errno)));
+        return (HAM_IO_ERROR);
+    }
+#elif defined(HAVE_FSYNC)
+    if (fsync(fd)==-1)
+    {
+        ham_logerr(("fsync failed with status %u (%s)",
+                errno, strerror(errno)));
+        return (HAM_IO_ERROR);
+    }
+#endif
+    return HAM_SUCCESS;
+>>>>>>> flash-bang-grenade:src/os_posix.cc
 }
 
 ham_status_t
@@ -446,7 +482,7 @@ os_open(const char *filename, ham_u32_t flags, ham_fd_t *fd)
 
     *fd=open(filename, osflags);
     if (*fd<0) {
-        ham_log(("opening file %s failed with status %u (%s)", filename,
+        ham_logerr(("opening file %s failed with status %u (%s)", filename,
                 errno, strerror(errno)));
         return (errno==ENOENT ? HAM_FILE_NOT_FOUND : HAM_IO_ERROR);
     }
@@ -485,3 +521,8 @@ os_close(ham_fd_t fd, ham_u32_t flags)
 
     return (HAM_SUCCESS);
 }
+
+/**
+* @endcond
+*/
+

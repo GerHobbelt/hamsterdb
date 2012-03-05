@@ -9,7 +9,9 @@
  * See files COPYING.* for License information.
 
 
-NOTE: I wanted all pages to appear on the 'Related Pages' tab, and then it turns out that \subpage does not do that, while \ref does. Maybe I FUBARed, I don't know. This is a quick hack to show a case in point anyway.
+NOTE: I wanted all pages to appear on the 'Related Pages' tab, and then it 
+turns out that \subpage does not do that, while \ref does. Maybe I FUBARed, 
+I don't know. This is a quick hack to show a case in point anyway.
 
  */
 /*! \mainpage BFC - Unittest Framework
@@ -35,7 +37,7 @@ hamsterdb Embedded Storage is a lightweight embedded database engine. It is in d
 more than three years and concentrates on ease of use, high performance,
 stability and portability.
 
-See \ref features for more &raquo;
+See \ref features for more &#187;
 
 <h3>Ease of Use</h3>
 
@@ -65,7 +67,7 @@ Intel-compatible (x86, x64), PowerPC, SPARC, ARM, RISC and others. Tested
 operating systems include Microsoft Windows, Microsoft Windows CE, Linux,
 SunOS and other Unices. The file format is endian-independent.
 
-See \ref platforms for more &raquo;</a>
+See \ref platforms for more &#187;</a>
 
 <h3>Fair Licensing</h3>
 
@@ -73,7 +75,7 @@ hamsterdb Embedded Storage follows the "quid pro quo" rule. hamsterdb is release
 licenses: the Open Source GPL license and a proprietary, commercial
 closed-source alternative. 
 
-See \ref licensing for more &raquo;</a>
+See \ref licensing for more &#187;</a>
 
 <h2>Sections</h2>
 

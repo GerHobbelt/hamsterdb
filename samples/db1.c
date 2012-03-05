@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,8 +7,9 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * A simple example, which creates a database, inserts some values,
  * looks them up and erases them.
  */
@@ -21,7 +22,7 @@
 #endif
 #include <ham/hamsterdb.h>
 
-#define LOOP 10
+#define LOOP 100
 
 void
 error(const char *foo, ham_status_t st)
@@ -80,9 +81,11 @@ main(int argc, char **argv)
         key.data=&i;
         key.size=sizeof(i);
 
-        record.size=key.size;
-        record.data=key.data;
+        record.data=&i;
+        record.size=sizeof(i);
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db, 0, &key, &record, 0);
         if (st!=HAM_SUCCESS)
             error("ham_insert", st);
@@ -99,6 +102,8 @@ main(int argc, char **argv)
         key.data=&i;
         key.size=sizeof(i);
 
+        /* note: the second parameter of ham_find() is reserved; set it to
+         * NULL */
         st=ham_find(db, 0, &key, &record, 0);
         if (st!=HAM_SUCCESS)
             error("ham_find", st);
@@ -130,6 +135,8 @@ main(int argc, char **argv)
         key.size=sizeof(i);
         key.data=&i;
 
+        /* note: the second parameter of ham_erase() is reserved; set it to
+         * NULL */
         st=ham_erase(db, 0, &key, 0);
         if (st!=HAM_SUCCESS)
             error("ham_erase", st);

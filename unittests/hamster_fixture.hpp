@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -64,15 +64,35 @@ public:
 
 private:
     static void HAM_CALLCONV
-    hamster_dbghandler(int level, const char *message)
+    hamster_dbghandler(int level, const char *file, int line, const char *function, const char *message)
     {
         std::cout << message << std::endl;
         if (level == HAM_DEBUG_LEVEL_FATAL)
         {
-            throw bfc::error(__FILE__, __LINE__, NULL, NULL, "%s", message);
+            throw bfc::error((file ? file : __FILE__),
+                            (line ? line : __LINE__),
+                            NULL, NULL,
+                            "%s", message);
         }
     }
 };
+
+
+/*
+fast convert pagesize to unique array index:
+
+accepted inputs:
+
+4096    8192    16384   32768   65536
+
+produced index outputs:
+
+0   3   1   2   4
+*/
+static __inline int pg2i(ham_size_t pagesize)
+{
+    return (pagesize % 125) & 0x07;
+}
 
 
 } // namespace bfc

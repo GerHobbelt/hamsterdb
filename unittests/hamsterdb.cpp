@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 /**
  * Copyright (C) 2005-2012 Christoph Rupp (chris@crupp.de).
+=======
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+>>>>>>> flash-bang-grenade
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,21 +16,36 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
-#include <time.h>
 #include <ham/hamsterdb.h>
+<<<<<<< HEAD
 #include "../src/db.h"
 #include "../src/version.h"
 #include "../src/serial.h"
+=======
+>>>>>>> flash-bang-grenade
 #include "../src/btree.h"
+#include "../src/btree_classic.h"
+#include "../src/db.h"
+#include "../src/device.h"
 #include "../src/env.h"
+<<<<<<< HEAD
 #include "../src/page.h"
 #include "../src/cursor.h"
+=======
+#include "../src/mem.h"
+#include "../src/serial.h"
+#include "../src/version.h"
+#include "memtracker.h"
+>>>>>>> flash-bang-grenade
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+#include <time.h>
+
 
 using namespace bfc;
 
@@ -63,7 +83,7 @@ class HamsterdbTest : public hamsterDB_fixture
 
 public:
     HamsterdbTest()
-    :   hamsterDB_fixture("HamsterdbTest")
+    :   hamsterDB_fixture("HamsterdbTest"), m_db(NULL), m_env(NULL), m_alloc(NULL)
     {
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(HamsterdbTest, versionTest);
@@ -76,6 +96,7 @@ public:
         BFC_REGISTER_TEST(HamsterdbTest, invVersionTest);
         BFC_REGISTER_TEST(HamsterdbTest, createTest);
         BFC_REGISTER_TEST(HamsterdbTest, createPagesizeTest);
+        BFC_REGISTER_TEST(HamsterdbTest, createMaxkeysTooHighTest);
         BFC_REGISTER_TEST(HamsterdbTest, createCloseCreateTest);
         BFC_REGISTER_TEST(HamsterdbTest, createPagesizeReopenTest);
         BFC_REGISTER_TEST(HamsterdbTest, readOnlyTest);
@@ -139,6 +160,10 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
+<<<<<<< HEAD
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade
 
 public:
     virtual void setup()
@@ -146,18 +171,37 @@ public:
         __super::setup();
 
         os::unlink(BFC_OPATH(".test"));
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY_DB, 0));
 
         m_env=ham_get_env(m_db);
     }
     
+=======
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
+        BFC_ASSERT_EQUAL(0, ham_new(&m_db));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY_DB, 0));
+
+        m_env = db_get_env(m_db);
+    }
+
+>>>>>>> flash-bang-grenade
     virtual void teardown()
     {
         __super::teardown();
 
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
+=======
+        if (m_db)
+        {
+            BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+            BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        }
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
+>>>>>>> flash-bang-grenade
     }
 
     void versionTest(void)
@@ -226,7 +270,7 @@ public:
                 ham_open(db, "/usr", 0));
 #endif
 
-        ham_delete(db);
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
     void getEnvTest(void)
@@ -238,7 +282,7 @@ public:
         BFC_ASSERT_EQUAL((ham_env_t *)0, ham_get_env(db));
 
         // m_db is already initialized
-        BFC_ASSERT(NULL!=ham_get_env(m_db));
+        BFC_ASSERT_NOTNULL(ham_get_env(m_db));
 
         ham_delete(db);
     }
@@ -251,8 +295,8 @@ public:
         BFC_ASSERT_EQUAL(HAM_INV_FILE_HEADER,
                 ham_open(db, BFC_IPATH("data/inv-file-header.hdb"), 0));
 
-        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        ham_delete(db);
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
     void invVersionTest(void)
@@ -263,22 +307,32 @@ public:
         BFC_ASSERT_EQUAL(HAM_INV_FILE_VERSION,
                 ham_open(db, BFC_IPATH("data/inv-file-version.hdb"), 0));
 
-        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        ham_delete(db);
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
     void createTest(void)
     {
         ham_db_t *db;
         ham_parameter_t cs[]={{HAM_PARAM_CACHESIZE, 1024}, {0, 0}};
-        ham_parameter_t ps[]={{HAM_PARAM_PAGESIZE,   512}, {0, 0}};
+        ham_parameter_t ps[]={{HAM_PARAM_PAGESIZE,   512}, {0, 0}}; // 512 is NOT an invalid pagesize no more...
+        ham_parameter_t ps2[]={{HAM_PARAM_PAGESIZE, 8 * DB_CHUNKSIZE}, {0, 0}}; // lowest allowable pagesize = 8 * DB_CHUNKSIZE
+        ham_parameter_t ps3[]={{HAM_PARAM_PAGESIZE, 4 * DB_CHUNKSIZE}, {0, 0}};
+
+        BFC_ASSERT_EQUAL(256, 8 * DB_CHUNKSIZE);
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+<<<<<<< HEAD
                 ham_create(0, ".test.db", 0, 0664));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_create(db, 0, 0, 0664));
+=======
+                ham_create(0, ".test.db", 0, 0664u));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_create(db, 0, 0, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_create(db, 0, HAM_IN_MEMORY_DB|HAM_CACHE_STRICT, 0));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
@@ -296,16 +350,48 @@ public:
                 ham_create_ex(db, 0, HAM_IN_MEMORY_DB|HAM_READ_ONLY, 0, 0));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_create_ex(db, 0, HAM_READ_ONLY, 0, 0));
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+=======
+        /* clearly, ham_create_ex does not yak about .test already being open by m_db on Win32. How's this going on Linux? */
+        BFC_ASSERT_EQUAL(0,
+>>>>>>> flash-bang-grenade
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0, &ps[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+
+        BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+        ham_delete(m_db);
+        m_db = NULL;
+        os::unlink(BFC_OPATH(".test"));
+
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0, &ps[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        os::unlink(BFC_OPATH(".test"));
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0, &ps2[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        os::unlink(BFC_OPATH(".test"));
+        BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0, &ps3[0]));
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
 #if WIN32
         BFC_ASSERT_EQUAL(HAM_IO_ERROR,
+<<<<<<< HEAD
                 ham_create(db, "c:\\windows", 0, 0664));
 #else
         BFC_ASSERT_EQUAL(HAM_IO_ERROR,
                 ham_create(db, "/home", 0, 0664));
+=======
+                ham_create(db, "c:\\windows", 0, 0664u));
+#else
+        BFC_ASSERT_EQUAL(HAM_IO_ERROR,
+                ham_create(db, "/home", 0, 0664u));
+>>>>>>> flash-bang-grenade
 #endif
-        ham_delete(db);
+
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
     void createPagesizeTest(void)
@@ -314,8 +400,36 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
-        ham_parameter_t ps[]={{HAM_PARAM_PAGESIZE,   512}, {0, 0}};
+        ham_parameter_t ps[]={{HAM_PARAM_PAGESIZE,   7 * DB_CHUNKSIZE}, {0, 0}};
+        ham_parameter_t ps2[]={{HAM_PARAM_PAGESIZE,  4 * DB_CHUNKSIZE}, {0, 0}};
+        ham_parameter_t ps3[]={{HAM_PARAM_PAGESIZE,  8 * DB_CHUNKSIZE}, {0, 0}};
+        ham_parameter_t ps4[]={{HAM_PARAM_PAGESIZE,  512}, {0, 0}};
+        ham_parameter_t ps5[]={{HAM_PARAM_PAGESIZE, 1024}, {0, 0}};
 
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0644u, &ps[0]));
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0644u, &ps2[0]));
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0644u, &ps3[0]));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0644u, &ps4[0]));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0644u, &ps5[0]));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        BFC_ASSERT(!db_is_active(db));
+
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0644, &ps[0]));
@@ -327,8 +441,26 @@ public:
         BFC_ASSERT_EQUAL(1u, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
+=======
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
+    }
 
-        ham_delete(db);
+    /* when a page can only store up to 65535 (2^16-1) keys tops, this one should surely barf a hairball */
+    void createMaxkeysTooHighTest(void)
+    {
+        ham_db_t *db;
+>>>>>>> flash-bang-grenade
+
+        BFC_ASSERT_EQUAL(0, ham_new(&db));
+
+        ham_parameter_t ps[]={{HAM_PARAM_PAGESIZE, 1024*1024*128},
+                              {HAM_PARAM_KEYSIZE, 16},
+                              {0, 0}};
+
+        BFC_ASSERT_EQUAL(HAM_INV_KEYSIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0644u, &ps[0]));
+
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
     void createCloseCreateTest(void)
@@ -337,6 +469,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664));
         BFC_ASSERT_EQUAL(1u, ((Database *)db)->is_active());
@@ -346,8 +479,19 @@ public:
         BFC_ASSERT_EQUAL(1u, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
+=======
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664u));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        BFC_ASSERT(!db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_open(db, BFC_OPATH(".test"), 0));
+        BFC_ASSERT(db_is_active(db));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        BFC_ASSERT(!db_is_active(db));
+>>>>>>> flash-bang-grenade
 
-        ham_delete(db);
+        BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
     void createPagesizeReopenTest(void)
@@ -357,7 +501,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
-        BFC_ASSERT_EQUAL(0, ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &ps[0]));
+        BFC_ASSERT_EQUAL(0, ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &ps[0]));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         BFC_ASSERT_EQUAL(0, ham_open(db, BFC_OPATH(".test"), 0));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
@@ -375,7 +519,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
-        BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664));
+        BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664u));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         BFC_ASSERT_EQUAL(0, ham_open(db, BFC_OPATH(".test"), HAM_READ_ONLY));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(db, 0, 0, &cursor));
@@ -408,12 +552,18 @@ public:
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
         BFC_ASSERT_EQUAL(HAM_INV_KEYSIZE,
+<<<<<<< HEAD
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+=======
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, ham_close(db, 0));
+>>>>>>> flash-bang-grenade
 
-        p[1].value=15;
+        p[1].value.n=15;
 
         // only pagesize of 1k, 2k, multiples of 2k are allowed
+<<<<<<< HEAD
         p[0].value=1024;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
@@ -429,6 +579,36 @@ public:
         p[0].value=1024*3;
         BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
+=======
+        p[0].value.n=1024;
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        p[0].value.n=2048;
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        p[0].value.n=4096;
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        p[0].value.n=1024*3;
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        p[0].value.n=1024*2+256;
+        BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        p[0].value.n=1024*2+512;
+        BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        p[0].value.n=512;
+        BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
 
@@ -443,7 +623,11 @@ public:
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+<<<<<<< HEAD
                 ham_env_create_ex(env, BFC_OPATH(".test"), 0, 0664, &p[0]));
+=======
+                ham_env_create_ex(env, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_open_ex(env, BFC_OPATH(".test"), 0, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_env_delete(env));
@@ -467,7 +651,11 @@ public:
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+<<<<<<< HEAD
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
+=======
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
@@ -482,9 +670,14 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_create(db, BFC_OPATH(".test"), HAM_RECORD_NUMBER, 0664));
         BFC_ASSERT(HAM_DAM_SEQUENTIAL_INSERT
                 & ((Database *)db)->get_data_access_mode());
+=======
+                ham_create(db, BFC_OPATH(".test"), HAM_RECORD_NUMBER, 0664u));
+        BFC_ASSERT(HAM_DAM_SEQUENTIAL_INSERT&db_get_data_access_mode(db));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 
         BFC_ASSERT_EQUAL(0,
@@ -505,7 +698,11 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+<<<<<<< HEAD
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
+=======
+                ham_create_ex(db, BFC_OPATH(".test"), 0, 0664u, &p[0]));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
@@ -648,9 +845,9 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
     void nearFindStressTest(void)
     {
 #if defined(HAM_DEBUG)
-        const int RECORD_COUNT_PER_DB = 20000;
+        const int RECORD_COUNT_PER_DB = 200000; // 26687
 #else
-        const int RECORD_COUNT_PER_DB = 50000;
+        const int RECORD_COUNT_PER_DB = 5; // 0000000;
 #endif
         ham_env_t *env;
         ham_db_t *db;
@@ -668,8 +865,18 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             ham_u32_t val2[15];
         };
         ham_parameter_t ps[]={
-            {HAM_PARAM_PAGESIZE,  32*1024}, /* UNIX == WIN now */
-            {HAM_PARAM_CACHESIZE, 32},
+            {HAM_PARAM_PAGESIZE,   2*64*1024}, /* UNIX == WIN now */
+#if 01
+            {HAM_PARAM_CACHESIZE,    32},
+#else
+            {HAM_PARAM_CACHESIZE,     32*64*1024},
+#endif
+            // {HAM_PARAM_KEYSIZE,    sizeof(my_key_t)},
+#if 01
+            {HAM_PARAM_DATA_ACCESS_MODE, HAM_DAM_SEQUENTIAL_INSERT | HAM_DAM_FAST_INSERT },
+#else
+            {HAM_PARAM_DATA_ACCESS_MODE, HAM_DAM_DEFAULT },
+#endif
             {0, 0}
         };
         ham_parameter_t ps2[]={
@@ -682,26 +889,31 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
 
         my_key_t my_key;
         my_rec_t my_rec;
-        
+
         time(&t[0]);
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(0,
                 ham_env_create_ex(env, BFC_OPATH(".test"),
                     HAM_DISABLE_MMAP, 0644, ps));
-        
+
         BFC_ASSERT_EQUAL(0, ham_new(&db));
         ham_size_t keycount = 0;
         BFC_ASSERT_EQUAL(0, ham_env_create_db(env, db, 1, 0, ps2));
         BFC_ASSERT_EQUAL(0,
                 ham_calc_maxkeys_per_page(db, &keycount, sizeof(my_key)));
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(/* 4852 */ (unsigned)1212, keycount);
         keycount = 1212; /* for 32k pagesize */
+=======
+        BFC_ASSERT_EQUAL((ham_size_t) /* 2424 */ 4852, keycount);
+        keycount = 4852; /* for 128K pagesize */
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0,
                 ham_set_prefix_compare_func(db, &my_prefix_compare_func_u32));
         BFC_ASSERT_EQUAL(0,
                 ham_set_compare_func(db, &my_compare_func_u32));
-        
+
         std::cerr << "1K inserts: ";
 
         /* insert the records: key=2*i; rec=100*i */
@@ -726,13 +938,17 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             key.data = (void *)&my_key;
             key.size = sizeof(my_key);
             key.flags = HAM_KEY_USER_ALLOC;
- 
+
             BFC_ASSERT_EQUAL_I(0, ham_cursor_insert(cursor, &key, &rec, 0), i);
 
             if (i % 1000 == 999) {
                 std::cerr << ".";
-                if (i % 10000 == 9999 || i <= 10000) {
+                if (i % 10000 == 9999 || i <= 10000)
+                {
                     std::cerr << "+";
+#if 0 // this completely thrashes the cache as it is quite similar to a full scan of the DB
+                    BFC_ASSERT_EQUAL_I(0, ham_check_integrity(db, NULL), i);
+#endif
                 }
             }
         }
@@ -761,19 +977,30 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             BFC_ASSERT_NOTEQUAL_I(rec.data, (void *)0, i);
             r = (my_rec_t *)rec.data;
             k = (my_key_t *)key.data;
+#if 0
+            printf("rec: %d vs. %d, ", r->val1, 100*i);
+            printf("key: %d vs. %d\n", k->val1, 2*i);
+#else
             BFC_ASSERT_EQUAL(r->val1, 100*i);
             BFC_ASSERT_EQUAL(k->val1, 2*i);
-
+#endif
             if (i % 1000 == 999) {
                 std::cerr << ".";
                 if (i % 10000 == 9999 || i <= 10000)
                 {
                     std::cerr << "+";
+#if 0
+                    BFC_ASSERT_EQUAL_I(0, ham_check_integrity(db, NULL), i);
+#endif
                 }
             }
         }
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
+=======
+        BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND, ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
 
         time(&t[2]);
@@ -876,16 +1103,16 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             }
             gt_expect = (gt_keyval >= lower_bound_of_range && gt_keyval <= upper_bound_of_range);
 
-#define PREP()                                        \
-            ::memset(&key, 0, sizeof(key));            \
-            ::memset(&rec, 0, sizeof(rec));            \
-            ::memset(&my_key, 0, sizeof(my_key));    \
-            ::memset(&my_rec, 0, sizeof(my_rec));    \
+#define PREP()                                      \
+            ::memset(&key, 0, sizeof(key));         \
+            ::memset(&rec, 0, sizeof(rec));         \
+            ::memset(&my_key, 0, sizeof(my_key));   \
+            ::memset(&my_rec, 0, sizeof(my_rec));   \
                                                     \
-            my_key.val1 = looking_for;                \
-            key.data = (void *)&my_key;                \
-            key.size = sizeof(my_key);                \
-            key.flags = HAM_KEY_USER_ALLOC;
+            my_key.val1 = looking_for;              \
+            key.data = (void *)&my_key;             \
+            key.size = sizeof(my_key);              \
+            key.flags = HAM_KEY_USER_ALLOC
 
             PREP();
             BFC_ASSERT_EQUAL_I((eq_expect ? 0 : HAM_KEY_NOT_FOUND), ham_cursor_find_ex(cursor, &key, &rec, 0), i);
@@ -973,7 +1200,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         time(&t[4]);
 
         double dt[4];
-            
+
         dt[0] = difftime(t[1], t[0]);
         dt[1] = difftime(t[2], t[1]);
         dt[2] = difftime(t[3], t[2]);
@@ -1011,13 +1238,17 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0644, &ps[0]));
         BFC_ASSERT_EQUAL(0,
                 ham_calc_maxkeys_per_page(db, &keycount, MY_KEY_SIZE));
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL((unsigned)8, keycount);
+=======
+        BFC_ASSERT_EQUAL((ham_size_t)8, keycount);
+>>>>>>> flash-bang-grenade
         keycount = 8;
         BFC_ASSERT_EQUAL(0,
                 ham_set_prefix_compare_func(db, &my_prefix_compare_func_u32));
         BFC_ASSERT_EQUAL(0,
                 ham_set_compare_func(db, &my_compare_func_u32));
-        
+
         ham_key_t key;
         ham_record_t rec;
         const int vals[] =
@@ -1031,7 +1262,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.data = &my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
-        
+
         /* empty DB: LT/GT must turn up error */
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_find(db, 0, &key, &rec, HAM_FIND_EXACT_MATCH));
@@ -1053,59 +1284,63 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         my_key.key_val1 = vals[fill++];
 
         BFC_ASSERT_EQUAL(0, ham_insert(db, 0, &key, &rec, 0));
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> flash-bang-grenade
         /* one record in DB: LT/GT must turn up that one for the
          * right key values */
         ::memset(&rec, 0, sizeof(rec));
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_EXACT_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         my_rec_t *r = (my_rec_t *)rec.data;
         my_key_t *k = (my_key_t *)key.data;
-        BFC_ASSERT_EQUAL((unsigned)r->rec_val1, (unsigned)1000);
-        BFC_ASSERT_EQUAL((unsigned)k->key_val1, (ham_u32_t)vals[fill-1]);
-        
+        BFC_ASSERT_EQUAL(r->rec_val1, (ham_u32_t)1000);
+        BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)vals[fill-1]);
+
         ::memset(&rec, 0, sizeof(rec));
         key.data = &my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         r = (my_rec_t *)rec.data;
         k = (my_key_t *)key.data;
-        BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
+        BFC_ASSERT_EQUAL(r->rec_val1, (ham_u32_t)1000);
         BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)vals[fill-1]);
         BFC_ASSERT_EQUAL(ham_key_get_approximate_match_type(&key), 0);
-        
+
         ::memset(&rec, 0, sizeof(rec));
         my_key.key_val1 = vals[fill-1] - 1;
         key.data = &my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         r = (my_rec_t *)rec.data;
         k = (my_key_t *)key.data;
-        BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
+        BFC_ASSERT_EQUAL(r->rec_val1, (ham_u32_t)1000);
         BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)vals[fill-1]);
         BFC_ASSERT_EQUAL(ham_key_get_approximate_match_type(&key), 1);
-        
+
         ::memset(&rec, 0, sizeof(rec));
         my_key.key_val1 = vals[fill-1] + 2;
         key.data = &my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         r = (my_rec_t *)rec.data;
         k = (my_key_t *)key.data;
-        BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
+        BFC_ASSERT_EQUAL(r->rec_val1, (ham_u32_t)1000);
         BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)vals[fill-1]);
         BFC_ASSERT_EQUAL(ham_key_get_approximate_match_type(&key), -1);
 
         key.data = (void *)&my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
-        
+
         /* add two more records */
         unsigned int i;
         for (i = 0; i < 2; i++)
@@ -1134,10 +1369,10 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             ::memset(&rec, 0, sizeof(rec));
             BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
-            BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+            BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
             r = (my_rec_t *)rec.data;
             k = (my_key_t *)key.data;
-            BFC_ASSERT_NOTEQUAL(r->rec_val1, (unsigned)0);
+            BFC_ASSERT_NOTEQUAL(r->rec_val1, (ham_u32_t)0);
             BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)verify_vals1[i]);
         }
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
@@ -1302,16 +1537,18 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             ::memset(&rec, 0, sizeof(rec));
             BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
-            BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+            BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
             r = (my_rec_t *)rec.data;
             k = (my_key_t *)key.data;
-            BFC_ASSERT_NOTEQUAL(r->rec_val1, (unsigned)0);
+            BFC_ASSERT_NOTEQUAL(r->rec_val1, (ham_u32_t)0);
             BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)verify_vals2[i]);
         }
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
-        
+
+        //int rv = ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH);
+
         BFC_ASSERT_EQUAL(0, ham_close(db, HAM_AUTO_CLEANUP));
         BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
@@ -1377,7 +1614,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_create(db, BFC_OPATH(".test"), HAM_ENABLE_DUPLICATES, 0664));
+=======
+                ham_create(db, BFC_OPATH(".test"), HAM_ENABLE_DUPLICATES, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE|HAM_OVERWRITE));
         BFC_ASSERT_EQUAL(0,
@@ -1439,7 +1680,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(0, ham_new(&db1));
         BFC_ASSERT_EQUAL(0,
                 ham_env_create(env1, BFC_OPATH(".test"),
+<<<<<<< HEAD
                     HAM_LOCK_EXCLUSIVE, 0664));
+=======
+                    HAM_LOCK_EXCLUSIVE, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_env_create_db(env1, db1, 111, 0, 0));
         BFC_ASSERT_EQUAL(0, ham_insert(db1, 0, &key, &rec, 0));
         BFC_ASSERT_EQUAL(0, ham_flush(db1, 0));
@@ -1471,12 +1716,22 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
 
     void closeTest(void)
     {
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, ham_close(0, 0));
+=======
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_close(0, 0));
+
+        ham_db_t db;
+        memset(&db, 0, sizeof(db));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_close(&db, HAM_TXN_AUTO_ABORT|HAM_TXN_AUTO_COMMIT));
+>>>>>>> flash-bang-grenade
     }
 
     void closeWithCursorsTest(void)
     {
-        ham_cursor_t *c[5];
+        ham_cursor_t *c[5]={0};
 
         for (int i=0; i<5; i++)
             BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c[i]));
@@ -1640,7 +1895,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.size=sizeof(value);
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
-        BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664));
+        BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664u));
 
         value=1;
         BFC_ASSERT_EQUAL(0, ham_insert(db, 0, &key, &rec, 0));
@@ -1733,7 +1988,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
     {
         ham_db_t *olddb=m_db;
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), 0, 0664));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), 0, 0664u));
         replaceKeyTest();
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
@@ -1765,19 +2020,33 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
 
     void contextDataTest() {
         void *ptr=(void *)0x13;
+        void *ptr2=(void *)0x14;
         ham_set_context_data(0, 0);
         ham_set_context_data(m_db, ptr);
         BFC_ASSERT_EQUAL((void *)0, ham_get_context_data(0));
         BFC_ASSERT_EQUAL((void *)0x13, ham_get_context_data(m_db));
+        BFC_ASSERT_EQUAL((void *)0, ham_env_get_context_data(0));
         ham_set_context_data(m_db, 0);
         BFC_ASSERT_EQUAL((void *)0, ham_get_context_data(m_db));
+
+        ham_env_set_context_data(0, 0);
+        ham_env_set_context_data(m_env, ptr2);
+        BFC_ASSERT_EQUAL((void *)0, ham_env_get_context_data(0));
+        BFC_ASSERT_EQUAL((void *)0x14, ham_env_get_context_data(m_env));
+        BFC_ASSERT_EQUAL((void *)0, ham_get_context_data(m_db));
+        ham_env_set_context_data(m_env, 0);
+        BFC_ASSERT_EQUAL((void *)0, ham_env_get_context_data(m_env));
     }
 
     void recoveryTest() {
         ham_db_t *olddb=m_db;
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"),
+<<<<<<< HEAD
                                 HAM_ENABLE_RECOVERY, 0664));
+=======
+                                HAM_ENABLE_RECOVERY, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
         m_db=olddb;
@@ -1788,10 +2057,20 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_create(m_db, BFC_OPATH(".test"),
+<<<<<<< HEAD
                         HAM_ENABLE_RECOVERY|HAM_IN_MEMORY_DB, 0664));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_create(m_db, BFC_OPATH(".test"),
                         HAM_ENABLE_RECOVERY|HAM_DISABLE_FREELIST_FLUSH, 0664));
+=======
+                        HAM_ENABLE_RECOVERY|HAM_IN_MEMORY_DB, 0664u));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_create(m_db, BFC_OPATH(".test"),
+                        HAM_ENABLE_RECOVERY|HAM_WRITE_THROUGH, 0664u));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_create(m_db, BFC_OPATH(".test"),
+                        HAM_ENABLE_RECOVERY|HAM_DISABLE_FREELIST_FLUSH, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
         m_db=olddb;
@@ -1801,7 +2080,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         ham_env_t *env;
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_env_create(env, BFC_OPATH(".test"), HAM_ENABLE_RECOVERY, 0664));
+=======
+                ham_env_create(env, BFC_OPATH(".test"), HAM_ENABLE_RECOVERY, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
         BFC_ASSERT_EQUAL(0, ham_env_delete(env));
     }
@@ -1811,25 +2094,81 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create(env, BFC_OPATH(".test"),
+<<<<<<< HEAD
                         HAM_ENABLE_RECOVERY|HAM_IN_MEMORY_DB, 0664));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create(env, BFC_OPATH(".test"),
                         HAM_ENABLE_RECOVERY|HAM_DISABLE_FREELIST_FLUSH, 0664));
+=======
+                        HAM_ENABLE_RECOVERY|HAM_IN_MEMORY_DB, 0664u));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_env_create(env, BFC_OPATH(".test"),
+                        HAM_ENABLE_RECOVERY|HAM_WRITE_THROUGH, 0664u));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_env_create(env, BFC_OPATH(".test"),
+                        HAM_ENABLE_RECOVERY|HAM_DISABLE_FREELIST_FLUSH, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
         BFC_ASSERT_EQUAL(0, ham_env_delete(env));
     }
 
     void btreeMacroTest(void)
     {
+<<<<<<< HEAD
         Page *page;
         BFC_ASSERT_EQUAL(0, db_alloc_page(&page, (Database *)m_db, 0, 0));
         BFC_ASSERT(page!=0);
 
         int off=(int)btree_node_get_key_offset(page, 0);
         int l = Page::sizeof_persistent_header; // 12
+=======
+        ham_page_t *page;
+        ham_status_t st;
+        dev_alloc_request_info_ex_t info = {0};
+
+        info.db = m_db;
+        info.env = m_env;
+        info.entire_page = HAM_FALSE;
+        info.space_type = PAGE_TYPE_UNKNOWN;
+
+        st = db_alloc_page(&page, 0, &info);
+        BFC_ASSERT_NOTNULL(page);
+
+        ham_btree_t *be = (ham_btree_t *)db_get_backend(m_db);
+        //btree_node_t *node = ham_page_get_btree_node(page);
+        ham_bool_t has_fast_index = HAM_FALSE;
+        common_btree_datums_t btdata =
+        {
+            be,
+            m_db,
+            m_env,
+            env_get_device(m_env),
+            NULL,
+            NULL,
+            NULL,
+            0,
+            be_get_keysize(be),
+            btree_get_maxkeys(be),
+            be_get_keysize(be) + db_get_int_key_header_size(),
+            has_fast_index,
+            0,
+            OFFSETOF(btree_node_t, _entries),
+            OFFSETOF(btree_node_t, _entries)
+            + (has_fast_index
+            ? btree_get_maxkeys(be) * sizeof(ham_u16_t)
+            : 0),
+            {0, 0, NULL, 0, NULL, -1, HAM_FALSE, HAM_FALSE, HAM_FALSE, HAM_FALSE},
+            MK_HAM_FLOAT(0.5),
+            MK_HAM_FLOAT(0.33) // i.e. 1/3
+        };
+        int_key_t *key = btree_in_node_get_key_ref(&btdata, page, 0);
+        int off=(int)(reinterpret_cast<ham_u8_t *>(key) - reinterpret_cast<ham_u8_t *>(page)); // btree_node_get_key_offset(page, 0);
+        int l = page_get_persistent_header_size(); // 12
+>>>>>>> flash-bang-grenade
         l += OFFSETOF(btree_node_t, _entries); // 40-12
-     
+
         l = db_get_int_key_header_size();
+<<<<<<< HEAD
         l += db_get_keysize(page->get_db());
 
         BFC_ASSERT_EQUAL((int)page->get_self()+12+28, off);
@@ -1837,12 +2176,26 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL((int)page->get_self()+12+28+32, off);
         off=(int)btree_node_get_key_offset(page, 2);
         BFC_ASSERT_EQUAL((int)page->get_self()+12+28+64, off);
+=======
+        l += be_get_keysize(be);
+
+        BFC_ASSERT_EQUAL((int)page_get_self(page)+12+28, off);
+        //off=(int)btree_node_get_key_offset(page, 1);
+        key = btree_in_node_get_key_ref(&btdata, page, 1);
+        off=(int)(reinterpret_cast<ham_u8_t *>(key) - reinterpret_cast<ham_u8_t *>(page));
+        BFC_ASSERT_EQUAL((int)page_get_self(page)+12+28+32, off);
+        //off=(int)btree_node_get_key_offset(page, 2);
+        key = btree_in_node_get_key_ref(&btdata, page, 2);
+        off=(int)(reinterpret_cast<ham_u8_t *>(key) - reinterpret_cast<ham_u8_t *>(page));
+        BFC_ASSERT_EQUAL((int)page_get_self(page)+12+28+64, off);
+>>>>>>> flash-bang-grenade
 
         db_free_page(page, 0);
     }
 
     void cursorInsertAppendTest(void)
     {
+        unsigned int i;
         ham_cursor_t *cursor;
         ham_key_t key;
         ham_record_t rec;
@@ -1850,7 +2203,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         ::memset(&rec, 0, sizeof(rec));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
-        for (unsigned i=0; i<10000; i++) {
+        for (i=0; i<10000; i++) {
             key.size=sizeof(i);
             key.data=(void *)&i;
             rec.size=sizeof(i);
@@ -1858,11 +2211,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             BFC_ASSERT_EQUAL(0, ham_cursor_insert(cursor, &key, &rec,
                 HAM_HINT_SEQUENTIAL));
         }
-        for (unsigned i=0; i<10000; i++) {
+        for (i=0; i<10000; i++) {
             key.size=sizeof(i);
             key.data=(void *)&i;
             BFC_ASSERT_EQUAL(0, ham_find(m_db, 0, &key, &rec, 0));
-            BFC_ASSERT_EQUAL((unsigned)key.size, rec.size);
+            BFC_ASSERT_EQUAL((ham_size_t)key.size, rec.size);
             BFC_ASSERT_EQUAL(0, memcmp(key.data, rec.data, key.size));
         }
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
@@ -1870,6 +2223,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
 
     void negativeCursorInsertAppendTest(void)
     {
+        unsigned int i;
         ham_cursor_t *cursor;
         ham_key_t key;
         ham_record_t rec;
@@ -1877,7 +2231,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         ::memset(&rec, 0, sizeof(rec));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
-        for (unsigned i=10; i>0; i--) {
+        for (i=10; i>0; i--) {
             key.size=sizeof(i);
             key.data=(void *)&i;
             rec.size=sizeof(i);
@@ -1889,7 +2243,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             key.size=sizeof(i);
             key.data=(void *)&i;
             BFC_ASSERT_EQUAL(0, ham_find(m_db, 0, &key, &rec, 0));
-            BFC_ASSERT_EQUAL((unsigned)key.size, rec.size);
+            BFC_ASSERT_EQUAL((ham_size_t)key.size, rec.size);
             BFC_ASSERT_EQUAL(0, memcmp(key.data, rec.data, key.size));
         }
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
@@ -1912,7 +2266,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
 
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_create_ex(m_db, BFC_OPATH(".test"), HAM_ENABLE_DUPLICATES, 0664, ps));
+=======
+                ham_create_ex(m_db, BFC_OPATH(".test"), HAM_ENABLE_DUPLICATES, 0664u, ps));
+>>>>>>> flash-bang-grenade
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         for (unsigned i=4000; i>0; i--)
@@ -1939,22 +2297,49 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         count = 0;
         BFC_ASSERT_EQUAL(0,
                 ham_get_key_count(m_db, 0, HAM_FAST_ESTIMATE, &count));
-        BFC_ASSERT_EQUAL((unsigned)4000, count);
+        BFC_ASSERT_EQUAL((ham_offset_t)4000, count);
 
         BFC_ASSERT_EQUAL(0,
                 ham_get_key_count(m_db, 0, HAM_SKIP_DUPLICATES, &count));
-        BFC_ASSERT_EQUAL((unsigned)4000, count);
+        BFC_ASSERT_EQUAL((ham_offset_t)4000, count);
 
         BFC_ASSERT_EQUAL(0,
                 ham_get_key_count(m_db, 0, 0, &count));
-        BFC_ASSERT_EQUAL((unsigned)4000+10, count);
+        BFC_ASSERT_EQUAL((ham_offset_t)(4000+10), count);
+
+        /* check 'artifact' of the FAST_ESTIMATE code: dupes are measured per page as if all nodes in btree page had the same number of dupes */
+        for (unsigned i=1; i<=10; i++) {
+            unsigned k = i;
+            key.size=sizeof(k);
+            key.data=(void *)&k;
+            rec.size=sizeof(i);
+            rec.data=(void *)&i;
+            BFC_ASSERT_EQUAL_I(0, ham_insert(m_db, 0, &key, &rec, HAM_DUPLICATE), i);
+        }
+
+        count = 0;
+        BFC_ASSERT_EQUAL(0,
+            ham_get_key_count(m_db, 0, HAM_FAST_ESTIMATE, &count));
+        BFC_ASSERT_EQUAL((ham_offset_t)4000, count);
+
+        BFC_ASSERT_EQUAL(0,
+            ham_get_key_count(m_db, 0, HAM_SKIP_DUPLICATES, &count));
+        BFC_ASSERT_EQUAL((ham_offset_t)4000, count);
+
+        BFC_ASSERT_EQUAL(0,
+            ham_get_key_count(m_db, 0, 0, &count));
+        BFC_ASSERT_EQUAL((ham_offset_t)(4000+10+10), count);
     }
 
     void createDbOpenEnvTest(void)
     {
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_create(m_db, BFC_OPATH(".test"), 0, 0664));
+=======
+                ham_create(m_db, BFC_OPATH(".test"), 0, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
 
         ham_env_t *env;
@@ -1972,7 +2357,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
     {
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_create(m_db, BFC_OPATH(".test"), 0, 0664));
+=======
+                ham_create(m_db, BFC_OPATH(".test"), 0, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
 
         ham_env_t *env;
@@ -2157,7 +2546,11 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 ham_create(m_db, BFC_OPATH(".test"), 0, 0664));
+=======
+                ham_create(m_db, BFC_OPATH(".test"), 0, 0664u));
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &cursor));
         BFC_ASSERT_EQUAL(0, ham_insert(m_db, 0, &key, &rec, 0));
 
@@ -2168,6 +2561,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
                 ham_cursor_find_ex(cursor, &key, &rec,
                     HAM_DIRECT_ACCESS));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+<<<<<<< HEAD
                 ham_cursor_move(cursor, &key, &rec,
                     HAM_DIRECT_ACCESS));
 
@@ -2187,6 +2581,8 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
                 ham_cursor_find_ex(cursor, &key, &rec,
                     HAM_DIRECT_ACCESS));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+=======
+>>>>>>> flash-bang-grenade
                 ham_cursor_move(cursor, &key, &rec,
                     HAM_DIRECT_ACCESS));
 

@@ -1,9 +1,9 @@
 
-INCLUDES		= -I$(top_builddir)/include
+AM_CPPFLAGS		= -I$(top_builddir)/include
 
-noinst_PROGRAMS	= db1 db2 db3 db4 db5 db6 env1 env2 env3
+noinst_PROGRAMS	= db1 db2 db3 db4 db5 db6 db7 env1 env2 env3 env4
 
-noinst_BIN      = db1 db2 db3 db4 db5 db6 env1 env2 env3 
+noinst_BIN      = db1 db2 db3 db4 db5 db6 db7 env1 env2 env3 env4
 
 if ENABLE_SERVER
 if ENABLE_REMOTE
@@ -30,6 +30,9 @@ db5_LDADD    	= $(top_builddir)/src/libhamsterdb.la
 db6_SOURCES  	= db6.cpp
 db6_LDADD    	= $(top_builddir)/src/libhamsterdb.la
 
+db7_SOURCES  	= db7.c
+db7_LDADD    	= $(top_builddir)/src/libhamsterdb.la
+
 env1_SOURCES  	= env1.c
 env1_LDADD    	= $(top_builddir)/src/libhamsterdb.la
 
@@ -38,6 +41,16 @@ env2_LDADD    	= $(top_builddir)/src/libhamsterdb.la
 
 env3_SOURCES  	= env3.cpp
 env3_LDADD    	= $(top_builddir)/src/libhamsterdb.la
+
+env4_SOURCES  	= env4.cpp \
+		calcmodel.hpp \
+		randomgen.hpp \
+		datafeedsim.hpp \
+		hamsterdb_ex.hpp \
+		mcreporter.hpp \
+		montecarlo.hpp
+
+env4_LDADD    	= $(top_builddir)/src/libhamsterdb.la
 
 server1_SOURCES = server1.c
 server1_LDADD   = $(top_builddir)/src/libhamsterdb.la \

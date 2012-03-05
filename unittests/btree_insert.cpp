@@ -19,6 +19,7 @@
 #include "../src/page.h"
 #include "../src/env.h"
 #include "../src/btree.h"
+#include "../src/btree_classic.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
@@ -33,7 +34,11 @@ class BtreeInsertTest : public hamsterDB_fixture
 public:
     BtreeInsertTest(ham_u32_t flags=0, const char *name="BtreeInsertTest")
         : hamsterDB_fixture(name),
+<<<<<<< HEAD
         m_db(0), m_flags(flags)
+=======
+        m_db(0), m_flags(flags), m_alloc(0)
+>>>>>>> flash-bang-grenade
     {
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(BtreeInsertTest, defaultPivotTest);
@@ -45,6 +50,10 @@ protected:
     ham_db_t *m_db;
     Environment *m_env;
     ham_u32_t m_flags;
+<<<<<<< HEAD
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade
 
 public:
     virtual void setup()
@@ -58,19 +67,31 @@ public:
         };
 
         os::unlink(BFC_OPATH(".test"));
+<<<<<<< HEAD
+=======
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"), m_flags,
                                 0644, &params[0]));
         m_env=(Environment *)ham_get_env(m_db);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> flash-bang-grenade
     virtual void teardown()
     {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
+<<<<<<< HEAD
+=======
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
+>>>>>>> flash-bang-grenade
     }
 
     void defaultPivotTest()
@@ -97,6 +118,7 @@ public:
         Page *page;
         btree_node_t *node;
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 db_fetch_page(&page, (Database *)m_db,
                     m_env->get_pagesize()*1, 0));
         BFC_ASSERT_EQUAL((unsigned)Page::TYPE_B_INDEX, page->get_type());
@@ -115,6 +137,23 @@ public:
                     m_env->get_pagesize()*3, 0));
         BFC_ASSERT_EQUAL((unsigned)Page::TYPE_B_ROOT, page->get_type());
         node=page_get_btree_node(page);
+=======
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*1, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+        BFC_ASSERT_EQUAL(4, btree_node_get_count(node));
+
+        BFC_ASSERT_EQUAL(0,
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*2, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+        BFC_ASSERT_EQUAL(3, btree_node_get_count(node));
+
+        BFC_ASSERT_EQUAL(0,
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*3, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_ROOT, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(1, btree_node_get_count(node));
     }
 
@@ -142,6 +181,7 @@ public:
         Page *page;
         btree_node_t *node;
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 db_fetch_page(&page, (Database *)m_db,
                     m_env->get_pagesize()*1, 0));
         BFC_ASSERT_EQUAL((unsigned)Page::TYPE_B_INDEX, page->get_type());
@@ -160,6 +200,23 @@ public:
                     m_env->get_pagesize()*3, 0));
         BFC_ASSERT_EQUAL((unsigned)Page::TYPE_B_ROOT, page->get_type());
         node=page_get_btree_node(page);
+=======
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*1, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+        BFC_ASSERT_EQUAL(4, btree_node_get_count(node));
+
+        BFC_ASSERT_EQUAL(0,
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*2, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+        BFC_ASSERT_EQUAL(3, btree_node_get_count(node));
+
+        BFC_ASSERT_EQUAL(0,
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*3, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_ROOT, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(1, btree_node_get_count(node));
     }
 
@@ -201,6 +258,7 @@ public:
         Page *page;
         btree_node_t *node;
         BFC_ASSERT_EQUAL(0,
+<<<<<<< HEAD
                 db_fetch_page(&page, (Database *)m_db,
                     m_env->get_pagesize()*1, 0));
         BFC_ASSERT_EQUAL((unsigned)Page::TYPE_B_INDEX, page->get_type());
@@ -219,6 +277,23 @@ public:
                     m_env->get_pagesize()*3, 0));
         BFC_ASSERT_EQUAL((unsigned)Page::TYPE_B_ROOT, page->get_type());
         node=page_get_btree_node(page);
+=======
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*1, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+        BFC_ASSERT_EQUAL(4, btree_node_get_count(node));
+
+        BFC_ASSERT_EQUAL(0,
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*2, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_INDEX, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+        BFC_ASSERT_EQUAL(3, btree_node_get_count(node));
+
+        BFC_ASSERT_EQUAL(0,
+                db_fetch_page(&page, m_env, env_get_pagesize(m_env)*3, 0));
+        BFC_ASSERT_EQUAL(PAGE_TYPE_B_ROOT, page_get_pers_type(page));
+        node=ham_page_get_btree_node(page);
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(1, btree_node_get_count(node));
     }
 

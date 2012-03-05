@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief utility functions
  *
  */
@@ -20,6 +24,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * vsnprintf replacement/wrapper
@@ -40,4 +48,73 @@ util_vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #define util_snprintf snprintf
 #endif
 
+/**
+ * copy a key
+ *
+ * returns 0 if memory can not be allocated, or a pointer to @a dest.
+ * uses ham_mem_malloc() - memory in dest->key has to be freed by the caller
+ *
+ * @a dest must have been initialized before calling this function; the
+ * dest->data space will be reused when the specified size is large enough;
+ * otherwise the old dest->data will be ham_mem_free()d and a new space
+ * allocated.
+ *
+ * This can save superfluous heap free+allocation actions in there.
+ *
+ * @note
+ * This routine can cope with HAM_KEY_USER_ALLOC-ated 'dest'-inations.
+ *
+ * @note
+ * When an error is returned the 'dest->data'
+ * pointer is either NULL or still pointing at allocated space (when
+ * HAM_KEY_USER_ALLOC was not set).
+ */
+extern ham_status_t
+util_copy_key(ham_db_t *db, const ham_key_t *source, ham_key_t *dest);
+
+/**
+ * same as above, but copies a internal int_key_t structure
+ */
+extern ham_status_t
+util_copy_key_int2pub(ham_db_t *db, const int_key_t *source, ham_key_t *dest);
+
+/**
+ * read a record
+ *
+ * rid: same as record->_rid; however, if key is TINY/SMALL and
+ * @ref HAM_DIRECT_ACCESS is set, we need a direct pointer to the original
+ * record ID
+ *
+ * flags: either 0 or @ref HAM_DIRECT_ACCESS
+ */
+extern ham_status_t
+util_read_record(ham_db_t *db, ham_record_t *record, ham_u64_t *rid,
+                ham_u32_t flags);
+
+/**
+ * read a key
+ *
+ * @a dest must have been initialized before calling this function; the
+ * dest->data space will be reused when the specified size is large enough;
+ * otherwise the old dest->data will be ham_mem_free()d and a new
+ * space allocated.
+ *
+ * This can save superfluous heap free+allocation actions in there.
+ *
+ * @note
+ * This routine can cope with HAM_KEY_USER_ALLOC-ated 'dest'-inations.
+ */
+extern ham_status_t
+util_read_key(ham_db_t *db, int_key_t *source, ham_key_t *dest);
+
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif /* HAM_UTIL_H__ */
+
+/**
+* @endcond
+*/
+

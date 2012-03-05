@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief internal macros and headers
  *
  */
@@ -30,16 +34,18 @@
 #include "btree.h"
 #include "mem.h"
 
+
+
 /**
  * a macro to cast pointers to u64 and vice versa to avoid compiler
  * warnings if the sizes of ptr and u64 are not equal
  */
-#if defined(HAM_32BIT) && (!defined(_MSC_VER))
-#   define U64_TO_PTR(p)  (ham_u8_t *)(int)p
-#   define PTR_TO_U64(p)  (ham_offset_t)(int)p
+#if defined(HAM_32BIT) && !defined(_MSC_VER)
+#   define U64_TO_PTR(p)  ((ham_u8_t *)(unsigned int)(p))
+#   define PTR_TO_U64(p)  ((ham_offset_t)(unsigned int)(p))
 #else
-#   define U64_TO_PTR(p)  p
-#   define PTR_TO_U64(p)  p
+#   define U64_TO_PTR(p)  (p)
+#   define PTR_TO_U64(p)  (p)
 #endif
 
 /** a magic and version indicator for the remote protocol */
@@ -67,15 +73,26 @@
  * be defined such that those can peacefully co-exist with these; that's
  * why those public flags start at the value 0x1000 (4096).
  */
+<<<<<<< HEAD
 #define ham_key_set_intflags(key, f)    (key)->_flags=(f)
+=======
+//#define be_get_keysize(be)         be_get_keysize(db_get_backend(db))
+
+>>>>>>> flash-bang-grenade
 
 
-#include "packstart.h"
+
+
+#include <ham/packstart.h>
 
 /**
  * the persistent database index header
  */
+<<<<<<< HEAD
 HAM_PACK_0 struct HAM_PACK_1 db_indexdata_t
+=======
+typedef HAM_PACK_0 union HAM_PACK_1
+>>>>>>> flash-bang-grenade
 {
     /** name of the DB: 1..HAM_DEFAULT_DATABASE_NAME-1 */
     ham_u16_t _dbname;
@@ -86,25 +103,69 @@ HAM_PACK_0 struct HAM_PACK_1 db_indexdata_t
     /** key size in this page */
     ham_u16_t _keysize;
 
+<<<<<<< HEAD
     /* reserved */
     ham_u16_t _reserved1;
 
     /** address of this page */
     ham_offset_t _self;
+=======
+        /** reserved */
+        ham_u16_t _reserved1;
+
+        /** address of this page */
+        ham_pers_rid_t _self;
+>>>>>>> flash-bang-grenade
 
     /** flags for this database */
     ham_u32_t _flags;
 
+<<<<<<< HEAD
     /** last used record number value */
     ham_offset_t _recno;
 
     /* reserved */
     ham_u32_t _reserved2;
+=======
+        /*
+        WARNING WARNING WARNING WARNING WARNING WARNING
+
+        ALIGNMENT ISSUE FOR DEC ALPHA CPU:
+
+        64-bit int access requires 8-byte alignment
+        */
+#if defined(FIX_PEDANTIC_64BIT_ALIGNMENT_REQUIREMENT)
+        ham_u32_t _reserved9;
+#endif
+
+        /** last used record number value */
+        ham_pers_recno_t _recno;
+
+        /** reserved */
+        ham_u32_t _reserved2;
+    } HAM_PACK_2 b;
+>>>>>>> flash-bang-grenade
 
 } HAM_PACK_2;
 
-#include "packstop.h"
+#include <ham/packstop.h>
 
+
+/**
+ * get the private data of the backend; interpretation of the
+ * data is up to the backend
+ */
+#if 0
+#define db_get_indexdata_arrptr(db)                         \
+    ((db_indexdata_t *)((ham_u8_t *)page_get_payload(       \
+        db_get_header_page(db)) + sizeof(env_header_t)))
+#endif
+
+/**
+ * get the private data of the backend; interpretation of the
+ * data is up to the backend
+ */
+//#define db_get_indexdata_ptr(db, i)       (env_get_indexdata_arrptr(db_get_env(db)) + (i))
 
 #define index_get_dbname(p)               ham_db2h16((p)->_dbname)
 #define index_set_dbname(p, n)            (p)->_dbname=ham_h2db16(n)
@@ -115,17 +176,30 @@ HAM_PACK_0 struct HAM_PACK_1 db_indexdata_t
 #define index_get_keysize(p)              ham_db2h16((p)->_keysize)
 #define index_set_keysize(p, n)           (p)->_keysize=ham_h2db16(n)
 
+<<<<<<< HEAD
 #define index_get_self(p)                 ham_db2h_offset((p)->_self)
 #define index_set_self(p, n)              (p)->_self=ham_h2db_offset(n)
+=======
+#define index_get_self(p)                 ham_db2h_rid((p)->b._self)
+#define index_set_self(p, n)              ham_h2db_rid((p)->b._self, n)
+>>>>>>> flash-bang-grenade
 
 #define index_get_flags(p)                ham_db2h32((p)->_flags)
 #define index_set_flags(p, n)             (p)->_flags=ham_h2db32(n)
 
+<<<<<<< HEAD
 #define index_get_recno(p)                ham_db2h_offset((p)->_recno)
 #define index_set_recno(p, n)             (p)->_recno=ham_h2db_offset(n)
 
 #define index_clear_reserved(p)           { (p)->_reserved1=0;            \
                                             (p)->_reserved2=0; }
+=======
+#define index_get_recno(p)                ham_db2h_recno((p)->b._recno)
+#define index_set_recno(p, n)             ham_h2db_recno((p)->b._recno, n)
+
+#define index_clear_reserved(p)           do { (p)->b._reserved1 = 0;            \
+                                            (p)->b._reserved2 = 0; } while (0)
+>>>>>>> flash-bang-grenade
 
 /**
  * This helper class provides the actual implementation of the
@@ -209,6 +283,7 @@ class DatabaseImplementation
 /**
  * The database implementation for local file access
  */
+<<<<<<< HEAD
 class DatabaseImplementationLocal : public DatabaseImplementation
 {
   public:
@@ -277,6 +352,9 @@ class DatabaseImplementationLocal : public DatabaseImplementation
     virtual ham_status_t close(ham_u32_t flags);
 
 };
+=======
+#define db_set_extkey_cache(db, c) (db)->_extkey_cache=(c)
+>>>>>>> flash-bang-grenade
 
 /**
  * The database implementation for remote file access
@@ -285,6 +363,7 @@ class DatabaseImplementationLocal : public DatabaseImplementation
 
 class DatabaseImplementationRemote : public DatabaseImplementation
 {
+<<<<<<< HEAD
   public:
     DatabaseImplementationRemote(Database *db)
       : DatabaseImplementation(db) {
@@ -295,6 +374,16 @@ class DatabaseImplementationRemote : public DatabaseImplementation
 
     /** check Database integrity */
     virtual ham_status_t check_integrity(ham_txn_t *txn);
+=======
+    /** the current transaction ID */
+    ham_txn_id_t _txn_id;
+
+    /** the last recno-value */
+    //ham_recno_t _recno;
+
+    /** the last error code */
+    //ham_status_t _error;
+>>>>>>> flash-bang-grenade
 
     /** get number of keys */
     virtual ham_status_t get_key_count(ham_txn_t *txn, ham_u32_t flags,
@@ -307,9 +396,23 @@ class DatabaseImplementationRemote : public DatabaseImplementation
     /** erase a key/value pair */
     virtual ham_status_t erase(ham_txn_t *txn, ham_key_t *key, ham_u32_t flags);
 
+<<<<<<< HEAD
     /** lookup of a key/value pair */
     virtual ham_status_t find(ham_txn_t *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
+=======
+    /** the memory allocator */
+    //mem_allocator_t *_allocator;
+
+    /** the device (either a file or an in-memory-db) */
+    //ham_device_t *_device;
+
+    /** the cache */
+    //ham_cache_t *_cache;
+
+    /** linked list of all cursors */
+    ham_cursor_t *_cursors;
+>>>>>>> flash-bang-grenade
 
     /** create a cursor */
     virtual Cursor *cursor_create(ham_txn_t *txn, ham_u32_t flags);
@@ -324,17 +427,39 @@ class DatabaseImplementationRemote : public DatabaseImplementation
     /** erase the key of a cursor */
     virtual ham_status_t cursor_erase(Cursor *cursor, ham_u32_t flags);
 
+<<<<<<< HEAD
     /** position the cursor on a key and return the record */
     virtual ham_status_t cursor_find(Cursor *cursor, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
+=======
+    /** the normalizer function */
+    ham_normalize_func_t _norm_func;
+
+    /** the prefix-comparison function */
+    ham_prefix_compare_func_t _prefix_func;
+>>>>>>> flash-bang-grenade
 
     /** get number of duplicates */
     virtual ham_status_t cursor_get_duplicate_count(Cursor *cursor,
                     ham_size_t *count, ham_u32_t flags);
 
+<<<<<<< HEAD
     /** get current record size */
     virtual ham_status_t cursor_get_record_size(Cursor *cursor,
                     ham_offset_t *size);
+=======
+    /** the duplicate keys record comparison function */
+    ham_duplicate_compare_func_t _dupe_func;
+
+    /** the file header page */
+    //ham_page_t *_hdrpage;
+
+    /** the active txn */
+    //ham_txn_t *_txn;
+
+    /** the log object */
+    //ham_log_t *_log;
+>>>>>>> flash-bang-grenade
 
     /** overwrite a cursor */
     virtual ham_status_t cursor_overwrite(Cursor *cursor,
@@ -344,6 +469,7 @@ class DatabaseImplementationRemote : public DatabaseImplementation
     virtual ham_status_t cursor_move(Cursor *cursor, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
+<<<<<<< HEAD
     /** close a cursor */
     virtual void cursor_close(Cursor *cursor);
 
@@ -351,8 +477,13 @@ class DatabaseImplementationRemote : public DatabaseImplementation
     virtual ham_status_t close(ham_u32_t flags);
 };
 #endif // HAM_ENABLE_REMOTE
+=======
+    /** the environment of this database - can be NULL */
+    ham_env_t *_env;
+>>>>>>> flash-bang-grenade
 
 
+<<<<<<< HEAD
 /**
  * A helper structure; ham_db_t is declared in ham/hamsterdb.h as an
  * opaque C structure, but internally we use a C++ class. The ham_db_t
@@ -491,12 +622,88 @@ class Database
     Environment *get_env(void) {
         return (m_env);
     }
+=======
+#if 0
+    /** the freelist cache */
+    freelist_cache_t *_freelist_cache;
+#endif
+
+    /** linked list of all record-level filters */
+    ham_record_filter_t *_record_filters;
+
+    /** the offset of this database in the environment _indexdata */
+    ham_u16_t _indexdata_offset;
+
+    /** current data access mode (DAM) */
+    ham_u16_t _data_access_mode;
+
+    /** non-zero after this item has been opened/created.
+     * Indicates whether this db is 'active', i.e. between
+     * a create/open and matching close API call. */
+    unsigned _is_active: 1;
+
+    /**
+     * non-zero when @ref ham_close noticed the (possibly implicit) Environment being flagged with
+     * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
+     * operation until the last cursors (and transactions) have been terminated explicitly.
+     *
+     * This bit is introduced to help the C++ and other HamsterDB interface wrappers
+     * produce deterministic (and above all non-fatal) results when they cannot
+     * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
+     * @ref ham_close, @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
+     * @ref ham_cursor_close will occur.
+     */
+    unsigned _close_is_pending: 1;
+
+    /**
+     * non-zero when @ref ham_delete noticed the (possibly implicit) Environment being flagged with
+     * @ref HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE hence requiring postponing that
+     * operation until the last ham_close has been called explicitly.
+     *
+     * This bit is introduced to help the C++ and other HamsterDB interface wrappers
+     * produce deterministic (and above all non-fatal) results when they cannot
+     * or will not guarantee the order in which @ref ham_env_close, @ref ham_env_delete,
+     * @ref ham_close and @ref ham_delete, @ref ham_txn_abort, @ref ham_txn_commit and
+     * @ref ham_cursor_close will occur.
+     */
+    unsigned _delete_is_pending: 1;
+
+    /** the pagesize */
+    //ham_size_t _pagesize;
+    //ham_size_t _headerpage_extra_hdrlen; /**< amount of extra headerspace required due to page filter headers */
+
+#if 0
+    /** some freelist algorithm specific run-time data */
+    ham_runtime_statistics_globdata_t _global_perf_data;
+#endif
+
+    /** some database specific run-time data */
+    ham_runtime_statistics_dbdata_t _db_perf_data;
+
+#ifdef HAM_ENABLE_REMOTE
+    /** the remote database handle */
+    ham_u64_t _remote_handle;
+#endif
+
+    /**
+    * destroy the database object, free all memory
+    */
+    ham_status_t (*destroy)(ham_db_t **self_reference);
+};
+
+#if 0 /* recno is persisted and as such has to stay in the backend, alas. */
+/**
+ * get the last recno value
+ */
+#define db_get_recno(db)               (db)->_recno
+>>>>>>> flash-bang-grenade
 
     /** set the environment pointer */
     void set_env(Environment *env) {
         m_env=env;
     }
 
+<<<<<<< HEAD
     /** get the next database in a linked list of databases */
     Database *get_next(void) {
         return (m_next);
@@ -506,6 +713,23 @@ class Database
     void set_next(Database *next) {
         m_next=next;
     }
+=======
+/**
+ * increment the last recno value
+ */
+#define db_inc_recno(db)               (db)->_recno++
+#endif
+
+/**
+ * get the last error code
+ */
+//#define db_get_error(db)               (db)->_error
+
+/**
+ * set the last error code
+ */
+//#define db_set_error(db, e)            (db)->_error=(e)
+>>>>>>> flash-bang-grenade
 
     /** get the cache for extended keys */
     ExtKeyCache *get_extkey_cache(void) {
@@ -532,16 +756,44 @@ class Database
         return (m_record_filters);
     }
 
+<<<<<<< HEAD
     /** set the linked list of all record-level filters */
     void set_record_filter(ham_record_filter_t *f) {
         m_record_filters=f;
     }
+=======
+/**
+ * get the memory allocator
+ */
+//#define db_get_allocator(db)              (db)->_allocator
+
+/**
+ * set the memory allocator
+ */
+//#define db_set_allocator(db, a)           (db)->_allocator=(a);
+
+/**
+ * get the device
+ */
+//#define db_get_device(db)                 (env_get_device(db_get_env(db)))
+
+/**
+ * get the cache pointer
+ */
+//#define db_get_cache(db)                  (env_get_cache(db_get_env(db)))
+
+/**
+ * get the prefix comparison function
+ */
+#define db_get_prefix_compare_func(db) (db)->_prefix_func
+>>>>>>> flash-bang-grenade
 
     /** get the expected data access mode for this database */
     ham_u16_t get_data_access_mode(void) {
         return (m_data_access_mode);
     }
 
+<<<<<<< HEAD
     /** set the expected data access mode for this database */
     void set_data_access_mode(ham_u16_t dam) {
         m_data_access_mode=dam;
@@ -572,6 +824,52 @@ class Database
             m_record_alloc.reset(new ByteArray(0, 0));
         return (m_record_alloc.get()->second);
     }
+=======
+/**
+ * get the key comparison function
+ */
+#define db_get_compare_func(db)        (db)->_cmp_func
+
+/**
+ * set the key comparison function
+ */
+#define db_set_compare_func(db, f)     (db)->_cmp_func=(f)
+
+/**
+ * get the duplicate record comparison function
+ */
+#define db_get_duplicate_compare_func(db)    (db)->_dupe_func
+
+/**
+ * set the duplicate record comparison function
+ */
+#define db_set_duplicate_compare_func(db, f) (db)->_dupe_func=(f)
+
+/*
+ * get the key normalizer function
+ */
+#define db_get_normalize_func(db)        (db)->_norm_func
+
+/*
+ * set the key normalizer function
+ */
+#define db_set_normalize_func(db, f)     (db)->_norm_func=(f)
+
+/**
+ * modify the runtime-flags - the flags are "mixed" with the flags from
+ * the Environment
+ */
+#define db_modify_rt_flags(db, or_mask, inv_and_mask)                       \
+        db_set_rt_flags(db,                                                 \
+            (((db ? db_get_rt_flags(db_get_env(db)) : 0)                    \
+              | (db)->_rt_flags)                                            \
+             & ~(inv_and_mask)) | (or_mask))
+
+/**
+ * get the runtime-flags
+ */
+#define db_get_rt_flags(db)            (db)->_rt_flags
+>>>>>>> flash-bang-grenade
 
     /** set the size of the last allocated data blob */
     void set_record_allocsize(ham_size_t size) {
@@ -622,8 +920,20 @@ class Database
         m_key_alloc.get()->first=p;
     }
 
+<<<<<<< HEAD
     /** closes a cursor */
     void close_cursor(Cursor *c);
+=======
+/**
+ * get the freelist cache pointer
+ */
+//#define db_get_freelist_cache(db)      (env_get_freelist_cache(db_get_env(db)))
+
+/**
+ * get the linked list of all record-level filters
+ */
+#define db_get_record_filter(db)       (db)->_record_filters
+>>>>>>> flash-bang-grenade
 
     /** clones a cursor into *dest */
     void clone_cursor(Cursor *src, Cursor **dest);
@@ -798,8 +1108,25 @@ class Database
     /** the backend pointer - btree, hashtable etc */
     ham_backend_t *m_backend;
 
+<<<<<<< HEAD
     /** linked list of all cursors */
     Cursor *m_cursors;
+=======
+/**
+ * Mix a set of flag bits into the data access mode, according to the rule
+ *
+ * <pre>
+ * DAM(new) = (DAM & and_mask) | or_mask
+ * </pre>
+ *
+ * This is a quick qay to set or unset particular DAM bits.
+ *
+ * @sa ham_data_access_modes
+ */
+#define db_set_data_access_mode_masked(db, or_mask, and_mask)               \
+    (db)->_data_access_mode=(((db)->_data_access_mode & (and_mask))         \
+                             | (or_mask))
+>>>>>>> flash-bang-grenade
 
     /** the prefix-comparison function */
     ham_prefix_compare_func_t m_prefix_func;
@@ -807,8 +1134,17 @@ class Database
     /** the comparison function */
     ham_compare_func_t m_cmp_func;
 
+<<<<<<< HEAD
     /** the duplicate keys record comparison function */
     ham_compare_func_t m_duperec_func;
+=======
+/**
+ * set the 'active' flag of the database: a non-zero value
+ * for @a s sets the @a db to 'active', zero(0) sets the @a db
+ * to 'inactive' (closed)
+ */
+#define db_set_active(db,s)  (db)->_is_active=!!(s)
+>>>>>>> flash-bang-grenade
 
     /** the database flags - a combination of the persistent flags
      * and runtime flags */
@@ -823,6 +1159,7 @@ class Database
     /** the cache for extended keys */
     ExtKeyCache *m_extkey_cache;
 
+<<<<<<< HEAD
     /** the offset of this database in the environment _indexdata */
     ham_u16_t m_indexdata_offset;
 
@@ -861,6 +1198,42 @@ class Database
 inline bool dam_is_set(ham_u32_t coll, ham_u32_t mask) {
     return ((coll&mask)==mask);
 }
+=======
+/**
+ * get a pointer to the header data
+ */
+#if 0
+#define env_get_header(env)              ((env_header_t *)(page_get_payload(\
+                                          db_get_header_page(db))))
+#endif
+
+/**
+ * get the freelist object of the database
+ */
+#if 0
+#define db_get_freelist(db)       ((freelist_payload_t *)                      \
+                                     (((ham_u8_t *)page_get_payload(db_get_header_page(db)))+\
+                                     SIZEOF_FULL_HEADER(db)))
+#endif
+
+/**
+ * get the dirty-flag
+ */
+//#define db_is_dirty(db)                page_is_dirty(db_get_header_page(db))
+
+/**
+ * set the dirty-flag
+ */
+//#define db_set_dirty(db)            page_set_dirty(db_get_header_page(db))
+
+/**
+ * uncouple all cursors from a page
+ *
+ * @remark this is called whenever the page is deleted or becoming invalid
+ */
+extern ham_status_t
+db_uncouple_all_cursors(ham_page_t *page, ham_size_t start);
+>>>>>>> flash-bang-grenade
 
 /**
  * compare two keys
@@ -905,6 +1278,13 @@ db_default_recno_compare(ham_db_t *db,
                     const ham_u8_t *lhs, ham_size_t lhs_length,
                     const ham_u8_t *rhs, ham_size_t rhs_length);
 
+extern ham_status_t HAM_CALLCONV
+db_default_recno_normalize(ham_db_t *db,
+        const ham_lexorder_assist_t *assist,
+        const ham_u8_t *src, ham_size_t src_length,
+        ham_u8_t *dst, ham_size_t dst_max_length,
+        ham_bool_t normalize);
+
 /**
  * the default prefix compare function - uses memcmp
  *
@@ -931,7 +1311,11 @@ db_default_prefix_compare(ham_db_t *db,
  * compare two records for a duplicate key
  *
  * @return -1, 0, +1 or higher positive values are the result of a successful
+<<<<<<< HEAD
  *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
+=======
+ *         record comparison (0 if both keys match, -1 when LHS < RHS key, +1
+>>>>>>> flash-bang-grenade
  *         when LHS > RHS key).
  *
  * @return values less than -1 are @ref ham_status_t error codes and indicate
@@ -942,12 +1326,73 @@ db_default_prefix_compare(ham_db_t *db,
  */
 extern int HAM_CALLCONV
 db_default_dupe_compare(ham_db_t *db,
+<<<<<<< HEAD
                     const ham_u8_t *lhs, ham_size_t lhs_length,
                     const ham_u8_t *rhs, ham_size_t rhs_length);
+=======
+        const ham_u8_t *lhs, ham_size_t lhs_length,
+        const ham_u8_t *rhs, ham_size_t rhs_length);
+
+/**
+ * load an extended key
+ * returns the full data of the extended key in ext_key
+ * 'ext_key' must have been initialized before calling this function.
+ *
+ * @note
+ * This routine can cope with @ref HAM_KEY_USER_ALLOC-ated 'dest'-inations.
+ */
+extern ham_status_t
+db_get_extended_key(ham_db_t *db, const ham_u8_t *key_data,
+                    ham_size_t key_length, ham_u32_t key_flags,
+                    ham_key_t *ext_key, const ham_page_t *refering_index_page);
+
+/**
+ * function which compares two keys
+ *
+ * calls the comparison function
+ *
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
+ *         when LHS > RHS key).
+ *
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
+ *         @ref ham_status_codes .
+ *
+ * @sa ham_status_codes
+ */
+extern int
+db_compare_keys(ham_db_t *db, ham_key_t *lsh, ham_key_t *rhs, const ham_page_t *lhs_refering_index_page, const ham_page_t *rhs_refering_index_page);
+
+/**
+ * Create a preliminary copy of an @ref int_key_t key to a @ref ham_key_t
+ * in such a way that @ref db_compare_keys can use the data and optionally
+ * call @ref db_get_extended_key on this key to obtain all key data, when this
+ * is an extended key.
+ *
+ * As the memory allocated for any input key @a src is cached in the @a db structure
+ * for re-use in order to reduce the number of allocator (heap) invocations during
+ * B-tree traversal, we do not to explicitly call a 'release' function. Instead, any
+ * allocated memory is released automatically when the database is closed.
+ *
+ * @param left_or_right The index (0 or 1) which decides which cached memory space
+ *                      slot will be used this time.
+ */
+extern ham_status_t
+db_prepare_ham_key_for_compare(ham_db_t *db, int left_or_right, const int_key_t *src, ham_key_t *dest);
+
+
+/**
+ * create a backend object according to the database flags.
+ */
+extern ham_status_t
+db_create_backend(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
+>>>>>>> flash-bang-grenade
 
 /**
  * fetch a page.
  *
+<<<<<<< HEAD
  * @param page_ref call-by-reference variable which will be set to
  *      point to the retrieved @ref Page instance.
  * @param db the database handle - if it's not available then please
@@ -975,9 +1420,31 @@ db_fetch_page(Page **page_ref, Database *db,
 extern ham_status_t
 db_fetch_page_impl(Page **page_ref, Environment *env, Database *db,
                     ham_offset_t address, ham_u32_t flags);
+=======
+ * @param page_ref call-by-reference variable which will be set to point to the retrieved
+ *        @ref ham_page_t instance.
+ *
+ * @param env the environment handle
+ *
+ * @param address the storage address (a.k.a. 'RID') where the page is located in the
+ *        device store (file, memory, ...).
+ *
+ * @param flags An optional, bit-wise combined set of the @ref db_fetch_page_flags
+ *        flag collection.
+ *
+ * @return the retrieved page in @a *page_ref and HAM_SUCCESS as a function return value.
+ *
+ * @return a NULL value in @a *page_ref and HAM_SUCCESS when the page could not be
+ *         retrieved because the set conditions were not be met (see @ref DB_ONLY_FROM_CACHE)
+ *
+ * @return one of the @ref ham_status_codes error codes as an error occurred.
+ */
+extern ham_status_t
+db_fetch_page(ham_page_t **page_ref, ham_env_t *env, ham_offset_t address, ham_u32_t flags);
+>>>>>>> flash-bang-grenade
 
 /**
- * @defgroup db_fetch_page_flags @ref db_fetch_page Flags
+ * @defgroup db_fetch_page_flags @ref db_fetch_page / @ref db_alloc_page Flags
  * @{
  *
  * These flags can be bitwise-OR mixed with the @ref HAM_HINTS_MASK flags,
@@ -987,15 +1454,51 @@ db_fetch_page_impl(Page **page_ref, Environment *env, Database *db,
  */
 
 /**
+<<<<<<< HEAD
  * Force @ref db_fetch_page to only return a valid @ref Page instance
+=======
+ * Force @ref db_fetch_page to only return a valid @ref ham_page_t instance
+>>>>>>> flash-bang-grenade
  * reference when it is still stored in the cache, otherwise a NULL pointer
  * will be returned instead (and no error code)!
  */
-#define DB_ONLY_FROM_CACHE                0x0002
+#define DB_ONLY_FROM_CACHE                0x0002u
 
 /**
+<<<<<<< HEAD
  * @}
+=======
+ * Register new pages in the cache, but give them an 'old' age upon first
+ * creation, so they are flushed before anything else.
+ *
+ * This is a hacky way to ensure code simplicity while blob I/O does not
+ * thrash the cache but meanwhile still gets added to the activity log in
+ * a proper fashion.
  */
+#define DB_NEW_PAGE_DOES_THRASH_CACHE    0x0004u
+
+/**
+ * Do not check the existing freelist when allocating a fresh page
+ * through @ref db_alloc_page
+ */
+#define PAGE_IGNORE_FREELIST             0x0008u
+
+/**
+ * Fill the created persistent page with zeroes (NUL bytes) when it is initially
+ * allocated through @ref db_alloc_page
+>>>>>>> flash-bang-grenade
+ */
+#define PAGE_CLEAR_WITH_ZERO             0x0010u
+
+/**
+ * Do not log the page activity when allocating a fresh page
+ * through @ref db_alloc_page
+ */
+#define PAGE_DONT_LOG_CONTENT            0x0020u
+
+/**
+* @}
+*/
 
 
 /**
@@ -1007,8 +1510,13 @@ db_flush_page(Environment *env, Page *page);
 /**
  * Flush all pages, and clear the cache.
  *
+<<<<<<< HEAD
  * @param flags Set to DB_FLUSH_NODELETE if you do NOT want the cache to
  * be cleared
+=======
+ * @param flags Set to @ref DB_FLUSH_NODELETE if you do NOT want the cache to
+ *              be cleared.
+>>>>>>> flash-bang-grenade
  * @param cache
  */
 extern ham_status_t
@@ -1019,21 +1527,36 @@ db_flush_all(Cache *cache, ham_u32_t flags);
 /**
  * Allocate a new page.
  *
+<<<<<<< HEAD
  * @param page_ref call-by-reference result: will store the @ref Page
+=======
+ * @param page_ref call-by-reference result: will store the @ref ham_page_t
+>>>>>>> flash-bang-grenade
  *        instance reference.
- * @param db the database; if the database handle is not available, you
- *        can use env_alloc_page
+ *
+ * @param env the environment
+ *
  * @param type the page type of the new page. See @ref page_type_codes for
  *        a list of supported types.
+ *
  * @param flags optional allocation request flags. @a flags can be a mix
  *        of the following bits:
+<<<<<<< HEAD
  *        - PAGE_IGNORE_FREELIST        ignores all freelist-operations
  *        - PAGE_CLEAR_WITH_ZERO        memset the persistent page with 0
+=======
+ *        - @ref PAGE_IGNORE_FREELIST        ignores all freelist-operations
+ *        - @ref PAGE_CLEAR_WITH_ZERO        memset the persistent page with 0
+ *        - @ref DB_NEW_PAGE_DOES_THRASH_CACHE
+ *        - @ref PAGE_DONT_LOG_CONTENT       do not log page content for new
+ *                                           pages
+>>>>>>> flash-bang-grenade
  *
  * @note The page will be aligned at the current page size. Any wasted
  * space (due to the alignment) is added to the freelist.
  */
 extern ham_status_t
+<<<<<<< HEAD
 db_alloc_page(Page **page_ref, Database *db,
                 ham_u32_t type, ham_u32_t flags);
 
@@ -1047,6 +1570,11 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
 
 #define PAGE_IGNORE_FREELIST          8
 #define PAGE_CLEAR_WITH_ZERO         16
+=======
+db_alloc_page(ham_page_t **page_ref, ham_u32_t flags,
+              dev_alloc_request_info_ex_t *extra_dev_alloc_info);
+
+>>>>>>> flash-bang-grenade
 
 /**
  * Free a page.
@@ -1072,25 +1600,69 @@ extern ham_status_t
 db_write_page_and_delete(Page *page, ham_u32_t flags);
 
 /**
+<<<<<<< HEAD
 * @defgroup ham_database_flags
 * @{
 */
-
-/**
- * An internal database flag - use mmap instead of read(2).
+=======
+ * Resize the record data buffer. This buffer is an internal storage for
+ * record buffers. When a ham_record_t structure is returned to the user,
+ * the record->data pointer will point to this buffer.
+ *
+ * Set the size to 0, and the data is freed.
  */
-#define DB_USE_MMAP                  0x00000100
+extern ham_status_t
+db_resize_record_allocdata(ham_db_t *db, ham_size_t size);
 
 /**
+ * Resize the key data buffer. This buffer is an internal storage for
+ * key buffers. When a ham_key_t structure is returned to the user,
+ * the key->data pointer will point to this buffer.
+ *
+ * Set the size to 0, and the data is freed.
+ */
+extern ham_status_t
+db_resize_key_allocdata(ham_db_t *db, ham_size_t size);
+
+
+
+/**
+ * @defgroup ham_database_flags
+ * @{
+ */
+>>>>>>> flash-bang-grenade
+
+/**
+ * Use mmap instead of read(2).
+ *
+ * @warning This is an internal database flag
+ */
+#define DB_USE_MMAP                  0x00000100u
+
+/**
+<<<<<<< HEAD
  * An internal database flag - env handle is private to
  * the @ref Database instance
+=======
+ * The ENV handle is instantiated by
+ * a DB API (@ref ham_open, @ref ham_open_ex,
+ * @ref ham_create, @ref ham_create_ex) and must be destroyed
+ * by @ref ham_close / @ref ham_delete to ensure hamsterDB
+ * API call symmetry, i.e. the user should not need to call
+ * @ref ham_env_delete for an environment handle which he
+ * did not instantiate himself (through @ref ham_env_new)
+ *
+ * @warning This is an internal database flag
+>>>>>>> flash-bang-grenade
  */
-#define DB_ENV_IS_PRIVATE            0x00080000
+#define DB_ENV_IS_PRIVATE            0x00080000u
 
 /**
- * An internal database flag - env handle is remote
+ * The handle addresses a remote database.
+ *
+ * @warning This is an internal database flag
  */
-#define DB_IS_REMOTE                 0x00200000
+#define DB_IS_REMOTE                 0x00200000u
 
 /**
  * An internal database flag - disable txn flushin when they're committed
@@ -1100,6 +1672,8 @@ db_write_page_and_delete(Page *page, ham_u32_t flags);
 /**
  * @}
  */
+
+
 
 /*
  * insert a key/record pair in a txn node; if cursor is not NULL it will
@@ -1119,4 +1693,19 @@ db_erase_txn(Database *db, ham_txn_t *txn, ham_key_t *key, ham_u32_t flags,
                 struct txn_cursor_t *cursor);
 
 
+<<<<<<< HEAD
+=======
+
+
+
+#ifdef __cplusplus
+} // extern "C" {
+#endif
+
+>>>>>>> flash-bang-grenade
 #endif /* HAM_DB_H__ */
+
+/**
+* @endcond
+*/
+

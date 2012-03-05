@@ -73,10 +73,10 @@ main(void)
     printf("server1%s started - please run sample 'client1%s' for a test\n",
             EXT, EXT);
     printf("type 'exit' to end the server\n");
-    
+
     while (1) {
         printf("> ");
-        scanf("%s", &input[0]);
+        (void)scanf("%s", &input[0]);
         if (!strcmp(input, "exit")) {
             printf("exiting...\n");
             break;

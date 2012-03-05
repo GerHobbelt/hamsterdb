@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,15 +11,22 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
 #include <ham/hamsterdb.h>
+<<<<<<< HEAD
+=======
+#include "memtracker.h"
+#include "../src/mem.h"
+>>>>>>> flash-bang-grenade
 #include "../src/db.h"
 #include "../src/version.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+
 
 using namespace bfc;
 
@@ -32,6 +39,8 @@ public:
         : hamsterDB_fixture(name),
         m_db(0), m_flags(flags)
     {
+        //if (name)
+        //    return;
         testrunner::get_instance()->register_fixture(this);
         BFC_REGISTER_TEST(EraseTest, collapseRootTest);
         BFC_REGISTER_TEST(EraseTest, shiftFromRightTest);
@@ -41,6 +50,7 @@ public:
 
 protected:
     ham_db_t *m_db;
+    mem_allocator_t *m_alloc;
     ham_u32_t m_flags;
 
 public:
@@ -49,17 +59,29 @@ public:
         __super::setup();
 
         os::unlink(BFC_OPATH(".test"));
+<<<<<<< HEAD
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create(m_db, BFC_OPATH(".test"), m_flags, 0644));
     }
     
+=======
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
+        BFC_ASSERT_EQUAL(0, ham_new(&m_db));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"), m_flags, 0644));
+    }
+
+>>>>>>> flash-bang-grenade
     virtual void teardown()
     {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
+<<<<<<< HEAD
+=======
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
+>>>>>>> flash-bang-grenade
     }
 
     void prepare(int num_inserts)

@@ -15,7 +15,7 @@
  *        hinting functions.
  * @author Ger Hobbelt, ger@hobbelt.com
  *
- * Please be aware that the interfaces in this file are mostly for internal
+ * @warning Please be aware that the interfaces in this file are mostly for internal
  * use. Unlike those in hamsterdb.h they are not stable and can be changed
  * with every new version.
  *
@@ -29,9 +29,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct ham_statistics_t;
-typedef struct ham_statistics_t ham_statistics_t;
 
 
 /**
@@ -66,9 +63,11 @@ typedef void ham_free_statistics_func_t(ham_statistics_t *self);
  * cut this number down to support sizes up to a maximum size of 64Kb ~
  * 2^16, meaning any requests for more than 64Kb/CHUNKSIZE bytes is
  * sharing their statistics.
- *
  */
 #define HAM_FREELIST_SLOT_SPREAD   (16-5+1) /* 1 chunk .. 2^(SPREAD-1) chunks */
+
+
+
 
 /* -- equivalents of the statistics.h internal PERSISTED data structures -- */
 
@@ -97,14 +96,12 @@ typedef struct ham_freelist_slotsize_stats_t
 
     /** number of scans per size range */
     ham_u32_t scan_count;
-
     ham_u32_t ok_scan_count;
-    
-    /** summed cost ('duration') of all scans per size range */
-    ham_u32_t scan_cost;
-    ham_u32_t ok_scan_cost;
 
 } ham_freelist_slotsize_stats_t;
+
+
+
 
 /**
  * freelist statistics as they are persisted on disc.
@@ -156,8 +153,18 @@ typedef struct ham_freelist_page_statistics_t
 
 } ham_freelist_page_statistics_t;
 
-/* -- end of equivalents of the statistics.h internal PERSISTED data
- * structures -- */
+
+
+
+/* -- end of equivalents of the statistics.h internal PERSISTED data structures -- */
+
+
+
+
+
+
+
+
 
 /**
  * global freelist algorithm specific run-time info: per cache
@@ -167,10 +174,6 @@ typedef struct ham_runtime_statistics_globdata_t
     /** number of scans per size range */
     ham_u32_t scan_count[HAM_FREELIST_SLOT_SPREAD];
     ham_u32_t ok_scan_count[HAM_FREELIST_SLOT_SPREAD];
-    
-    /** summed cost ('duration') of all scans per size range */
-    ham_u32_t scan_cost[HAM_FREELIST_SLOT_SPREAD];
-    ham_u32_t ok_scan_cost[HAM_FREELIST_SLOT_SPREAD];
 
     /** count the number of insert operations for this DB */
     ham_u32_t insert_count;
@@ -181,7 +184,7 @@ typedef struct ham_runtime_statistics_globdata_t
 
     ham_u32_t insert_query_count;
     ham_u32_t erase_query_count;
-    ham_u32_t query_count;
+    ham_u32_t find_query_count;
 
     ham_u32_t first_page_with_free_space[HAM_FREELIST_SLOT_SPREAD];
 
@@ -312,9 +315,7 @@ typedef struct ham_runtime_statistics_opdbdata_t
 {
     ham_u32_t btree_count;
     ham_u32_t btree_fail_count;
-    ham_u32_t btree_cost;
-    ham_u32_t btree_fail_cost;
-        
+
     ham_offset_t btree_last_page_addr;
 
     /**
@@ -330,7 +331,22 @@ typedef struct ham_runtime_statistics_opdbdata_t
 
     ham_u32_t aging_tracker;
 
+    /**
+     Exponential Moving Average (http://en.wikipedia.org/wiki/Moving_average)
+     using fixed-point arithmetic, where EMA_1 and EMA_0 represent the max and min
+     values attainable: values near EMA_1 mean that many of the most recent
+     operations have been queries of this kind, while values nearer to EMA_0
+     mean that the most recent queries are from another type.
+    */
+    ham_float_t query_EMA;
+    /** EMA tracking how many recent queries hit at or beyond the lower bound of the total key range */
+    ham_float_t query_lower_bound_EMA;
+    /** EMA tracking how many recent queries hit at or beyond the upper bound of the total key range */
+    ham_float_t query_upper_bound_EMA;
+
 } ham_runtime_statistics_opdbdata_t;
+
+
 
 typedef struct ham_runtime_statistics_dbdata_t
 {
@@ -343,20 +359,20 @@ typedef struct ham_runtime_statistics_dbdata_t
      *
      * Fringe case consideration: when there's, say, a lot of FIND going
      * on with a few ERASE operations in between, is it A Bad Thing that
-     * the ERASE stats risc getting rescaled to almost nil then? Answer: NO.
+     * the ERASE stats risk getting rescaled to almost nil then? Answer: NO.
      * Because there's a high probability that the last ERASE btree leaf
      * node isn't in cache anymore anyway -- unless it's the same one
      * as used by FIND.
      *
      * The reason we keep track of 3 different leaf nodes is only so we
-     * can supply good hinting in scanerios where FIND, INSERT and/or
+     * can supply good hinting in scenarios where FIND, INSERT and/or
      * ERASE are mixed in reasonable ratios; keeping track of only a single
      * btree leaf would deny us some good hinting for the other operations.
      */
     ham_u32_t rescale_tracker;
 
     /**
-     * Remember the upper and lower bound kays for this database; update them
+     * Remember the upper and lower bound keys for this database; update them
      * when we insert a new key, maybe even update them when we delete/erase
      * a key.
      *
@@ -404,21 +420,23 @@ typedef struct ham_runtime_statistics_dbdata_t
      * is closed or deleted.
      */
     ham_key_t lower_bound;
-    ham_u32_t lower_bound_index;
-    ham_offset_t lower_bound_page_address;
-    ham_bool_t lower_bound_set;
     ham_key_t upper_bound;
-    ham_u32_t upper_bound_index;
+    ham_offset_t lower_bound_page_address;
     ham_offset_t upper_bound_page_address;
+    ham_u16_t lower_bound_index;
+    ham_u16_t upper_bound_index;
+    ham_bool_t lower_bound_set;
     ham_bool_t upper_bound_set;
 
-    /* a flag if the previous insert operation was an append */
-    ham_bool_t last_insert_was_append;
-
-    /* a flag if the previous insert operation was a prepend */
-    ham_bool_t last_insert_was_prepend;
-
 } ham_runtime_statistics_dbdata_t;
+
+
+
+
+
+
+
+
 
 /**
  * This structure is a @e READ-ONLY data structure returned through invoking
@@ -493,7 +511,7 @@ struct ham_statistics_t
      *
      * @warning
      * The user @e MUST call this cleanup function when it is set by
-     * hamsterdb, preferrably through invoking
+     * hamsterdb, preferably through invoking
      * @ref ham_clean_statistics_datarec() as that function will check if
      * this callback has been set or not before invoking it.
      *
@@ -506,8 +524,12 @@ struct ham_statistics_t
      * @a _free_func callback.
      */
     void *_free_func_internal_arg;
-
 };
+
+
+
+
+
 
 /**
  * Invoke the optional @ref ham_statistics_t content cleanup function.

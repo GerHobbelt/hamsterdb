@@ -7,17 +7,16 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
-#include "config.h"
+/**
+* @cond ham_internals
+*/
 
-#include <string.h>
-#include <stdio.h>
-
-#include <ham/hamsterdb_stats.h>
+#include "internal_preparation.h"
 
 #include "btree.h"
+<<<<<<< HEAD:src/btree_stats.cc
 #include "btree_cursor.h"
 #include "cursor.h"
 #include "cache.h"
@@ -30,9 +29,24 @@
 #include "page.h"
 #include "btree_stats.h"
 #include "util.h"
+=======
+#include "btree_classic.h"
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 
-/*
- *  TODO statistics gatherer/hinter:
+
+
+
+#if HAM_DEBUG
+static void cache_init_history(void);
+#else
+#define cache_init_history() /**/
+#endif
+
+
+
+
+/**
+ * statistics gatherer/hinter:
  *
  * keep track of two areas' 'utilization':
  *
@@ -68,7 +82,7 @@
  *
  * -- YES, that also means we are able to switch freelist scanning
  * mode, and thus speed- versus storage consumption hints, on a per-insert basis: a single
- * database can mix slow but spacesaving record inserts for those times / tables when we do not need the extra oemph, while other inserts can
+ * database can mix slow but spacesaving record inserts for those times / tables when we do not need the extra oomph, while other inserts can
  * be told (using the flags in the API calls) to act optimized for
  *  - none (classic) --> ~ storage space saving
  *  - storage space saving
@@ -98,7 +112,7 @@
  *
  *
  * When loading a freelist page, we can use sampling to get an idea of
- * where the LAST zone starts and ends (2 bsearches: one assuming the
+ * where the LAST zone starts and ends (2 binary searches: one assuming the
  * freelist is sorted in descending order --> last 1 bit, one assuming the freelist is sorted in ascending
  * order (now that we 'know' the last free bit, this will scan the range 0..last-1-bit to
  * find the first 1 bit in there.
@@ -180,7 +194,7 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
         HAM_LOG2_16_STAGES(value, power);
 #endif
     } while (value);
-    
+
     return power;
 
 #else /* if 0 */
@@ -194,7 +208,7 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
          * test top bit by checking two's complement sign.
          *
          * This LOG2 is crafted to spend the least number of
-         * rounds inside the BM freelist bitarray scans.
+         * rounds inside the BM freelist bit-array scans.
          */
         while (!(value < 0))
         {
@@ -219,7 +233,7 @@ static __inline ham_u16_t ham_log16(ham_size_t v)
 {
     register ham_size_t value = v;
     register ham_u16_t power = !!value;
-    
+
     if (value)
     {
         do
@@ -227,7 +241,7 @@ static __inline ham_u16_t ham_log16(ham_size_t v)
             power++;
         } while (value >>= 4);
     }
-    
+
     return power;
 }
 
@@ -253,6 +267,12 @@ ham_bucket_index2bitcount(ham_u16_t bucket)
 {
     return (1U << (bucket * 1)) - 1;
 }
+
+
+
+
+
+
 
 void
 db_update_global_stats_find_query(Database *db, ham_size_t key_size)
@@ -332,7 +352,7 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
     rescale_256(opstats->btree_fail_count);
     rescale_256(opstats->btree_cost);
     rescale_256(opstats->btree_fail_cost);
-    
+
     // opstats->btree_last_page_addr;
     rescale_256(opstats->btree_last_page_sq_hits);
 
@@ -345,7 +365,7 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
     rescale_256(opstats->btree_fail_count);
     rescale_256(opstats->btree_cost);
     rescale_256(opstats->btree_fail_cost);
-    
+
     // opstats->btree_last_page_addr;
     rescale_256(opstats->btree_last_page_sq_hits);
 
@@ -358,7 +378,7 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
     rescale_256(opstats->btree_fail_count);
     rescale_256(opstats->btree_cost);
     rescale_256(opstats->btree_fail_cost);
-    
+
     // opstats->btree_last_page_addr;
     rescale_256(opstats->btree_last_page_sq_hits);
 
@@ -369,8 +389,12 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
  * update statistics following a followed up out-of-bound hint
  */
 void
+<<<<<<< HEAD:src/btree_stats.cc
 stats_update_fail_oob(int op, Database *db, ham_size_t cost,
                     ham_bool_t try_fast_track)
+=======
+stats_update_fail_oob(int op, ham_db_t *db, ham_size_t cost, ham_bool_t try_fast_track)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_opdbdata_t *opstats = db_get_op_perf_data(db, op);
 
@@ -381,8 +405,12 @@ stats_update_fail_oob(int op, Database *db, ham_size_t cost,
 }
 
 void
+<<<<<<< HEAD:src/btree_stats.cc
 stats_update_fail(int op, Database *db, ham_size_t cost,
                     ham_bool_t try_fast_track)
+=======
+stats_update_fail(int op, ham_db_t *db, ham_size_t cost, ham_bool_t try_fast_track)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_dbdata_t *dbstats = db->get_perf_data();
     ham_runtime_statistics_opdbdata_t *opstats = db_get_op_perf_data(db, op);
@@ -404,7 +432,7 @@ stats_update_fail(int op, Database *db, ham_size_t cost,
     opstats->btree_fail_count++;
     opstats->btree_cost += cost;
     opstats->btree_fail_cost += cost;
-    
+
     //opstats->btree_last_page_addr = 0; -- keep page from previous match around!
     opstats->btree_last_page_sq_hits = 0; /* reset */
 
@@ -416,8 +444,12 @@ stats_update_fail(int op, Database *db, ham_size_t cost,
 }
 
 void
+<<<<<<< HEAD:src/btree_stats.cc
 stats_update(int op, Database *db, Page *page, ham_size_t cost,
                     ham_bool_t try_fast_track)
+=======
+stats_update(int op, ham_db_t *db, ham_page_t *page, ham_size_t cost, ham_bool_t try_fast_track)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_dbdata_t *dbstats = db->get_perf_data();
     ham_runtime_statistics_opdbdata_t *opstats = db_get_op_perf_data(db, op);
@@ -453,7 +485,7 @@ stats_update(int op, Database *db, Page *page, ham_size_t cost,
         }
         opstats->btree_hinting_count++;
     }
-    
+
     if (opstats->btree_last_page_addr
         && opstats->btree_last_page_addr == page->get_self())
     {
@@ -465,6 +497,7 @@ stats_update(int op, Database *db, Page *page, ham_size_t cost,
     }
 }
 
+<<<<<<< HEAD:src/btree_stats.cc
 /*
  * when the last hit leaf node is split or shrunk, blow it away for all operations!
  *
@@ -477,6 +510,29 @@ stats_update(int op, Database *db, Page *page, ham_size_t cost,
 void
 btree_stats_page_is_nuked(Database *db, Page *page,
                     ham_bool_t split)
+=======
+/**
+when the last hit leaf node is split or shrunk, blow it away for all operations!
+
+Also blow away a page when a transaction aborts which has modified this page. We'd rather
+reconstruct our critical statistics then carry the wrong bounds, etc. around.
+
+This is done to prevent the hinter from hinting/pointing at an (by now)
+INVALID btree node later on!
+
+@param btdata the collective of common 'constant' values such as the Database, Environment and Backend handles.
+
+@param page the current page
+
+@param reason One of
+              - @ref REASON_ERASE
+              - @ref REASON_MERGE
+              - @ref REASON_SPLIT
+              - @ref REASON_ABORT
+*/
+void
+stats_page_is_nuked(ham_db_t *db, struct ham_page_t *page, ham_bool_t split)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_dbdata_t *dbdata = db->get_perf_data();
     Environment *env = db->get_env();
@@ -508,10 +564,19 @@ btree_stats_page_is_nuked(Database *db, Page *page,
         dbdata->lower_bound_set = HAM_FALSE;
     }
 
+<<<<<<< HEAD:src/btree_stats.cc
     if (dbdata->upper_bound_page_address == page->get_self()) {
         if (dbdata->upper_bound.data) {
             ham_assert(env->get_allocator() != 0, (0));
             env->get_allocator()->free(dbdata->upper_bound.data);
+=======
+    if (dbdata->upper_bound_page_address == page_get_self(page))
+    {
+        if (dbdata->upper_bound.data)
+        {
+            ham_assert(env_get_allocator(env) != 0, (0));
+            allocator_free(env_get_allocator(env), dbdata->upper_bound.data);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
         }
         memset(&dbdata->upper_bound, 0, sizeof(dbdata->upper_bound));
         dbdata->upper_bound_index = 0;
@@ -521,8 +586,12 @@ btree_stats_page_is_nuked(Database *db, Page *page,
 }
 
 void
+<<<<<<< HEAD:src/btree_stats.cc
 btree_stats_update_any_bound(int op, Database *db, Page *page,
                     ham_key_t *key, ham_u32_t find_flags, ham_s32_t slot)
+=======
+stats_update_any_bound(int op, ham_db_t *db, struct ham_page_t *page, ham_key_t *key, ham_u32_t find_flags, ham_s32_t slot)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_status_t st;
     ham_runtime_statistics_dbdata_t *dbdata = db->get_perf_data();
@@ -534,7 +603,16 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
     dbdata->last_insert_was_prepend=0;
     dbdata->last_insert_was_append=0;
 
+<<<<<<< HEAD:src/btree_stats.cc
     ham_assert(env->get_allocator() != 0, (0));
+=======
+    /* reset both flags - they will be set if lower_bound or upper_bound
+     * are updated */
+    dbdata->last_insert_was_prepend=0;
+    dbdata->last_insert_was_append=0;
+
+    ham_assert(env_get_allocator(env) != 0, (0));
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
     ham_assert(btree_node_is_leaf(node), (0));
     if (!btree_node_get_left(node)) {
         /* this is the leaf page which carries the lower bound key */
@@ -606,7 +684,11 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
                     dbdata->lower_bound.size=0;
                 }
 
+<<<<<<< HEAD:src/btree_stats.cc
                 st = btree_copy_key_int2pub(db,
+=======
+                st = util_copy_key_int2pub(db,
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                     btree_node_get_key(db, node, dbdata->lower_bound_index),
                     &dbdata->lower_bound);
                 if (st)
@@ -614,7 +696,11 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
                     /* panic! is case of failure, just drop the lower bound
                      * entirely. */
                     if (dbdata->lower_bound.data)
+<<<<<<< HEAD:src/btree_stats.cc
                         env->get_allocator()->free(dbdata->lower_bound.data);
+=======
+                        allocator_free(env_get_allocator(env), dbdata->lower_bound.data);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                     memset(&dbdata->lower_bound, 0,
                             sizeof(dbdata->lower_bound));
                     dbdata->lower_bound_index = 0;
@@ -628,18 +714,32 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
                         dbdata->lower_bound.size > 0, (0));
                     ham_assert(dbdata->lower_bound_page_address != 0, (0));
                 }
+<<<<<<< HEAD:src/btree_stats.cc
+=======
+                page_release_ref(page);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                 if (op==HAM_OPERATION_STATS_INSERT)
                     dbdata->last_insert_was_prepend=1;
             }
         }
     }
 
+<<<<<<< HEAD:src/btree_stats.cc
     if (!btree_node_get_right(node)) {
+=======
+    if (!btree_node_get_right(node))
+    {
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
         /* this is the leaf page which carries the upper bound key */
         ham_assert(btree_node_get_count(node) == 0
                 ? !btree_node_get_left(node)
                 : 1, (0));
+<<<<<<< HEAD:src/btree_stats.cc
         if (btree_node_get_count(node) != 0) {
+=======
+        if (btree_node_get_count(node) != 0)
+        {
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
             /*
              * range is non-empty; the other case has already been handled
              * above upper bound key is always located at index [size-1]
@@ -648,10 +748,19 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
              * some way (slot == size-1). This 'copy anyway' approach
              * saves us one costly key comparison.
              */
+<<<<<<< HEAD:src/btree_stats.cc
             if (dbdata->upper_bound_index !=
                         (ham_u32_t)btree_node_get_count(node)-1
                     || dbdata->upper_bound_page_address!=page->get_self()
                     || (ham_u16_t)slot==btree_node_get_count(node)-1) {
+=======
+            if (dbdata->upper_bound_index != btree_node_get_count(node) - 1
+                    || dbdata->upper_bound_page_address != page_get_self(page)
+                    || slot == btree_node_get_count(node) - 1)
+            {
+                page_add_ref(page);
+
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                 /* only set when not done already */
                 dbdata->upper_bound_set = HAM_TRUE;
                 dbdata->upper_bound_index = btree_node_get_count(node) - 1;
@@ -663,6 +772,7 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
                     dbdata->upper_bound.size=0;
                 }
 
+<<<<<<< HEAD:src/btree_stats.cc
                 st = btree_copy_key_int2pub(db,
                     btree_node_get_key(db, node, dbdata->upper_bound_index),
                     &dbdata->upper_bound);
@@ -671,18 +781,38 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
                      * entirely. */
                     if (dbdata->upper_bound.data)
                         env->get_allocator()->free(dbdata->upper_bound.data);
+=======
+                st = util_copy_key_int2pub(db,
+                    btree_node_get_key(db, node, dbdata->upper_bound_index),
+                    &dbdata->upper_bound);
+                if (st)
+                {
+                    /* panic! is case of failure, just drop the upper bound
+                     * entirely. */
+                    if (dbdata->upper_bound.data)
+                        allocator_free(env_get_allocator(env), dbdata->upper_bound.data);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                     memset(&dbdata->upper_bound, 0,
                             sizeof(dbdata->upper_bound));
                     dbdata->upper_bound_index = 0;
                     dbdata->upper_bound_page_address = 0;
                     dbdata->upper_bound_set = HAM_FALSE;
                 }
+<<<<<<< HEAD:src/btree_stats.cc
+=======
+                page_release_ref(page);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                 if (op==HAM_OPERATION_STATS_INSERT)
                     dbdata->last_insert_was_append=1;
             }
         }
     }
 }
+
+
+
+
+
 
 /*
  * NOTE:
@@ -698,7 +828,11 @@ btree_stats_update_any_bound(int op, Database *db, Page *page,
  * hinting in such mixed use cases.
  */
 void
+<<<<<<< HEAD:src/btree_stats.cc
 btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
+=======
+btree_find_get_hints(find_hints_t *hints, ham_db_t *db, ham_key_t *key)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_dbdata_t *dbdata = db->get_perf_data();
     ham_runtime_statistics_opdbdata_t *opstats = db_get_op_perf_data(db, HAM_OPERATION_STATS_FIND);
@@ -809,10 +943,14 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
 
     /*
     age the hinting statistics
-    
+
     This is different from the need to rescale the statistics data, as the latter is due to
     the risk of integer overflow when accounting for a zillion operations.
+<<<<<<< HEAD:src/btree_stats.cc
     
+=======
+
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
     Instead, the hinting costs are 'aged' to reduce the influence of older hinting
     results on subsequent hinter output.
 
@@ -879,7 +1017,7 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
             }
             else {
                 int cmp;
-            
+
                 ham_assert(dbdata->lower_bound_index == 0, (0));
                 ham_assert(dbdata->lower_bound.data == NULL ?
                     dbdata->lower_bound.size == 0 :
@@ -897,8 +1035,7 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
         if (dbdata->upper_bound_set
                 && !dam_is_set(flags, HAM_FIND_LT_MATCH)) {
             int cmp;
-            
-            ham_assert(dbdata->upper_bound_index >= 0, (0));
+
             ham_assert(dbdata->upper_bound.data == NULL ?
                 dbdata->upper_bound.size == 0 :
                 dbdata->upper_bound.size > 0, (0));
@@ -915,7 +1052,11 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
 }
 
 void
+<<<<<<< HEAD:src/btree_stats.cc
 btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
+=======
+btree_insert_get_hints(insert_hints_t *hints, ham_db_t *db, ham_key_t *key)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_dbdata_t *dbdata = db->get_perf_data();
     btree_cursor_t *cursor = hints->cursor ?
@@ -935,9 +1076,18 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
     else if (dbdata->last_insert_was_prepend)
         hints->flags|=HAM_HINT_PREPEND;
 
+<<<<<<< HEAD:src/btree_stats.cc
     if ((hints->flags & HAM_HINT_APPEND) && (cursor)) {
         if (!((Cursor *)hints->cursor)->is_nil(0)) {
             ham_assert(db == btree_cursor_get_db(cursor), (0));
+=======
+    if ((hints->flags & HAM_HINT_APPEND) && (cursor))
+    {
+        if (!bt_cursor_is_nil(cursor))
+        {
+            ham_assert(bt_cursor_is_nil(cursor)==0, ("cursor must not be nil"));
+            ham_assert(db == bt_cursor_get_db(cursor), (0));
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 
             /*
              fetch the page of the cursor. We deem the cost of an uncoupled cursor
@@ -945,9 +1095,16 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
              given key - which can be rather costly - so we rather wait for the
              statistical cavalry a little later on in this program then.
              */
+<<<<<<< HEAD:src/btree_stats.cc
             if (btree_cursor_is_coupled(cursor)) {
                 Page *page = btree_cursor_get_coupled_page(cursor);
                 btree_node_t *node = page_get_btree_node(page);
+=======
+            if (bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_COUPLED)
+            {
+                ham_page_t *page = bt_cursor_get_coupled_page(cursor);
+                btree_node_t *node = ham_page_get_btree_node(page);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                 ham_assert(btree_node_is_leaf(node),
                             ("cursor points to internal node"));
                 //ham_assert(!btree_node_get_right(node), ("cursor points to leaf node which is NOT the uppermost/last one"));
@@ -978,9 +1135,16 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
              given key - which can be rather costly - so we rather wait for the
              statistical cavalry a little later on in this program then.
              */
+<<<<<<< HEAD:src/btree_stats.cc
             if (btree_cursor_is_coupled(cursor)) {
                 Page *page = btree_cursor_get_coupled_page(cursor);
                 btree_node_t *node = page_get_btree_node(page);
+=======
+            if (bt_cursor_get_flags(cursor) & BT_CURSOR_FLAG_COUPLED)
+            {
+                ham_page_t *page = bt_cursor_get_coupled_page(cursor);
+                btree_node_t *node = ham_page_get_btree_node(page);
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
                 ham_assert(btree_node_is_leaf(node),
                         ("cursor points to internal node"));
                 //ham_assert(!btree_node_get_left(node), ("cursor points to leaf node which is NOT the lowest/first one"));
@@ -1008,7 +1172,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
     - when the given key is positioned beyond the end, hint 'append' anyway.
 
     - When the given key is positioned before the start, hint 'prepend' anyway.
-    
+
     NOTE: This 'auto-detect' mechanism (thanks to the key bounds being collected through
     the statistics gathering calls) renders the manual option HAM_HINT_APPEND/_PREPEND
     somewhat obsolete, really.
@@ -1108,7 +1272,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
                     hints->force_append = HAM_TRUE;
                 }
             }
-            
+
             if (dbdata->lower_bound_set)
             {
                 if (dbdata->lower_bound_index == 1)
@@ -1125,7 +1289,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
                 else
                 {
                     int cmp;
-                    
+
                     ham_assert(dbdata->lower_bound_index == 0, (0));
                     ham_assert(dbdata->lower_bound.data == NULL ?
                         dbdata->lower_bound.size == 0 :
@@ -1146,8 +1310,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
             if (dbdata->upper_bound_set)
             {
                 int cmp;
-                
-                ham_assert(dbdata->upper_bound_index >= 0, (0));
+
                 ham_assert(dbdata->upper_bound.data == NULL ?
                     dbdata->upper_bound.size == 0 :
                     dbdata->upper_bound.size > 0, (0));
@@ -1168,16 +1331,24 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
 
     /*
     we don't yet hint about jumping to the last accessed leaf node immediately (yet)
-    
+
     EDIT:
+<<<<<<< HEAD:src/btree_stats.cc
     
+=======
+
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
     now we do: see the flags + dam code above: this happens when neither PREPEND
     nor APPEND hints are specified
     */
 }
 
 void
+<<<<<<< HEAD:src/btree_stats.cc
 btree_erase_get_hints(erase_hints_t *hints, Database *db, ham_key_t *key)
+=======
+btree_erase_get_hints(erase_hints_t *hints, ham_db_t *db, ham_key_t *key)
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 {
     ham_runtime_statistics_dbdata_t *dbdata = db->get_perf_data();
 
@@ -1202,7 +1373,7 @@ btree_erase_get_hints(erase_hints_t *hints, Database *db, ham_key_t *key)
         else
         {
             int cmp;
-            
+
             ham_assert(dbdata->lower_bound_index == 0, (0));
             ham_assert(dbdata->lower_bound.data == NULL ?
                 dbdata->lower_bound.size == 0 :
@@ -1221,8 +1392,7 @@ btree_erase_get_hints(erase_hints_t *hints, Database *db, ham_key_t *key)
     if (dbdata->upper_bound_set)
     {
         int cmp;
-        
-        ham_assert(dbdata->upper_bound_index >= 0, (0));
+
         ham_assert(dbdata->upper_bound.data == NULL ?
             dbdata->upper_bound.size == 0 :
             dbdata->upper_bound.size > 0, (0));
@@ -1263,9 +1433,29 @@ btree_stats_flush_dbdata(Database *db, ham_runtime_statistics_dbdata_t *dbdata,
                     ham_bool_t last_in_env)
 {
     /*
+<<<<<<< HEAD:src/btree_stats.cc
      * the freelist statistics are persisted through the freelist destructor,
      * everything else is currently not persistet
      */
+=======
+    the freelist statistics are persisted through the freelist destructor,
+    which is invoked elsewhere, so all we need to worry about here are the
+    'global' db/env oriented find/insert/erase statistics.
+
+    TODO:
+
+    persist those in the db header, that is IFF we're a v1.1.0+ DB
+    and we're the last one in the environment (or running solo).
+    */
+    if (last_in_env)
+    {
+        /* do we have the new freelist statistics persisting format or are we using an older DB format? */
+        if (!db_is_mgt_mode_set(db_get_data_access_mode(db), HAM_DAM_ENFORCE_PRE110_FORMAT))
+        {
+
+        }
+    }
+>>>>>>> flash-bang-grenade:src/btree_stats.cc
 }
 
 void
@@ -1332,8 +1522,16 @@ btree_stats_fill_ham_statistics_t(Environment *env, Database *db,
     /* and finally mark which sections have actually been fetched */
     dst->dont_collect_global_stats = !collect_globdata;
     dst->dont_collect_db_stats = !collect_dbdata;
-    
+
     return st;
 }
+
+
+
+
+
+/**
+* @endcond
+*/
 
 

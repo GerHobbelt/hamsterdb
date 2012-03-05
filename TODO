@@ -7,7 +7,80 @@ o a pending  TODO item (for the current release)
 x a finished TODO item
 
 -----------------------------------------------------------------------------
+<<<<<<< HEAD
 This Branch Is About Integrating The hamsterdb2 Functionality!!!!!
+=======
+
+o mail from Jake - performance regressions with frequent txn-aborts
+    x fixed in code
+    o run lessfs power-off recovery tests
+    o add to monster testsuite or to unittests
+    o run monster tests
+
+o cleanup this TODO file - need better requirements tracking
+
+-----------------------------------------------------------------------------
+
+o review DB_NEW_PAGE_DOES_THRASH_CACHE - the cache age is not really used,
+    therefore this flag is most likely not required 
+
+o review statistics - the "cost" management; is this really in use? where?
+    -> leave it as is - Ger might need it again
+
+------------------------------------------------------------
+
+o what about a HAM_RMW flag for ham_insert - it will do a read/modify/write
+    operation if the record already exists; but how can we propagate a callback
+    for this? 
+    o empty/small/tiny records
+    o large records
+    o in-memory records
+    o unittests
+    o documentation in header file
+    o documentation in wiki
+
+o release new .NET wrapper with fix from a.todorov (-> nabble)
+    x move to github
+    . add server functionality
+
+. add automatic code coverage using gconv
+    http://www.manpagez.com/man/1/gcov/
+    http://gcc.gnu.org/onlinedocs/gcc/Gcov.html
+    http://aleccolocco.blogspot.com/2009/08/sqlite-lesson-in-low-defect-software.html (section "Test Coverage with GCC")
+    o track coverage results, publish online
+    o gui tools: http://code.google.com/p/trucov/,
+                 http://sourceforge.net/projects/ggcov/files/ 
+
+. remove HAM_HINT_UBER_FAST_ACCESS, HAM_HINT_RANDOM_ACCESS, 
+	HAM_HINT_SEQUENTIAL?
+
+. unix daemon/windows service
+    o new option to set the working directory
+    o new option to set the username
+
+. more server stuff
+    o add acceptance tests
+
+. more server stuff
+    o how could we do authentication?
+    . support https?
+
+. disable local client?
+    o need configure switch to disable the local client
+        -> also clean up db.h, env.h...
+    o add tests for --disable-remote and --disable-local to release.sh
+
+. remove the garbage-list from the cache - it's not used
+
+-----------------------------------------------------------------------------
+
+o update the Python API 
+
+x move to github
+
+. add server functionality
+
+>>>>>>> flash-bang-grenade
 -----------------------------------------------------------------------------
 The big headline is:
 As a user i want to run many Transactions in parallel with high performance.
@@ -195,7 +268,15 @@ o recovery: re-create pending transactions (if required)
     o db_check_erase_conflicts
     o __increment_dupe_index
 
+<<<<<<< HEAD
 . c++-ify everything else
+=======
+o update the java API 
+
+x move to github
+
+o add server functionality
+>>>>>>> flash-bang-grenade
 
 . device, page and os shold no longer return errors but throw exceptions
 
@@ -243,7 +324,24 @@ o fully (!) automize the whole release process for unix; the result (on
     o the release notes (a template)
     o the output (xml) of the monster tests
 
+<<<<<<< HEAD
 . port to WinCE
+=======
+. webpage changes
+    http://www.purenetworks.com/
+    http://www.omegathemes.com/tf/smartages/#
+    http://eucalyptus.com/
+    http://www.pctools.com/de
+    x the header page image is too large
+    o frontpage: have multiple images (scrolling in background) with more
+        text info? 
+        http://malsup.com/jquery/cycle/basic.html
+        http://www.sohtanaka.com/web-design/examples/image-slider/
+        http://www.slidedeck.com/
+    o sitemap: pulldown with jquery
+    o download: need download gates to track in analytics as goals
+    o rss feed
+>>>>>>> flash-bang-grenade
 
 o how can we extend the monster-tests to have reliable tests for transactions?
 

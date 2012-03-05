@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2007 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,14 +7,17 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * This sample does the same as env2, but uses the C++ API.
  */
 
+#define HAM_IMPLEMENT_CPP_CLASSCODE    1
+#include <ham/hamsterdb.hpp>
+
 #include <iostream>
 #include <stdlib.h> /* for exit() */
-#include <ham/hamsterdb.hpp>
 
 #define MAX_DBS             3
 
@@ -165,7 +168,7 @@ run_demo(void)
      * the outer loop is similar to
      * SELECT * FROM customers WHERE 1;
      */
-    while (1) {
+    for (;;) {
         customer_t *customer;
 
         try {
@@ -217,7 +220,7 @@ run_demo(void)
         /* get the record of this database entry */
         cursor[2].move(0, &c2o_record);
 
-        do {
+        for (;;) {
             int order_id;
 
             order_id=*(int *)c2o_record.get_data();
@@ -251,8 +254,7 @@ run_demo(void)
                     return (-1);
                 }
             }
-
-        } while(1);
+        }
     }
 
     /*

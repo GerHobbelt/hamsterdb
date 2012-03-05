@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief this file contains the version of hamster
  *
  */
@@ -17,6 +21,9 @@
 #ifndef HAM_VERSION_H__
 #define HAM_VERSION_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * the version numbers
@@ -34,4 +41,15 @@
 #define HAM_VERSION_STR "2.0.1"
 
 
+
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif /* HAM_VERSION_H__ */
+
+/**
+* @endcond
+*/
+

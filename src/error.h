@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief this file has error logging routines and a strerror() replacement
  *
  */
@@ -19,7 +23,16 @@
 
 #include <ham/hamsterdb.h>
 
+#include <stdarg.h>
 
+
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+>>>>>>> flash-bang-grenade
 /*
  * function prototypes
  */
@@ -47,23 +60,42 @@ extern void (*ham_test_abort)(void);
  * not every preprocessor supports ellipsis as macro-arguments -
  * therefore we have to use brackets, so preprocessors treat multiple
  * arguments like a single argument. and we need to lock the output,
+<<<<<<< HEAD
  * otherwise we are not thread-safe. this is super-ugly.
+=======
+ * otherwise we are not thread-safe. This is super-ugly.
+>>>>>>> flash-bang-grenade
  */
 #ifdef HAM_DEBUG
-#   define ham_assert(e, f)  if (!(e)) {                                       \
-                                dbg_lock();                                    \
-                                dbg_prepare(HAM_DEBUG_LEVEL_FATAL, __FILE__,   \
-                                        __LINE__, __FUNCTION__, #e);           \
-                                dbg_verify_failed f;                           \
-                                dbg_unlock();                                  \
-                             }
+#   define ham_assert(e, f)                                                     \
+    do {                                                                        \
+        if (!(e)) {                                                             \
+            dbg_lock();                                                         \
+            dbg_prepare(HAM_DEBUG_LEVEL_FATAL, __FILE__,                        \
+                    __LINE__, __FUNCTION__, #e);                                \
+            dbg_verify_failed f;                                                \
+            dbg_unlock();                                                       \
+         }                                                                      \
+    } while (0)
+
 #else /* !HAM_DEBUG */
+<<<<<<< HEAD
+=======
+/*
+WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+
+ham_assert MUST ALWAYS be exactly ONE statement -- unless we strictly enforce
+a coding standard where all conditionals and loops use curly braces; see
+cursor_set_next_in_page macro for a candidate to fail with the old 'empty' #define...
+*/
+>>>>>>> flash-bang-grenade
 #   define ham_assert(e, f)  (void)0
 #endif /* HAM_DEBUG */
 
 /**
- * ham_log() and ham_verify() are available in every build
+ * ham_trace(), ham_logwarn(), ham_logerr() and ham_verify() are available in every build
  */
+<<<<<<< HEAD
 #define ham_trace(f)         do {                                              \
                                 dbg_lock();                                    \
                                 dbg_prepare(HAM_DEBUG_LEVEL_DEBUG, __FILE__,   \
@@ -85,5 +117,50 @@ extern void (*ham_test_abort)(void);
                                 dbg_verify_failed f;                           \
                                 dbg_unlock();                                  \
                              }
+=======
+#define ham_trace(f)                                                            \
+    do {                                                                        \
+        dbg_lock();                                                             \
+        dbg_prepare(HAM_DEBUG_LEVEL_DEBUG, __FILE__,                            \
+                __LINE__, __FUNCTION__, 0);                                     \
+        dbg_log f;                                                              \
+        dbg_unlock();                                                           \
+     } while (0)
+#define ham_logwarn(f)                                                          \
+    do {                                                                        \
+        dbg_lock();                                                             \
+        dbg_prepare(HAM_DEBUG_LEVEL_WARNING, __FILE__,                          \
+                __LINE__, __FUNCTION__, 0);                                     \
+        dbg_log f;                                                              \
+        dbg_unlock();                                                           \
+     } while (0)
+#define ham_logerr(f)                                                           \
+    do {                                                                        \
+        dbg_lock();                                                             \
+        dbg_prepare(HAM_DEBUG_LEVEL_ERROR, __FILE__,                            \
+                __LINE__, __FUNCTION__, 0);                                     \
+        dbg_log f;                                                              \
+        dbg_unlock();                                                           \
+     } while (0)
+
+#define ham_verify(e, f)                                                        \
+    do {                                                                        \
+        if (!(e)) {                                                             \
+            dbg_lock();                                                         \
+            dbg_prepare(HAM_DEBUG_LEVEL_FATAL, __FILE__,                        \
+                    __LINE__, __FUNCTION__, #e);                                \
+            dbg_verify_failed f;                                                \
+            dbg_unlock();                                                       \
+         }                                                                      \
+     } while (0)
+#ifdef __cplusplus
+} // extern "C"
+#endif
+>>>>>>> flash-bang-grenade
 
 #endif /* HAM_ERROR_H__ */
+
+/**
+* @endcond
+*/
+

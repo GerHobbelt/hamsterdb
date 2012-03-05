@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,8 +7,9 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * This sample demonstrates the use of duplicate items; every line is
  * split into words, and each word is inserted with its line number.
  * Then a cursor is used to print all words in a sorted order, with the
@@ -47,7 +48,7 @@ main(int argc, char **argv)
     }
 
     /*
-     * second step: create a new Database with support for duplicate keys
+     * second step: create a new database with support for duplicate keys
      *
      * we could create an in-memory-database to speed up the sorting.
      */
@@ -71,11 +72,13 @@ main(int argc, char **argv)
          */
         while ((p=strtok(start, " \t\r\n"))) {
             key.data=p;
-            key.size=(ham_size_t)strlen(p)+1; /* also store the terminating
+            key.size=(ham_u16_t)strlen(p)+1; /* also store the terminating
                                                  0-byte */
             record.data=&lineno;
             record.size=sizeof(lineno);
 
+            /* note: the second parameter of ham_insert() is reserved; set it
+             * to NULL; the flag HAM_DUPLICATE inserts a duplicate key */
             st=ham_insert(db, 0, &key, &record, HAM_DUPLICATE);
             if (st!=HAM_SUCCESS) {
                 printf("ham_insert() failed with error %d\n", st);
@@ -99,7 +102,7 @@ main(int argc, char **argv)
     /*
      * iterate over all items and print them
      */
-    while (1) {
+    for (;;) {
         st=ham_cursor_move(cursor, &key, &record, HAM_CURSOR_NEXT);
         if (st!=HAM_SUCCESS) {
             /* reached end of the database? */

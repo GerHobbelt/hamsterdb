@@ -10,6 +10,13 @@
  */
 
 /**
+<<<<<<< HEAD
+=======
+* @cond ham_internals
+*/
+
+/**
+>>>>>>> flash-bang-grenade
  * @brief freelist statistics structures, functions and macros
  *
  */
@@ -22,7 +29,19 @@
 #include <ham/hamsterdb_stats.h>
 
 
+<<<<<<< HEAD
 #include "packstart.h"
+=======
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+#include <ham/packstart.h>
+>>>>>>> flash-bang-grenade
 
 /**
 We keep track of VERY first free slot index + free slot index
@@ -51,7 +70,11 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
      */
     ham_u32_t scan_count;
     ham_u32_t ok_scan_count;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> flash-bang-grenade
     /**
      * summed cost ('duration') of all scans per size range.
      */
@@ -60,16 +83,27 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
 
 } HAM_PACK_2 freelist_slotsize_stats_t;
 
+<<<<<<< HEAD
 #include "packstop.h"
 
 
 #include "packstart.h"
+=======
+#include <ham/packstop.h>
+
+
+#include <ham/packstart.h>
+>>>>>>> flash-bang-grenade
 
 /**
  * freelist statistics as they are persisted on disc.
  *
  * Stats are kept with each freelist entry record, but we also keep
+<<<<<<< HEAD
  * some derived data in the nonpermanent space with each freelist:
+=======
+ * some derived data in the non-permanent space with each freelist:
+>>>>>>> flash-bang-grenade
  * it's not required to keep a freelist page in cache just so the
  * statistics + our operational mode combined can tell us it's a waste
  * of time to go there.
@@ -161,7 +195,11 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_page_statistics_t
 
 } HAM_PACK_2 freelist_page_statistics_t;
 
+<<<<<<< HEAD
 #include "packstop.h"
+=======
+#include <ham/packstop.h>
+>>>>>>> flash-bang-grenade
 
 
 
@@ -203,7 +241,11 @@ struct freelist_hints_t
     /**
     [input] the number of (rounded up) pages we need to fulfill the request; 1 for
              'regular' (non-huge) requests.
+<<<<<<< HEAD
              
+=======
+
+>>>>>>> flash-bang-grenade
              Cannot be 0, as that is only correct for a zero-length request.
     */
     ham_size_t page_span_width;
@@ -252,7 +294,11 @@ struct freelist_global_hints_t
              spanning multiple pages ('huge blobs'): lists the number
              of (rounded up) pages we need to fulfill the request; 1 for
              'regular' (non-huge) requests.
+<<<<<<< HEAD
              
+=======
+
+>>>>>>> flash-bang-grenade
              Cannot be 0, as that is only correct for a zero-length request.
     */
     ham_size_t page_span_width;
@@ -283,13 +329,21 @@ struct freelist_global_hints_t
 
 
 extern void
+<<<<<<< HEAD
 db_update_freelist_globalhints_no_hit(Device *dev, Environment *env,
+=======
+db_update_freelist_globalhints_no_hit(ham_device_t *dev, ham_env_t *env,
+>>>>>>> flash-bang-grenade
                     freelist_entry_t *entry, freelist_hints_t *hints);
 
 
 
 extern void
+<<<<<<< HEAD
 db_update_freelist_stats_edit(Device *dev, Environment *env, freelist_entry_t *entry,
+=======
+db_update_freelist_stats_edit(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
+>>>>>>> flash-bang-grenade
                     freelist_payload_t *f,
                     ham_u32_t position,
                     ham_size_t size_bits,
@@ -297,28 +351,64 @@ db_update_freelist_stats_edit(Device *dev, Environment *env, freelist_entry_t *e
                     freelist_hints_t *hints);
 
 extern void
+<<<<<<< HEAD
 db_update_freelist_stats_fail(Device *dev, Environment *env, freelist_entry_t *entry,
+=======
+db_update_freelist_stats_fail(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
+>>>>>>> flash-bang-grenade
                     freelist_payload_t *f,
                     freelist_hints_t *hints);
 
 extern void
+<<<<<<< HEAD
 db_update_freelist_stats(Device *dev, Environment *env, freelist_entry_t *entry,
+=======
+db_update_freelist_stats(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
+>>>>>>> flash-bang-grenade
                     freelist_payload_t *f,
                     ham_u32_t position,
                     freelist_hints_t *hints);
 
 extern void
+<<<<<<< HEAD
 db_get_freelist_entry_hints(freelist_hints_t *dst, Device *dev, Environment *env,
                         freelist_entry_t *entry);
 
 extern void
 db_get_global_freelist_hints(freelist_global_hints_t *dst, Device *dev, Environment *env);
+=======
+db_get_freelist_entry_hints(freelist_hints_t *dst, ham_device_t *dev, ham_env_t *env,
+                        freelist_entry_t *entry);
+
+extern void
+db_get_global_freelist_hints(freelist_global_hints_t *dst, ham_device_t *dev, ham_env_t *env);
+>>>>>>> flash-bang-grenade
 
 
 
 
 extern ham_status_t
+<<<<<<< HEAD
 stats_fill_freel_statistics_t(Environment *env, ham_statistics_t *dst);
 
 
 #endif /* HAM_FREELIST_H__ */
+=======
+stats_fill_freel_statistics_t(ham_env_t *env, ham_statistics_t *dst);
+
+
+
+
+
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
+#endif /* HAM_FREELIST_H__ */
+
+/**
+* @endcond
+*/
+
+>>>>>>> flash-bang-grenade

@@ -1,5 +1,10 @@
+<<<<<<< HEAD:unittests/misc.cpp
 /**
  * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
+=======
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+>>>>>>> flash-bang-grenade:unittests/util.cpp
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,6 +16,7 @@
 
 #include "../src/config.h"
 
+<<<<<<< HEAD:unittests/misc.cpp
 #include <stdexcept>
 #include <string.h>
 #include <ham/hamsterdb.h>
@@ -20,9 +26,23 @@
 #include "../src/btree.h"
 #include "../src/env.h"
 #include "../src/btree_key.h"
+=======
+#include <ham/hamsterdb.h>
+#include "../src/db.h"
+#include "../src/env.h"
+#include "../src/keys.h"
+#include "../src/mem.h"
+#include "../src/page.h"
+#include "../src/util.h"
+#include "memtracker.h"
+>>>>>>> flash-bang-grenade:unittests/util.cpp
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <string.h> // [i_a] strlen, memcmp, etc.
+
 
 using namespace bfc;
 
@@ -47,6 +67,10 @@ public:
 protected:
     ham_db_t *m_db;
     ham_env_t *m_env;
+<<<<<<< HEAD:unittests/misc.cpp
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade:unittests/util.cpp
 
 public:
     virtual void setup()
@@ -55,6 +79,7 @@ public:
 
         ham_parameter_t p[]={{HAM_PARAM_PAGESIZE, 4096}, {0, 0}};
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_env_new(&m_env));
         BFC_ASSERT_EQUAL(0,
@@ -63,6 +88,16 @@ public:
                     ham_env_create_db(m_env, m_db, 1, 0, 0));
     }
     
+=======
+        ham_set_default_allocator_template(m_alloc = memtracker_new());
+        BFC_ASSERT(ham_new(&m_db)==HAM_SUCCESS);
+        BFC_ASSERT(ham_create_ex(m_db, 0, HAM_IN_MEMORY_DB, 0644,
+                        &p[0])==HAM_SUCCESS);
+
+        m_env=db_get_env(m_db);
+    }
+
+>>>>>>> flash-bang-grenade:unittests/util.cpp
     virtual void teardown()
     {
         __super::teardown();
@@ -72,7 +107,11 @@ public:
         ham_delete(m_db);
         ham_env_delete(m_env);
         m_db=0;
+<<<<<<< HEAD:unittests/misc.cpp
         m_env=0;
+=======
+        BFC_ASSERT(!memtracker_get_leaks(ham_get_default_allocator_template()));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
     }
 
     void copyKeyTest(void)
@@ -85,7 +124,11 @@ public:
         src.flags=0;
         src._flags=0;
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, ((Database *)m_db)->copy_key(&src, &dest));
+=======
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key(m_db, &src, &dest, NULL));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
         BFC_ASSERT_EQUAL(dest.size, src.size);
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src.data));
 
@@ -102,7 +145,11 @@ public:
         src.flags=0;
         src._flags=0;
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, ((Database *)m_db)->copy_key(&src, &dest));
+=======
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key(m_db, &src, &dest, NULL));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
         BFC_ASSERT_EQUAL(dest.size, src.size);
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src.data));
 
@@ -120,9 +167,13 @@ public:
         key_set_size(&src, 0);
         key_set_flags(&src, 0);
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, btree_copy_key_int2pub((Database *)m_db, &src, &dest));
+=======
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, &src, &dest, NULL));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
         BFC_ASSERT_EQUAL(0, dest.size);
-        BFC_ASSERT_EQUAL((void *)0, dest.data);
+        BFC_ASSERT_NULL(dest.data);
     }
 
     void copyKeyInt2PubTinyTest(void)
@@ -137,7 +188,11 @@ public:
         key_set_flags(&src, 0);
         src._key[0]='a';
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, btree_copy_key_int2pub((Database *)m_db, &src, &dest));
+=======
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, &src, &dest, NULL));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
         BFC_ASSERT_EQUAL(1, dest.size);
         BFC_ASSERT_EQUAL('a', ((char *)dest.data)[0]);
         ((Environment *)m_env)->get_allocator()->free(dest.data);
@@ -155,7 +210,11 @@ public:
         key_set_flags(src, 0);
         ::memcpy((char *)src->_key, "1234567\0", 8);
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, btree_copy_key_int2pub((Database *)m_db, src, &dest));
+=======
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, src, &dest, NULL));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
         BFC_ASSERT_EQUAL(dest.size, key_get_size(src));
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src->_key));
         ((Environment *)m_env)->get_allocator()->free(dest.data);
@@ -173,7 +232,11 @@ public:
         key_set_flags(src, 0);
         ::strcpy((char *)&buffer[11] /*src->_key*/, "123456781234567\0");
 
+<<<<<<< HEAD:unittests/misc.cpp
         BFC_ASSERT_EQUAL(0, btree_copy_key_int2pub((Database *)m_db, src, &dest));
+=======
+        BFC_ASSERT_EQUAL(HAM_SUCCESS, util_copy_key_int2pub(m_db, src, &dest, NULL));
+>>>>>>> flash-bang-grenade:unittests/util.cpp
         BFC_ASSERT_EQUAL(dest.size, key_get_size(src));
         BFC_ASSERT_EQUAL(0, ::strcmp((char *)dest.data, (char *)src->_key));
 

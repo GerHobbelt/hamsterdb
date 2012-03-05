@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2011 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -7,8 +7,9 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
- *
+ */
+
+/**
  * Similar to env1, an environment with a customer- and an order-database
  * is created; a third database is created which manages the 1:n relationship
  * between the other two.
@@ -177,6 +178,8 @@ main(int argc, char **argv)
         record.size=sizeof(customer_t);
         record.data=&customers[i];
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db[0], 0, &key, &record, 0);
         if (st!=HAM_SUCCESS)
             error("ham_insert (customer)", st);
@@ -196,6 +199,8 @@ main(int argc, char **argv)
         record.size=sizeof(orders[i].assignee);
         record.data=orders[i].assignee;
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db[1], 0, &key, &record, 0);
         if (st!=HAM_SUCCESS)
             error("ham_insert (order)", st);
@@ -216,6 +221,8 @@ main(int argc, char **argv)
         record.size=sizeof(int);
         record.data=&orders[i].id;
 
+        /* note: the second parameter of ham_insert() is reserved; set it to
+         * NULL */
         st=ham_insert(db[2], 0, &key, &record, HAM_DUPLICATE);
         if (st!=HAM_SUCCESS)
             error("ham_insert(c2o)", st);
@@ -232,7 +239,7 @@ main(int argc, char **argv)
      * the outer loop is similar to
      * SELECT * FROM customers WHERE 1;
      */
-    while (1) {
+    for (;;) {
         customer_t *customer;
 
         st=ham_cursor_move(cursor[0], &cust_key, &cust_record, HAM_CURSOR_NEXT);
@@ -271,7 +278,7 @@ main(int argc, char **argv)
         if (st!=HAM_SUCCESS)
             error("ham_cursor_move(c2o)", st);
 
-        do {
+        for (;;) {
             int order_id;
 
             order_id=*(int *)c2o_record.data;
@@ -302,7 +309,7 @@ main(int argc, char **argv)
                 else
                     error("ham_cursor_next(c2o)", st);
             }
-        } while(1);
+        }
     }
 
     /*

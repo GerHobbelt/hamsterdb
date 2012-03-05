@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,8 +11,6 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
-#include <cstring>
 #include <ham/hamsterdb.h>
 #include "../src/db.h"
 #include "../src/blob.h"
@@ -24,6 +22,10 @@
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+#include <cstring>
+
 
 using namespace bfc;
 
@@ -43,6 +45,10 @@ protected:
     bool m_inmemory;
     ham_db_t *m_db;
     ham_env_t *m_env;
+<<<<<<< HEAD
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade
 
 public:
     virtual void setup()
@@ -56,7 +62,7 @@ public:
 
         if (m_pagesize) {
             params[0].name=HAM_PARAM_PAGESIZE;
-            params[0].value=m_pagesize;
+            params[0].value.n=m_pagesize;
         }
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
@@ -65,13 +71,22 @@ public:
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, &params[0]));
         m_env=ham_get_env(m_db);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> flash-bang-grenade
     virtual void teardown()
     {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+<<<<<<< HEAD
         ham_delete(m_db);
+=======
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+>>>>>>> flash-bang-grenade
     }
 
     void fillBuffer(ham_u8_t *ptr, ham_size_t offset, ham_size_t size)
@@ -1158,6 +1173,10 @@ protected:
     ham_u32_t m_find_flags;
     ham_db_t *m_db;
     ham_env_t *m_env;
+<<<<<<< HEAD
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade
 
 public:
     virtual void setup()
@@ -1171,22 +1190,36 @@ public:
 
         if (m_pagesize) {
             params[0].name=HAM_PARAM_PAGESIZE;
-            params[0].value=m_pagesize;
+            params[0].value.n=m_pagesize;
         }
 
+<<<<<<< HEAD
+=======
+        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc);
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, &params[0]));
         m_env=ham_get_env(m_db);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> flash-bang-grenade
     virtual void teardown()
     {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+<<<<<<< HEAD
         ham_delete(m_db);
+=======
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+>>>>>>> flash-bang-grenade
     }
 
     void fillBuffer(ham_u8_t *ptr, ham_size_t offset, ham_size_t size)
@@ -1524,6 +1557,10 @@ public:
 
     ham_db_t *m_db;
     ham_env_t *m_env;
+<<<<<<< HEAD
+=======
+    mem_allocator_t *m_alloc;
+>>>>>>> flash-bang-grenade
     bool m_inmemory;
     ham_u32_t m_find_flags;
 
@@ -1531,19 +1568,33 @@ public:
     {
         __super::setup();
 
+<<<<<<< HEAD
+=======
+        BFC_ASSERT((m_alloc=memtracker_new())!=0);
+        ham_set_default_allocator_template(m_alloc);
+>>>>>>> flash-bang-grenade
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, 0));
         m_env=ham_get_env(m_db);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> flash-bang-grenade
     virtual void teardown()
     {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
+<<<<<<< HEAD
         ham_delete(m_db);
+=======
+        BFC_ASSERT_EQUAL(0, ham_delete(m_db));
+        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
+>>>>>>> flash-bang-grenade
     }
 
     void negativeInsertTest(void)

@@ -7,25 +7,23 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
-#include "config.h"
+/**
+* @cond ham_internals
+*/
 
-#ifdef HAVE_MALLOC_H
-#  include <malloc.h>
-#else
-#  include <stdlib.h>
-#endif
-#include <string.h>
+#include "internal_preparation.h"
 
-#if HAM_ENABLE_REMOTE
+
+#ifdef HAM_ENABLE_REMOTE
 #  define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
 #  include <curl/curl.h>
 #  include <curl/easy.h>
 #  include "protocol/protocol.h"
 #endif
 
+<<<<<<< HEAD:src/hamsterdb.cc
 #include "blob.h"
 #include "btree.h"
 #include "btree_cursor.h"
@@ -47,6 +45,8 @@
 #include "util.h"
 #include "version.h"
 
+=======
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 #ifndef HAM_DISABLE_ENCRYPTION
 #  include "../3rdparty/aes/aes.h"
 #endif
@@ -59,7 +59,21 @@
 #endif
 
 
-/*
+
+#include "btree.h"
+#include "btree_classic.h"
+#include "btree_cursor.h"
+
+
+
+typedef struct free_cb_context_t
+{
+    ham_db_t *db;
+
+} free_cb_context_t;
+
+
+/**
  * return true if the filename is for a local file
  */
 static ham_bool_t
@@ -93,11 +107,20 @@ my_strncat_ex(char *buf, size_t buflen, const char *interject, const char *src)
 static const char *
 ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
 {
+<<<<<<< HEAD:src/hamsterdb.cc
     if (!buf || !buflen) {
+=======
+    if (!buf || !buflen)
+    {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         buflen = 0;
         buf = NULL;
     }
     else
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+    {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         buf[0] = 0;
 
     if (flags & HAM_WRITE_THROUGH) {
@@ -167,8 +190,15 @@ ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
         buf = my_strncat_ex(buf, buflen, NULL, "HAM_CACHE_UNLIMITED");
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     if (flags) {
         if (buf && buflen > 13 && buflen > strlen(buf) + 13 + 1 + 9) {
+=======
+    if (flags)
+    {
+        if (buf && buflen > 13 && buflen > strlen(buf) + 13 + 1 + 9)
+        {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
             util_snprintf(buf, buflen, "%sHAM_FLAGS(reserved: 0x%x)",
                             (*buf ? "|" : ""), (unsigned int)flags);
         }
@@ -182,7 +212,7 @@ ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
 }
 
 const char * HAM_CALLCONV
-ham_param2str(char *buf, size_t buflen, ham_u32_t name)
+ham_param2str(char *buf, ham_size_t buflen, ham_u32_t name)
 {
     switch (name) {
     case HAM_PARAM_CACHESIZE:
@@ -200,10 +230,23 @@ ham_param2str(char *buf, size_t buflen, ham_u32_t name)
     case HAM_PARAM_MAX_ENV_DATABASES:
         return "HAM_PARAM_MAX_ENV_DATABASES";
 
+<<<<<<< HEAD:src/hamsterdb.cc
     case HAM_PARAM_DATA_ACCESS_MODE:
         return "HAM_PARAM_DATA_ACCESS_MODE";
 
     case HAM_PARAM_GET_FLAGS:
+=======
+    case HAM_PARAM_INITIAL_DB_SIZE:
+        return "HAM_PARAM_INITIAL_DB_SIZE";
+
+    case HAM_PARAM_DATA_ACCESS_MODE   :
+        return "HAM_PARAM_DATA_ACCESS_MODE";
+
+    case HAM_PARAM_CUSTOM_DEVICE:
+        return "HAM_PARAM_CUSTOM_DEVICE";
+
+    case HAM_PARAM_GET_FLAGS          :
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         return "HAM_PARAM_GET_FLAGS";
 
     case HAM_PARAM_GET_DATA_ACCESS_MODE:
@@ -223,6 +266,18 @@ ham_param2str(char *buf, size_t buflen, ham_u32_t name)
 
     case HAM_PARAM_GET_STATISTICS:
         return "HAM_PARAM_GET_STATISTICS";
+
+    case HAM_PARAM_GET_VERSION:
+        return "HAM_PARAM_GET_VERSION";
+
+    case HAM_PARAM_GET_VERSION_STRING:
+        return "HAM_PARAM_GET_VERSION_STRING";
+
+    case HAM_PARAM_GET_LICENSEE:
+		return "HAM_PARAM_GET_LICENSEE";
+
+    case HAM_PARAM_GET_LICENSE_SERIALNO:
+		return "HAM_PARAM_GET_LICENSE_SERIALNO";
 
     default:
         if (buf && buflen > 13) {
@@ -258,6 +313,12 @@ ham_status_t
 ham_txn_begin(ham_txn_t **txn, ham_env_t *henv, const char *name,
                 void *reserved, ham_u32_t flags)
 {
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+    ham_status_t st;
+    ham_env_t *env;
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (!txn) {
         ham_trace(("parameter 'txn' must not be NULL"));
         return (HAM_INV_PARAMETER);
@@ -316,10 +377,15 @@ ham_txn_commit(ham_txn_t *txn, ham_u32_t flags)
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
+<<<<<<< HEAD:src/hamsterdb.cc
     /* mark this transaction as committed; will also call
      * env_flush_committed_txns() to write committed transactions
      * to disk */
     return (env->_fun_txn_commit(env, txn, flags));
+=======
+    ham_assert(env_get_txn(env)==0, (""));
+    return (0);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t
@@ -336,11 +402,20 @@ ham_txn_abort(ham_txn_t *txn, ham_u32_t flags)
         return (HAM_NOT_INITIALIZED);
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     ScopedLock lock;
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
     return (env->_fun_txn_abort(env, txn, flags));
+=======
+    st=env->_fun_txn_abort(env, txn, flags);
+    if (st)
+        return (st);
+
+    ham_assert(env_get_txn(env)==0, (""));
+    return (0);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 const char * HAM_CALLCONV
@@ -485,12 +560,20 @@ __prepare_record(ham_record_t *record)
 }
 
 ham_status_t
+<<<<<<< HEAD:src/hamsterdb.cc
 __check_create_parameters(Environment *env, Database *db, const char *filename,
         ham_u32_t *pflags, const ham_parameter_t *param,
         ham_size_t *ppagesize, ham_u16_t *pkeysize,
         ham_u64_t *pcachesize, ham_u16_t *pdbname,
         ham_u16_t *pmaxdbs, ham_u16_t *pdata_access_mode,
         std::string &logdir, bool create)
+=======
+__check_create_parameters(ham_env_t *env, ham_db_t *db, const char *filename,
+        ham_u32_t *pflags, const ham_parameter_t *param,
+        ham_size_t *ppagesize, ham_u16_t *pkeysize,
+        ham_size_t *pcachesize, ham_u16_t *pdbname,
+        ham_u16_t *pmaxdbs, ham_u16_t *pdata_access_mode, ham_bool_t create)
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 {
     ham_size_t pagesize=0;
     ham_u16_t keysize=0;
@@ -768,7 +851,6 @@ default_case:
             ham_trace(("parameter 'name' (0x%04x) must be lower than "
                 "0xf000", (unsigned)dbname));
             return (HAM_INV_PARAMETER);
-            dbname = HAM_FIRST_DATABASE_NAME;
         }
         else if (!create && (dbname==0 || dbname>HAM_DUMMY_DATABASE_NAME)) {
             ham_trace(("parameter 'name' (0x%04x) must be lower than "
@@ -1012,6 +1094,20 @@ ham_get_license(const char **licensee, const char **product)
         *product=HAM_PRODUCT_NAME;
 }
 
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+static ham_status_t
+__ham_destroy_env(ham_env_t *env)
+{
+    if (env)
+    {
+        memset(env, 0, sizeof(*env));
+        free(env);
+    }
+    return HAM_SUCCESS;
+}
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 ham_status_t HAM_CALLCONV
 ham_env_new(ham_env_t **env)
 {
@@ -1020,7 +1116,16 @@ ham_env_new(ham_env_t **env)
         return (HAM_INV_PARAMETER);
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     *env=(ham_env_t *)new Environment();
+=======
+    /*
+     * allocate memory for the ham_db_t-structure;
+     * we can't use our allocator because it's not yet created!
+     * Also reset the whole structure.
+     */
+    *env=(ham_env_t *)calloc(1, sizeof(ham_env_t));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (!(*env))
         return (HAM_OUT_OF_MEMORY);
 
@@ -1032,12 +1137,72 @@ ham_env_delete(ham_env_t *henv)
 {
     if (!henv) {
         ham_trace(("parameter 'env' must not be NULL"));
+<<<<<<< HEAD:src/hamsterdb.cc
         return (HAM_INV_PARAMETER);
     }
 
     Environment *env=(Environment *)henv;
 
     delete env;
+=======
+        return HAM_INV_PARAMETER;
+    }
+
+    /* delete all performance data */
+    stats_trash_globdata(env, env_get_global_perf_data(env));
+
+    /*
+     * close the device if it still exists
+     */
+    if (env_get_device(env)) {
+        ham_device_t *device = env_get_device(env);
+        if (device->is_open(device)) {
+            st = device->flush(device);
+            if (!st2)
+                st2 = st;
+            st = device->close(device);
+            if (!st2)
+                st2 = st;
+        }
+        st = device->destroy(device);
+        if (!st2)
+            st2 = st;
+        env_set_device(env, 0);
+    }
+
+    /*
+     * close the allocator
+     */
+    if (env_get_allocator(env)) {
+        env_get_allocator(env)->close(env_get_allocator(env));
+        env_set_allocator(env, 0);
+    }
+
+    if (env->destroy) {
+        st = env->destroy(env);
+        if (!st2)
+            st2 = st;
+    }
+
+    /* avoid memory leaks by releasing static libcurl and libprotocol data */
+#ifdef HAM_ENABLE_REMOTE
+    /* TODO curl_global_cleanup is not threadsafe! currently, hamsterdb
+     * does not have support for critical sections or mutexes etc. Therefore
+     * we just use a static variable. This is still not safe, but it should
+     * work for now. */
+    if (critsec==0) {
+        ham_u32_t pseudo_random=((ham_u32_t)PTR_TO_U64(env))&0xffffffff;
+        critsec=pseudo_random;
+        if (critsec==pseudo_random) {
+            /* shutdown libcurl library */
+            curl_global_cleanup();
+            /* shutdown network protocol library */
+            proto_shutdown();
+            critsec=0;
+        }
+    }
+#endif
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 
     return (0);
 }
@@ -1083,7 +1248,11 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
 
     /* check (and modify) the parameters */
     st=__check_create_parameters(env, 0, filename, &flags, param,
+<<<<<<< HEAD:src/hamsterdb.cc
             &pagesize, &keysize, &cachesize, 0, &maxdbs, 0, logdir, true);
+=======
+            &pagesize, &keysize, &cachesize, 0, &maxdbs, 0, HAM_TRUE);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (st)
         return (st);
 
@@ -1102,6 +1271,7 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
     }
 
     /* store the parameters */
+<<<<<<< HEAD:src/hamsterdb.cc
     env->set_flags(flags);
     env->set_pagesize(pagesize);
     env->set_cachesize(cachesize);
@@ -1109,6 +1279,24 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
     env->set_max_databases_cached(maxdbs);
     if (filename)
         env->set_filename(filename);
+=======
+    env_set_rt_flags(env, flags);
+    env_set_pagesize(env, pagesize);
+    env_set_cachesize(env, cachesize);
+    env_set_file_mode(env, mode);
+    env_set_pagesize(env, pagesize);
+    env_set_max_databases_cached(env, maxdbs);
+    if (filename) {
+        env_set_filename(env,
+                allocator_alloc(env_get_allocator(env),
+                    (ham_size_t)strlen(filename)+1));
+        if (!env_get_filename(env)) {
+            (void)ham_env_close(env, 0);
+            return (HAM_OUT_OF_MEMORY);
+        }
+        strcpy((char *)env_get_filename(env), filename);
+    }
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 
     /* initialize function pointers */
     if (__filename_is_local(filename)) {
@@ -1129,7 +1317,11 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
 
     /* flush the environment to make sure that the header page is written
      * to disk */
+<<<<<<< HEAD:src/hamsterdb.cc
     return (ham_env_flush((ham_env_t *)env, HAM_DONT_LOCK));
+=======
+    return (ham_env_flush(env, 0));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -1161,6 +1353,10 @@ ham_env_create_db(ham_env_t *henv, ham_db_t *hdb,
         ham_trace(("parameter 'db' is already initialized"));
         return (db->set_error(HAM_DATABASE_ALREADY_OPEN));
     }
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (!dbname || (dbname>HAM_DEFAULT_DATABASE_NAME
             && dbname!=HAM_DUMMY_DATABASE_NAME)) {
         ham_trace(("invalid database name"));
@@ -1176,9 +1372,14 @@ ham_env_create_db(ham_env_t *henv, ham_db_t *hdb,
 
     db->set_active(HAM_TRUE);
 
+<<<<<<< HEAD:src/hamsterdb.cc
     /* flush the environment to make sure that the header page is written
      * to disk */
     return (ham_env_flush((ham_env_t *)env, HAM_DONT_LOCK));
+=======
+    /* make sure that the header page is flushed */
+    return (ham_env_flush(env, 0));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -1282,6 +1483,7 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
 
     /* parse parameters */
     st=__check_create_parameters(env, 0, filename, &flags, param,
+<<<<<<< HEAD:src/hamsterdb.cc
             0, 0, &cachesize, 0, 0, 0, logdir, false);
     if (st)
         return (st);
@@ -1289,6 +1491,12 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
     if (logdir.size())
         env->set_log_directory(logdir);
 
+=======
+            0, 0, &cachesize, 0, 0, 0, HAM_FALSE);
+    if (st)
+        return (st);
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     /*
      * if we do not yet have an allocator: create a new one
      */
@@ -1301,12 +1509,29 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
     /*
      * store the parameters
      */
+<<<<<<< HEAD:src/hamsterdb.cc
     env->set_pagesize(0);
     env->set_cachesize(cachesize);
     env->set_flags(flags);
     env->set_file_mode(0644);
     if (filename)
         env->set_filename(filename);
+=======
+    env_set_pagesize(env, 0);
+    env_set_cachesize(env, cachesize);
+    env_set_rt_flags(env, flags);
+    env_set_file_mode(env, 0644);
+    if (filename) {
+        env_set_filename(env,
+                allocator_alloc(env_get_allocator(env),
+                    (ham_size_t)strlen(filename)+1));
+        if (!env_get_filename(env)) {
+            (void)ham_env_close(env, 0);
+            return (HAM_OUT_OF_MEMORY);
+        }
+        strcpy((char *)env_get_filename(env), filename);
+    }
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 
     /*
      * initialize function pointers
@@ -1333,7 +1558,11 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
 }
 
 ham_status_t HAM_CALLCONV
+<<<<<<< HEAD:src/hamsterdb.cc
 ham_env_rename_db(ham_env_t *henv, ham_u16_t oldname,
+=======
+ham_env_rename_db(ham_env_t *env, ham_u16_t oldname,
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
                 ham_u16_t newname, ham_u32_t flags)
 {
     Environment *env=(Environment *)henv;
@@ -1549,6 +1778,7 @@ ham_env_get_database_names(ham_env_t *henv, ham_u16_t *names, ham_size_t *count)
     return (env->_fun_get_database_names(env, names, count));
 }
 
+<<<<<<< HEAD:src/hamsterdb.cc
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_env_get_parameters(ham_env_t *henv, ham_parameter_t *param)
 {
@@ -1595,6 +1825,8 @@ ham_env_flush(ham_env_t *henv, ham_u32_t flags)
     return (env->_fun_flush(env, flags));
 }
 
+=======
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 ham_status_t HAM_CALLCONV
 ham_env_close(ham_env_t *henv, ham_u32_t flags)
 {
@@ -1656,7 +1888,11 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
 
 
     /*
+<<<<<<< HEAD:src/hamsterdb.cc
      * flush all transactions
+=======
+     * when all transactions have been properly closed...
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
      */
     st=env_flush_committed_txns(env);
     if (st)
@@ -1680,6 +1916,18 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
     if (st)
         return (st);
 
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+    /*
+     * close everything else
+     */
+    if (env_get_filename(env)) {
+        allocator_free(env_get_allocator(env),
+                (ham_u8_t *)env_get_filename(env));
+        env_set_filename(env, 0);
+    }
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     /* delete all performance data */
     btree_stats_trash_globdata(env, env->get_global_perf_data());
 
@@ -1696,6 +1944,19 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
     return (0);
 }
 
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+static ham_status_t
+__ham_destroy_db(ham_db_t *db)
+{
+    if (db)
+    {
+        free(db);
+    }
+    return HAM_SUCCESS;
+}
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 ham_status_t HAM_CALLCONV
 ham_new(ham_db_t **hdb)
 {
@@ -1705,8 +1966,23 @@ ham_new(ham_db_t **hdb)
         return (HAM_INV_PARAMETER);
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     *db=new Database();
     return (HAM_SUCCESS);
+=======
+    /*
+     * allocate memory for the ham_db_t-structure;
+     * we can't use our allocator because it's not yet created!
+     * Also reset the whole structure
+     */
+    *db=(ham_db_t *)calloc(1, sizeof(ham_db_t));
+    if (!(*db))
+        return (HAM_OUT_OF_MEMORY);
+
+    db[0]->_fun_destroy = __ham_destroy_db;
+
+    return HAM_SUCCESS;
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -1716,7 +1992,34 @@ ham_delete(ham_db_t *hdb)
 
     if (!db) {
         ham_trace(("parameter 'db' must not be NULL"));
+<<<<<<< HEAD:src/hamsterdb.cc
         return (HAM_INV_PARAMETER);
+=======
+        return HAM_INV_PARAMETER;
+    }
+    env = db_get_env(db);
+
+    /* trash all DB performance data */
+    stats_trash_dbdata(db, db_get_db_perf_data(db));
+
+    /*
+     * close the database
+     * -- christoph: do we really need this? ham_close() will segfault
+     * if the environment was already closed (ham_env_close closes the
+     * allocator)
+     *
+    if (db_is_active(db)) {
+        st = ham_close(db, 0);
+        if (!st2)
+            st2 = st;
+    }
+     */
+
+    if (db->_fun_destroy) {
+        st = db->_fun_destroy(db);
+        if (!st2)
+            st2 = st;
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     }
 
     delete db;
@@ -1758,8 +2061,13 @@ ham_open_ex(ham_db_t *hdb, const char *filename,
     }
 
     /* parse parameters */
+<<<<<<< HEAD:src/hamsterdb.cc
     st=__check_create_parameters(db->get_env(), db, filename, &flags, param,
             0, 0, &cachesize, &dbname, 0, &dam, logdir, false);
+=======
+    st=__check_create_parameters(db_get_env(db), db, filename, &flags, param,
+            0, 0, &cachesize, &dbname, 0, &dam, HAM_FALSE);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (st)
         return (st);
 
@@ -1878,9 +2186,14 @@ ham_create_ex(ham_db_t *hdb, const char *filename,
     /*
      * check (and modify) the parameters
      */
+<<<<<<< HEAD:src/hamsterdb.cc
     st=__check_create_parameters(db->get_env(), db, filename, &flags, param,
             &pagesize, &keysize, &cachesize, &dbname, &maxdbs, &dam,
             logdir, true);
+=======
+    st=__check_create_parameters(db_get_env(db), db, filename, &flags, param,
+            &pagesize, &keysize, &cachesize, &dbname, &maxdbs, &dam, HAM_TRUE);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (st)
         return (db->set_error(st));
 
@@ -1955,7 +2268,12 @@ bail:
         if (db) {
             (void)ham_close((ham_db_t *)db, 0);
         }
+<<<<<<< HEAD:src/hamsterdb.cc
         if (env) {
+=======
+        if (env)
+        {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
             /* despite the IS_PRIVATE the env will destroy the DB,
             which is the responsibility of the caller: detach the DB now. */
             ((Environment *)env)->set_databases(0);
@@ -1986,6 +2304,29 @@ ham_get_parameters(ham_db_t *hdb, ham_parameter_t *param)
     /* get the parameters */
     return ((*db)()->get_parameters(param));
 }
+
+HAM_EXPORT ham_status_t HAM_CALLCONV
+ham_env_get_parameters(ham_env_t *env, ham_parameter_t *param)
+{
+    if (!env) {
+        ham_trace(("parameter 'env' must not be NULL"));
+        return HAM_INV_PARAMETER;
+    }
+    if (!param) {
+        ham_trace(("parameter 'param' must not be NULL"));
+        return HAM_INV_PARAMETER;
+    }
+    if (!env->_fun_get_parameters) {
+        ham_trace(("Environment was not initialized"));
+        return (HAM_NOT_INITIALIZED);
+    }
+
+    /*
+     * get the parameters
+     */
+    return (env->_fun_get_parameters(env, param));
+}
+
 
 ham_status_t HAM_CALLCONV
 ham_get_error(ham_db_t *hdb)
@@ -2051,7 +2392,11 @@ ham_set_duplicate_compare_func(ham_db_t *hdb, ham_duplicate_compare_func_t foo)
 
 #ifndef HAM_DISABLE_ENCRYPTION
 static ham_status_t
+<<<<<<< HEAD:src/hamsterdb.cc
 __aes_before_write_cb(ham_env_t *henv, ham_file_filter_t *filter,
+=======
+__aes_before_write_cb(ham_env_t *env, ham_file_filter_t *filter,
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_u8_t *page_data, ham_size_t page_size)
 {
     ham_size_t i;
@@ -2066,7 +2411,11 @@ __aes_before_write_cb(ham_env_t *henv, ham_file_filter_t *filter,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/hamsterdb.cc
 __aes_after_read_cb(ham_env_t *henv, ham_file_filter_t *filter,
+=======
+__aes_after_read_cb(ham_env_t *env, ham_file_filter_t *filter,
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_u8_t *page_data, ham_size_t page_size)
 {
     ham_size_t i;
@@ -2231,7 +2580,11 @@ bail:
 
 #ifndef HAM_DISABLE_COMPRESSION
 static ham_status_t
+<<<<<<< HEAD:src/hamsterdb.cc
 __zlib_before_write_cb(ham_db_t *hdb, ham_record_filter_t *filter,
+=======
+__zlib_before_write_cb(ham_db_t *db, ham_record_filter_t *filter,
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_record_t *record)
 {
     Database *db=(Database *)hdb;
@@ -2285,7 +2638,11 @@ __zlib_before_write_cb(ham_db_t *hdb, ham_record_filter_t *filter,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/hamsterdb.cc
 __zlib_after_read_cb(ham_db_t *hdb, ham_record_filter_t *filter,
+=======
+__zlib_after_read_cb(ham_db_t *db, ham_record_filter_t *filter,
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_record_t *record)
 {
     Database *db=(Database *)hdb;
@@ -2343,7 +2700,11 @@ __zlib_after_read_cb(ham_db_t *hdb, ham_record_filter_t *filter,
 }
 
 static void
+<<<<<<< HEAD:src/hamsterdb.cc
 __zlib_close_cb(ham_db_t *hdb, ham_record_filter_t *filter)
+=======
+__zlib_close_cb(ham_db_t *db, ham_record_filter_t *filter)
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 {
     Database *db=(Database *)hdb;
     Environment *env=db->get_env();
@@ -2457,7 +2818,11 @@ ham_find(ham_db_t *hdb, ham_txn_t *txn, ham_key_t *key,
         return (db->set_error(HAM_INV_PARAMETER));
     }
     if ((flags&HAM_DIRECT_ACCESS)
+<<<<<<< HEAD:src/hamsterdb.cc
             && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+=======
+            && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                     "In-Memory Databases"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -2685,7 +3050,11 @@ ham_erase(ham_db_t *hdb, ham_txn_t *txn, ham_key_t *key, ham_u32_t flags)
 ham_status_t HAM_CALLCONV
 ham_check_integrity(ham_db_t *hdb, ham_txn_t *txn)
 {
+<<<<<<< HEAD:src/hamsterdb.cc
     Database *db=(Database *)hdb;
+=======
+    ham_status_t st;
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 
     if (!db) {
         ham_trace(("parameter 'db' must not be NULL"));
@@ -2694,14 +3063,23 @@ ham_check_integrity(ham_db_t *hdb, ham_txn_t *txn)
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+<<<<<<< HEAD:src/hamsterdb.cc
     return (db->set_error((*db)()->check_integrity(txn)));
+=======
+    st=db->_fun_check_integrity(db, txn);
+    return (db_set_error(db, st));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
 ham_calc_maxkeys_per_page(ham_db_t *hdb, ham_size_t *keycount,
                 ham_u16_t keysize)
 {
+<<<<<<< HEAD:src/hamsterdb.cc
     Database *db=(Database *)hdb;
+=======
+    ham_status_t st;
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     ham_backend_t *be;
 
     if (!db) {
@@ -2738,9 +3116,37 @@ ham_calc_maxkeys_per_page(ham_db_t *hdb, ham_size_t *keycount,
         return (db->set_error(HAM_NOT_IMPLEMENTED));
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     /* call the backend function */
     return (db->set_error(be->_fun_calc_keycount_per_page(be,
                     keycount, keysize)));
+=======
+    /*
+     * call the backend function
+     */
+    st=be->_fun_calc_keycount_per_page(be, keycount, keysize);
+
+    return (db_set_error(db, st));
+}
+
+
+ham_status_t HAM_CALLCONV
+ham_env_flush(ham_env_t *env, ham_u32_t flags)
+{
+    if (!env) {
+        ham_trace(("parameter 'env' must not be NULL"));
+        return HAM_INV_PARAMETER;
+    }
+    if (!env->_fun_flush) {
+        ham_trace(("Environment was not initialized"));
+        return (HAM_NOT_INITIALIZED);
+    }
+
+    /*
+     * flush the Environment
+     */
+    return (env->_fun_flush(env, flags));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -2853,10 +3259,19 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
         }
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     db->set_error(0);
     
     /* the function pointer will do the actual implementation */
     st=(*db)()->close(flags);
+=======
+    db_set_error(db, 0);
+
+    /*
+     * the function pointer will do the actual implementation
+     */
+    st=db->_fun_close(db, flags);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (st)
         return (db->set_error(st));
 
@@ -2896,10 +3311,16 @@ ham_status_t HAM_CALLCONV
 ham_cursor_create(ham_db_t *hdb, ham_txn_t *txn, ham_u32_t flags,
                 ham_cursor_t **hcursor)
 {
+<<<<<<< HEAD:src/hamsterdb.cc
     Database *db=(Database *)hdb;
     Environment *env;
     Cursor **cursor=0;
     
+=======
+    ham_env_t *env;
+    ham_status_t st;
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     if (!db) {
         ham_trace(("parameter 'db' must not be NULL"));
         return HAM_INV_PARAMETER;
@@ -3054,7 +3475,11 @@ ham_cursor_move(ham_cursor_t *hcursor, ham_key_t *key,
     env=db->get_env();
 
     if ((flags&HAM_DIRECT_ACCESS)
+<<<<<<< HEAD:src/hamsterdb.cc
             && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+=======
+            && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                    "In-Memory Databases"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3078,10 +3503,15 @@ ham_cursor_move(ham_cursor_t *hcursor, ham_key_t *key,
 
     st=(*db)()->cursor_move(cursor, key, record, flags);
 
+<<<<<<< HEAD:src/hamsterdb.cc
     /* make sure that the changeset is empty */
     ham_assert(env->get_changeset().is_empty(), (""));
 
     return (db->set_error(st));
+=======
+    return (db_set_error(db,
+                db->_fun_cursor_move(cursor, key, record, flags)));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -3091,7 +3521,11 @@ ham_cursor_find(ham_cursor_t *hcursor, ham_key_t *key, ham_u32_t flags)
 }
 
 HAM_EXPORT ham_status_t HAM_CALLCONV
+<<<<<<< HEAD:src/hamsterdb.cc
 ham_cursor_find_ex(ham_cursor_t *hcursor, ham_key_t *key,
+=======
+ham_cursor_find_ex(ham_cursor_t *cursor, ham_key_t *key,
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
             ham_record_t *record, ham_u32_t flags)
 {
     Database *db;
@@ -3120,7 +3554,11 @@ ham_cursor_find_ex(ham_cursor_t *hcursor, ham_key_t *key,
         return (db->set_error(HAM_INV_PARAMETER));
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     if (flags & ~(HAM_DONT_LOCK | HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH |
+=======
+    if (flags & ~(HAM_FIND_LT_MATCH | HAM_FIND_GT_MATCH |
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
                 HAM_FIND_EXACT_MATCH | HAM_DIRECT_ACCESS)) {
         ham_trace(("flag values besides any combination of "
                    "HAM_FIND_LT_MATCH, HAM_FIND_GT_MATCH, "
@@ -3129,7 +3567,11 @@ ham_cursor_find_ex(ham_cursor_t *hcursor, ham_key_t *key,
         return (db->set_error(HAM_INV_PARAMETER));
     }
     if ((flags&HAM_DIRECT_ACCESS)
+<<<<<<< HEAD:src/hamsterdb.cc
             && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+=======
+            && !(env_get_rt_flags(env)&HAM_IN_MEMORY_DB)) {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                    "In-Memory Databases"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3167,7 +3609,12 @@ ham_cursor_find_ex(ham_cursor_t *hcursor, ham_key_t *key,
     if (record &&  !__prepare_record(record))
         return (db->set_error(HAM_INV_PARAMETER));
 
+<<<<<<< HEAD:src/hamsterdb.cc
     return (db->set_error((*db)()->cursor_find(cursor, key, record, flags)));
+=======
+    return (db_set_error(db,
+                db->_fun_cursor_find(cursor, key, record, flags)));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -3286,10 +3733,18 @@ ham_cursor_insert(ham_cursor_t *hcursor, ham_key_t *key,
                     ham_trace(("key->size must be 0, key->data must be NULL"));
                     return (db->set_error(HAM_INV_PARAMETER));
                 }
+<<<<<<< HEAD:src/hamsterdb.cc
 
                 /* allocate memory for the key */
                 if (sizeof(ham_u64_t)>db->get_key_allocsize()) {
                     st=db->resize_key_allocdata(sizeof(ham_u64_t));
+=======
+                /*
+                 * allocate memory for the key
+                 */
+                if (sizeof(ham_u64_t)>db_get_key_allocsize(db)) {
+                    st=db_resize_key_allocdata(db, sizeof(ham_u64_t));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
                     if (st)
                         return (db->set_error(st));
                     else
@@ -3304,7 +3759,17 @@ ham_cursor_insert(ham_cursor_t *hcursor, ham_key_t *key,
         }
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     return (db->set_error((*db)()->cursor_insert(cursor, key, record, flags)));
+=======
+    if (!db->_fun_cursor_insert) {
+        ham_trace(("Database was not initialized"));
+        return (HAM_NOT_INITIALIZED);
+    }
+
+    return (db_set_error(db,
+                db->_fun_cursor_insert(cursor, key, record, flags)));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -3343,12 +3808,27 @@ ham_cursor_erase(ham_cursor_t *hcursor, ham_u32_t flags)
         return (db->set_error(HAM_INV_PARAMETER));
     }
 
+<<<<<<< HEAD:src/hamsterdb.cc
     return (db->set_error((*db)()->cursor_erase(cursor, flags)));
 }
 
 ham_status_t HAM_CALLCONV
 ham_cursor_get_duplicate_count(ham_cursor_t *hcursor,
                 ham_size_t *count, ham_u32_t flags)
+=======
+    if (!db->_fun_cursor_erase) {
+        ham_trace(("Database was not initialized"));
+        return (db_set_error(db, HAM_NOT_INITIALIZED));
+    }
+
+    return (db_set_error(db,
+                db->_fun_cursor_erase(cursor, flags)));
+}
+
+ham_status_t HAM_CALLCONV
+ham_cursor_get_duplicate_count(ham_cursor_t *cursor,
+        ham_size_t *count, ham_u32_t flags)
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 {
     Database *db;
 
@@ -3374,8 +3854,18 @@ ham_cursor_get_duplicate_count(ham_cursor_t *hcursor,
 
     *count=0;
 
+<<<<<<< HEAD:src/hamsterdb.cc
     return (db->set_error(
                 (*db)()->cursor_get_duplicate_count(cursor, count, flags)));
+=======
+    if (!db->_fun_cursor_get_duplicate_count) {
+        ham_trace(("Database was not initialized"));
+        return (db_set_error(db, HAM_NOT_INITIALIZED));
+    }
+
+    return (db_set_error(db,
+                db->_fun_cursor_get_duplicate_count(cursor, count, flags)));
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 ham_status_t HAM_CALLCONV
@@ -3431,6 +3921,14 @@ ham_cursor_close(ham_cursor_t *hcursor)
 
     db->close_cursor(cursor);
 
+<<<<<<< HEAD:src/hamsterdb.cc
+=======
+    if (cursor_get_txn(cursor))
+        txn_set_cursor_refcount(cursor_get_txn(cursor),
+                txn_get_cursor_refcount(cursor_get_txn(cursor))-1);
+    allocator_free(cursor_get_allocator(cursor), cursor);
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
     return (0);
 }
 
@@ -3461,11 +3959,21 @@ ham_add_record_filter(ham_db_t *hdb, ham_record_filter_t *filter)
      * add the filter at the end of all filters, then we can process them
      * later in the same order as the insertion
      */
+<<<<<<< HEAD:src/hamsterdb.cc
     if (!head) {
         db->set_record_filter(filter);
         filter->_prev = filter;
     }
     else {
+=======
+    if (!head)
+    {
+        db_set_record_filter(db, filter);
+        filter->_prev = filter;
+    }
+    else
+    {
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
         head->_prev = filter;
 
         while (head->_next)
@@ -3541,8 +4049,37 @@ ham_set_context_data(ham_db_t *hdb, void *data)
     if (!db)
         return;
 
+<<<<<<< HEAD:src/hamsterdb.cc
     ScopedLock lock(db->get_env()->get_mutex());
     db->set_context_data(data);
+=======
+    env_set_device(env, device);
+    return (0);
+}
+
+ham_device_t * HAM_CALLCONV
+ham_env_get_device(ham_env_t *env)
+{
+    if (!env)
+        return (0);
+    return (env_get_device(env));
+}
+
+ham_status_t HAM_CALLCONV
+ham_env_set_allocator(ham_env_t *env, struct mem_allocator_t *alloc)
+{
+    if (!env || !alloc)
+        return (HAM_INV_PARAMETER);
+    env_set_allocator(env, alloc);
+    return (0);
+}
+
+void HAM_CALLCONV
+ham_set_context_data(ham_db_t *db, void *data)
+{
+    if (db)
+        db_set_context_data(db, data);
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc
 }
 
 void * HAM_CALLCONV
@@ -3621,7 +4158,7 @@ ham_get_key_count(ham_db_t *hdb, ham_txn_t *txn, ham_u32_t flags,
         ham_trace(("parameter 'db' must not be NULL"));
         return (HAM_INV_PARAMETER);
     }
-    
+
     if (!keycount) {
         ham_trace(("parameter 'keycount' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3650,6 +4187,7 @@ ham_clean_statistics_datarec(ham_statistics_t *s)
     return (0);
 }
 
+<<<<<<< HEAD:src/hamsterdb.cc
 ham_status_t HAM_CALLCONV
 ham_env_set_device(ham_env_t *henv, ham_device_t *hdevice)
 {
@@ -3696,3 +4234,12 @@ ham_env_set_allocator(ham_env_t *henv, void *alloc)
     env->set_allocator((Allocator *)alloc);
     return (0);
 }
+=======
+
+
+/**
+* @endcond
+*/
+
+
+>>>>>>> flash-bang-grenade:src/hamsterdb.cc

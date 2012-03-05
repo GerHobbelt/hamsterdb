@@ -28,13 +28,26 @@
 
 #include <ham/hamsterdb.h>
 #include <ham/hamsterdb_int.h>
+
+#if defined(_MSC_VER)
+/* [i_a] make sure crtdbg.h is loaded before malloc.h */
+#if (defined(WIN32) || defined(__WIN32)) && !defined(UNDER_CE) && (HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL < 3)
+#if (defined(DEBUG) || defined(_DEBUG))
+#if !defined(_CRTDBG_MAP_ALLOC)
+#define _CRTDBG_MAP_ALLOC 1
+#endif
+#endif
+#if _MSC_VER >= 1400 && _MSC_VER < 1500 /* bloody MSVC2005 b0rks on crtdbg.h otherwise! */
+#include <cstdlib>
+#endif
+#include <crtdbg.h>
+#endif
+#endif
+
 #include <cstring>
 #include <vector>
 
-#if defined(_MSC_VER) && defined(_DEBUG) && !defined(_CRTDBG_MAP_ALLOC) && !defined(UNDER_CE)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#endif
+
 
 /**
  * @defgroup ham_cpp hamsterdb C++ API wrapper
@@ -100,9 +113,13 @@ public:
     }
 
     /** Assignment operator. */
-    key &operator=(const key &other) {
+    key &operator=(const key &other)
+    {
+        /* TODO -- [i_a] copy key data; same for record; depends on USER_ALLOC flags, etc. */
         if (&other != this)
+        {
             m_key=other.m_key;
+        }
         return (*this);
     }
 
@@ -215,6 +232,40 @@ public:
         m_rec.flags=flags;
     }
 
+    /** Returns the 'partial size' of the record.
+
+    @sa HAM_PARTIAL
+    */
+    ham_size_t get_partial_size() const {
+        return (m_rec.partial_size);
+    }
+
+    /** Sets the 'partial size' of the record.
+
+    @sa HAM_PARTIAL
+        */
+    void set_partial_size(ham_size_t size) {
+        m_rec.partial_size=size;
+        m_rec.flags |= HAM_PARTIAL;
+    }
+
+    /** Returns the 'partial offset' of the record.
+
+    @sa HAM_PARTIAL
+    */
+    ham_size_t get_partial_offset() const {
+        return (m_rec.partial_offset);
+    }
+
+    /** Sets the 'partial offset' of the record.
+
+    @sa HAM_PARTIAL
+    */
+    void set_partial_offset(ham_size_t size) {
+        m_rec.partial_size=size;
+        m_rec.flags |= HAM_PARTIAL;
+    }
+
     /** Returns a pointer to the internal ham_record_t structure. */
     ham_record_t *get_handle() {
         return (&m_rec);
@@ -264,7 +315,6 @@ public:
 
 protected:
     ham_txn_t *m_txn;
-    db *m_db;
 };
 
 
@@ -293,7 +343,7 @@ public:
     }
 
     /** Constructor */
-    db() : m_db(0) {
+    db() : m_db(0), m_env(0) {
     }
 
     /** Destructor - automatically closes the Database, if necessary. */
@@ -313,7 +363,9 @@ public:
             return (*this);
         close();
         m_db=rhs.m_db;
+        m_env=rhs.m_env;
         rhs.m_db=0;
+        rhs.m_env=0;
         return (*this);
     }
 
@@ -326,7 +378,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_create_ex(m_db, filename, flags, mode, param);
+        st=ham_create_ex(m_db, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, mode, param);
         if (st)
             throw error(st);
     }
@@ -340,15 +392,16 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_open_ex(m_db, filename, flags, param);
+        st=ham_open_ex(m_db, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st)
             throw error(st);
     }
 
     /** Returns the last Database error. */
     ham_status_t get_error() {
-        if (!m_db)
+        if (!m_db) {
             return (HAM_NOT_INITIALIZED);
+        }
         return (ham_get_error(m_db));
     }
 
@@ -427,8 +480,8 @@ public:
     }
 
     /** Returns number of items in the Database. */
-    ham_u64_t get_key_count(ham_txn_t *txn=0, ham_u32_t flags=0) {
-        ham_u64_t count=0;
+    ham_offset_t get_key_count(ham_txn_t *txn=0, ham_u32_t flags=0) {
+        ham_offset_t count=0;
         ham_status_t st=ham_get_key_count(m_db, txn, flags, &count);
         if (st)
             throw error(st);
@@ -452,7 +505,7 @@ public:
         st=ham_delete(m_db);
         if (st)
             throw error(st);
-        m_db=0;
+        m_db = 0;
     }
 
     /** Returns a pointer to the internal ham_db_t structure. */
@@ -463,12 +516,12 @@ public:
 protected:
     friend class env;
 
-    /* Copy Constructor. Is protected and should not be used. */
-    db(ham_db_t *db) : m_db(db) {
-    }
+    /* Copy Constructor. Is protected and should not be used, except by class env methods. */
+    db(ham_db_t *db, class env &e);
 
 private:
     ham_db_t *m_db;
+    ham_env_t *m_env;
 };
 
 
@@ -649,7 +702,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_env_create_ex(m_env, filename, flags, mode, param);
+        st=ham_env_create_ex(m_env, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, mode, param);
         if (st)
             throw error(st);
     }
@@ -663,7 +716,7 @@ public:
             if (st)
                 throw error(st);
         }
-        st=ham_env_open_ex(m_env, filename, flags, param);
+        st=ham_env_open_ex(m_env, filename, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st)
             throw error(st);
     }
@@ -677,13 +730,13 @@ public:
         st=ham_new(&dbh);
         if (st)
             throw error(st);
-        st=ham_env_create_db(m_env, dbh, name, flags, param);
+        st=ham_env_create_db(m_env, dbh, name, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st) {
             ham_delete(dbh);
             throw error(st);
         }
 
-        return (ham::db(dbh));
+        return (ham::db(dbh, *this));
     }
 
     /** Opens an existing Database in the Environment. */
@@ -695,13 +748,13 @@ public:
         st=ham_new(&dbh);
         if (st)
             throw error(st);
-        st=ham_env_open_db(m_env, dbh, name, flags, param);
+        st=ham_env_open_db(m_env, dbh, name, flags | HAM_ENV_CLOSE_WAITS_FOR_DB_CLOSE, param);
         if (st) {
             ham_delete(dbh);
             throw error(st);
         }
 
-        return (ham::db(dbh));
+        return (ham::db(dbh, *this));
     }
 
     /** Renames an existing Database in the Environment. */
@@ -726,7 +779,6 @@ public:
             throw error(st);
         return (txn(h));
     }
-
 
     /** Closes the Environment. */
     void close(void) {
@@ -761,13 +813,13 @@ public:
         ham_status_t st;
         std::vector<ham_u16_t> v(count);
 
-        for(;;) {
+        for(;;) { // for(;;) is the only form where the compilers don't yak about the loop condition; while(1) and do-while(1) will cause a warning to be printed
             st=ham_env_get_database_names(m_env, &v[0], &count);
             if (!st)
                 break;
             if (st && st!=HAM_LIMITS_REACHED)
                 throw error(st);
-            count+=16;
+            //count+=16;  -- count is set to the required number when st==HAM_LIMITS_REACHED
             v.resize(count);
         }
 
@@ -775,9 +827,21 @@ public:
         return (v);
     }
 
-private:
+protected:
+    friend class db;
+
     ham_env_t *m_env;
 };
+
+
+#if defined(HAM_IMPLEMENT_CPP_CLASSCODE)
+
+/* Copy Constructor. Is protected and should not be used, except by class env methods. */
+db::db(ham_db_t *db, class env &e) : m_db(db), m_env(e.m_env) {
+}
+
+#endif
+
 
 }; // namespace ham
 

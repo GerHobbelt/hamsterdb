@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -9,12 +9,13 @@
  * See files COPYING.* for License information.
  */
 
-/*
+/**
 This file showcases a minimal BFC test fixture template.
 
 
 expected BFC output on Win64:
----------------------------
+
+<pre>
 ----- error #1 in EmptyTest::Test1
 ..\..\unittests\bfc-testsuite.cpp:734 system exception occurred during executing
  the test code. The thread tried to read from or write to a virtual address for
@@ -22,7 +23,8 @@ which it does not have the appropriate access. (The thread attempted to read the
  inaccessible data at address $0000000000000000)
 ----- error #2 in EmptyTest::EmptyTest::Test2
 ..\..\unittests\empty_sample.cpp:58 assertion failed in expr 0 == 1
----------------------------
+</pre>
+
 */
 
 
@@ -33,7 +35,7 @@ which it does not have the appropriate access. (The thread attempted to read the
 using namespace bfc;
 
 
-/*
+/**
 __super is MSVC specific, but other compilers can simply offer the same
 using this macro; place at the top of class definition and you're good
 to go.
@@ -69,17 +71,28 @@ protected:
 
         // add your own setup code, which is run before each test invocation
     }
+<<<<<<< HEAD
     
     virtual void teardown()
     {
         __super::teardown();
 
+=======
+
+    virtual void teardown()
+    {
+        __super::teardown();
+
+>>>>>>> flash-bang-grenade
         // add your own teardown code, which is always run after each test invocation (even when the test failed dramatically!)
     }
 
     void Test1(void)
     {
         BFC_ASSERT_EQUAL(0, 0);
+        BFC_ASSERT_NOTEQUAL(1, 0);
+        BFC_ASSERT_NULL(0);
+        BFC_ASSERT_NOTNULL("");
 
 #if 0 // turn on to see a SIGSEGV being caught by BFC: one failed test
 

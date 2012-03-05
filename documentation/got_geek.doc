@@ -1,0 +1,164 @@
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ *
+ * See files COPYING.* for License information.
+ */
+/*! \page got_geek hamsterdb Internal Implementation Details - The Nitty Gritty
+
+
+
+
+
+
+\section stats_gathering_techno Statistics Gathering and Hinting Internals
+
+the statistics gathering: how it's done exactly; the thoughts behind
+
+
+
+
+\subsection got_three_levels_of_hinting The three Levels of Hinting
+
+It's really 2.5 levels, but that depends on how you look at it: find/erase/insert come with their own hinter; unfortunately it's rather crude and limited functionality for erase, insert is little better and the find is the one who saw the most effort up to now.
+
+Then there's the inser-related freelist hinting: 2 levels: 1 global level which teels us which freelist pages (entries) we should search (the .5 level) and that's followed by a magic mix of a special iterator combined with a local hinter, which tells us which bitarray-section to inspect.
+
+The iterator is an important piece of magick-k-k: it allows us to 'sample' the freelist entries (pages), depending on what the global hinter told us we should do (i.e. it does for us what the global hinter hinted we should be doing) while doing some additional extra work for both regular searches (tiny sizes and reasonably sized BLOBs which still fit within a single freelist entry) and ELBLOB searches which are allocation requests spanning multiple freelist entries, guaranteed. The latter is resolved in a somewhat harsh way, but it's fast, and another example of Boyer Moore speeding up our scan/search. This time, however, there's both forward and backward scanning, depending on the DAM settings, while each (forward and backward/reverse scan) employ Boyer Moore: the special iterator takes care of the Boyer Moore index stepping for us (and a few odds an' ends), so our code outside the iterator can keep on looking understandable.
+
+
+
+\subsubsection got_ELBLOBs_hinter_plus_iter tie-in of magickal iterator, global hinter and ELBLOB searches
+
+A special mention is deserved for this one, because the run-time flow for this scenario will surely get all youse knickers in a twist, surely. After all, it's a up/down selectable Boyer-Moore scan, set up by the global hinter, and then executed through the iterator for the Boyer-Moore outer loop stepped scan, while the sequence scan (inner loop) of Boyer Moore is situated elsewhere in the code: the function which calls that magickky iterator on every round.
+
+
+
+
+\section approx_match_techno Approximate Matching and the B+tree
+
+the LT/GT/etc. 'approximate matching' find operations - how it works and what it does when it hits a B+tree edge
+
+
+
+
+\section got_BLOB_and_ELBLOB BLOBs and ELBLOBs (Extremely Large BLOBs)
+
+Overflowing a freelist page, what's a freelist page, how we cope with that
+
+
+
+
+
+\section got_freelist_handling freelist handling
+
+what's a freelist page, how is the freelist organized: chunked array of bits, one bit per DB_CHUNKSIZE
+
+
+\subsection got_more_speed110 speed improvements in v1.1.0
+
+what was done to get it to work faster: Tuned Boyer Moore for binary alphabets, pardon, multiple alphabets really: 64-bit 3-valued alphabets, 8-bit 3-valued alphabets and 1-bit binary alphabets, leading to a piece of code spanning nearly 60% of all freelist-related code in the hamster. Woof!
+
+Given the 'local hinter' which tells us which section of the current freelist entry MAY carry viable free slots, this info is used to set up all those Boyer-Moore-derived scans, while the requested size is used to pick the 'most appropriate' Boyer Moore scan of the lot: in reality we've 3 (ore more?) full-fledged Boyer-Moore space scan implementations rolled into one single, large, function.
+
+Yes, that could be cut up into multiple functions, but why bother, eh? ;-)
+
+
+\subsubsection got_stats_gather statistics gathering for freelist results
+
+The BM scans and everything that's freelist will feed into the statistics gathering code section, whether the search failed or succeeded. The statistics collector(s) gather this data and use it to improve the subsequent freelist global and local hints: global hints are improved when we fail and thus discover that a given freelist page X doesn't have enough free space for a request of size S (or larger), which means we don't want to visit this freelist page again, but instead have a look at the 'next' one: and it's up to the DAM mode to help decide what 'next' actually means here.
+
+Then there's the UBER/FAST mode, which turns the whole sequential scanning business into a freelist page sampling show.
+
+Caveat Emptor: the downside of this one is the fact that fails due to full freelist pages cannot 'bump up' the starting freelist page index any more as we do not know if some previous page might have sufficient free slots still: since we sample the freelist semi-randomly now, we cannot say that page X-1 is not adequate when all we've noticed so far is that page X is not adequate.
+
+And we haven't gone all the way and keep bitarrays marking 'viable & non-viable' freelist entries/pages: *that* would have still worked while sampling in UBER/FAST mode as each failing page can then be tagged, but the overhead to do this was deemed too large. Since it is a significant performance drain (or so we expect it to be, no hard data for this lemma yet) for sustained UBER/FAST mode insert, we might consider implementing those marker bitarrays anyway. But not now. Maybe in a next life/revision of the hamster.
+
+
+
+
+
+
+
+
+
+\subsection got_16bit_boundary_caveats the 16-bit boundary: caveat emptor!
+
+Known issue in v1.0.x where the tail end of large pages is lost to the freelist; why there still is a freelist in there after all (thanks to the header being subtracted and then the modulo thing happening: size no longer 'a multiple of' so we're in luck today
+
+
+
+
+\section got_callbacks_and_filters callbacks and filters
+
+filters can be stacked; now they can add headers and footers and then there's this stuff about lead-in and lead-out or leading slack and trailing slack. A pciture says a thousand words for this one: show a cascade of filters and how they get their data positioned and what we expect from them.
+
+Then there's the question whether the hamster is re-entrant, which is mandatory if we wish to call hamster API functions from inside a filter callback.
+
+Have a look at a few (sophisticated?) scanerios, e.g. data encryption. Now including the header page!
+
+
+\subsection cpp_callback_caveats Using C++ or other languages inside callback mathods of the Hamster
+
+This section discusses programming subjects which are dangerous or tricky in combination with the
+hamster library.
+
+
+\subsubsection cpp_which_are_callbacks Which are considered 'callback methods'?
+
+That one is simple: anything that is a function pointer in 'C'. Here is a non-exhaustive list:
+
+- custom hamster devices (@sa ham_device_t)
+
+- 'hooks' registered with the event signaling hamster device
+
+- custom backends (@sa ham_backend_t)
+
+- record filters
+
+- custom key / record compare methods
+
+- custom allocators (@sa ham_mem_allocator_t)
+
+In other words: this chapter regards every spot where you alter or augment the hamster core behaviour
+through providing your own code which is invoked by the hamster core in any way as 'callback
+methods'.
+
+
+
+\subsubsection cpp_got_to_watch_for_what What to watch for then?
+
+NEVER allow any exception to 'fall through' the hamster code proper. In other words: make sure every 
+and all exceptions are caught before the callback method returns control to the hamster core code.
+You may encode such failures as failure codes, which you should pick up again at the point where
+the hamster code returns control to the application code which invoked the current hamster API method
+and maybe convert that error code to a new exception again and throw that.
+
+When you don't, i.e. when you allow exceptions and longjmp() 'stack unwinding' to jump <em>through</em>
+the hamster core code layer, you may find that there seems to be no problem with such behaviour, at first,
+but later on in your runtime you will run into crashes and other severe problems as you did not allow
+the hamster to properly detect the error condition and unwind its own internal structures accordingly.
+
+There are several locations in there where references (pointers) are stored to track environment or 
+database handles or other hamster-relevant material. These references must be allowed to be cleaned up
+by the hamster when an error occurs. If you do not, later on such a reference, by now being quite invalid,
+will be accessed and cause all sorts of trouble, starting with core dumps, crashes and ending with 
+very hard to reproduce data integrity corruption.
+
+@warning Consider yourself warned.
+
+@note This advise applies to all libraries, not just the hamster. Keep your exceptions and longjmp() jumps
+      restricted to traveling only those code sections that you control in their entirety.
+      
+      
+
+
+
+*/
+
+
+

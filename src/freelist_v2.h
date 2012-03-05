@@ -16,5 +16,15 @@
 #ifndef HAM_FREELIST32_H__
 #define HAM_FREELIST32_H__
 
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
+>>>>>>> flash-bang-grenade
 
 #endif /* HAM_FREELIST_H__ */

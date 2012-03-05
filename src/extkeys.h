@@ -10,6 +10,10 @@
  */
 
 /**
+* @cond ham_internals
+*/
+
+/**
  * @brief extended key cache
  *
  */
@@ -17,12 +21,97 @@
 #ifndef HAM_EXTKEYS_H__
 #define HAM_EXTKEYS_H__
 
+<<<<<<< HEAD
 #include <vector>
 
 #include "internal_fwd_decl.h"
 #include "hash-table.h"
 #include "mem.h"
 #include "env.h"
+=======
+#include "internal_fwd_decl.h"
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+/**
+ * an extended key
+ */
+struct extkey_t
+{
+    /** the blobid of this key */
+    ham_offset_t _blobid;
+
+    /** the current transaction, which created this extkey; used to
+     * get the age of the extkey */
+    ham_txn_id_t _txn_id;
+
+    /** pointer to the next key in the linked list */
+    extkey_t *_next;
+
+    /** pointer to the previous key in the linked list; note that this link direction is cyclic! */
+    extkey_t *_prev;
+
+    /** the size of the extended key */
+    ham_size_t _size;
+
+    /** the key data */
+    ham_u8_t _data[4];
+};
+
+/**
+ * the size of an extkey_t, without the data byte
+ */
+#define SIZEOF_EXTKEY_T                     OFFSETOF(extkey_t, _data)
+
+/**
+ * get the blobid
+ */
+#define extkey_get_blobid(e)                (e)->_blobid
+
+/**
+ * set the blobid
+ */
+#define extkey_set_blobid(e, id)             (e)->_blobid=(id)
+
+/**
+ * get the txn id
+ */
+#define extkey_get_txn_id(e)                 (e)->_txn_id
+
+/**
+ * set the txn id
+ */
+#define extkey_set_txn_id(e, id)             (e)->_txn_id=(id)
+
+/**
+ * get the next-pointer
+ */
+#define extkey_get_next(e)                   (e)->_next
+
+/**
+ * set the next-pointer
+ */
+#define extkey_set_next(e, next)             (e)->_next=(next)
+
+/**
+* get the prev-pointer
+*/
+#define extkey_get_prev(e)                   (e)->_prev
+
+/**
+* set the prev-pointer
+*/
+#define extkey_set_prev(e, prev)             (e)->_prev=(prev)
+
+/**
+ * get the size
+ */
+#define extkey_get_size(e)                   (e)->_size
+>>>>>>> flash-bang-grenade
 
 #define EXTKEY_MAX_AGE  25
 
@@ -149,6 +238,7 @@ class ExtKeyCache
     Database *m_db;
 
     /** the used size, in byte */
+<<<<<<< HEAD
     ham_size_t m_usedsize;
 
     /** helper object for the cache */
@@ -159,10 +249,140 @@ class ExtKeyCache
 };
 
 /**
+=======
+    ham_size_t _usedsize;
+
+    /** the total number of cached entries */
+    ham_size_t _count;
+
+    /** the number of buckets */
+    ham_size_t _bucketsize;
+
+    /** the buckets - a linked list of extkey_t pointers */
+    extkey_t *_buckets[1];
+};
+
+/**
+* the size of an extkey_cache_t, without the data entry
+*/
+#define SIZEOF_EXTKEY_CACHE_T            OFFSETOF(extkey_cache_t, _buckets)
+
+/**
+ * get the owner of the cache
+ */
+#define extkey_cache_get_db(c)          (c)->_db
+
+/**
+ * set the owner of the cache
+ */
+#define extkey_cache_set_db(c, db)       (c)->_db=(db)
+
+/**
+ * get the used size of the cache
+ */
+#define extkey_cache_get_usedsize(c)     (c)->_usedsize
+
+/**
+ * set the used size of the cache
+ */
+#define extkey_cache_set_usedsize(c, s)  (c)->_usedsize=(s)
+
+/**
+* get the used entry count of the cache
+*/
+#define extkey_cache_get_count(c)     (c)->_count
+
+/**
+* increment the used entry count of the cache
+*/
+#define extkey_cache_inc_count(c)  (c)->_count++
+
+/**
+* decrement the used entry count of the cache
+*/
+#define extkey_cache_dec_count(c)  (c)->_count--
+
+/**
+ * get the number of buckets
+ */
+#define extkey_cache_get_bucketsize(c)     (c)->_bucketsize
+
+/**
+ * set the number of buckets
+ */
+#define extkey_cache_set_bucketsize(c, s)  (c)->_bucketsize=(s)
+
+/**
+ * get a bucket
+ */
+#define extkey_cache_get_bucket(c, i)      (c)->_buckets[i]
+
+/**
+ * set a bucket
+ */
+#define extkey_cache_set_bucket(c, i, p)   (c)->_buckets[i]=(p)
+
+
+
+/**
+ * create a new extended key-cache
+ */
+extern extkey_cache_t *
+extkey_cache_new(ham_db_t *db);
+
+/**
+ * destroy the cache; does NOT delete the cache buckets!
+ */
+extern void
+extkey_cache_destroy(extkey_cache_t *cache);
+
+/**
+ * Insert a new extended key in the cache.
+ *
+ * Will assert that there's no duplicate key!
+ */
+extern ham_status_t
+extkey_cache_insert(extkey_cache_t *cache, ham_offset_t blobid,
+            ham_size_t size, const ham_u8_t *data, const ham_page_t *refering_index_page);
+
+/**
+ * remove an extended key from the cache
+ * returns HAM_KEY_NOT_FOUND if the extkey was not found
+ */
+extern ham_status_t
+extkey_cache_remove(extkey_cache_t *cache, ham_offset_t blobid);
+
+/**
+ * fetches an extended key from the cache
+ * returns HAM_KEY_NOT_FOUND if the extkey was not found
+ */
+extern ham_status_t
+extkey_cache_fetch(extkey_cache_t *cache, ham_offset_t blobid,
+            ham_size_t *size, ham_u8_t **data);
+
+/**
+ * removes all old keys from the cache
+ */
+extern ham_status_t
+extkey_cache_purge(extkey_cache_t *cache);
+
+/**
+>>>>>>> flash-bang-grenade
  * a combination of extkey_cache_remove and blob_free
  */
 extern ham_status_t
 extkey_remove(Database *db, ham_offset_t blobid);
 
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+} // extern "C"
+#endif
+>>>>>>> flash-bang-grenade
 
 #endif /* HAM_EXTKEYS_H__ */
+
+/**
+* @endcond
+*/
+

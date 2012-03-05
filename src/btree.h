@@ -10,7 +10,11 @@
  */
 
 /**
- * @brief the btree-backend
+* @cond ham_internals
+*/
+
+/**
+ * @brief Generic interface items for B-tree backends
  *
  */
 
@@ -23,6 +27,7 @@
 
 #include "backend.h"
 #include "btree_cursor.h"
+<<<<<<< HEAD
 #include "btree_key.h"
 #include "db.h"
 
@@ -55,11 +60,19 @@ HAM_PACK_0 struct HAM_PACK_1 ham_btree_t
      */
     void *_keydata1;
     void *_keydata2;
+=======
+#include "keys.h"
+#include "page.h"
+#include "statistics.h"
 
-} HAM_PACK_2;
 
-#include "packstop.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+>>>>>>> flash-bang-grenade
 
+
+<<<<<<< HEAD
 /** get the address of the root node */
 #define btree_get_rootpage(be)          (ham_db2h_offset((be)->_rootpage))
 
@@ -89,10 +102,40 @@ HAM_PACK_0 struct HAM_PACK_1 ham_btree_t
 
 /** defines the maximum number of keys per node */
 #define MAX_KEYS_PER_NODE               0xFFFFU /* max(ham_u16_t) */
+=======
+/**
+This structure stores all 'constant' datums related to the current Database to be passed around
+the backend methods.
 
+The intent here is to calculate these items once, upon entering a backend method (callback) and
+then only taking up a single pointer pushed on the stack with each internal function call in the
+backend, while enabling all these functions easy and fast access to this information.
 
-#include "packstart.h"
+Some items (the @ref ham_key_t and @ref ham_record_t references for instance) are stored in here
+to allow the backend to pass these pieces of information to the RID-assigning methods of the underlying
+device (which may employ this information for partitioning and other storage layout schemes), while
+other items are just kept in here to cut down on the number of dereferences through pages, cursors, etc.
+to get at them.
 
+The prime directive for this structure is always: attempt to cut down on the run-time cost in the
+backend, either through nested or repetitive dereferences in one of more internal functions or through
+reducing the stack frame construction effort as a result of pushing many function arguments on the stack
+as those are passed around.
+*/
+struct common_btree_datums_t
+{
+    ham_btree_t *be;
+
+    ham_db_t *db;
+
+    ham_env_t *env;
+>>>>>>> flash-bang-grenade
+
+    ham_device_t *dev;
+
+    ham_key_t *in_key;
+
+<<<<<<< HEAD
 /**
  * A btree-node; it spans the persistent part of a Page:
  *
@@ -129,11 +172,29 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 
     /** the entries of this node */
     btree_key_t _entries[1];
+=======
+    ham_record_t *in_rec;
 
-} HAM_PACK_2 btree_node_t;
+    /**
+     * A pointer to a cursor; if this is a valid pointer, then this
+     * cursor will point to the new inserted / located (found) item.
+     */
+    ham_bt_cursor_t *cursor;
 
-#include "packstop.h"
+    ham_u32_t flags;
 
+    ham_u16_t keysize;
+
+    ham_u16_t maxkeys;
+
+    ham_size_t keywidth;
+>>>>>>> flash-bang-grenade
+
+    unsigned has_fast_index : 1;
+
+    unsigned _alignment_padding_dummy1 : 31;
+
+<<<<<<< HEAD
 /** get the number of entries of a btree-node */
 #define btree_node_get_count(btp)            (ham_db2h16(btp->_count))
 
@@ -163,11 +224,37 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 
 /** get a btree_node_t from a Page */
 #define page_get_btree_node(p)          ((btree_node_t *)p->get_payload())
+=======
+    ham_size_t offset_to_fastindex;
+
+    ham_size_t offset_to_keyarr;
+
+    common_hints_t hints;
+
+    /** The ratio where a node is split: (maxkeys * ratio)
+     *
+     * Classic HamsterDB/B+-tree: value = MK_HAM_FLOAT(0.5), i.e. split at midpoint.
+     */
+    ham_float_t split_ratio;
+
+    /** The ratio where a node is merged: (maxkeys * ratio) */
+    ham_float_t merge_ratio;
+};
+
+
+/**
+* defines the maximum number of keys per node
+*/
+#define MAX_KEYS_PER_NODE               0xFFFFU /* max(ham_u16_t) */
+
+
+>>>>>>> flash-bang-grenade
 
 /**
  * "constructor" - initializes a new ham_btree_t object
  *
  * @return a pointer to a new created B+-tree backend
+<<<<<<< HEAD
  *
  * @remark flags are from @ref ham_env_open_db() or @ref ham_env_create_db()
  */
@@ -360,6 +447,14 @@ btree_prepare_key_for_compare(Database *db, int which, btree_key_t *src,
  */
 extern ham_status_t
 btree_read_key(Database *db, btree_key_t *source, ham_key_t *dest);
+=======
+ *         instance in @a backend_ref
+ *
+ * @remark flags are from @ref ham_env_open_db() or @ref ham_env_create_db()
+ */
+extern ham_status_t
+btree_create(ham_backend_t **backend_ref, ham_db_t *db, ham_u32_t flags, const ham_parameter_t *param);
+>>>>>>> flash-bang-grenade
 
 /**
  * read a record
@@ -399,5 +494,16 @@ extern ham_status_t
 btree_copy_key_int2pub(Database *db, const btree_key_t *source,
                 ham_key_t *dest);
 
+<<<<<<< HEAD
+=======
+#ifdef __cplusplus
+} // extern "C"
+#endif
+>>>>>>> flash-bang-grenade
 
 #endif /* HAM_BTREE_H__ */
+
+/**
+* @endcond
+*/
+

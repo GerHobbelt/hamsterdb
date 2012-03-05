@@ -1,0 +1,60 @@
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ *
+ * See files COPYING.* for License information.
+ */
+/*! \page features HamsterDB Features
+
+<h2>Features</h2>
+<ul>
+	<li>Very fast sorted B+Tree with variable length keys
+
+	<li>Very fast Database Cursors
+
+	<li>Support for Transactions (only one Transaction at a time)
+
+	<li>Support for In-Memory Databases
+
+	<li>Support for duplicate keys
+
+	<li>Support	for Environments: multiple Databases in one physical file (per default
+	limited to 16 Databases, but can be changed at 
+	runtime (see @ref DB_MAX_INDICES) &ndash; but that's only the default: out of the
+	box the hamster supports up to 61438 databases per physical file, assuming a 
+	single flat file environment)
+	
+	<li>Support for Record Number Databases (similar to an
+	"auto-increment" table in SQL)
+	
+	[i_a] that would be 'sequences' in Oracle, BTW.
+
+	<li>Runtime-configurable parameters (i.e. cache size, key size,
+	page size)
+	
+	<li>Portable ANSI-C implementation supports many different
+	architectures 
+	
+	See \ref platforms for more &#187;
+	
+	<li>Endian-independent file format
+	
+	<li>Support for Logging/Recovery
+	
+	<li>Extensive documentation
+	
+	<li>64bit file pointers and support for huge files
+	
+	<li>Optional AES encryption
+	
+	<li>Optional zlib-based compression
+	
+	<li>Wrapper for C++, Python, .NET and Java
+	
+</ul>
+
+*/

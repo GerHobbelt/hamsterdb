@@ -7,13 +7,15 @@
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
- *
  */
 
-#include "config.h"
+/**
+* @cond ham_internals
+*/
 
-#include <string.h>
+#include "internal_preparation.h"
 
+<<<<<<< HEAD:src/freelist.cc
 #include "db.h"
 #include "device.h"
 #include "endianswap.h"
@@ -23,6 +25,8 @@
 #include "mem.h"
 #include "btree_stats.h"
 #include "txn.h"
+=======
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
 
 
@@ -66,14 +70,14 @@
 #define freel_set_allocated_bitsXX(fl, u)  freel_set_allocated_bits16(fl, u)
 #define freel_get_bitmapXX(fl)             freel_get_bitmap16(fl)
 
-#define __freel_lazy_createXX                __freel_lazy_create16
+#define __freel_lazy_createXX               __freel_lazy_create16
 #define __freel_destructorXX                __freel_destructor16
 #define __freel_alloc_areaXX                __freel_alloc_area16
-#define __freel_mark_freeXX                    __freel_mark_free16
-#define __freel_check_area_is_allocatedXX    __freel_check_area_is_allocated16
+#define __freel_mark_freeXX                 __freel_mark_free16
+#define __freel_check_area_is_allocatedXX   __freel_check_area_is_allocated16
 #define __freel_init_perf_dataXX            __freel_init_perf_data16
 
-typedef ham_u16_t                            ham_uXX_t;
+typedef ham_u16_t                           ham_uXX_t;
 
 #define __freel_alloc_pageXX                __freel_alloc_page16
 
@@ -156,7 +160,13 @@ __freel_check_area_is_allocated16(Device *dev, Environment *env, ham_offset_t ad
 extern ham_status_t
 __freel_alloc_area16(ham_offset_t *addr_ref, Device *dev, Environment *env, Database *db, ham_size_t size, ham_bool_t aligned, ham_offset_t lower_bound_address);
 extern ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_init_perf_data16(freelist_cache_t *cache, Device *dev, Environment *env, freelist_entry_t *entry, freelist_payload_t *fp);
+=======
+__freel_alloc_area16(ham_offset_t *addr_ref, ham_device_t *dev, ham_env_t *env, ham_db_t *db, ham_size_t size, ham_bool_t aligned, ham_offset_t lower_bound_address);
+extern ham_status_t
+__freel_init_perf_data16(freelist_cache_t *cache, ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry, freelist_payload_t *fp);
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
 extern ham_status_t
 __freel_lazy_create32(freelist_cache_t *cache, Device *dev, Environment *env);
@@ -169,9 +179,20 @@ __freel_mark_free32(Device *dev, Environment *env, Database *db, ham_offset_t ad
 extern ham_status_t
 __freel_check_area_is_allocated32(Device *dev, Environment *env, ham_offset_t address, ham_size_t size);
 extern ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_alloc_area32(ham_offset_t *addr_ref, Device *dev, Environment *env, Database *db, ham_size_t size, ham_bool_t aligned, ham_offset_t lower_bound_address);
 extern ham_status_t
 __freel_init_perf_data32(freelist_cache_t *cache, Device *dev, Environment *env, freelist_entry_t *entry, freelist_payload_t *fp);
+=======
+__freel_alloc_area32(ham_offset_t *addr_ref, ham_device_t *dev, ham_env_t *env, ham_db_t *db, ham_size_t size, ham_bool_t aligned, ham_offset_t lower_bound_address);
+extern ham_status_t
+__freel_init_perf_data32(freelist_cache_t *cache, ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry, freelist_payload_t *fp);
+
+
+
+
+
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
 /**
  * replacement for env->set_dirty(); will call the macro, but also
@@ -199,6 +220,7 @@ __page_set_dirty(Page *page)
 }
 
 /**
+<<<<<<< HEAD:src/freelist.cc
  * @return the maximum number of chunks a freelist page entry can span;
  * all freelist entry pages (except the first, as it has to share the
  * db page with a (largish) database header) have this span, which is
@@ -210,6 +232,19 @@ __page_set_dirty(Page *page)
  */
 static ham_size_t
 __freel_get_freelist_entry_maxspan(Device *device, Environment *env, freelist_cache_t *cache)
+=======
+@return the maximum number of chunks a freelist page entry can span;
+all freelist entry pages (except the first, as it has to share the
+db page with a (largish) database header) have this span, which is
+a little less than
+
+<pre>
+DB_CHUNKSIZE * env_get_pagesize(env)
+</pre>
+*/
+static ham_size_t
+__freel_get_freelist_entry_maxspan(ham_device_t *dev, ham_env_t *env, freelist_cache_t *cache)
+>>>>>>> flash-bang-grenade:src/freelist.cc
 {
     ham_uXX_t ret;
     ham_size_t size=env->get_usable_pagesize()-env_get_freelist_header_sizeXX();
@@ -223,7 +258,11 @@ __freel_get_freelist_entry_maxspan(Device *device, Environment *env, freelist_ca
 
 
 static ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_cache_resize(Device *device, Environment *env, freelist_cache_t *cache,
+=======
+__freel_cache_resize(ham_device_t *dev, ham_env_t *env, freelist_cache_t *cache,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         ham_size_t new_count)
 {
     ham_size_t i;
@@ -298,17 +337,21 @@ specified @a address.
       <pre>
       ham_assert(return_code == HAM_SUCCESS ? *entry_ref != NULL : *entry_ref == NULL, (0));
       </pre>
-         i.e. the @a entry_ref will only be NULL when an error occurred.
+      i.e. the @a entry_ref will only be NULL when an error occurred.
 
 */
 static ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_cache_get_entry(freelist_entry_t **entry_ref, Device *device, Environment *env, freelist_cache_t *cache,
+=======
+__freel_cache_get_entry(freelist_entry_t **entry_ref, ham_device_t *dev, ham_env_t *env, freelist_cache_t *cache,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         ham_offset_t address)
 {
     ham_size_t i=0;
     ham_status_t st=0;
     freelist_entry_t *entries;
-    
+
     ham_assert(entry_ref != NULL, (0));
     for(;;)
     {
@@ -319,7 +362,11 @@ __freel_cache_get_entry(freelist_entry_t **entry_ref, Device *device, Environmen
 
         for (; i<freel_cache_get_count(cache); i++) {
             freelist_entry_t *entry=&entries[i];
+<<<<<<< HEAD:src/freelist.cc
     
+=======
+
+>>>>>>> flash-bang-grenade:src/freelist.cc
             ham_assert(!(address<freel_entry_get_start_address(entry)),
                             (""));
 
@@ -343,7 +390,11 @@ __freel_cache_get_entry(freelist_entry_t **entry_ref, Device *device, Environmen
         add += DB_CHUNKSIZE - 1;
         add /= DB_CHUNKSIZE;
 
+<<<<<<< HEAD:src/freelist.cc
         single_size_bits = __freel_get_freelist_entry_maxspan(device, env, cache);
+=======
+        single_size_bits = __freel_get_freelist_entry_maxspan(dev, env, cache);
+>>>>>>> flash-bang-grenade:src/freelist.cc
         ham_assert(((single_size_bits/8) % sizeof(ham_u64_t)) == 0,
                 ("freelist bitarray size must be == 0 MOD sizeof(ham_u64_t) "
                  "due to the scan algorithm"));
@@ -360,8 +411,25 @@ __freel_cache_get_entry(freelist_entry_t **entry_ref, Device *device, Environmen
     }
 }
 
+/**
+Mark the area at @a start_bit and range @a size_bits as @a set, where set==HAM_TRUE(1)
+means the bits in the freelist bitmap will be marked 'free'/available, while set==HAM_FALSE(0)
+means the bits in the freelist bitmap will be marked 'allocated'/in-use.
+
+This routine assumes the proper freelist bitmap page is addressed through @a fp and @a entry.
+
+@note The bitmap is stored as a bit-array in Little-Endian byte order. This means that the
+      bit sequence
+          0 0 0 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+      will be stored as the byte sequence
+          3F C0 00 00
+*/
 static ham_size_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
+=======
+__freel_set_bits(ham_device_t *dev, ham_env_t *env, freelist_entry_t *entry,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         freelist_payload_t *fp, ham_bool_t overwrite,
         ham_size_t start_bit,
         ham_size_t size_bits,
@@ -405,7 +473,7 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
             ham_size_t n = size_bits;
             ham_u64_t *p64=(ham_u64_t *)freel_get_bitmapXX(fp);
             p64 += qw_start;
-            
+
             if (qw_offset)
             {
                 p = (ham_u8_t *)&p64[-1];
@@ -414,7 +482,7 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
                 {
                     p[i>>3] |= 1 << (i&(8-1));
                 }
-                
+
                 n -= 64 - qw_offset;
             }
 
@@ -488,7 +556,7 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 }
 
 /**
-* Search for a sufficiently large free slot in the freelist bitarray.
+* Search for a sufficiently large free slot in the freelist bit-array.
 *
 * Before v1.0.9, this was a sequential scan, sped up by first scanning
 * QWORDs in an outer loop in order to find spots with at least 1 free
@@ -571,7 +639,11 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 *     at the end of the pattern and then backtracked; we can
 *     improve our backtracking by assuming a few things about
 *     both the pattern and the search space: since our pattern
+<<<<<<< HEAD:src/freelist.cc
 *     is all-1s and we can can assume that our search space,
+=======
+*     is all-1s and we can assume that our search space,
+>>>>>>> flash-bang-grenade:src/freelist.cc
 *     delimited by a previous sample which was false, and the
 *     latest sample, distanced pattern_length bits apart, is
 *     mostly 'used bits' (zeroes), we MAY assume that the
@@ -591,7 +663,11 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 *     deliver a sufficiently trustworthy 'probable size of
 *     free area' to do this before we wind down to a (costly)
 *     sequential scan. Note that the two bsearches can
+<<<<<<< HEAD:src/freelist.cc
 *     be reduced to the first only, if it's verdict is that
+=======
+*     be reduced to the first only, if its verdict is that
+>>>>>>> flash-bang-grenade:src/freelist.cc
 *     the range starts at offset -P+1, i.e. the first bit
 *     past the previous (failed) sample in the skip loop.
 *     The two blocks bsearched are, given the above, assumed
@@ -612,7 +688,11 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 *     pattern sizes is the bsearch-before-sequential 'prescan'
 *     considered beneficial.)
 *
+<<<<<<< HEAD:src/freelist.cc
 *   # As we scan the freelist, we can gather statictics:
+=======
+*   # As we scan the freelist, we can gather statistics:
+>>>>>>> flash-bang-grenade:src/freelist.cc
 *     how far we had to scan into the entire range before
 *     we hit our _real_ free slot:
 *     by remembering this position, the next search for
@@ -723,14 +803,18 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 *     space to slices of 1 bit each, unless we
 *     limit the bsearch prescan to BYTE-level,
 *     i.e. 8-bit slices only for speed sake.
+<<<<<<< HEAD:src/freelist.cc
 *     AH! ANOTHER IMPROEMENT THERE!
+=======
+*     AH! ANOTHER IMPROVEMENT THERE!
+>>>>>>> flash-bang-grenade:src/freelist.cc
 *
 *     the former (bsearch-at-start) will ALWAYS
 *     limit its divide-and-conquer to slices of
 *     P bits (or more); further reducing the
 *     minimum slice is identical to having a BM
 *     skip loop with a jump distance of P/2 (or
-*     lower), which is considered sub-optimumal.
+*     lower), which is considered sub-optimal.
 *     Such a bsearch would be blending the search
 *     pattern into the task area alotted the
 *     dual-bsearch backtrack prescans.
@@ -834,7 +918,11 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 * @author Ger Hobbelt, ger@hobbelt.com
 */
 
+<<<<<<< HEAD:src/freelist.cc
 /** 8 QWORDS or less: 1-stage scan, otherwise, bsearch prescan */
+=======
+/** 8 QWORDS or less: 1-stage scan, otherwise, bsearch pre-scan */
+>>>>>>> flash-bang-grenade:src/freelist.cc
 #define SIMPLE_SCAN_THRESHOLD            8
 
 
@@ -926,7 +1014,11 @@ BITSCAN_LSBit8(ham_u8_t v, ham_u32_t pos)
 
 
 static ham_s32_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_search_bits_ex(Device *device, Environment *env,
+=======
+__freel_search_bits_ex(ham_device_t *dev, ham_env_t *env,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 freelist_entry_t *entry, freelist_payload_t *f,
                 ham_size_t size_bits, freelist_hints_t *hints)
 {
@@ -1135,7 +1227,11 @@ __freel_search_bits_ex(Device *device, Environment *env,
 
             /* report our failure to find a free slot */
             if (bm_l >= bm_r) {
+<<<<<<< HEAD:src/freelist.cc
                 db_update_freelist_stats_fail(device, env, entry, f, hints);
+=======
+                db_update_freelist_stats_fail(dev, env, entry, f, hints);
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 return (-1);
             }
 
@@ -1576,7 +1672,7 @@ __freel_search_bits_ex(Device *device, Environment *env,
                     for (;;)
                     {
                         hints->cost++;
-    
+
                         if (p64[r] != 0xFFFFFFFFFFFFFFFFULL)
                         {
                             l = r + 1; /* lowest PROBABLY okay probe location */
@@ -2216,7 +2312,7 @@ __freel_search_bits_ex(Device *device, Environment *env,
                             hints->cost++;
                         }
                     }
-                    
+
                     /*
                      * BM: a miss: skip to next opportunity
                      * sequentially:
@@ -2442,7 +2538,7 @@ __freel_search_bits_ex(Device *device, Environment *env,
                         {
                             hints->cost++;
                         }
-                        
+
                         /*
                          * BM: a miss: skip to next opportunity
                          * sequentially:
@@ -2714,7 +2810,11 @@ __freel_search_bits_ex(Device *device, Environment *env,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_alloc_pageXX(Page **page_ref, Device *device, Environment *env, freelist_cache_t *cache,
+=======
+__freel_alloc_pageXX(ham_page_t **page_ref, ham_device_t *dev, ham_env_t *env, freelist_cache_t *cache,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         freelist_entry_t *entry)
 {
     ham_size_t i;
@@ -2793,7 +2893,7 @@ __freel_alloc_pageXX(Page **page_ref, Device *device, Environment *env, freelist
              prolong the life expectancy of certain pages in a cache), then
              'fp' will point to Nirvana by the time the overflow address
              gets updated further below.
-             
+
              The solution for that little conundrum is to temporarily 'lock'
              prev_page into the cache, which is done simply by bumping up
              it's reference count, bumping down again once the update has been
@@ -2813,21 +2913,36 @@ __freel_alloc_pageXX(Page **page_ref, Device *device, Environment *env, freelist
                         freel_entry_get_page_id(&entries[i-1]), 0);
                 if (!prev_page)
                     return st ? st : HAM_INTERNAL_ERROR;
+<<<<<<< HEAD:src/freelist.cc
                 __page_set_dirty(prev_page);
+=======
+                page_set_dirty_txn(prev_page, 1);
+                /* ref++ so fp stays valid BEYOND next page alloc further below, no matter what! */
+                page_add_ref(prev_page);
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 fp=page_get_freelist(prev_page);
             }
 
             /*
              * allocate a new page, fixed the linked list
              */
+<<<<<<< HEAD:src/freelist.cc
             st=env_alloc_page(&page, env, Page::TYPE_FREELIST,
+=======
+            st=env_alloc_page(&page, env, PAGE_TYPE_FREELIST,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                     PAGE_IGNORE_FREELIST|PAGE_CLEAR_WITH_ZERO);
-            if (!page)
+            if (st || !page)
             {
                 ham_assert(st != 0, (0));
                 return st;
             }
+<<<<<<< HEAD:src/freelist.cc
             freel_set_overflow(fp, page->get_self());
+=======
+
+            freel_set_overflow(fp, page_get_self(page));
+>>>>>>> flash-bang-grenade:src/freelist.cc
             /* done editing /previous/ freelist page */
 
             fp=page_get_freelist(page);
@@ -2874,7 +2989,11 @@ __freel_alloc_pageXX(Page **page_ref, Device *device, Environment *env, freelist
 static ham_s32_t
 __freel_locate_sufficient_free_space(freelist_hints_t *dst,
         freelist_global_hints_t *hints,
+<<<<<<< HEAD:src/freelist.cc
         Device *device, Environment *env, freelist_cache_t *cache,
+=======
+        ham_device_t *dev, ham_env_t *env, freelist_cache_t *cache,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         ham_s32_t start_index)
 {
     freelist_entry_t *entry;
@@ -3152,8 +3271,13 @@ __freel_locate_sufficient_free_space(freelist_hints_t *dst,
 
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
                 Environment *env, Database *db, ham_size_t size,
+=======
+__freel_alloc_areaXX(ham_offset_t *addr_ref, ham_device_t *dev,
+                ham_env_t *env, ham_db_t *db, ham_size_t size,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 ham_bool_t aligned, ham_offset_t lower_bound_address)
 {
     ham_status_t st;
@@ -3163,7 +3287,11 @@ __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
     freelist_cache_t *cache=device->get_freelist_cache();
     Page *page=0;
     ham_s32_t s=-1;
+<<<<<<< HEAD:src/freelist.cc
     ham_u16_t mgt_mode = db ? db->get_data_access_mode() : 0;
+=======
+    ham_u16_t mgt_mode = db ? db_get_data_access_mode(db) : 0;
+>>>>>>> flash-bang-grenade:src/freelist.cc
     freelist_global_hints_t global_hints =
     {
         0,
@@ -3199,13 +3327,17 @@ __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
      */
     for (i = -1;
         0 <= (i = __freel_locate_sufficient_free_space(&hints,
+<<<<<<< HEAD:src/freelist.cc
                             &global_hints, device, env, cache, i));
+=======
+                            &global_hints, dev, env, cache, i));
+>>>>>>> flash-bang-grenade:src/freelist.cc
         )
     {
         ham_assert(i < (ham_s32_t)freel_cache_get_count(cache), (0));
 
         entry = freel_cache_get_entries(cache) + i;
-            
+
         /*
          * when we look for a free slot for a multipage spanning blob
          * ('huge blob'), we could, of course, play nice, and check every
@@ -3321,7 +3453,11 @@ __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
                 /* we have a hit! */
                 i -= start_idx;
                 end_idx += start_idx;
+<<<<<<< HEAD:src/freelist.cc
                 
+=======
+
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 start_idx = 0;
                 for (len = hints.size_bits; len > 0; i++, start_idx++) {
                     ham_size_t fl;
@@ -3356,7 +3492,11 @@ __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
                     else {
                         fl = len;
                     }
+<<<<<<< HEAD:src/freelist.cc
                     __freel_set_bits(device, env, entry, fp,
+=======
+                    __freel_set_bits(dev, env, entry, fp,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                               HAM_FALSE, 0, fl, HAM_FALSE, &hints);
                     freel_set_allocated_bitsXX(fp,
                               (ham_uXX_t)(freel_get_allocated_bitsXX(fp) - fl));
@@ -3414,11 +3554,19 @@ __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
             ham_assert(env->is_legacy()
                 ? (fp->_s._s32._zero != 0)
                 : (fp->_s._s32._zero == 0), (0));
+<<<<<<< HEAD:src/freelist.cc
             s = __freel_search_bits_ex(device, env, entry, fp,
                             size/DB_CHUNKSIZE, &hints);
             if (s != -1)
             {
                 __freel_set_bits(device, env, entry, fp, HAM_FALSE,
+=======
+            s = __freel_search_bits_ex(dev, env, entry, fp,
+                            size/DB_CHUNKSIZE, &hints);
+            if (s != -1)
+            {
+                __freel_set_bits(dev, env, entry, fp, HAM_FALSE,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                             s, size/DB_CHUNKSIZE, HAM_FALSE, &hints);
                 if (page)
                     __page_set_dirty(page);
@@ -3452,16 +3600,27 @@ __freel_alloc_areaXX(ham_offset_t *addr_ref, Device *device,
 }
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_lazy_createXX(freelist_cache_t *cache, Device *device,
                 Environment *env)
+=======
+__freel_lazy_createXX(freelist_cache_t *cache, ham_device_t *dev,
+                ham_env_t *env)
+>>>>>>> flash-bang-grenade:src/freelist.cc
 {
     ham_status_t st;
     ham_size_t size;
     ham_size_t entry_pos;
     freelist_entry_t *entry;
+<<<<<<< HEAD:src/freelist.cc
     freelist_payload_t *fp=env->get_freelist();
     
     ham_assert(device->get_freelist_cache() == 0, (0));
+=======
+    freelist_payload_t *fp=env_get_freelist(env);
+
+    ham_assert(device_get_freelist_cache(dev) == 0, (0));
+>>>>>>> flash-bang-grenade:src/freelist.cc
     ham_assert(cache != 0, (0));
     ham_assert(!freel_cache_get_entries(cache), (0));
 
@@ -3484,7 +3643,11 @@ __freel_lazy_createXX(freelist_cache_t *cache, Device *device,
     /*
      * initialize the header page, if we have read/write access
      */
+<<<<<<< HEAD:src/freelist.cc
     if (!(env->get_flags()&HAM_READ_ONLY))
+=======
+    if (!(env_get_rt_flags(env)&HAM_READ_ONLY))
+>>>>>>> flash-bang-grenade:src/freelist.cc
     {
         freel_set_start_address(fp, env->get_pagesize());
         ham_assert((size*8 % sizeof(ham_u64_t)) == 0, ("freelist bitarray size must be == 0 MOD sizeof(ham_u64_t) due to the scan algorithm"));
@@ -3499,10 +3662,17 @@ __freel_lazy_createXX(freelist_cache_t *cache, Device *device,
 
     freel_cache_set_count(cache, 1);
     freel_cache_set_entries(cache, entry);
+<<<<<<< HEAD:src/freelist.cc
        
     ham_assert(device, (0));
     device->set_freelist_cache(cache);
     ham_assert(device->get_freelist_cache() != 0, (0));
+=======
+
+    ham_assert(dev, (0));
+    device_set_freelist_cache(dev, cache);
+    ham_assert(device_get_freelist_cache(dev) != 0, (0));
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
     /*
      * now load all other freelist pages
@@ -3562,7 +3732,7 @@ __freel_flush_stats16(Device *device, Environment *env)
     if (entries && freel_cache_get_count(cache) > 0)
     {
         ham_size_t i;
-        
+
         for (i = freel_cache_get_count(cache); i-- > 0; )
         {
             freel_entry_statistics_reset_dirty(entries + i);
@@ -3598,7 +3768,11 @@ __freel_destructorXX(Device *device, Environment *env)
 
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_mark_freeXX(Device *device, Environment *env, Database *db,
+=======
+__freel_mark_freeXX(ham_device_t *dev, ham_env_t *env, ham_db_t *db,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 ham_offset_t address, ham_size_t size, ham_bool_t overwrite)
 {
     ham_status_t st;
@@ -3638,7 +3812,11 @@ __freel_mark_freeXX(Device *device, Environment *env, Database *db,
         /*
          * get the cache entry of this address
          */
+<<<<<<< HEAD:src/freelist.cc
         st=__freel_cache_get_entry(&entry, device, env, cache, address);
+=======
+        st=__freel_cache_get_entry(&entry, dev, env, cache, address);
+>>>>>>> flash-bang-grenade:src/freelist.cc
         /* [i_a] old code had a subtle out-of-mem crash failure which would not be caught as the error was not checked before 'entry' was used */
         ham_assert(st ? entry == NULL : entry != NULL, (0));
         if (st)
@@ -3749,7 +3927,11 @@ __freel_check_area_is_allocatedXX(Device *device, Environment *env, ham_offset_t
                 ham_assert(freel_get_start_address(fp) != 0, (0));
             }
             else {
+<<<<<<< HEAD:src/freelist.cc
                 st=__freel_alloc_pageXX(&page, device, env, cache, entry);
+=======
+                st=__freel_alloc_pageXX(&page, dev, env, cache, entry);
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 if (!page)
                 {
                     ham_assert(st != 0, (0));
@@ -3779,8 +3961,13 @@ __freel_check_area_is_allocatedXX(Device *device, Environment *env, ham_offset_t
         * check the bits
         */
         s=size;
+<<<<<<< HEAD:src/freelist.cc
         
         //__freel_set_bits(device, env, entry, fp, overwrite,
+=======
+
+        //__freel_set_bits(dev, env, entry, fp, overwrite,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         //    (ham_size_t)(address-freel_get_start_address(fp))
         //    / DB_CHUNKSIZE,
         //    size/DB_CHUNKSIZE,
@@ -3805,7 +3992,11 @@ __freel_check_area_is_allocatedXX(Device *device, Environment *env, ham_offset_t
  * freelist algorithm persists this data to disc.
  */
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 __freel_init_perf_dataXX(freelist_cache_t *cache, Device *device, Environment *env,
+=======
+__freel_init_perf_dataXX(freelist_cache_t *cache, ham_device_t *dev, ham_env_t *env,
+>>>>>>> flash-bang-grenade:src/freelist.cc
         freelist_entry_t *entry, freelist_payload_t *fp)
 {
     freelist_page_statistics_t *entrystats = freel_entry_get_statistics(entry);
@@ -3865,7 +4056,7 @@ __freel_init_perf_dataXX(freelist_cache_t *cache, Device *device, Environment *e
 
     return HAM_SUCCESS;
 }
-                                                                    
+
 /* ------------------------------------------------ */
 
 #if defined(IMPLEMENT_MODERN_FREELIST32)
@@ -3875,8 +4066,13 @@ __freel_constructor(Device *device, Environment *env, Database *db)
 {
     ham_status_t st;
     freelist_cache_t *cache;
+<<<<<<< HEAD:src/freelist.cc
     
     ham_assert(device->get_freelist_cache()==0, (0));
+=======
+
+    ham_assert(device_get_freelist_cache(dev)==0, (0));
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
     ham_assert(env->get_header_page(), (0));
     ham_assert(env->get_header(), (0));
@@ -3917,6 +4113,7 @@ the environment, but that wouldn't be nice...
 
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 freel_constructor_prepare32(freelist_cache_t **cache_ref, Device *device,
                 Environment *env)
 {
@@ -3924,6 +4121,14 @@ freel_constructor_prepare32(freelist_cache_t **cache_ref, Device *device,
     freelist_cache_t *cache;
     
     ham_assert(device->get_freelist_cache()==0, (0));
+=======
+freel_constructor_prepare32(freelist_cache_t **cache_ref, ham_device_t *dev, ham_env_t *env)
+{
+    //ham_status_t st;
+    freelist_cache_t *cache;
+
+    ham_assert(device_get_freelist_cache(dev)==0, (0));
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
     *cache_ref = 0;
 
@@ -3984,17 +4189,26 @@ freel_shutdown(Environment *env)
     ham_assert(cache->_destructor, (0));
     st = cache->_destructor(device, env);
 
+<<<<<<< HEAD:src/freelist.cc
     env->get_allocator()->free(cache);
     if (env)
         device->set_freelist_cache(0);
     else
         device->set_freelist_cache(0);
+=======
+    allocator_free(env_get_allocator(env), cache);
+    device_set_freelist_cache(env_get_device(env), 0);
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
     return (st);
 }
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 freel_mark_free(Environment *env, Database *db, ham_offset_t address,
+=======
+freel_mark_free(ham_env_t *env, ham_db_t *db, ham_offset_t address,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 ham_size_t size, ham_bool_t overwrite)
 {
     freelist_cache_t *cache;
@@ -4026,7 +4240,11 @@ freel_mark_free(Environment *env, Database *db, ham_offset_t address,
 }
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 freel_check_area_is_allocated(Environment *env, Database *db,
+=======
+freel_check_area_is_allocated(ham_env_t *env, ham_db_t *db,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 ham_offset_t address, ham_size_t size)
 {
     freelist_cache_t *cache;
@@ -4059,7 +4277,11 @@ freel_check_area_is_allocated(Environment *env, Database *db,
 
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 freel_alloc_area(ham_offset_t *addr_ref, Environment *env, Database *db,
+=======
+freel_alloc_area(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 ham_size_t size)
 {
     return freel_alloc_area_ex(addr_ref, env, db, size, HAM_FALSE, 0);
@@ -4067,7 +4289,11 @@ freel_alloc_area(ham_offset_t *addr_ref, Environment *env, Database *db,
 
 
 ham_status_t
+<<<<<<< HEAD:src/freelist.cc
 freel_alloc_area_ex(ham_offset_t *addr_ref, Environment *env, Database *db,
+=======
+freel_alloc_area_ex(ham_offset_t *addr_ref, ham_env_t *env, ham_db_t *db,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 ham_size_t size, ham_bool_t aligned,
                 ham_offset_t lower_bound_address)
 {
@@ -4098,7 +4324,11 @@ freel_alloc_area_ex(ham_offset_t *addr_ref, Environment *env, Database *db,
 
     ham_assert(cache, (0));
     ham_assert(cache->_alloc_area, (0));
+<<<<<<< HEAD:src/freelist.cc
     return cache->_alloc_area(addr_ref, env->get_device(), env, db,
+=======
+    return cache->_alloc_area(addr_ref, env_get_device(env), env, db,
+>>>>>>> flash-bang-grenade:src/freelist.cc
                 size, aligned, lower_bound_address);
 }
 
@@ -4131,8 +4361,13 @@ freel_alloc_page(ham_offset_t *addr_ref, Environment *env, Database *db)
 
     ham_assert(cache, (0));
     ham_assert(cache->_alloc_area, (0));
+<<<<<<< HEAD:src/freelist.cc
     st = cache->_alloc_area(addr_ref, env->get_device(), env, db,
                 env->get_pagesize(), HAM_TRUE, 0);
+=======
+    st = cache->_alloc_area(addr_ref, env_get_device(env), env, db,
+                env_get_pagesize(env), HAM_TRUE, 0);
+>>>>>>> flash-bang-grenade:src/freelist.cc
     return st;
 }
 
@@ -4144,8 +4379,13 @@ freel_constructor_prepare16(freelist_cache_t **cache_ref, Device *device,
                 Environment *env)
 {
     freelist_cache_t *cache;
+<<<<<<< HEAD:src/freelist.cc
     
     ham_assert(device->get_freelist_cache()==0, (0));
+=======
+
+    ham_assert(device_get_freelist_cache(dev)==0, (0));
+>>>>>>> flash-bang-grenade:src/freelist.cc
 
     *cache_ref = 0;
 
@@ -4170,4 +4410,9 @@ freel_constructor_prepare16(freelist_cache_t **cache_ref, Device *device,
 }
 
 #endif /* defined(IMPLEMENT_MODERN_FREELIST32) */
+
+
+/**
+* @endcond
+*/
 

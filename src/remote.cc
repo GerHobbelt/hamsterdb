@@ -20,7 +20,7 @@
 #include "mem.h"
 #include "cursor.h"
 
-#if HAM_ENABLE_REMOTE
+#ifdef HAM_ENABLE_REMOTE
 
 #define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
 #include <curl/curl.h>
@@ -174,7 +174,11 @@ _perform_request(Environment *env, CURL *handle, proto_wrapper_t *request,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_create(Environment *env, const char *filename,
+=======
+_remote_fun_create(ham_env_t *env, const char *filename,
+>>>>>>> flash-bang-grenade:src/remote.cc
             ham_u32_t flags, ham_u32_t mode, const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -197,8 +201,14 @@ _remote_fun_create(Environment *env, const char *filename,
 
     st=proto_connect_reply_get_status(reply);
     if (st==0) {
+<<<<<<< HEAD:src/remote.cc
         env->set_curl(handle);
         env->set_flags(env->get_flags()
+=======
+        env_set_curl(env, handle);
+        env_set_rt_flags(env,
+                env_get_rt_flags(env)
+>>>>>>> flash-bang-grenade:src/remote.cc
                     |proto_connect_reply_get_env_flags(reply));
     }
 
@@ -208,7 +218,11 @@ _remote_fun_create(Environment *env, const char *filename,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_open(Environment *env, const char *filename, ham_u32_t flags,
+=======
+_remote_fun_open(ham_env_t *env, const char *filename, ham_u32_t flags,
+>>>>>>> flash-bang-grenade:src/remote.cc
         const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -231,8 +245,14 @@ _remote_fun_open(Environment *env, const char *filename, ham_u32_t flags,
 
     st=proto_connect_reply_get_status(reply);
     if (st==0) {
+<<<<<<< HEAD:src/remote.cc
         env->set_curl(handle);
         env->set_flags(env->get_flags()
+=======
+        env_set_curl(env, handle);
+        env_set_rt_flags(env,
+                env_get_rt_flags(env)
+>>>>>>> flash-bang-grenade:src/remote.cc
                     |proto_connect_reply_get_env_flags(reply));
     }
 
@@ -242,7 +262,11 @@ _remote_fun_open(Environment *env, const char *filename, ham_u32_t flags,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_rename_db(Environment *env, ham_u16_t oldname,
+=======
+_remote_fun_rename_db(ham_env_t *env, ham_u16_t oldname,
+>>>>>>> flash-bang-grenade:src/remote.cc
                 ham_u16_t newname, ham_u32_t flags)
 {
     ham_status_t st;
@@ -273,7 +297,7 @@ _remote_fun_erase_db(Environment *env, ham_u16_t name, ham_u32_t flags)
 {
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_env_erase_db_request(name, flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -295,7 +319,11 @@ _remote_fun_erase_db(Environment *env, ham_u16_t name, ham_u32_t flags)
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_get_database_names(Environment *env, ham_u16_t *names,
+=======
+_remote_fun_get_database_names(ham_env_t *env, ham_u16_t *names,
+>>>>>>> flash-bang-grenade:src/remote.cc
             ham_size_t *count)
 {
     ham_status_t st;
@@ -335,7 +363,11 @@ _remote_fun_get_database_names(Environment *env, ham_u16_t *names,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_env_get_parameters(Environment *env, ham_parameter_t *param)
+=======
+_remote_fun_env_get_parameters(ham_env_t *env, ham_parameter_t *param)
+>>>>>>> flash-bang-grenade:src/remote.cc
 {
     static char filename[1024];
     ham_status_t st;
@@ -343,7 +375,7 @@ _remote_fun_env_get_parameters(Environment *env, ham_parameter_t *param)
     ham_size_t i=0, num_names=0;
     ham_u32_t *names;
     ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -353,7 +385,12 @@ _remote_fun_env_get_parameters(Environment *env, ham_parameter_t *param)
     }
 
     /* allocate a memory and copy the parameter names */
+<<<<<<< HEAD:src/remote.cc
     names=(ham_u32_t *)env->get_allocator()->alloc(num_names*sizeof(ham_u32_t));
+=======
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
+            num_names*sizeof(ham_u32_t));
+>>>>>>> flash-bang-grenade:src/remote.cc
     if (!names)
         return (HAM_OUT_OF_MEMORY);
     p=param;
@@ -456,7 +493,11 @@ _remote_fun_env_flush(Environment *env, ham_u32_t flags)
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_create_db(Environment *env, Database *db,
+=======
+_remote_fun_create_db(ham_env_t *env, ham_db_t *db,
+>>>>>>> flash-bang-grenade:src/remote.cc
         ham_u16_t dbname, ham_u32_t flags, const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -465,7 +506,7 @@ _remote_fun_create_db(Environment *env, Database *db,
     ham_u32_t *names;
     ham_u64_t *values;
     const ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -475,8 +516,15 @@ _remote_fun_create_db(Environment *env, Database *db,
     }
 
     /* allocate a memory and copy the parameter names */
+<<<<<<< HEAD:src/remote.cc
     names=(ham_u32_t *)env->get_allocator()->alloc(num_params*sizeof(ham_u32_t));
     values=(ham_u64_t *)env->get_allocator()->alloc(num_params*sizeof(ham_u64_t));
+=======
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
+            num_params*sizeof(ham_u32_t));
+    values=(ham_u64_t *)allocator_alloc(env_get_allocator(env),
+            num_params*sizeof(ham_u64_t));
+>>>>>>> flash-bang-grenade:src/remote.cc
     if (!names || !values)
         return (HAM_OUT_OF_MEMORY);
     p=param;
@@ -534,7 +582,11 @@ _remote_fun_create_db(Environment *env, Database *db,
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_open_db(Environment *env, Database *db,
+=======
+_remote_fun_open_db(ham_env_t *env, ham_db_t *db,
+>>>>>>> flash-bang-grenade:src/remote.cc
         ham_u16_t dbname, ham_u32_t flags, const ham_parameter_t *param)
 {
     ham_status_t st;
@@ -543,7 +595,7 @@ _remote_fun_open_db(Environment *env, Database *db,
     ham_u32_t *names;
     ham_u64_t *values;
     const ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -553,8 +605,15 @@ _remote_fun_open_db(Environment *env, Database *db,
     }
 
     /* allocate a memory and copy the parameter names */
+<<<<<<< HEAD:src/remote.cc
     names=(ham_u32_t *)env->get_allocator()->alloc(num_params*sizeof(ham_u32_t));
     values=(ham_u64_t *)env->get_allocator()->alloc(num_params*sizeof(ham_u64_t));
+=======
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
+            num_params*sizeof(ham_u32_t));
+    values=(ham_u64_t *)allocator_alloc(env_get_allocator(env),
+            num_params*sizeof(ham_u64_t));
+>>>>>>> flash-bang-grenade:src/remote.cc
     if (!names || !values)
         return (HAM_OUT_OF_MEMORY);
     p=param;
@@ -619,11 +678,12 @@ _remote_fun_env_close(Environment *env, ham_u32_t flags)
         curl_easy_cleanup(env->get_curl());
         env->set_curl(0);
     }
-    
+
     return (0);
 }
 
 static ham_status_t
+<<<<<<< HEAD:src/remote.cc
 _remote_fun_txn_begin(Environment *env, ham_txn_t **txn,
                 const char *name, ham_u32_t flags)
 {
@@ -631,6 +691,15 @@ _remote_fun_txn_begin(Environment *env, ham_txn_t **txn,
     proto_wrapper_t *request, *reply;
     
     request=proto_init_txn_begin_request(name, flags);
+=======
+_remote_fun_txn_begin(ham_env_t *env, ham_db_t *db,
+                ham_txn_t **txn, ham_u32_t flags)
+{
+    ham_status_t st;
+    proto_wrapper_t *request, *reply;
+
+    request=proto_init_txn_begin_request(db_get_remote_handle(db), flags);
+>>>>>>> flash-bang-grenade:src/remote.cc
 
     st=_perform_request(env, env->get_curl(), request, &reply);
     proto_delete(request);
@@ -649,10 +718,24 @@ _remote_fun_txn_begin(Environment *env, ham_txn_t **txn,
         return (st);
     }
 
+<<<<<<< HEAD:src/remote.cc
     st=txn_begin(txn, env, name, flags);
     if (st)
         *txn=0;
     else
+=======
+    *txn=(ham_txn_t *)allocator_alloc(env_get_allocator(env),
+                            sizeof(ham_txn_t));
+    if (!(*txn))
+        return (HAM_OUT_OF_MEMORY);
+
+    st=txn_begin(*txn, env, flags);
+    if (st) {
+        allocator_free(env_get_allocator(env), *txn);
+        *txn=0;
+    }
+    else {
+>>>>>>> flash-bang-grenade:src/remote.cc
         txn_set_remote_handle(*txn,
                     proto_txn_begin_reply_get_txn_handle(reply));
 
@@ -666,7 +749,7 @@ _remote_fun_txn_commit(Environment *env, ham_txn_t *txn, ham_u32_t flags)
 {
     ham_status_t st;
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_txn_commit_request(txn_get_remote_handle(txn), flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -681,6 +764,14 @@ _remote_fun_txn_commit(Environment *env, ham_txn_t *txn, ham_u32_t flags)
     ham_assert(proto_has_txn_commit_reply(reply), (""));
 
     st=proto_txn_commit_reply_get_status(reply);
+
+    if (st==0) {
+        memset(txn, 0, sizeof(*txn));
+        allocator_free(env_get_allocator(env), txn);
+
+        /* remove the link between env and txn */
+        env_set_txn(env, 0);
+    }
 
     proto_delete(reply);
 
@@ -699,8 +790,13 @@ _remote_fun_txn_abort(Environment *env, ham_txn_t *txn, ham_u32_t flags)
     proto_wrapper_t *request, *reply;
 
     request=proto_init_txn_abort_request(txn_get_remote_handle(txn), flags);
+<<<<<<< HEAD:src/remote.cc
     
     st=_perform_request(env, env->get_curl(), request, &reply);
+=======
+
+    st=_perform_request(env, env_get_curl(env), request, &reply);
+>>>>>>> flash-bang-grenade:src/remote.cc
     proto_delete(request);
     if (st) {
         if (reply)
@@ -713,11 +809,43 @@ _remote_fun_txn_abort(Environment *env, ham_txn_t *txn, ham_u32_t flags)
 
     st=proto_txn_abort_reply_get_status(reply);
 
+    if (st==0) {
+        memset(txn, 0, sizeof(*txn));
+        allocator_free(env_get_allocator(env), txn);
+
+        /* remove the link between env and txn */
+        env_set_txn(env, 0);
+    }
+
     proto_delete(reply);
 
+<<<<<<< HEAD:src/remote.cc
     if (st==0) {
         env_remove_txn(env, txn);
         txn_free(txn);
+=======
+    return (st);
+}
+
+static ham_status_t
+_remote_fun_close(ham_db_t *db, ham_u32_t flags)
+{
+    ham_status_t st;
+    ham_env_t *env=db_get_env(db);
+    proto_wrapper_t *request, *reply;
+
+    /*
+     * auto-cleanup cursors?
+     */
+    if (flags&HAM_AUTO_CLEANUP) {
+        ham_cursor_t *cursor=db_get_cursors(db);
+        while ((cursor=db_get_cursors(db))) {
+            (void)ham_cursor_close(cursor);
+        }
+    }
+    else if (db_get_cursors(db)) {
+        return (HAM_CURSOR_STILL_OPEN);
+>>>>>>> flash-bang-grenade:src/remote.cc
     }
 
     return (st);
@@ -764,7 +892,7 @@ DatabaseImplementationRemote::get_parameters(ham_parameter_t *param)
     ham_size_t i, num_names=0;
     ham_u32_t *names;
     ham_parameter_t *p;
-    
+
     /* count number of parameters */
     p=param;
     if (p) {
@@ -774,7 +902,12 @@ DatabaseImplementationRemote::get_parameters(ham_parameter_t *param)
     }
 
     /* allocate a memory and copy the parameter names */
+<<<<<<< HEAD:src/remote.cc
     names=(ham_u32_t *)env->get_allocator()->alloc(num_names*sizeof(ham_u32_t));
+=======
+    names=(ham_u32_t *)allocator_alloc(env_get_allocator(env),
+            num_names*sizeof(ham_u32_t));
+>>>>>>> flash-bang-grenade:src/remote.cc
     if (!names)
         return (HAM_OUT_OF_MEMORY);
     p=param;
@@ -871,8 +1004,13 @@ DatabaseImplementationRemote::check_integrity(ham_txn_t *txn)
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_check_integrity_request(m_db->get_remote_handle(),
+=======
+
+    request=proto_init_check_integrity_request(db_get_remote_handle(db),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         txn ? txn_get_remote_handle(txn) : 0);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -900,8 +1038,13 @@ DatabaseImplementationRemote::get_key_count(ham_txn_t *txn, ham_u32_t flags,
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_db_get_key_count_request(m_db->get_remote_handle(),
+=======
+
+    request=proto_init_db_get_key_count_request(db_get_remote_handle(db),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         txn ? txn_get_remote_handle(txn) : 0, flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -936,8 +1079,13 @@ DatabaseImplementationRemote::insert(ham_txn_t *txn, ham_key_t *key,
     /* recno: do not send the key */
     if (m_db->get_rt_flags()&HAM_RECORD_NUMBER)
         send_key=HAM_FALSE;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_db_insert_request(m_db->get_remote_handle(),
+=======
+
+    request=proto_init_db_insert_request(db_get_remote_handle(db),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         txn ? txn_get_remote_handle(txn) : 0,
                         send_key ? key : 0, record, flags);
 
@@ -1006,7 +1154,11 @@ DatabaseImplementationRemote::find(ham_txn_t *txn, ham_key_t *key,
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
 
+<<<<<<< HEAD:src/remote.cc
     request=proto_init_db_find_request(m_db->get_remote_handle(),
+=======
+    request=proto_init_db_find_request(db_get_remote_handle(db),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         txn ? txn_get_remote_handle(txn) : 0,
                         key, record, flags);
 
@@ -1062,8 +1214,42 @@ DatabaseImplementationRemote::cursor_create(ham_txn_t *txn, ham_u32_t flags)
     Environment *env=m_db->get_env();
     ham_status_t st;
     proto_wrapper_t *request, *reply;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_cursor_create_request(m_db->get_remote_handle(),
+=======
+
+    request=proto_init_db_erase_request(db_get_remote_handle(db),
+                        txn ? txn_get_remote_handle(txn) : 0,
+                        key, flags);
+
+    st=_perform_request(env, env_get_curl(env), request, &reply);
+    proto_delete(request);
+    if (st) {
+        if (reply)
+            proto_delete(reply);
+        return (st);
+    }
+
+    ham_assert(reply!=0, (""));
+    ham_assert(proto_has_db_erase_reply(reply)!=0, (""));
+    st=proto_db_erase_reply_get_status(reply);
+
+    proto_delete(reply);
+
+    return (st);
+}
+
+static ham_status_t
+_remote_cursor_create(ham_db_t *db, ham_txn_t *txn, ham_u32_t flags,
+        ham_cursor_t **cursor)
+{
+    ham_env_t *env=db_get_env(db);
+    ham_status_t st;
+    proto_wrapper_t *request, *reply;
+
+    request=proto_init_cursor_create_request(db_get_remote_handle(db),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         txn ? txn_get_remote_handle(txn) : 0, flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -1083,9 +1269,19 @@ DatabaseImplementationRemote::cursor_create(ham_txn_t *txn, ham_u32_t flags)
         return (0);
     }
 
+<<<<<<< HEAD:src/remote.cc
     Cursor *c=new Cursor(m_db);
 
     c->set_remote_handle(proto_cursor_create_reply_get_cursor_handle(reply));
+=======
+    *cursor=(ham_cursor_t *)allocator_calloc(env_get_allocator(env),
+                            sizeof(ham_cursor_t));
+    if (!(*cursor))
+        return (HAM_OUT_OF_MEMORY);
+
+    cursor_set_remote_handle(*cursor,
+                proto_cursor_create_reply_get_cursor_handle(reply));
+>>>>>>> flash-bang-grenade:src/remote.cc
 
     proto_delete(reply);
 
@@ -1098,8 +1294,13 @@ DatabaseImplementationRemote::cursor_clone(Cursor *src)
     Environment *env=src->get_db()->get_env();
     ham_status_t st;
     proto_wrapper_t *request, *reply;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_cursor_clone_request(src->get_remote_handle());
+=======
+
+    request=proto_init_cursor_clone_request(cursor_get_remote_handle(src));
+>>>>>>> flash-bang-grenade:src/remote.cc
 
     st=_perform_request(env, env->get_curl(), request, &reply);
     proto_delete(request);
@@ -1115,7 +1316,41 @@ DatabaseImplementationRemote::cursor_clone(Cursor *src)
     st=proto_cursor_clone_reply_get_status(reply);
     if (st) {
         proto_delete(reply);
+<<<<<<< HEAD:src/remote.cc
         return (0);
+=======
+        return (st);
+    }
+
+    *dest=(ham_cursor_t *)allocator_calloc(env_get_allocator(env),
+                            sizeof(ham_cursor_t));
+    if (!(*dest))
+        return (HAM_OUT_OF_MEMORY);
+
+    cursor_set_remote_handle(*dest,
+                proto_cursor_clone_reply_get_cursor_handle(reply));
+
+    proto_delete(reply);
+
+    return (st);
+}
+
+static ham_status_t
+_remote_cursor_close(ham_cursor_t *cursor)
+{
+    ham_status_t st;
+    ham_env_t *env=db_get_env(cursor_get_db(cursor));
+    proto_wrapper_t *request, *reply;
+
+    request=proto_init_cursor_close_request(cursor_get_remote_handle(cursor));
+
+    st=_perform_request(env, env_get_curl(env), request, &reply);
+    proto_delete(request);
+    if (st) {
+        if (reply)
+            proto_delete(reply);
+        return (st);
+>>>>>>> flash-bang-grenade:src/remote.cc
     }
 
     Cursor *c=new Cursor(src->get_db());
@@ -1139,8 +1374,13 @@ DatabaseImplementationRemote::cursor_insert(Cursor *cursor, ham_key_t *key,
     /* recno: do not send the key */
     if (m_db->get_rt_flags()&HAM_RECORD_NUMBER)
         send_key=HAM_FALSE;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_cursor_insert_request(cursor->get_remote_handle(),
+=======
+
+    request=proto_init_cursor_insert_request(cursor_get_remote_handle(cursor),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         send_key ? key : 0, record, flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -1179,8 +1419,13 @@ DatabaseImplementationRemote::cursor_erase(Cursor *cursor, ham_u32_t flags)
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_cursor_erase_request(cursor->get_remote_handle(),
+=======
+
+    request=proto_init_cursor_erase_request(cursor_get_remote_handle(cursor),
+>>>>>>> flash-bang-grenade:src/remote.cc
                                     flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -1201,18 +1446,31 @@ DatabaseImplementationRemote::cursor_erase(Cursor *cursor, ham_u32_t flags)
     return (st);
 }
 
+<<<<<<< HEAD:src/remote.cc
 ham_status_t
 DatabaseImplementationRemote::cursor_find(Cursor *cursor, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags)
+=======
+static ham_status_t
+_remote_cursor_find(ham_cursor_t *cursor, ham_key_t *key,
+                ham_record_t *record, ham_u32_t flags)
+>>>>>>> flash-bang-grenade:src/remote.cc
 {
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
 
+<<<<<<< HEAD:src/remote.cc
     request=proto_init_cursor_find_request(cursor->get_remote_handle(),
                         key, record, flags);
     
     st=_perform_request(env, env->get_curl(), request, &reply);
+=======
+    request=proto_init_cursor_find_request(cursor_get_remote_handle(cursor),
+                        key, record, flags);
+
+    st=_perform_request(env, env_get_curl(env), request, &reply);
+>>>>>>> flash-bang-grenade:src/remote.cc
     proto_delete(request);
     if (st) {
         if (reply)
@@ -1249,14 +1507,20 @@ bail:
     return (st);
 }
 
+<<<<<<< HEAD:src/remote.cc
 ham_status_t
 DatabaseImplementationRemote::cursor_get_duplicate_count(Cursor *cursor,
                     ham_size_t *count, ham_u32_t flags)
+=======
+static ham_status_t
+_remote_cursor_get_duplicate_count(ham_cursor_t *cursor,
+        ham_size_t *count, ham_u32_t flags)
+>>>>>>> flash-bang-grenade:src/remote.cc
 {
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_cursor_get_duplicate_count_request(
                         cursor->get_remote_handle(), flags);
 
@@ -1282,6 +1546,7 @@ bail:
     return (st);
 }
 
+<<<<<<< HEAD:src/remote.cc
 
 ham_status_t
 DatabaseImplementationRemote::cursor_get_record_size(Cursor *cursor,
@@ -1296,11 +1561,16 @@ DatabaseImplementationRemote::cursor_get_record_size(Cursor *cursor,
 ham_status_t
 DatabaseImplementationRemote::cursor_overwrite(Cursor *cursor,
                     ham_record_t *record, ham_u32_t flags)
+=======
+static ham_status_t
+_remote_cursor_overwrite(ham_cursor_t *cursor,
+            ham_record_t *record, ham_u32_t flags)
+>>>>>>> flash-bang-grenade:src/remote.cc
 {
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
-    
+
     request=proto_init_cursor_overwrite_request(
                         cursor->get_remote_handle(), record, flags);
 
@@ -1322,15 +1592,26 @@ DatabaseImplementationRemote::cursor_overwrite(Cursor *cursor,
     return (st);
 }
 
+<<<<<<< HEAD:src/remote.cc
 ham_status_t
 DatabaseImplementationRemote::cursor_move(Cursor *cursor, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags)
+=======
+static ham_status_t
+_remote_cursor_move(ham_cursor_t *cursor, ham_key_t *key,
+                ham_record_t *record, ham_u32_t flags)
+>>>>>>> flash-bang-grenade:src/remote.cc
 {
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
+<<<<<<< HEAD:src/remote.cc
     
     request=proto_init_cursor_move_request(cursor->get_remote_handle(),
+=======
+
+    request=proto_init_cursor_move_request(cursor_get_remote_handle(cursor),
+>>>>>>> flash-bang-grenade:src/remote.cc
                         key, record, flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);
@@ -1385,11 +1666,28 @@ bail:
 void
 DatabaseImplementationRemote::cursor_close(Cursor *cursor)
 {
+<<<<<<< HEAD:src/remote.cc
     ham_status_t st;
     Environment *env=cursor->get_db()->get_env();
     proto_wrapper_t *request, *reply;
     
     request=proto_init_cursor_close_request(cursor->get_remote_handle());
+=======
+#ifdef HAM_ENABLE_REMOTE
+    env->_fun_create             =_remote_fun_create;
+    env->_fun_open               =_remote_fun_open;
+    env->_fun_rename_db          =_remote_fun_rename_db;
+    env->_fun_erase_db           =_remote_fun_erase_db;
+    env->_fun_get_database_names =_remote_fun_get_database_names;
+    env->_fun_get_parameters     =_remote_fun_env_get_parameters;
+    env->_fun_flush              =_remote_fun_env_flush;
+    env->_fun_create_db          =_remote_fun_create_db;
+    env->_fun_open_db            =_remote_fun_open_db;
+    env->_fun_close              =_remote_fun_env_close;
+    env->_fun_txn_begin          =_remote_fun_txn_begin;
+    env->_fun_txn_commit         =_remote_fun_txn_commit;
+    env->_fun_txn_abort          =_remote_fun_txn_abort;
+>>>>>>> flash-bang-grenade:src/remote.cc
 
     st=_perform_request(env, env->get_curl(), request, &reply);
     proto_delete(request);
@@ -1409,6 +1707,7 @@ DatabaseImplementationRemote::cursor_close(Cursor *cursor)
 ham_status_t
 DatabaseImplementationRemote::close(ham_u32_t flags)
 {
+<<<<<<< HEAD:src/remote.cc
     ham_status_t st;
     Environment *env=m_db->get_env();
     proto_wrapper_t *request, *reply;
@@ -1447,6 +1746,29 @@ DatabaseImplementationRemote::close(ham_u32_t flags)
         m_db->set_remote_handle(0);
 
     return (st);
+=======
+#ifdef HAM_ENABLE_REMOTE
+    db->_fun_close          =_remote_fun_close;
+    db->_fun_get_parameters =_remote_fun_get_parameters;
+    db->_fun_check_integrity=_remote_fun_check_integrity;
+    db->_fun_get_key_count  =_remote_fun_get_key_count;
+    db->_fun_insert         =_remote_fun_insert;
+    db->_fun_find           =_remote_fun_find;
+    db->_fun_erase          =_remote_fun_erase;
+    db->_fun_cursor_create  =_remote_cursor_create;
+    db->_fun_cursor_clone   =_remote_cursor_clone;
+    db->_fun_cursor_close   =_remote_cursor_close;
+    db->_fun_cursor_insert  =_remote_cursor_insert;
+    db->_fun_cursor_erase   =_remote_cursor_erase;
+    db->_fun_cursor_find    =_remote_cursor_find;
+    db->_fun_cursor_get_duplicate_count=_remote_cursor_get_duplicate_count;
+    db->_fun_cursor_overwrite=_remote_cursor_overwrite;
+    db->_fun_cursor_move    =_remote_cursor_move;
+    return (0);
+#else
+    return (HAM_NOT_IMPLEMENTED);
+#endif
+>>>>>>> flash-bang-grenade:src/remote.cc
 }
 
 #endif // HAM_ENABLE_REMOTE

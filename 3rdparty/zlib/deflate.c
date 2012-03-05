@@ -388,7 +388,7 @@ int ZEXPORT deflateSetDictionary (
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateReset (
+int ZEXPORT deflateResetKeep (
     z_streamp strm)
 {
     deflate_state *s;

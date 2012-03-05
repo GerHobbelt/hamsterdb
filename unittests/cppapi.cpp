@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 /**
  * Copyright (C) 2005-2012 Christoph Rupp (chris@crupp.de).
+=======
+/*
+ * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+>>>>>>> flash-bang-grenade
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -11,11 +16,13 @@
 
 #include "../src/config.h"
 
-#include <stdexcept>
 #include <ham/hamsterdb.hpp>
 
 #include "bfc-testsuite.hpp"
 #include "hamster_fixture.hpp"
+
+#include <stdexcept>
+
 
 using namespace bfc;
 
@@ -65,7 +72,10 @@ public:
         BFC_REGISTER_TEST(CppApiTest, cursorTest);
         BFC_REGISTER_TEST(CppApiTest, compressionTest);
         BFC_REGISTER_TEST(CppApiTest, envTest);
-        BFC_REGISTER_TEST(CppApiTest, envDestructorTest);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest_ExplicitCstyleDestructOrder);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest_InverseDestructOrder);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTest_CompilerDeterminesDestructOrder);
+        BFC_REGISTER_TEST(CppApiTest, envDestructorTestRefCounting);
         BFC_REGISTER_TEST(CppApiTest, envGetDatabaseNamesTest);
         BFC_REGISTER_TEST(CppApiTest, getLicenseTest);
         BFC_REGISTER_TEST(CppApiTest, beginAbortTest);
@@ -153,9 +163,9 @@ public:
         // get_error() is one of the few methods which should NOT throw an exception itself:
         BFC_ASSERT_EQUAL(HAM_NOT_INITIALIZED, db.get_error());
         db.get_version(0, 0, 0);
-        BFC_ASSERT(".get_version() did not throw a tantrum while receiving NULL arguments");
+        BFC_ASSERT_NOTNULL(".get_version() did not throw a tantrum while receiving NULL arguments");
         db.get_license(0, 0);
-        BFC_ASSERT(".get_license() did not throw a tantrum while receiving NULL arguments");
+        BFC_ASSERT_NOTNULL(".get_license() did not throw a tantrum while receiving NULL arguments");
     }
 
     void compareTest(void)
@@ -357,7 +367,7 @@ public:
         }
         catch (ham::error &) {
         }
-        
+
         db.enable_compression(0);
 #endif
     }
@@ -387,17 +397,71 @@ public:
         env.erase_db(2);
     }
 
-    void envDestructorTest(void)
+    // one instance per scope so that we have predictable order of the constructors
+    void envDestructorTest_ExplicitCstyleDestructOrder(void)
+    {
+        ham::env env;
+        {
+            ham::db db1;
+
+            env.create(BFC_OPATH(".test"));
+            db1=env.create_db(1);
+
+            /* let the objects go out of scope */
+        }
+    }
+
+    // one instance per scope so that we have predictable order of the constructors:
+    //
+    // This one will exhibit coredumping behaviour similar to #3 which is the usual way
+    // you'ld declare C++ instances (all in a single scope): the hamster dislikes you very much
+    // when you close the ENV and AFTERWARDS try to close/access the DBs as well: the ENV would
+    // have nuked those, if we hadn't added refcounting at the C level to ensure that the
+    // 'close order' is stable.
+    void envDestructorTest_InverseDestructOrder(void)
+    {
+        ham::db db1;
+
+        {
+            ham::env env;
+
+            env.create(BFC_OPATH(".test"));
+            db1=env.create_db(2);
+
+            /* let the objects go out of scope */
+        }
+    }
+
+    void envDestructorTest_CompilerDeterminesDestructOrder(void)
     {
         ham::db db1;
         ham::env env;
 
         env.create(BFC_OPATH(".test"));
-        db1=env.create_db(1);
+        db1=env.create_db(3);
 
         /* let the objects go out of scope */
     }
-    
+
+    // and this is us anticipating reference counters in env PLUS a flag to delete on refcount drop to zero:
+    void envDestructorTestRefCounting(void)
+    {
+        ham::db db1;
+        ham::db db2;
+        ham::db db3;
+
+        {
+            ham::env env;
+
+            env.create(BFC_OPATH(".test"));
+            db1=env.create_db(2);
+            db2=env.create_db(3);
+            db3=env.create_db(4);
+
+            /* let the objects go out of scope */
+        }
+    }
+
     void envGetDatabaseNamesTest(void)
     {
         ham::env env;
@@ -567,7 +631,6 @@ public:
             return fixture::FUT_invoker(me, m, funcname, state, ex);
         }
     }
-
 };
 
 BFC_REGISTER_FIXTURE(CppApiTest);
