@@ -1,0 +1,655 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Itanium">
+      <Configuration>Debug</Configuration>
+      <Platform>Itanium</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Itanium">
+      <Configuration>Release</Configuration>
+      <Platform>Itanium</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{10DCD767-DFBE-4096-9258-111D4CAF09B0}</ProjectGuid>
+    <RootNamespace>lib</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)bin/$(PlatformName)_MSVC2010.$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2010.$(Configuration)/</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)bin/$(PlatformName)_MSVC2010.$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2010.$(Configuration)/</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">$(SolutionDir)bin/$(PlatformName)_MSVC2010.$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2010.$(Configuration)/</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)bin/$(PlatformName)_MSVC2010.$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2010.$(Configuration)/</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)bin/$(PlatformName)_MSVC2010.$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2010.$(Configuration)/</IntDir>
+    <RunCodeAnalysis Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</RunCodeAnalysis>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">$(SolutionDir)bin/$(PlatformName)_MSVC2010.$(Configuration)/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2010.$(Configuration)/</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Inputs>%(Inputs)</Inputs>
+      <Outputs>%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_WINDOWS;_LIB;WIN32;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4127;4100;4820;4668;4255;4206;4710;4514</DisableSpecificWarnings>
+      <PrecompiledHeaderFile>internal_preparation.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Inputs>%(Inputs)</Inputs>
+      <Outputs>%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_WINDOWS;_LIB;WIN32;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4127;4100;4820;4668;4255;4206;4710;4514</DisableSpecificWarnings>
+      <EnablePREfast>true</EnablePREfast>
+      <PrecompiledHeaderFile>internal_preparation.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Inputs>%(Inputs)</Inputs>
+      <Outputs>%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Itanium</TargetEnvironment>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;_WINDOWS;_LIB;WIN32;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4127;4100;4820;4668;4255;4206;4710;4514</DisableSpecificWarnings>
+      <PrecompiledHeaderFile>internal_preparation.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineIA64</TargetMachine>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Inputs>%(Inputs)</Inputs>
+      <Outputs>%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;_LIB;WIN32;_WINDOWS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4127;4100;4820;4668;4255;4206;4710;4514</DisableSpecificWarnings>
+      <PrecompiledHeaderFile>internal_preparation.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX86</TargetMachine>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Inputs>%(Inputs)</Inputs>
+      <Outputs>%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;_LIB;WIN32;_WINDOWS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;CODE_ANALYSIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4127;4100;4820;4668;4255;4206;4710;4514</DisableSpecificWarnings>
+      <PrecompiledHeaderFile>internal_preparation.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineX64</TargetMachine>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Inputs>%(Inputs)</Inputs>
+      <Outputs>%(Outputs)</Outputs>
+    </CustomBuildStep>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Itanium</TargetEnvironment>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;_LIB;WIN32;_WINDOWS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4127;4100;4820;4668;4255;4206;4710;4514</DisableSpecificWarnings>
+      <PrecompiledHeaderFile>internal_preparation.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <OmitFramePointers>true</OmitFramePointers>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetMachine>MachineIA64</TargetMachine>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\ham\hamsterdb.h" />
+    <ClInclude Include="..\..\include\ham\hamsterdb.hpp" />
+    <ClInclude Include="..\..\include\ham\hamsterdb_int.h" />
+    <ClInclude Include="..\..\include\ham\hamsterdb_srv.h" />
+    <ClInclude Include="..\..\include\ham\hamsterdb_stats.h" />
+    <ClInclude Include="..\..\include\ham\packstart.h" />
+    <ClInclude Include="..\..\include\ham\packstop.h" />
+    <ClInclude Include="..\..\include\ham\types.h" />
+    <ClInclude Include="..\..\src\backend.h" />
+    <ClInclude Include="..\..\src\blob.h" />
+    <ClInclude Include="..\..\src\btree.h" />
+    <ClInclude Include="..\..\src\btree_classic.h" />
+    <ClInclude Include="..\..\src\btree_cursor.h" />
+    <ClInclude Include="..\..\src\cache.h" />
+    <ClInclude Include="..\..\src\config.h" />
+    <ClInclude Include="..\..\src\cuckoo_hash.h" />
+    <ClInclude Include="..\..\src\cuckoo_hash_cursor.h" />
+    <ClInclude Include="..\..\src\cursor.h" />
+    <ClInclude Include="..\..\src\db.h" />
+    <ClInclude Include="..\..\src\db_locking.h" />
+    <ClInclude Include="..\..\src\device.h" />
+    <ClInclude Include="..\..\src\endianswap.h" />
+    <ClInclude Include="..\..\src\env.h" />
+    <ClInclude Include="..\..\src\error.h" />
+    <ClInclude Include="..\..\src\extkeys.h" />
+    <ClInclude Include="..\..\src\fraction.h" />
+    <ClInclude Include="..\..\src\freelist.h" />
+    <ClInclude Include="..\..\src\freelist_statistics.h" />
+    <ClInclude Include="..\..\src\freelist_v2.h" />
+    <ClInclude Include="..\..\src\inline_utils.h" />
+    <ClInclude Include="..\..\src\internal_fwd_decl.h" />
+    <ClInclude Include="..\..\src\internal_preparation.h" />
+    <ClInclude Include="..\..\src\keys.h" />
+    <ClInclude Include="..\..\src\log.h" />
+    <ClInclude Include="..\..\src\mem.h" />
+    <ClInclude Include="..\..\src\messages.pb-c.h" />
+    <ClInclude Include="..\..\src\os.h" />
+    <ClInclude Include="..\..\src\page.h" />
+    <ClInclude Include="..\..\src\serial.h" />
+    <ClInclude Include="..\..\src\statistics.h" />
+    <ClInclude Include="..\..\src\txn.h" />
+    <ClInclude Include="..\..\src\util.h" />
+    <ClInclude Include="..\..\src\version.h" />
+    <ClInclude Include="..\..\config.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\blob.c" />
+    <ClCompile Include="..\..\src\btree.c" />
+    <ClCompile Include="..\..\src\btree_check.c" />
+    <ClCompile Include="..\..\src\btree_cursor.c" />
+    <ClCompile Include="..\..\src\btree_enum.c" />
+    <ClCompile Include="..\..\src\btree_erase.c" />
+    <ClCompile Include="..\..\src\btree_find.c" />
+    <ClCompile Include="..\..\src\btree_insert.c" />
+    <ClCompile Include="..\..\src\btree_time_compressed_a_la_PI.c" />
+    <ClCompile Include="..\..\src\cache.c" />
+    <ClCompile Include="..\..\src\cuckoo_hash.c" />
+    <ClCompile Include="..\..\src\db.c" />
+    <ClCompile Include="..\..\src\env.c" />
+    <ClCompile Include="..\..\src\error.c" />
+    <ClCompile Include="..\..\src\extkeys.c" />
+    <ClCompile Include="..\..\src\freelist.c" />
+    <ClCompile Include="..\..\src\freelist_statistics.c" />
+    <ClCompile Include="..\..\src\freelist_v2.c" />
+    <ClCompile Include="..\..\src\hamsterdb.c" />
+    <ClCompile Include="..\..\src\keys.c" />
+    <ClCompile Include="..\..\src\log.c" />
+    <ClCompile Include="..\..\src\mem.c" />
+    <ClCompile Include="..\..\src\os_posix.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os_win32.c" />
+    <ClCompile Include="..\..\src\page.c" />
+    <ClCompile Include="..\..\src\precompiled_headers.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\statistics.c" />
+    <ClCompile Include="..\..\src\txn.c" />
+    <ClCompile Include="..\..\src\udb_digital_trie.c" />
+    <ClCompile Include="..\..\src\util.c" />
+    <ClCompile Include="..\..\src\whole_program_code_optimization.c" />
+    <ClCompile Include="..\..\src\devices\cachedev.c" />
+    <ClCompile Include="..\..\src\devices\compression.c" />
+    <ClCompile Include="..\..\src\devices\crypter.c" />
+    <ClCompile Include="..\..\src\devices\db_partitioner.c" />
+    <ClCompile Include="..\..\src\device.c" />
+    <ClCompile Include="..\..\src\devices\event_sender.c" />
+    <ClCompile Include="..\..\src\devices\field_partitioner.c" />
+    <ClCompile Include="..\..\src\devices\file_per_rid.c" />
+    <ClCompile Include="..\..\src\devices\flashmem.c" />
+    <ClCompile Include="..\..\src\devices\flatfile.c" />
+    <ClCompile Include="..\..\src\devices\graph_mgr.c" />
+    <ClCompile Include="..\..\src\devices\https.c" />
+    <ClCompile Include="..\..\src\devices\key_partitioner.c" />
+    <ClCompile Include="..\..\src\devices\logger_swapper.c" />
+    <ClCompile Include="..\..\src\devices\mallocmem.c" />
+    <ClCompile Include="..\..\src\devices\rid_partitioner.c" />
+    <ClCompile Include="..\..\src\devices\stream_compression.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\AUTHORS" />
+    <None Include="..\..\bootstrap" />
+    <None Include="..\..\bootstrap.sh" />
+    <None Include="..\..\ChangeLog" />
+    <None Include="..\..\config.h.in" />
+    <None Include="..\..\configure.in" />
+    <None Include="..\..\COPYING" />
+    <None Include="..\..\COPYING.GPL2" />
+    <None Include="..\..\COPYING.GPL3" />
+    <None Include="..\..\CREDITS" />
+    <None Include="..\..\INSTALL" />
+    <None Include="..\..\Makefile.am" />
+    <None Include="..\..\NEWS" />
+    <None Include="..\..\README" />
+    <None Include="..\..\TODO" />
+    <None Include="..\..\src\Makefile.am" />
+    <None Include="..\..\documentation\appendix_gfdl.doc" />
+    <None Include="..\..\documentation\appendix_gpl2.doc" />
+    <None Include="..\..\documentation\appendix_gpl3.doc" />
+    <None Include="..\..\documentation\architecture.doc" />
+    <None Include="..\..\documentation\Doxyfile" />
+    <None Include="..\..\documentation\Doxyfile.BFC" />
+    <None Include="..\..\documentation\Doxyfile.internal" />
+    <None Include="..\..\documentation\Doxyfile.www" />
+    <None Include="..\..\documentation\faq.doc" />
+    <None Include="..\..\documentation\features.doc" />
+    <None Include="..\..\documentation\footer.html" />
+    <None Include="..\..\documentation\got_geek.doc" />
+    <None Include="..\..\documentation\hamster.jpg" />
+    <None Include="..\..\documentation\hamsterdb-main-low.jpg" />
+    <None Include="..\..\documentation\hamsterdb-main.jpg" />
+    <None Include="..\..\documentation\hamsterdb.css" />
+    <None Include="..\..\documentation\header.html" />
+    <None Include="..\..\documentation\history.doc" />
+    <None Include="..\..\documentation\href.pl" />
+    <None Include="..\..\documentation\index.doc" />
+    <None Include="..\..\documentation\licensing.doc" />
+    <None Include="..\..\documentation\make_www.sh" />
+    <None Include="..\..\documentation\page-filters.ppt" />
+    <None Include="..\..\documentation\platforms.doc" />
+    <None Include="..\..\documentation\samples.doc" />
+    <None Include="..\..\documentation\starting.doc" />
+    <None Include="..\..\documentation\trouble.doc" />
+    <None Include="..\..\documentation\tuning.doc" />
+    <None Include="..\..\documentation\tutorial.doc" />
+    <None Include="..\..\lib\Makefile.am" />
+    <None Include="..\..\samples\Makefile.am" />
+    <None Include="..\..\include\Makefile.am" />
+    <None Include="..\..\include\ham\Makefile.am" />
+    <None Include="..\..\TODO-GER.txt" />
+    <None Include="..\..\tools\Makefile.am" />
+    <None Include="..\..\tools\tests\db1.db" />
+    <None Include="..\..\tools\tests\env3.db" />
+    <None Include="..\..\tools\tests\extkeys.db" />
+    <None Include="..\..\tools\tests\prepare.sh" />
+    <None Include="..\..\tools\tests\test.sh" />
+    <None Include="..\..\tools\tests\ham_info\compare.sh" />
+    <None Include="..\..\tools\tests\ham_info\db1-0xf000-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\db1-0xf000.txt" />
+    <None Include="..\..\tools\tests\ham_info\db1-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\db1.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-1-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-1.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-2-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-2.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-3-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-3.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\env3.txt" />
+    <None Include="..\..\tools\tests\ham_info\extkeys-0xf000-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\extkeys-0xf000.txt" />
+    <None Include="..\..\tools\tests\ham_info\extkeys-f.txt" />
+    <None Include="..\..\tools\tests\ham_info\extkeys.txt" />
+    <None Include="..\..\tools\tests\ham_info\generate.sh" />
+    <None Include="..\..\tools\tests\ham_dump\compare.sh" />
+    <None Include="..\..\tools\tests\ham_dump\db1.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3-1-keynumeric.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3-1.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3-2-keynumeric-maxrec4.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3-2-keynumeric-recstring.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3-2.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3-3.txt" />
+    <None Include="..\..\tools\tests\ham_dump\env3.txt" />
+    <None Include="..\..\tools\tests\ham_dump\extkeys-keystring-maxkey3-maxrec2000.txt" />
+    <None Include="..\..\tools\tests\ham_dump\extkeys-keystring-maxkey3.txt" />
+    <None Include="..\..\tools\tests\ham_dump\extkeys-keystring-maxkey3000.txt" />
+    <None Include="..\..\tools\tests\ham_dump\generate.sh" />
+    <None Include="..\..\unittests\Makefile.am" />
+    <None Include="..\..\unittests\valgrind.supp" />
+    <None Include="..\README.TXT" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="3rdparty_aes.vcxproj">
+      <Project>{ab99816e-52c4-44ce-b8dd-604dca380173}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="3rdparty_zlib.vcxproj">
+      <Project>{ab39816e-52c4-44ce-b8dd-604dca380173}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
