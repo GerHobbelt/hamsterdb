@@ -1,17 +1,13 @@
 
-#
-# make sure that our modified CFLAGS are also respected by g++
-#
-AM_CXXFLAGS     = $(CFLAGS)
-CXXFLAGS        = $(CFLAGS)
-
 EXTRA_DIST      = valgrind.supp
 
-noinst_PROGRAMS = test bfc_sample
+noinst_PROGRAMS = test bfc_sample recovery
 
 AM_CPPFLAGS     = -I$(top_builddir)/include
 
 test_SOURCES    = log.cpp \
+                  journal.cpp \
+                  approx.cpp \
                   api110.cpp \
                   btree_erase.cpp \
                   btree_insert.cpp \
@@ -21,27 +17,26 @@ test_SOURCES    = log.cpp \
                   cppapi.cpp \
                   recno.cpp \
                   duplicates.cpp \
-                  cursor.cpp \
                   env.cpp \
                   hamsterdb.cpp \
                   blob.cpp \
                   extkeys.cpp \
-                  keys.cpp \
+                  btree_key.cpp \
                   partial.cpp \
-                  bt_cursor.cpp \
-                  util.cpp \
+                  btree_cursor.cpp \
+                  misc.cpp \
                   device.cpp \
                   os.cpp \
                   cache.cpp \
                   freelist.cpp \
                   db.cpp \
                   main.cpp \
-                  mem.cpp \
                   endian.cpp \
                   page.cpp \
+                  changeset.cpp \
                   txn.cpp \
-                  memtracker.cpp \
-                  memtracker.h \
+                  txn_cursor.cpp \
+                  cursor.cpp \
                   empty_sample.cpp \
                   bfc-testsuite.cpp \
                   bfc-testsuite.hpp \
@@ -50,7 +45,7 @@ test_SOURCES    = log.cpp \
                   bfc-signal.h \
                   bfc-signal.c
 
-test_LDADD      = $(top_builddir)/src/libhamsterdb.la -ldl
+test_LDADD      = $(top_builddir)/src/libhamsterdb.la -lpthread -ldl
 
 if ENABLE_REMOTE
 test_SOURCES   += remote.cpp
@@ -68,5 +63,17 @@ bfc_sample_SOURCES = bfc-sample.cpp \
 
 bfc_sample_LDADD = -ldl
 
-noinst_BIN      = test bfc_sample
+recovery_SOURCES = recovery.cpp
 
+recovery_LDADD   = $(top_builddir)/src/libhamsterdb.la -ldl
+
+noinst_BIN       = test bfc_sample recovery
+
+#
+# make sure that our modified CFLAGS are also respected by g++
+#
+AM_CXXFLAGS     = $(CFLAGS)
+CXXFLAGS        = $(CFLAGS)
+
+test_recovery:
+	perl recovery.pl

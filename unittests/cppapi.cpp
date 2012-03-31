@@ -1,9 +1,9 @@
 /**
- * Copyright (C) 2005-2008 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2012 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -297,11 +297,11 @@ public:
         catch (ham::error &) {
         }
         try {
-            c.overwrite(0); 
+            c.overwrite(0);
         }
         catch (ham::error &) {
-        }        
-        c.overwrite(&r); 
+        }
+        c.overwrite(&r);
         ham::cursor clone=c.clone();
 
         c.move_first(&k2, &r2);
@@ -431,6 +431,7 @@ public:
 
     void beginAbortTest(void)
     {
+        ham::env env;
         ham::db db;
         ham::key k;
         ham::record r, out;
@@ -441,8 +442,9 @@ public:
         r.set_data((void *)"12345");
         r.set_size(6);
 
-        db.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
-        txn=db.begin();
+        env.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
+        db=env.create_db(1);
+        txn=env.begin();
         db.insert(&txn, &k, &r);
         txn.abort();
         try {
@@ -456,6 +458,7 @@ public:
     void beginCommitTest(void)
     {
         ham::db db;
+        ham::env env;
         ham::key k;
         ham::record r, out;
         ham::txn txn;
@@ -465,15 +468,19 @@ public:
         r.set_data((void *)"12345");
         r.set_size(6);
 
-        db.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
-        txn=db.begin();
+        env.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
+        db=env.create_db(1);
+        txn=env.begin("name");
         db.insert(&txn, &k, &r);
+        std::string n=txn.get_name();
+        BFC_ASSERT(n=="name");
         txn.commit();
         out=db.find(&k);
     }
 
     void beginCursorAbortTest(void)
     {
+        ham::env env;
         ham::db db;
         ham::key k;
         ham::record r, out;
@@ -484,8 +491,9 @@ public:
         r.set_data((void *)"12345");
         r.set_size(6);
 
-        db.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
-        txn=db.begin();
+        env.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
+        db=env.create_db(1);
+        txn=env.begin();
         ham::cursor c(&db, &txn);
         c.insert(&k, &r);
         BFC_ASSERT_EQUAL(r.get_size(), c.get_record_size());
@@ -501,6 +509,7 @@ public:
 
     void beginCursorCommitTest(void)
     {
+        ham::env env;
         ham::db db;
         ham::key k;
         ham::record r, out;
@@ -511,8 +520,9 @@ public:
         r.set_data((void *)"12345");
         r.set_size(6);
 
-        db.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
-        txn=db.begin();
+        env.create(BFC_OPATH(".test"), HAM_ENABLE_TRANSACTIONS);
+        db=env.create_db(1);
+        txn=env.begin();
         ham::cursor c(&db, &txn);
         c.insert(&k, &r);
         c.close();
@@ -521,34 +531,34 @@ public:
     }
 
     /*
-     * Augment the base method: make sure we catch ham::error exceptions 
+     * Augment the base method: make sure we catch ham::error exceptions
      * and convert these to bfc::error instances to assist BFC test error
      * reporting.
      *
-     * This serves as an example of use of the testrunner configuration 
-     * as well, as we use the catch flags to determine if the user wants 
-     * us to catch these exceptions or allow them to fall through to the 
+     * This serves as an example of use of the testrunner configuration
+     * as well, as we use the catch flags to determine if the user wants
+     * us to catch these exceptions or allow them to fall through to the
      * debugger instead.
      */
-    virtual bool FUT_invoker(testrunner *me, method m, const char *funcname, 
+    virtual bool FUT_invoker(testrunner *me, method m, const char *funcname,
             bfc_state_t state, error &ex)
     {
         if (me->catch_exceptions() || me->catch_coredumps())
         {
-            try 
+            try
             {
                 // invoke the FUT through the baseclass method
                 return fixture::FUT_invoker(me, m, funcname, state, ex);
             }
             catch (ham::error &e)
             {
-                ex = error(__FILE__, __LINE__, get_name(), funcname, 
+                ex = error(__FILE__, __LINE__, get_name(), funcname,
                     "HAM C++ exception occurred within the "
-                    "Function-Under-Test (%s); error code %d: %s", 
+                    "Function-Under-Test (%s); error code %d: %s",
                     funcname, (int)e.get_errno(), e.get_string());
                 return true;
             }
-            // catch (bfc::error &e) 
+            // catch (bfc::error &e)
             // ^^ do NOT catch those: allow the BFC test rig to catch 'em!
         }
         else

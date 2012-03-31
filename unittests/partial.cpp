@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -18,9 +18,8 @@
 #include "../src/blob.h"
 #include "../src/env.h"
 #include "../src/page.h"
-#include "../src/keys.h"
+#include "../src/btree_key.h"
 #include "../src/freelist.h"
-#include "memtracker.h"
 #include "os.hpp"
 
 #include "bfc-testsuite.hpp"
@@ -33,7 +32,7 @@ class BasePartialWriteTest : public hamsterDB_fixture
     define_super(hamsterDB_fixture);
 
 public:
-    BasePartialWriteTest(const char *name, ham_size_t pagesize=0, 
+    BasePartialWriteTest(const char *name, ham_size_t pagesize=0,
             bool inmemory=false)
     :   hamsterDB_fixture(name), m_pagesize(pagesize), m_inmemory(inmemory)
     {
@@ -44,11 +43,10 @@ protected:
     bool m_inmemory;
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         ham_parameter_t params[]={
@@ -61,21 +59,19 @@ public:
             params[0].value=m_pagesize;
         }
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, &params[0]));
-        m_env=db_get_env(m_db);
+        m_env=ham_get_env(m_db);
     }
     
-    virtual void teardown() 
-    { 
+    virtual void teardown()
+    {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
     }
 
     void fillBuffer(ham_u8_t *ptr, ham_size_t offset, ham_size_t size)
@@ -111,7 +107,7 @@ public:
         BFC_ASSERT_EQUAL(0, memcmp(buffer, rec.data, rec.size));
     }
 
-    virtual void insertGaps(unsigned partial_offset, 
+    virtual void insertGaps(unsigned partial_offset,
                     unsigned partial_size, unsigned record_size)
     {
         ham_key_t key;
@@ -265,19 +261,19 @@ public:
 
     void insertGapsTestPagesize(void)
     {
-        ham_size_t ps=env_get_pagesize(m_env);
+        ham_size_t ps=((Environment *)m_env)->get_pagesize();
         insertGaps(ps, ps, ps*2);
     }
 
     void insertGapsTestPagesize2(void)
     {
-        ham_size_t ps=env_get_pagesize(m_env);
+        ham_size_t ps=((Environment *)m_env)->get_pagesize();
         insertGaps(ps*2, ps*2, ps*4);
     }
 
     void insertGapsTestPagesize4(void)
     {
-        ham_size_t ps=env_get_pagesize(m_env);
+        ham_size_t ps=((Environment *)m_env)->get_pagesize();
         insertGaps(ps*4, ps*4, ps*8);
     }
 };
@@ -287,7 +283,7 @@ class PartialWriteTest : public BasePartialWriteTest
     define_super(BasePartialWriteTest);
 
 public:
-    PartialWriteTest(ham_size_t pagesize=0, 
+    PartialWriteTest(ham_size_t pagesize=0,
             const char *name="PartialWriteTest", bool inmemory=false)
     :   BasePartialWriteTest(name, pagesize, inmemory)
     {
@@ -368,23 +364,23 @@ public:
          * beginning AND end) */
         BFC_REGISTER_TEST(PartialWriteTest, insertGapsTestBiggestPlus1);
 
-        /* write at offset 500000, partial size 500000, record size 2000000 
+        /* write at offset 500000, partial size 500000, record size 2000000
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(PartialWriteTest, insertGapsTestSuperbig);
 
-        /* write at offset 500001, partial size 500001, record size 2000001 
+        /* write at offset 500001, partial size 500001, record size 2000001
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(PartialWriteTest, insertGapsTestSuperbigPlus1);
 
-        /* write at offset PS, partial size PS, record size 2*PS 
+        /* write at offset PS, partial size PS, record size 2*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(PartialWriteTest, insertGapsTestPagesize);
 
-        /* write at offset PS*2, partial size PS*2, record size 4*PS 
+        /* write at offset PS*2, partial size PS*2, record size 4*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(PartialWriteTest, insertGapsTestPagesize2);
 
-        /* write at offset PS*4, partial size PS*4, record size 8*PS 
+        /* write at offset PS*4, partial size PS*4, record size 8*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(PartialWriteTest, insertGapsTestPagesize4);
     }
@@ -477,23 +473,23 @@ public:
          * beginning AND end) */
         BFC_REGISTER_TEST(OverwritePartialWriteTest, insertGapsTestBiggestPlus1);
 
-        /* write at offset 500000, partial size 500000, record size 2000000 
+        /* write at offset 500000, partial size 500000, record size 2000000
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(OverwritePartialWriteTest, insertGapsTestSuperbig);
 
-        /* write at offset 500001, partial size 500001, record size 2000001 
+        /* write at offset 500001, partial size 500001, record size 2000001
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(OverwritePartialWriteTest, insertGapsTestSuperbigPlus1);
 
-        /* write at offset PS, partial size PS, record size 2*PS 
+        /* write at offset PS, partial size PS, record size 2*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(OverwritePartialWriteTest, insertGapsTestPagesize);
 
-        /* write at offset PS*2, partial size PS*2, record size 4*PS 
+        /* write at offset PS*2, partial size PS*2, record size 4*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(OverwritePartialWriteTest, insertGapsTestPagesize2);
 
-        /* write at offset PS*4, partial size PS*4, record size 8*PS 
+        /* write at offset PS*4, partial size PS*4, record size 8*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(OverwritePartialWriteTest, insertGapsTestPagesize4);
     }
@@ -507,7 +503,7 @@ public:
             ptr[i]=(ham_u8_t)(0xff-i);
     }
 
-    virtual void insertGaps(unsigned partial_offset, 
+    virtual void insertGaps(unsigned partial_offset,
                     unsigned partial_size, unsigned record_size)
     {
         ham_key_t key;
@@ -533,7 +529,7 @@ public:
         rec.partial_size=partial_size;
         rec.size=record_size;
         rec.data=buffer;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key, &rec, HAM_PARTIAL|HAM_OVERWRITE));
 
         /* verify the key */
@@ -632,23 +628,23 @@ public:
          * beginning AND end) */
         BFC_REGISTER_TEST(ShrinkPartialWriteTest, insertGapsTestBiggestPlus1);
 
-        /* write at offset 500000, partial size 500000, record size 2000000 
+        /* write at offset 500000, partial size 500000, record size 2000000
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(ShrinkPartialWriteTest, insertGapsTestSuperbig);
 
-        /* write at offset 500001, partial size 500001, record size 2000001 
+        /* write at offset 500001, partial size 500001, record size 2000001
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(ShrinkPartialWriteTest, insertGapsTestSuperbigPlus1);
 
-        /* write at offset PS, partial size PS, record size 2*PS 
+        /* write at offset PS, partial size PS, record size 2*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(ShrinkPartialWriteTest, insertGapsTestPagesize);
 
-        /* write at offset PS*2, partial size PS*2, record size 4*PS 
+        /* write at offset PS*2, partial size PS*2, record size 4*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(ShrinkPartialWriteTest, insertGapsTestPagesize2);
 
-        /* write at offset PS*4, partial size PS*4, record size 8*PS 
+        /* write at offset PS*4, partial size PS*4, record size 8*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(ShrinkPartialWriteTest, insertGapsTestPagesize4);
     }
@@ -662,7 +658,7 @@ public:
             ptr[i]=(ham_u8_t)(0xff-i);
     }
 
-    virtual void insertGaps(unsigned partial_offset, 
+    virtual void insertGaps(unsigned partial_offset,
                     unsigned partial_size, unsigned record_size)
     {
         ham_key_t key;
@@ -689,7 +685,7 @@ public:
         rec.partial_size=partial_size;
         rec.size=record_size;
         rec.data=buffer;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key, &rec, HAM_PARTIAL|HAM_OVERWRITE));
 
         /* verify the key */
@@ -788,23 +784,23 @@ public:
          * beginning AND end) */
         BFC_REGISTER_TEST(GrowPartialWriteTest, insertGapsTestBiggestPlus1);
 
-        /* write at offset 500000, partial size 500000, record size 2000000 
+        /* write at offset 500000, partial size 500000, record size 2000000
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(GrowPartialWriteTest, insertGapsTestSuperbig);
 
-        /* write at offset 500001, partial size 500001, record size 2000001 
+        /* write at offset 500001, partial size 500001, record size 2000001
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(GrowPartialWriteTest, insertGapsTestSuperbigPlus1);
 
-        /* write at offset PS, partial size PS, record size 2*PS 
+        /* write at offset PS, partial size PS, record size 2*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(GrowPartialWriteTest, insertGapsTestPagesize);
 
-        /* write at offset PS*2, partial size PS*2, record size 4*PS 
+        /* write at offset PS*2, partial size PS*2, record size 4*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(GrowPartialWriteTest, insertGapsTestPagesize2);
 
-        /* write at offset PS*4, partial size PS*4, record size 8*PS 
+        /* write at offset PS*4, partial size PS*4, record size 8*PS
          * (gap at beginning AND end) */
         BFC_REGISTER_TEST(GrowPartialWriteTest, insertGapsTestPagesize4);
     }
@@ -818,7 +814,7 @@ public:
             ptr[i]=(ham_u8_t)(0xff-i);
     }
 
-    virtual void insertGaps(unsigned partial_offset, 
+    virtual void insertGaps(unsigned partial_offset,
                     unsigned partial_size, unsigned record_size)
     {
         ham_key_t key;
@@ -845,7 +841,7 @@ public:
         rec.partial_size=partial_size;
         rec.size=record_size;
         rec.data=buffer;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(m_db, 0, &key, &rec, HAM_PARTIAL|HAM_OVERWRITE));
 
         /* verify the key */
@@ -1025,66 +1021,66 @@ public:
     }
 };
 
-class InMemoryOverwritePartialWriteTest1024k : 
+class InMemoryOverwritePartialWriteTest1024k :
             public OverwritePartialWriteTest
 {
     define_super(OverwritePartialWriteTest);
 
 public:
     InMemoryOverwritePartialWriteTest1024k()
-    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest1024k", 
+    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest1024k",
             1024, true)
     {
     }
 };
 
-class InMemoryOverwritePartialWriteTest2048k : 
+class InMemoryOverwritePartialWriteTest2048k :
             public OverwritePartialWriteTest
 {
     define_super(OverwritePartialWriteTest);
 
 public:
     InMemoryOverwritePartialWriteTest2048k()
-    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest2048k", 
+    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest2048k",
             2048, true)
     {
     }
 };
 
-class InMemoryOverwritePartialWriteTest4096k : 
+class InMemoryOverwritePartialWriteTest4096k :
             public OverwritePartialWriteTest
 {
     define_super(OverwritePartialWriteTest);
 
 public:
     InMemoryOverwritePartialWriteTest4096k()
-    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest4096k", 
+    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest4096k",
             4096, true)
     {
     }
 };
 
-class InMemoryOverwritePartialWriteTest16384k : 
+class InMemoryOverwritePartialWriteTest16384k :
             public OverwritePartialWriteTest
 {
     define_super(OverwritePartialWriteTest);
 
 public:
     InMemoryOverwritePartialWriteTest16384k()
-    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest16384k", 
+    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest16384k",
             16384, true)
     {
     }
 };
 
-class InMemoryOverwritePartialWriteTest65536k : 
+class InMemoryOverwritePartialWriteTest65536k :
             public OverwritePartialWriteTest
 {
     define_super(OverwritePartialWriteTest);
 
 public:
     InMemoryOverwritePartialWriteTest65536k()
-    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest65536k", 
+    :   OverwritePartialWriteTest("InMemoryOverwritePartialWriteTest65536k",
             65536, true)
     {
     }
@@ -1095,9 +1091,9 @@ class PartialReadTest : public hamsterDB_fixture
     define_super(hamsterDB_fixture);
 
 public:
-    PartialReadTest(const char *name, ham_size_t pagesize=0, 
+    PartialReadTest(const char *name, ham_size_t pagesize=0,
             bool inmemory=false, ham_u32_t find_flags=0)
-    :   hamsterDB_fixture(name), m_pagesize(pagesize), 
+    :   hamsterDB_fixture(name), m_pagesize(pagesize),
         m_inmemory(inmemory), m_find_flags(find_flags)
     {
         testrunner::get_instance()->register_fixture(this);
@@ -1135,23 +1131,23 @@ public:
         /* read at offset 500000, partial size 500000, record size 1000000 (gap at end) */
         BFC_REGISTER_TEST(PartialReadTest, findGapsAtBeginningTestSuperbig);
 
-        /* read at offset 50, partial size 50, record size 200 (gap 
+        /* read at offset 50, partial size 50, record size 200 (gap
          * at beginning and end) */
         BFC_REGISTER_TEST(PartialReadTest, findGapsTestSmall);
 
-        /* read at offset 500, partial size 500, record size 2000 (gap 
+        /* read at offset 500, partial size 500, record size 2000 (gap
          * at beginning and end) */
         BFC_REGISTER_TEST(PartialReadTest, findGapsTestBig);
 
-        /* read at offset 5000, partial size 5000, record size 20000 (gap 
+        /* read at offset 5000, partial size 5000, record size 20000 (gap
          * at beginning and end) */
         BFC_REGISTER_TEST(PartialReadTest, findGapsTestBigger);
 
-        /* read at offset 50000, partial size 50000, record size 200000 (gap 
+        /* read at offset 50000, partial size 50000, record size 200000 (gap
          * at beginning and end) */
         BFC_REGISTER_TEST(PartialReadTest, findGapsTestBiggest);
 
-        /* read at offset 500000, partial size 500000, record size 2000000 (gap 
+        /* read at offset 500000, partial size 500000, record size 2000000 (gap
          * at beginning and end) */
         BFC_REGISTER_TEST(PartialReadTest, findGapsTestSuperbig);
     }
@@ -1162,11 +1158,10 @@ protected:
     ham_u32_t m_find_flags;
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
 
 public:
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
         ham_parameter_t params[]={
@@ -1179,21 +1174,19 @@ public:
             params[0].value=m_pagesize;
         }
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, &params[0]));
-        m_env=db_get_env(m_db);
+        m_env=ham_get_env(m_db);
     }
     
-    virtual void teardown() 
-    { 
+    virtual void teardown()
+    {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
     }
 
     void fillBuffer(ham_u8_t *ptr, ham_size_t offset, ham_size_t size)
@@ -1223,7 +1216,7 @@ public:
         memset(&rec, 0, sizeof(rec));
         rec.partial_offset=0;
         rec.partial_size=50;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_find(m_db, 0, &key, &rec, HAM_PARTIAL|m_find_flags));
 
         BFC_ASSERT_EQUAL(50u, rec.size);
@@ -1252,7 +1245,7 @@ public:
         memset(&rec, 0, sizeof(rec));
         rec.partial_offset=partial_offset;
         rec.partial_size=partial_size;
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_find(m_db, 0, &key, &rec, HAM_PARTIAL|m_find_flags));
 
         memset(&buffer[0], 0, record_size);
@@ -1455,7 +1448,7 @@ class DirectAccessPartialReadTest1024k : public PartialReadTest
 
 public:
     DirectAccessPartialReadTest1024k()
-    :   PartialReadTest("DirectAccessPartialReadTest1024k", 1024, 
+    :   PartialReadTest("DirectAccessPartialReadTest1024k", 1024,
                 true, HAM_DIRECT_ACCESS)
     {
     }
@@ -1467,7 +1460,7 @@ class DirectAccessPartialReadTest2048k : public PartialReadTest
 
 public:
     DirectAccessPartialReadTest2048k()
-    :   PartialReadTest("DirectAccessPartialReadTest2048k", 2048, 
+    :   PartialReadTest("DirectAccessPartialReadTest2048k", 2048,
                 true, HAM_DIRECT_ACCESS)
     {
     }
@@ -1479,7 +1472,7 @@ class DirectAccessPartialReadTest4096k : public PartialReadTest
 
 public:
     DirectAccessPartialReadTest4096k()
-    :   PartialReadTest("DirectAccessPartialReadTest4096k", 4096, 
+    :   PartialReadTest("DirectAccessPartialReadTest4096k", 4096,
                 true, HAM_DIRECT_ACCESS)
     {
     }
@@ -1491,7 +1484,7 @@ class DirectAccessPartialReadTest16384k : public PartialReadTest
 
 public:
     DirectAccessPartialReadTest16384k()
-    :   PartialReadTest("DirectAccessPartialReadTest16384k", 16384, 
+    :   PartialReadTest("DirectAccessPartialReadTest16384k", 16384,
                 true, HAM_DIRECT_ACCESS)
     {
     }
@@ -1503,7 +1496,7 @@ class DirectAccessPartialReadTest65536k : public PartialReadTest
 
 public:
     DirectAccessPartialReadTest65536k()
-    :   PartialReadTest("DirectAccessPartialReadTest65536k", 65536, 
+    :   PartialReadTest("DirectAccessPartialReadTest65536k", 65536,
                 true, HAM_DIRECT_ACCESS)
     {
     }
@@ -1516,7 +1509,7 @@ class MiscPartialTests : public hamsterDB_fixture
 public:
     MiscPartialTests(const char *name="MiscPartialTests", bool inmemory=false,
             ham_u32_t find_flags=0)
-    :   hamsterDB_fixture(name), m_inmemory(inmemory), 
+    :   hamsterDB_fixture(name), m_inmemory(inmemory),
             m_find_flags(find_flags)
     {
         testrunner::get_instance()->register_fixture(this);
@@ -1525,33 +1518,32 @@ public:
         BFC_REGISTER_TEST(MiscPartialTests, invalidInsertParametersTest);
         BFC_REGISTER_TEST(MiscPartialTests, invalidFindParametersTest);
         BFC_REGISTER_TEST(MiscPartialTests, reduceSizeTest);
+        BFC_REGISTER_TEST(MiscPartialTests, disabledSmallRecordsTest);
+        BFC_REGISTER_TEST(MiscPartialTests, disabledTransactionsTest);
     }
 
     ham_db_t *m_db;
     ham_env_t *m_env;
-    memtracker_t *m_alloc;
     bool m_inmemory;
     ham_u32_t m_find_flags;
 
-    virtual void setup() 
-    { 
+    virtual void setup()
+    {
         __super::setup();
 
-        BFC_ASSERT((m_alloc=memtracker_new())!=0);
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(m_db, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, 0));
-        m_env=db_get_env(m_db);
+        m_env=ham_get_env(m_db);
     }
     
-    virtual void teardown() 
-    { 
+    virtual void teardown()
+    {
         __super::teardown();
 
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         ham_delete(m_db);
-        BFC_ASSERT(!memtracker_get_leaks(m_alloc));
     }
 
     void negativeInsertTest(void)
@@ -1563,15 +1555,15 @@ public:
 
         ham_db_t *db;
         BFC_ASSERT_EQUAL(0, ham_new(&db));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(db, BFC_OPATH(".test.db"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test.db"),
                         HAM_SORT_DUPLICATES
                             |HAM_ENABLE_DUPLICATES
-                            |(m_inmemory ? HAM_IN_MEMORY_DB : 0), 
+                            |(m_inmemory ? HAM_IN_MEMORY_DB : 0),
                         0644, 0));
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_insert(db, 0, &key, &rec, HAM_PARTIAL));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_insert(db, 0, &key, &rec, 0));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         ham_delete(db);
@@ -1586,19 +1578,19 @@ public:
 
         ham_db_t *db;
         BFC_ASSERT_EQUAL(0, ham_new(&db));
-        BFC_ASSERT_EQUAL(0, 
-                ham_create_ex(db, BFC_OPATH(".test.db"), 
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test.db"),
                         HAM_SORT_DUPLICATES
                             |HAM_ENABLE_DUPLICATES
-                            |(m_inmemory ? HAM_IN_MEMORY_DB : 0), 
+                            |(m_inmemory ? HAM_IN_MEMORY_DB : 0),
                         0644, 0));
 
         ham_cursor_t *c;
         BFC_ASSERT_EQUAL(0, ham_cursor_create(db, 0, 0, &c));
 
-        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER, 
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_cursor_insert(c, &key, &rec, HAM_PARTIAL));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 ham_cursor_insert(c, &key, &rec, 0));
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
@@ -1716,6 +1708,98 @@ public:
         BFC_ASSERT_EQUAL(500u, rec.size);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
+    }
+
+    void disabledSmallRecordsTest(void)
+    {
+        ham_key_t key={0};
+        ham_record_t rec={0};
+        ham_u8_t buffer[8];
+
+        rec.data=(void *)&buffer[0];
+        rec.size=8;
+        BFC_ASSERT_EQUAL(0,
+                ham_insert(m_db, 0, &key, &rec, 0));
+
+        rec.data=(void *)&buffer[0];
+        rec.size=1;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_insert(m_db, 0, &key, &rec, HAM_PARTIAL));
+
+        rec.size=5;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_insert(m_db, 0, &key, &rec, HAM_PARTIAL));
+
+        rec.size=8;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_insert(m_db, 0, &key, &rec, HAM_PARTIAL));
+
+        rec.size=1;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_find(m_db, 0, &key, &rec, HAM_PARTIAL));
+
+        rec.size=5;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_find(m_db, 0, &key, &rec, HAM_PARTIAL));
+
+        rec.size=8;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_find(m_db, 0, &key, &rec, HAM_PARTIAL));
+    }
+
+    void disabledTransactionsTest(void)
+    {
+        ham_db_t *db;
+        BFC_ASSERT_EQUAL(0, ham_new(&db));
+        BFC_ASSERT_EQUAL(0,
+                ham_create_ex(db, BFC_OPATH(".test2"),
+                        HAM_ENABLE_TRANSACTIONS, 0644, 0));
+
+        ham_cursor_t *c;
+        BFC_ASSERT_EQUAL(0, ham_cursor_create(db, 0, 0, &c));
+
+        ham_key_t key={0};
+        ham_record_t rec={0};
+        ham_u8_t buffer[16];
+
+        rec.data=(void *)&buffer[0];
+        rec.size=16;
+        BFC_ASSERT_EQUAL(0,
+                ham_insert(db, 0, &key, &rec, 0));
+
+        rec.data=(void *)&buffer[0];
+        rec.size=1;
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_insert(db, 0, &key, &rec, HAM_PARTIAL));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_insert(c, &key, &rec, HAM_PARTIAL));
+
+        rec.partial_offset=0;
+        rec.partial_size=1;
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_find(db, 0, &key, &rec, HAM_PARTIAL));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_find_ex(c, &key, &rec, HAM_PARTIAL));
+        BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
+                ham_cursor_move(c, &key, &rec, HAM_PARTIAL));
+
+        BFC_ASSERT_EQUAL(0, ham_cursor_close(c));
+        BFC_ASSERT_EQUAL(0, ham_close(db, 0));
+        ham_delete(db);
     }
 };
 

@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -22,13 +22,19 @@
 #endif
 
 #include "../src/error.h"
+#if HAM_ENABLE_REMOTE
+#  define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
+#  include <curl/curl.h>
+#  include <curl/easy.h>
+#  include "../src/protocol/protocol.h"
+#endif
 
 
 using namespace bfc;
 
 
 #if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64)) \
-	&& defined(_DEBUG) && !defined(UNDER_CE)
+    && defined(_DEBUG) && !defined(UNDER_CE)
 
 _CrtMemState crm_memdbg_state_snapshot1;
 int trigger_memdump = 0;
@@ -39,7 +45,7 @@ int trigger_debugger = 0;
  * We'll hook it into the debug reporting
  * process later using _CrtSetReportHook.
  */
-static int 
+static int
 crm_dbg_report_function(int report_type, char *usermsg, int *retval)
 {
     /*
@@ -74,12 +80,12 @@ crm_dbg_report_function(int report_type, char *usermsg, int *retval)
     case _CRT_ASSERT:
         fwrite(usermsg, 1, strlen(usermsg), stderr);
         fflush(stderr);
-		break;
+        break;
     }
     return TRUE;
 }
 
-static void 
+static void
 crm_report_mem_analysis(void)
 {
     _CrtMemState msNow;
@@ -101,20 +107,20 @@ crm_report_mem_analysis(void)
         /* difference detected: dump objects since start. */
         _RPT0(_CRT_WARN, "============== Detected memory leaks! ====================\n");
 
-	    _CrtMemState diff;
-		if (_CrtMemDifference(&diff, &crm_memdbg_state_snapshot1, &msNow))
-		{
-	        //_CrtMemDumpAllObjectsSince(&crm_memdbg_state_snapshot1);
+        _CrtMemState diff;
+        if (_CrtMemDifference(&diff, &crm_memdbg_state_snapshot1, &msNow))
+        {
+            //_CrtMemDumpAllObjectsSince(&crm_memdbg_state_snapshot1);
 
-			_CrtMemDumpStatistics(&diff);
-		}
+            _CrtMemDumpStatistics(&diff);
+        }
     }
 }
 
 
 #endif
 
-int 
+int
 main(int argc, char **argv)
 {
 #if 0
@@ -150,7 +156,7 @@ main(int argc, char **argv)
     // Get the current bits
     int i = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
 
-	i |= _CRTDBG_ALLOC_MEM_DF;
+    i |= _CRTDBG_ALLOC_MEM_DF;
 
     // Set the debug-heap flag so that freed blocks are kept on the
     // linked list, to catch any inadvertent use of freed memory
@@ -162,7 +168,7 @@ main(int argc, char **argv)
 
     // Clear the upper 16 bits and OR in the desired freqency
 #if 0
-	i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_1024_DF;
+    i = (i & 0x0000FFFF) | _CRTDBG_CHECK_EVERY_1024_DF;
 #else
     i |= _CRTDBG_CHECK_ALWAYS_DF;
 #endif
@@ -170,7 +176,7 @@ main(int argc, char **argv)
     // Set the new bits
     _CrtSetDbgFlag(i);
 
-    // set a malloc marker we can use it in the leak dump at the end of 
+    // set a malloc marker we can use it in the leak dump at the end of
     // the program:
 //    (void)_calloc_dbg(1, 1, _CLIENT_BLOCK, __FILE__, __LINE__);
 #endif
@@ -179,7 +185,7 @@ main(int argc, char **argv)
     /*
      * when running in visual studio, the working directory is different
      * from the unix/cygwin environment. this can be changed, but the
-     * working directory setting is not stored in the unittests.vcproj file, 
+     * working directory setting is not stored in the unittests.vcproj file,
      * but in unittests.vcproj.<hostname><username>; and this file is not
      * distributed.
      *
@@ -187,7 +193,7 @@ main(int argc, char **argv)
      * the working directory manually.
      */
 #ifdef VISUAL_STUDIO
-#ifdef UNITTEST_PATH 
+#ifdef UNITTEST_PATH
     SetCurrentDirectoryA(UNITTEST_PATH);
 #else
 #   ifndef UNDER_CE
@@ -196,23 +202,28 @@ main(int argc, char **argv)
 #endif
 #endif
 
-	// set up the testrunner rig:
-#if 0 // turn this on (--> #if 01) to assist with debugging testcases: 
+    // set up the testrunner rig:
+#if 0 // turn this on (--> #if 01) to assist with debugging testcases:
     // exceptions, etc. will pass through to your debugger
-	testrunner::get_instance()->catch_coredumps(0);
-	testrunner::get_instance()->catch_exceptions(0);
+    testrunner::get_instance()->catch_coredumps(0);
+    testrunner::get_instance()->catch_exceptions(0);
 #else
-	testrunner::get_instance()->catch_coredumps(0);
-	testrunner::get_instance()->catch_exceptions(1);
+    testrunner::get_instance()->catch_coredumps(0);
+    testrunner::get_instance()->catch_exceptions(1);
 #endif
 #if (defined(WIN32) || defined(_WIN32) || defined(_WIN64) || defined(WIN64))
 #   if defined(UNDER_CE)
-	testrunner::get_instance()->outputdir("../unittests/");
-	testrunner::get_instance()->inputdir("../unittests/");
+    testrunner::get_instance()->outputdir("../unittests/");
+    testrunner::get_instance()->inputdir("../unittests/");
 #   else
-	testrunner::get_instance()->outputdir("./");
-	testrunner::get_instance()->inputdir("./");
+    testrunner::get_instance()->outputdir("./");
+    testrunner::get_instance()->inputdir("./");
 #   endif
+#endif
+
+#ifdef HAM_ENABLE_REMOTE
+    atexit(curl_global_cleanup);
+    atexit(proto_shutdown);
 #endif
 
 	// as we wish to print all collected errors at the very end, we act
@@ -291,9 +302,9 @@ main(int argc, char **argv)
 }
 
 #if UNDER_CE
-int 
+int
 _tmain(int argc, _TCHAR* argv[])
 {
-	return (main(0, 0));
+    return (main(0, 0));
 }
 #endif

@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -22,11 +22,6 @@
 #include <stdio.h>
 #include <limits.h>
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif 
-
 /**
  * read data from a file with mmap
  *
@@ -37,11 +32,11 @@ extern "C" {
  * @remark win32 needs a second handle for CreateFileMapping
  */
 extern ham_status_t
-os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position, 
-		ham_offset_t size, ham_bool_t readonly, ham_u8_t **buffer);
+os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
+        ham_offset_t size, ham_bool_t readonly, ham_u8_t **buffer);
 
 /**
- * unmap a buffer 
+ * unmap a buffer
  *
  * @remark win32 needs a second handle for CreateFileMapping
  */
@@ -52,29 +47,31 @@ os_munmap(ham_fd_t *mmaph, void *buffer, ham_offset_t size);
  * read data from a file
  */
 extern ham_status_t
-os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer, 
+os_pread(ham_fd_t fd, ham_offset_t addr, void *buffer,
         ham_offset_t bufferlen);
 
 /**
  * write data to a file
  */
 extern ham_status_t
-os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer, 
+os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
         ham_offset_t bufferlen);
-
-/**
- * write data from two buffers to a file
- */
-extern ham_status_t
-os_writev(ham_fd_t fd, const void *buffer1, 
-        ham_offset_t buffer1_len, const void *buffer2,
-        ham_offset_t buffer2_len);
 
 /**
  * append data to a file
  */
 extern ham_status_t
 os_write(ham_fd_t fd, const void *buffer, ham_offset_t bufferlen);
+
+/**
+ * append data from two buffers to a file
+ */
+extern ham_status_t
+os_writev(ham_fd_t fd, void *buffer1, ham_offset_t buffer1_len,
+                void *buffer2=0, ham_offset_t buffer2_len=0,
+                void *buffer3=0, ham_offset_t buffer3_len=0,
+                void *buffer4=0, ham_offset_t buffer4_len=0,
+                void *buffer5=0, ham_offset_t buffer5_len=0);
 
 #ifdef HAM_OS_POSIX
 #    define HAM_OS_SEEK_SET     SEEK_SET
@@ -148,9 +145,5 @@ os_flush(ham_fd_t fd);
 extern ham_status_t
 os_close(ham_fd_t fd, ham_u32_t flags);
 
-
-#ifdef __cplusplus
-} // extern "C"
-#endif 
 
 #endif /* HAM_OS_H__ */

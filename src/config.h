@@ -26,19 +26,15 @@
 #ifdef HAVE_CONFIG_H
 #   include "../config.h"
 #else
-#	ifdef UNDER_CE
-#		define HAVE_MMAP                0
-#		define HAVE_UNMMAP              0
-#	else
-#		define HAVE_MMAP                1
-#		define HAVE_UNMMAP              1
-#	endif
+#   ifdef UNDER_CE
+#       define HAVE_MMAP                0
+#       define HAVE_UNMMAP              0
+#   else
+#       define HAVE_MMAP                1
+#       define HAVE_UNMMAP              1
+#   endif
 #   define HAVE_PREAD                   1
 #   define HAVE_PWRITE                  1
-
-#undef HAM_DISABLE_ENCRYPTION
-#undef HAM_ENABLE_REMOTE
-
 #endif
 
 /*
@@ -47,7 +43,7 @@
 #if (!defined(HAM_DEBUG))
 #   if (defined(_DEBUG) || defined(DEBUG))
 #       define HAM_DEBUG 1
-#		if !defined(HAM_LEAN_AND_MEAN_FOR_PROFILING)
+#       if !defined(HAM_LEAN_AND_MEAN_FOR_PROFILING)
 //#           define HAM_LEAN_AND_MEAN_FOR_PROFILING 1
 #       endif
 #   endif
