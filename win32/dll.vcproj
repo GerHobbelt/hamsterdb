@@ -336,6 +336,34 @@
 	<References>
 	</References>
 	<Files>
+		<Filter
+			Name="includes"
+			>
+			<File
+				RelativePath="..\include\ham\hamsterdb.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ham\hamsterdb.hpp"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ham\hamsterdb_int.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ham\hamsterdb_srv.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ham\hamsterdb_stats.h"
+				>
+			</File>
+			<File
+				RelativePath="..\include\ham\types.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\src\backend.h"
 			>
