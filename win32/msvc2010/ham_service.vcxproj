@@ -477,7 +477,7 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\server\hamserver.c" />
+    <ClCompile Include="..\..\src\server\hamserver.cc" />
     <ClCompile Include="..\..\src\server\os.c" />
   </ItemGroup>
   <ItemGroup>

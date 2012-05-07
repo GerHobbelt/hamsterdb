@@ -249,10 +249,12 @@ dump_database(ham_db_t *db, ham_u16_t dbname, int key_fmt, int max_keysize,
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     unsigned opt;
-    char *param, *filename=0, *endptr=0;
+    const char *param;
+	const char *filename=0;
+	char *endptr=0;
     int key=FMT_BINARY, rec=FMT_BINARY, keysize=16, recsize=16;
     unsigned short dbname=0xffff;
 
@@ -411,7 +413,7 @@ main(int argc, char **argv)
         st=ham_new(&db);
         if (st)
             error("ham_new", st);
-    
+
         st=ham_env_open_db(env, db, dbname, 0, 0);
         if (st==HAM_DATABASE_NOT_FOUND) {
             printf("Database %u (0x%x) not found\n", dbname, dbname);
@@ -419,9 +421,9 @@ main(int argc, char **argv)
         }
         else if (st)
             error("ham_env_open_db", st);
-    
+
         dump_database(db, dbname, key, keysize, rec, recsize);
-    
+
         st=ham_close(db, 0);
         if (st)
             error("ham_close", st);
@@ -435,13 +437,13 @@ main(int argc, char **argv)
             st=ham_new(&db);
             if (st)
                 error("ham_new", st);
-    
+
             st=ham_env_open_db(env, db, names[i], 0, 0);
             if (st)
                 error("ham_env_open_db", st);
-    
+
             dump_database(db, names[i], key, keysize, rec, recsize);
-    
+
             st=ham_close(db, 0);
             if (st)
                 error("ham_close", st);
