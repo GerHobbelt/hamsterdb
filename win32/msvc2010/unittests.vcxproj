@@ -147,7 +147,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -208,7 +208,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -269,7 +269,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -321,7 +321,7 @@
     </Midl>
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -379,7 +379,7 @@
     <ClCompile>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -436,7 +436,7 @@
     </Midl>
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -485,18 +485,24 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\unittests\api110.cpp" />
+    <ClCompile Include="..\..\unittests\approx.cpp" />
+    <ClCompile Include="..\..\unittests\bfc-sample.cpp" />
     <ClCompile Include="..\..\unittests\bfc-signal.c" />
     <ClCompile Include="..\..\unittests\bfc-testsuite.cpp" />
     <ClCompile Include="..\..\unittests\blob.cpp" />
-    <ClCompile Include="..\..\unittests\bt_cursor.cpp" />
+    <ClCompile Include="..\..\unittests\btree_cursor.cpp" />
     <ClCompile Include="..\..\unittests\btree_erase.cpp" />
+    <ClCompile Include="..\..\unittests\btree_insert.cpp" />
+    <ClCompile Include="..\..\unittests\btree_key.cpp" />
     <ClCompile Include="..\..\unittests\cache.cpp" />
+    <ClCompile Include="..\..\unittests\changeset.cpp" />
     <ClCompile Include="..\..\unittests\check.cpp" />
     <ClCompile Include="..\..\unittests\cppapi.cpp" />
+    <ClCompile Include="..\..\unittests\cursor.cpp" />
     <ClCompile Include="..\..\unittests\db.cpp" />
     <ClCompile Include="..\..\unittests\device.cpp" />
-    <ClCompile Include="..\..\unittests\device_graph.cpp" />
     <ClCompile Include="..\..\unittests\duplicates.cpp" />
+    <ClCompile Include="..\..\unittests\empty_sample.cpp" />
     <ClCompile Include="..\..\unittests\endian.cpp" />
     <ClCompile Include="..\..\unittests\env.cpp" />
     <ClCompile Include="..\..\unittests\error.cpp" />
@@ -504,17 +510,21 @@
     <ClCompile Include="..\..\unittests\filter.cpp" />
     <ClCompile Include="..\..\unittests\freelist.cpp" />
     <ClCompile Include="..\..\unittests\hamsterdb.cpp" />
-    <ClCompile Include="..\..\unittests\keys.cpp" />
+    <ClCompile Include="..\..\unittests\journal.cpp" />
     <ClCompile Include="..\..\unittests\log.cpp" />
     <ClCompile Include="..\..\unittests\main.cpp" />
     <ClCompile Include="..\..\unittests\mem.cpp" />
     <ClCompile Include="..\..\unittests\memtracker.cpp" />
+    <ClCompile Include="..\..\unittests\misc.cpp" />
     <ClCompile Include="..\..\unittests\os.cpp" />
     <ClCompile Include="..\..\unittests\page.cpp" />
     <ClCompile Include="..\..\unittests\partial.cpp" />
     <ClCompile Include="..\..\unittests\recno.cpp" />
+    <ClCompile Include="..\..\unittests\recovery.cpp" />
+    <ClCompile Include="..\..\unittests\remote.cpp" />
+    <ClCompile Include="..\..\unittests\threading.cpp" />
     <ClCompile Include="..\..\unittests\txn.cpp" />
-    <ClCompile Include="..\..\unittests\util.cpp" />
+    <ClCompile Include="..\..\unittests\txn_cursor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="hamsterDB_lib.vcxproj">

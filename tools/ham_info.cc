@@ -173,10 +173,12 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     unsigned opt;
-    char *param, *filename=0, *endptr=0;
+    const char *param;
+	const char *filename=0;
+	char *endptr=0;
     unsigned short dbname=0xffff;
     int full=0;
 

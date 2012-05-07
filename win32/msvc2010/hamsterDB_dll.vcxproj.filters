@@ -1,156 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="..\..\src\blob.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\whole_program_code_optimization.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_check.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_cursor.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_enum.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_erase.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_find.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_insert.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\btree_time_compressed_a_la_PI.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\cache.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\cuckoo_hash.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\db.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\env.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\error.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\extkeys.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\freelist.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\freelist_statistics.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\freelist_v2.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hamsterdb.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\keys.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\log.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\mem.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\os_posix.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\os_win32.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\page.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\statistics.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\txn.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\udb_digital_trie.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\util.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\compression.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\cachedev.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\crypter.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\device.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\event_sender.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\field_partitioner.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\file_per_rid.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\flashmem.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\flatfile.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\graph_mgr.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\https.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\key_partitioner.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\logger_swapper.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\rid_partitioner.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\stream_compression.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\db_partitioner.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\devices\mallocmem.c">
-      <Filter>Source files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\precompiled_headers.c">
-      <Filter>Source files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\backend.h">
-      <Filter>Header Files\Internal</Filter>
+    <ClInclude Include="..\..\include\ham\types.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\version.h">
+    <ClInclude Include="..\..\include\ham\hamsterdb_stats.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb_int.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb_srv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ham\hamsterdb.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\backend.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\blob.h">
@@ -159,25 +28,22 @@
     <ClInclude Include="..\..\src\btree.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\btree_classic.h">
+    <ClInclude Include="..\..\src\btree_cursor.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\btree_cursor.h">
+    <ClInclude Include="..\..\src\btree_key.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\btree_stats.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\cache.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\changeset.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\config.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\config.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\cuckoo_hash.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\cuckoo_hash_cursor.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\cursor.h">
@@ -198,6 +64,9 @@
     <ClInclude Include="..\..\src\error.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\errorinducer.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\extkeys.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
@@ -207,10 +76,22 @@
     <ClInclude Include="..\..\src\freelist_statistics.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\freelist_v2.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hash-table.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\internal_fwd_decl.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\keys.h">
+    <ClInclude Include="..\..\src\internal_preparation.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\journal.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\journal_entries.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\log.h">
@@ -219,64 +100,34 @@
     <ClInclude Include="..\..\src\mem.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\os.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\packstart.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\packstop.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\page.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\statistics.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\txn.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\util.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\hamsterdb_stats.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\hamsterdb_int.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\hamsterdb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\hamsterdb_srv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\packstop.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ham\packstart.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\messages.pb-c.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\inline_utils.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\freelist_v2.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\fraction.h">
-      <Filter>Header Files\Internal</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\db_locking.h">
+    <ClInclude Include="..\..\src\rb.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\serial.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\internal_preparation.h">
+    <ClInclude Include="..\..\src\txn.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ham\hamsterdb.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\src\txn_cursor.h">
+      <Filter>Header Files\Internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\os.h">
+    <ClInclude Include="..\..\src\util.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\version.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
   </ItemGroup>
@@ -551,9 +402,6 @@
     <None Include="..\..\tools\tests\test.sh">
       <Filter>Misc\scripts</Filter>
     </None>
-    <None Include="hamsterdb_dll_debug.def">
-      <Filter>Source files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source files">
@@ -586,5 +434,106 @@
     <Filter Include="Misc\tests">
       <UniqueIdentifier>{a6666fc8-ebe1-4a8e-8084-d7c8e33b82ac}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\blob.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_check.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_cursor.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_enum.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_erase.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_find.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_insert.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_key.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\btree_stats.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cache.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\changeset.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\cursor.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\db.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\env.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\error.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extkeys.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\freelist.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\freelist_statistics.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\freelist_v2.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hamsterdb.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\journal.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\log.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\mem.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os_posix.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os_win32.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\page.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\precompiled_headers.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\remote.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\txn.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\txn_cursor.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\util.cc">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\device.cc">
+      <Filter>Source files\Devices</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

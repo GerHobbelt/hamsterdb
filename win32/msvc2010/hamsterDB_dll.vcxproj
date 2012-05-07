@@ -147,7 +147,7 @@
     </Midl>
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include;../../src;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -164,7 +164,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>Disabled</Optimization>
     </ClCompile>
     <ResourceCompile>
@@ -208,7 +208,7 @@
     <ClCompile>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include;../../src;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -267,7 +267,7 @@
     </Midl>
     <ClCompile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include;../../src;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -327,7 +327,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include;../../src;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -343,7 +343,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -389,7 +389,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include;../../src;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;CODE_ANALYSIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -405,7 +405,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <OmitFramePointers>true</OmitFramePointers>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -451,7 +451,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>../../include;../../src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include;../../src;../../3rdparty/boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -467,7 +467,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -494,109 +494,44 @@
     <ClInclude Include="..\..\include\ham\hamsterdb_int.h" />
     <ClInclude Include="..\..\include\ham\hamsterdb_srv.h" />
     <ClInclude Include="..\..\include\ham\hamsterdb_stats.h" />
-    <ClInclude Include="..\..\include\ham\packstart.h" />
-    <ClInclude Include="..\..\include\ham\packstop.h" />
     <ClInclude Include="..\..\include\ham\types.h" />
     <ClInclude Include="..\..\src\backend.h" />
     <ClInclude Include="..\..\src\blob.h" />
     <ClInclude Include="..\..\src\btree.h" />
-    <ClInclude Include="..\..\src\btree_classic.h" />
     <ClInclude Include="..\..\src\btree_cursor.h" />
+    <ClInclude Include="..\..\src\btree_key.h" />
+    <ClInclude Include="..\..\src\btree_stats.h" />
     <ClInclude Include="..\..\src\cache.h" />
+    <ClInclude Include="..\..\src\changeset.h" />
     <ClInclude Include="..\..\src\config.h" />
-    <ClInclude Include="..\..\src\cuckoo_hash.h" />
-    <ClInclude Include="..\..\src\cuckoo_hash_cursor.h" />
     <ClInclude Include="..\..\src\cursor.h" />
     <ClInclude Include="..\..\src\db.h" />
-    <ClInclude Include="..\..\src\db_locking.h" />
     <ClInclude Include="..\..\src\device.h" />
     <ClInclude Include="..\..\src\endianswap.h" />
     <ClInclude Include="..\..\src\env.h" />
     <ClInclude Include="..\..\src\error.h" />
+    <ClInclude Include="..\..\src\errorinducer.h" />
     <ClInclude Include="..\..\src\extkeys.h" />
-    <ClInclude Include="..\..\src\fraction.h" />
     <ClInclude Include="..\..\src\freelist.h" />
     <ClInclude Include="..\..\src\freelist_statistics.h" />
     <ClInclude Include="..\..\src\freelist_v2.h" />
-    <ClInclude Include="..\..\src\inline_utils.h" />
+    <ClInclude Include="..\..\src\hash-table.h" />
     <ClInclude Include="..\..\src\internal_fwd_decl.h" />
     <ClInclude Include="..\..\src\internal_preparation.h" />
-    <ClInclude Include="..\..\src\keys.h" />
+    <ClInclude Include="..\..\src\journal.h" />
+    <ClInclude Include="..\..\src\journal_entries.h" />
     <ClInclude Include="..\..\src\log.h" />
     <ClInclude Include="..\..\src\mem.h" />
-    <ClInclude Include="..\..\src\messages.pb-c.h" />
     <ClInclude Include="..\..\src\os.h" />
+    <ClInclude Include="..\..\src\packstart.h" />
+    <ClInclude Include="..\..\src\packstop.h" />
     <ClInclude Include="..\..\src\page.h" />
+    <ClInclude Include="..\..\src\rb.h" />
     <ClInclude Include="..\..\src\serial.h" />
-    <ClInclude Include="..\..\src\statistics.h" />
     <ClInclude Include="..\..\src\txn.h" />
+    <ClInclude Include="..\..\src\txn_cursor.h" />
     <ClInclude Include="..\..\src\util.h" />
     <ClInclude Include="..\..\src\version.h" />
-    <ClInclude Include="..\..\config.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\blob.c" />
-    <ClCompile Include="..\..\src\btree.c" />
-    <ClCompile Include="..\..\src\btree_check.c" />
-    <ClCompile Include="..\..\src\btree_cursor.c" />
-    <ClCompile Include="..\..\src\btree_enum.c" />
-    <ClCompile Include="..\..\src\btree_erase.c" />
-    <ClCompile Include="..\..\src\btree_find.c" />
-    <ClCompile Include="..\..\src\btree_insert.c" />
-    <ClCompile Include="..\..\src\btree_time_compressed_a_la_PI.c" />
-    <ClCompile Include="..\..\src\cache.c" />
-    <ClCompile Include="..\..\src\cuckoo_hash.c" />
-    <ClCompile Include="..\..\src\db.c" />
-    <ClCompile Include="..\..\src\env.c" />
-    <ClCompile Include="..\..\src\error.c" />
-    <ClCompile Include="..\..\src\extkeys.c" />
-    <ClCompile Include="..\..\src\freelist.c" />
-    <ClCompile Include="..\..\src\freelist_statistics.c" />
-    <ClCompile Include="..\..\src\freelist_v2.c" />
-    <ClCompile Include="..\..\src\hamsterdb.c" />
-    <ClCompile Include="..\..\src\keys.c" />
-    <ClCompile Include="..\..\src\log.c" />
-    <ClCompile Include="..\..\src\mem.c" />
-    <ClCompile Include="..\..\src\os_posix.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\os_win32.c" />
-    <ClCompile Include="..\..\src\page.c" />
-    <ClCompile Include="..\..\src\precompiled_headers.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\src\statistics.c" />
-    <ClCompile Include="..\..\src\txn.c" />
-    <ClCompile Include="..\..\src\udb_digital_trie.c" />
-    <ClCompile Include="..\..\src\util.c" />
-    <ClCompile Include="..\..\src\whole_program_code_optimization.c" />
-    <ClCompile Include="..\..\src\devices\cachedev.c" />
-    <ClCompile Include="..\..\src\devices\compression.c" />
-    <ClCompile Include="..\..\src\devices\crypter.c" />
-    <ClCompile Include="..\..\src\devices\db_partitioner.c" />
-    <ClCompile Include="..\..\src\device.c" />
-    <ClCompile Include="..\..\src\devices\event_sender.c" />
-    <ClCompile Include="..\..\src\devices\field_partitioner.c" />
-    <ClCompile Include="..\..\src\devices\file_per_rid.c" />
-    <ClCompile Include="..\..\src\devices\flashmem.c" />
-    <ClCompile Include="..\..\src\devices\flatfile.c" />
-    <ClCompile Include="..\..\src\devices\graph_mgr.c" />
-    <ClCompile Include="..\..\src\devices\https.c" />
-    <ClCompile Include="..\..\src\devices\key_partitioner.c" />
-    <ClCompile Include="..\..\src\devices\logger_swapper.c" />
-    <ClCompile Include="..\..\src\devices\mallocmem.c" />
-    <ClCompile Include="..\..\src\devices\rid_partitioner.c" />
-    <ClCompile Include="..\..\src\devices\stream_compression.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\AUTHORS" />
@@ -689,7 +624,6 @@
     <None Include="..\..\unittests\Makefile.am" />
     <None Include="..\..\unittests\valgrind.supp" />
     <None Include="..\README.TXT" />
-    <None Include="hamsterdb_dll_debug.def" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="3rdparty_aes.vcxproj">
@@ -700,6 +634,48 @@
       <Project>{ab39816e-52c4-44ce-b8dd-604dca380173}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\blob.cc" />
+    <ClCompile Include="..\..\src\btree.cc" />
+    <ClCompile Include="..\..\src\btree_check.cc" />
+    <ClCompile Include="..\..\src\btree_cursor.cc" />
+    <ClCompile Include="..\..\src\btree_enum.cc" />
+    <ClCompile Include="..\..\src\btree_erase.cc" />
+    <ClCompile Include="..\..\src\btree_find.cc" />
+    <ClCompile Include="..\..\src\btree_insert.cc" />
+    <ClCompile Include="..\..\src\btree_key.cc" />
+    <ClCompile Include="..\..\src\btree_stats.cc" />
+    <ClCompile Include="..\..\src\cache.cc" />
+    <ClCompile Include="..\..\src\changeset.cc" />
+    <ClCompile Include="..\..\src\cursor.cc" />
+    <ClCompile Include="..\..\src\db.cc" />
+    <ClCompile Include="..\..\src\device.cc" />
+    <ClCompile Include="..\..\src\env.cc" />
+    <ClCompile Include="..\..\src\error.cc" />
+    <ClCompile Include="..\..\src\extkeys.cc" />
+    <ClCompile Include="..\..\src\freelist.cc" />
+    <ClCompile Include="..\..\src\freelist_statistics.cc" />
+    <ClCompile Include="..\..\src\freelist_v2.cc" />
+    <ClCompile Include="..\..\src\hamsterdb.cc" />
+    <ClCompile Include="..\..\src\journal.cc" />
+    <ClCompile Include="..\..\src\log.cc" />
+    <ClCompile Include="..\..\src\mem.cc" />
+    <ClCompile Include="..\..\src\os_posix.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\os_win32.cc" />
+    <ClCompile Include="..\..\src\page.cc" />
+    <ClCompile Include="..\..\src\precompiled_headers.cc" />
+    <ClCompile Include="..\..\src\remote.cc" />
+    <ClCompile Include="..\..\src\txn.cc" />
+    <ClCompile Include="..\..\src\txn_cursor.cc" />
+    <ClCompile Include="..\..\src\util.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

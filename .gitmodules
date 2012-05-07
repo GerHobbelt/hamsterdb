@@ -1,0 +1,3 @@
+[submodule "3rdparty/boost"]
+	path = 3rdparty/boost
+	url = git@github.com:GerHobbelt/boost-svn.git
