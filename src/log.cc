@@ -25,14 +25,10 @@
 #include "util.h"
 
 
-Log::Log(Environment *env, ham_u32_t flags)
-: m_env(env), m_flags(flags), m_lsn(0), m_fd(HAM_INVALID_FD)
-{
-}
-
 ham_status_t
-Log::create(void)
+Log::create()
 {
+    ScopedLock lock(m_mutex);
     Log::Header header;
     ham_status_t st;
     std::string path=get_path();
@@ -47,7 +43,7 @@ Log::create(void)
 
     st=os_write(m_fd, &header, sizeof(header));
     if (st) {
-        close();
+        close_nolock();
         return (st);
     }
 
@@ -55,8 +51,9 @@ Log::create(void)
 }
 
 ham_status_t
-Log::open(void)
+Log::open()
 {
+    ScopedLock lock(m_mutex);
     Log::Header header;
     std::string path=get_path();
     ham_status_t st;
@@ -64,19 +61,19 @@ Log::open(void)
     /* open the file */
     st=os_open(path.c_str(), 0, &m_fd);
     if (st) {
-        close();
+        close_nolock();
         return (st);
     }
 
     /* check the file header with the magic */
     st=os_pread(m_fd, 0, &header, sizeof(header));
     if (st) {
-        close();
+        close_nolock();
         return (st);
     }
     if (header.magic!=HEADER_MAGIC) {
         ham_trace(("logfile has unknown magic or is corrupt"));
-        close();
+        close_nolock();
         return (HAM_LOG_INV_FILE_HEADER);
     }
 
@@ -86,6 +83,7 @@ Log::open(void)
     return (0);
 }
 
+<<<<<<< HEAD
 bool
 Log::is_empty(void)
 {
@@ -116,6 +114,8 @@ Log::clear(void)
     return (os_seek(m_fd, sizeof(Log::Header), HAM_OS_SEEK_SET));
 }
 
+=======
+>>>>>>> remotes/cruppstahl/wip/cache
 ham_status_t
 Log::get_entry(Log::Iterator *iter, Log::Entry *entry, ham_u8_t **data)
 {
@@ -172,7 +172,7 @@ Log::get_entry(Log::Iterator *iter, Log::Entry *entry, ham_u8_t **data)
 }
 
 ham_status_t
-Log::close(ham_bool_t noclear)
+Log::close_nolock(ham_bool_t noclear)
 {
     ham_status_t st=0;
     Log::Header header;
@@ -186,10 +186,10 @@ Log::close(ham_bool_t noclear)
         return (st);
 
     if (!noclear)
-        clear();
+        clear_nolock();
 
     if (m_fd!=HAM_INVALID_FD) {
-        if ((st=os_close(m_fd, 0)))
+        if ((st=os_close(m_fd)))
             return (st);
         m_fd=HAM_INVALID_FD;
     }
@@ -200,6 +200,7 @@ Log::close(ham_bool_t noclear)
 ham_status_t
 Log::append_page(Page *page, ham_u64_t lsn, ham_size_t page_count)
 {
+    ScopedLock lock(m_mutex);
     ham_status_t st=0;
     ham_file_filter_t *head=m_env->get_file_filter();
     ham_u8_t *p;
@@ -240,6 +241,7 @@ Log::append_page(Page *page, ham_u64_t lsn, ham_size_t page_count)
 ham_status_t
 Log::recover()
 {
+    ScopedLock lock(m_mutex);
     ham_status_t st;
     Page *page;
     Device *device=m_env->get_device();
@@ -340,7 +342,7 @@ Log::recover()
 
 clear:
     /* and finally clear the log */
-    st=clear();
+    st=clear_nolock();
     if (st) {
         ham_log(("unable to clear logfiles; please manually delete the "
                 ".log0 file of this Database, then open again."));
@@ -365,6 +367,7 @@ bail:
 }
 
 ham_status_t
+<<<<<<< HEAD
 Log::flush(void)
 {
     return (os_flush(m_fd));
@@ -372,6 +375,9 @@ Log::flush(void)
 
 ham_status_t
 Log::append_write(ham_u64_t lsn, ham_u32_t flags, ham_offset_t offset,
+=======
+Log::append_write(ham_u64_t lsn, ham_u32_t flags, ham_offset_t offset, 
+>>>>>>> remotes/cruppstahl/wip/cache
                     ham_u8_t *data, ham_size_t size)
 {
     Log::Entry entry;

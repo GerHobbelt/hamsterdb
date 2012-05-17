@@ -171,11 +171,7 @@ _local_fun_create(Environment *env, const char *filename,
 
     /* initialize the device if it does not yet exist */
     if (!env->get_device()) {
-        if (flags&HAM_IN_MEMORY_DB)
-            device=new InMemoryDevice(env, flags);
-        else
-            device=new FileDevice(env, flags);
-
+        device=new Device(env, flags);
         device->set_pagesize(env->get_pagesize());
         env->set_device(device);
 
@@ -361,11 +357,7 @@ _local_fun_open(Environment *env, const char *filename, ham_u32_t flags,
 
     /* initialize the device if it does not yet exist */
     if (!env->get_device()) {
-        if (flags&HAM_IN_MEMORY_DB)
-            device=new InMemoryDevice(env, flags);
-        else
-            device=new FileDevice(env, flags);
-
+        device=new Device(env, flags);
         env->set_device(device);
     }
     else {
@@ -1498,23 +1490,22 @@ __flush_txn(Environment *env, Transaction *txn)
                 st=btree_cursor_insert(c1->get_btree_cursor(), 
                         txn_opnode_get_key(node), txn_op_get_record(op), 
                         txn_op_get_orig_flags(op)|additional_flag);
-                if (st)
-                    goto bail;
+                if (!st) {
+                    /* uncouple the cursor from the txn-op, and remove it */
+                    txn_op_remove_cursor(op, tc1);
+                    c1->couple_to_btree();
+                    c1->set_to_nil(Cursor::CURSOR_TXN);
 
-                /* uncouple the cursor from the txn-op, and remove it */
-                txn_op_remove_cursor(op, tc1);
-                c1->couple_to_btree();
-                c1->set_to_nil(Cursor::CURSOR_TXN);
-
-                /* all other (btree) cursors need to be coupled to the same 
-                 * item as the first one. */
-                while ((tc2=txn_op_get_cursors(op))) {
-                    txn_op_remove_cursor(op, tc2);
-                    c2=txn_cursor_get_parent(tc2);
-                    btree_cursor_couple_to_other(c2->get_btree_cursor(), 
-                                c1->get_btree_cursor());
-                    c2->couple_to_btree();
-                    c2->set_to_nil(Cursor::CURSOR_TXN);
+                    /* all other (btree) cursors need to be coupled to the same 
+                     * item as the first one. */
+                    while ((tc2=txn_op_get_cursors(op))) {
+                        txn_op_remove_cursor(op, tc2);
+                        c2=txn_cursor_get_parent(tc2);
+                        btree_cursor_couple_to_other(c2->get_btree_cursor(), 
+                                    c1->get_btree_cursor());
+                        c2->couple_to_btree();
+                        c2->set_to_nil(Cursor::CURSOR_TXN);
+                    }
                 }
             }
         }
@@ -1530,17 +1521,22 @@ __flush_txn(Environment *env, Transaction *txn)
             }
         }
 
-bail:
+        if (st) {
+            ham_trace(("failed to flush op: %d (%s)", 
+                            (int)st, ham_strerror(st)));
+            env->get_changeset().clear();
+            return (st);
+        }
+
         /* now flush the changeset to disk */
         if (env->get_flags()&HAM_ENABLE_RECOVERY) {
             env->get_changeset().add_page(env->get_header_page());
             st=env->get_changeset().flush(txn_op_get_lsn(op));
-        }
-
-        if (st) {
-            ham_trace(("failed to flush op: %d (%s)", 
-                            (int)st, ham_strerror(st)));
-            return (st);
+            if (st) {
+                ham_trace(("failed to flush op: %d (%s)", 
+                                (int)st, ham_strerror(st)));
+                return (st);
+            }
         }
 
         /* 
@@ -1603,11 +1599,11 @@ env_get_incremented_lsn(Environment *env, ham_u64_t *lsn)
 {
     Journal *j=env->get_journal();
     if (j) {
-        if (j->get_lsn()==0xffffffffffffffffull) {
+        *lsn=j->get_incremented_lsn();
+        if (*lsn==0) {
             ham_log(("journal limits reached (lsn overflow) - please reorg"));
             return (HAM_LIMITS_REACHED);
         }
-        *lsn=j->get_incremented_lsn();
         return (0);
     }
     else {
@@ -1617,65 +1613,32 @@ env_get_incremented_lsn(Environment *env, ham_u64_t *lsn)
 }
 
 static ham_status_t
-__purge_cache_max20(Environment *env)
+purge_callback(Page *page)
 {
-    ham_status_t st;
-    Page *page;
-    Cache *cache=env->get_cache();
-    unsigned i, max_pages=(unsigned)cache->get_cur_elements();
+    ham_status_t st=page->uncouple_all_cursors();
+    if (st)
+        return (st);
 
-    /* don't remove pages from the cache if it's an in-memory database */
-    if ((env->get_flags()&HAM_IN_MEMORY_DB))
-        return (0);
-    if (!cache->is_too_big())
-        return (0);
+    st=page->flush();
+    if (st)
+        return (st);
 
-    /* 
-     * max_pages specifies how many pages we try to flush in case the
-     * cache is full. some benchmarks showed that 10% is a good value. 
-     *
-     * if STRICT cache limits are enabled then purge as much as we can
-     */
-    if (!(env->get_flags()&HAM_CACHE_STRICT)) {
-        max_pages/=10;
-        if (max_pages==0)
-            max_pages=1;
-        /* but still we set an upper limit to avoid IO spikes */
-        else if (max_pages>20)
-            max_pages=20;
-    }
-
-    /* now free those pages */
-    for (i=0; i<max_pages; i++) {
-        page=cache->get_unused_page();
-        if (!page) {
-            if (i==0 && (env->get_flags()&HAM_CACHE_STRICT)) 
-                return (HAM_CACHE_FULL);
-            else
-                break;
-        }
-
-        st=db_write_page_and_delete(page, 0);
-        if (st)
-            return (st);
-    }
-
-    if (i==max_pages && max_pages!=0)
-        return (HAM_LIMITS_REACHED);
+    st=page->free();
+    if (st)
+        return (st);
+    delete page;
     return (0);
 }
 
 ham_status_t
 env_purge_cache(Environment *env)
 {
-    ham_status_t st;
     Cache *cache=env->get_cache();
 
-    do {
-        st=__purge_cache_max20(env);
-        if (st && st!=HAM_LIMITS_REACHED)
-            return st;
-    } while (st==HAM_LIMITS_REACHED && cache->is_too_big());
+    /* in-memory-db: don't remove the pages or they would be lost */
+    if (env->get_flags()&HAM_IN_MEMORY_DB)
+        return (0);
 
-    return (0);
+    return (cache->purge(purge_callback,
+                (env->get_flags()&HAM_CACHE_STRICT) != 0));
 }

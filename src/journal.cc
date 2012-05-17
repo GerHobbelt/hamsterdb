@@ -25,9 +25,13 @@
 #include "util.h"
 #include "journal.h"
 
+<<<<<<< HEAD
 #define JOURNAL_DEFAULT_THRESHOLD   16
 
 static ham_size_t
+=======
+static ham_size_t 
+>>>>>>> remotes/cruppstahl/wip/cache
 __get_aligned_entry_size(ham_size_t s)
 {
     s += 8-1;
@@ -35,6 +39,7 @@ __get_aligned_entry_size(ham_size_t s)
     return (s);
 }
 
+<<<<<<< HEAD
 Journal::Journal(Environment *env)
   : m_env(env), m_current_fd(0), m_lsn(0), m_last_cp_lsn(0),
     m_threshold(JOURNAL_DEFAULT_THRESHOLD)
@@ -47,9 +52,12 @@ Journal::Journal(Environment *env)
     m_closed_txn[1]=0;
 }
 
+=======
+>>>>>>> remotes/cruppstahl/wip/cache
 ham_status_t
-Journal::create(void)
+Journal::create()
 {
+    ScopedLock lock(m_mutex);
     int i;
     Header header;
     ham_status_t st;
@@ -64,14 +72,14 @@ Journal::create(void)
         std::string path=get_path(i);
         st=os_create(path.c_str(), 0, 0644, &m_fd[i]);
         if (st) {
-            (void)close();
+            (void)close_nolock();
             return (st);
         }
 
         /* and write the magic */
         st=os_write(m_fd[i], &header, sizeof(header));
         if (st) {
-            (void)close();
+            (void)close_nolock();
             return (st);
         }
     }
@@ -80,8 +88,9 @@ Journal::create(void)
 }
 
 ham_status_t
-Journal::open(void)
+Journal::open()
 {
+    ScopedLock lock(m_mutex);
     int i;
     Header header;
     JournalEntry entry;
@@ -97,19 +106,19 @@ Journal::open(void)
         std::string path=get_path(i);
         st=os_open(path.c_str(), 0, &m_fd[i]);
         if (st) {
-            (void)close();
+            (void)close_nolock();
             return (st);
         }
 
         /* check the magic */
         st=os_pread(m_fd[i], 0, &header, sizeof(header));
         if (st) {
-            (void)close();
+            (void)close_nolock();
             return (st);
         }
         if (header.magic!=HEADER_MAGIC) {
             ham_trace(("journal has unknown magic or is corrupt"));
-            (void)close();
+            (void)close_nolock();
             return (HAM_LOG_INV_FILE_HEADER);
         }
 
@@ -126,7 +135,7 @@ Journal::open(void)
         ham_offset_t size;
         st=os_get_filesize(m_fd[i], &size);
         if (st) {
-            (void)close();
+            (void)close_nolock();
             return (st);
         }
 
@@ -134,7 +143,7 @@ Journal::open(void)
             st=os_pread(m_fd[i], size-sizeof(JournalEntry),
                         &entry, sizeof(entry));
             if (st) {
-                (void)close();
+                (void)close_nolock();
                 return (st);
             }
             lsn[i]=entry.lsn;
@@ -157,6 +166,7 @@ Journal::open(void)
     return (0);
 }
 
+<<<<<<< HEAD
 bool
 Journal::is_empty(void)
 {
@@ -175,10 +185,13 @@ Journal::is_empty(void)
     return (true);
 }
 
+=======
+>>>>>>> remotes/cruppstahl/wip/cache
 ham_status_t
 Journal::append_txn_begin(Transaction *txn, Environment *env, 
                 const char *name, ham_u64_t lsn)
 {
+    ScopedLock lock(m_mutex);
     ham_status_t st;
     JournalEntry entry;
     int cur=m_current_fd;
@@ -238,6 +251,7 @@ Journal::append_txn_begin(Transaction *txn, Environment *env,
 ham_status_t
 Journal::append_txn_abort(Transaction *txn, ham_u64_t lsn)
 {
+    ScopedLock lock(m_mutex);
     int idx;
     ham_status_t st;
     JournalEntry entry;
@@ -263,6 +277,7 @@ Journal::append_txn_abort(Transaction *txn, ham_u64_t lsn)
 ham_status_t
 Journal::append_txn_commit(Transaction *txn, ham_u64_t lsn)
 {
+    ScopedLock lock(m_mutex);
     int idx;
     ham_status_t st;
     JournalEntry entry;
@@ -290,6 +305,7 @@ Journal::append_insert(Database *db, Transaction *txn,
                 ham_key_t *key, ham_record_t *record, ham_u32_t flags, 
                 ham_u64_t lsn)
 {
+    ScopedLock lock(m_mutex);
     char padding[16]={0};
     JournalEntry entry;
     JournalEntryInsert insert;
@@ -321,6 +337,7 @@ ham_status_t
 Journal::append_erase(Database *db, Transaction *txn, ham_key_t *key, 
                 ham_u32_t dupe, ham_u32_t flags, ham_u64_t lsn)
 {
+    ScopedLock lock(m_mutex);
     char padding[16]={0};
     JournalEntry entry;
     JournalEntryErase erase;
@@ -345,6 +362,7 @@ Journal::append_erase(Database *db, Transaction *txn, ham_key_t *key,
 }
 
 ham_status_t
+<<<<<<< HEAD
 Journal::clear()
 {
     ham_status_t st;
@@ -359,6 +377,8 @@ Journal::clear()
 }
 
 ham_status_t
+=======
+>>>>>>> remotes/cruppstahl/wip/cache
 Journal::get_entry(Iterator *iter, JournalEntry *entry, void **aux)
 {
     ham_status_t st;
@@ -435,7 +455,7 @@ Journal::get_entry(Iterator *iter, JournalEntry *entry, void **aux)
 }
 
 ham_status_t
-Journal::close(ham_bool_t noclear)
+Journal::close_nolock(ham_bool_t noclear)
 {
     int i;
     ham_status_t st=0;
@@ -443,7 +463,7 @@ Journal::close(ham_bool_t noclear)
     if (!noclear) {
         Header header;
 
-        (void)clear();
+        (void)clear_nolock();
 
         /* update the header page of file 0 to store the lsn */
         header.magic=HEADER_MAGIC;
@@ -454,7 +474,7 @@ Journal::close(ham_bool_t noclear)
 
     for (i=0; i<2; i++) {
         if (m_fd[i]!=HAM_INVALID_FD) {
-            (void)os_close(m_fd[i], 0);
+            (void)os_close(m_fd[i]);
             m_fd[i]=HAM_INVALID_FD;
         }
     }
@@ -551,6 +571,7 @@ __abort_uncommitted_txns(Environment *env)
 ham_status_t
 Journal::recover()
 {
+    ScopedLock lock(m_mutex);
     ham_status_t st=0;
     ham_u64_t start_lsn=m_env->get_log()->get_lsn();
     Iterator it;
@@ -662,8 +683,10 @@ Journal::recover()
             st=__recover_get_db(m_env, entry.dbname, &db);
             if (st)
                 break;
+            lock.unlock();
             st=ham_insert((ham_db_t *)db, (ham_txn_t *)txn, 
                     &key, &record, ins->insert_flags|HAM_DONT_LOCK);
+            lock.lock();
             break;
         }
         case ENTRY_TYPE_ERASE: {
@@ -688,8 +711,10 @@ Journal::recover()
                 break;
             key.data=e->get_key_data();
             key.size=e->key_size;
+            lock.unlock();
             st=ham_erase((ham_db_t *)db, (ham_txn_t *)txn, &key, 
                             e->erase_flags|HAM_DONT_LOCK);
+            lock.lock();
             // key might have already been erased when the changeset
             // was flushed
             if (st==HAM_KEY_NOT_FOUND)
@@ -727,7 +752,7 @@ bail:
         return (st);
 
     /* clear the journal files */
-    st=clear();
+    st=clear_nolock();
     if (st) {
         ham_log(("unable to clear journal; please manually delete the "
                 "journal files before re-opening the Database"));

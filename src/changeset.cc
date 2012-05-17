@@ -31,6 +31,7 @@ void (*g_CHANGESET_POST_LOG_HOOK)(void);
 void
 Changeset::add_page(Page *page)
 {
+    ScopedLock lock(m_mutex);
     if (page->is_in_list(m_head, Page::LIST_CHANGESET))
         return;
 
@@ -48,6 +49,7 @@ Changeset::add_page(Page *page)
 Page *
 Changeset::get_page(ham_offset_t pageid)
 {
+    ScopedLock lock(m_mutex);
     Page *page=m_head;
 
     while (page) {
@@ -63,7 +65,7 @@ Changeset::get_page(ham_offset_t pageid)
 }
 
 void
-Changeset::clear(void)
+Changeset::clear_nolock()
 {
     Page *n, *p=m_head;
     while (p) {
@@ -107,6 +109,7 @@ Changeset::log_bucket(Page **bucket, ham_size_t bucket_size,
 ham_status_t
 Changeset::flush(ham_u64_t lsn)
 {
+    ScopedLock lock(m_mutex);
     ham_status_t st;
     Page *n, *p=m_head;
     ham_size_t page_count=0;
@@ -159,7 +162,7 @@ Changeset::flush(ham_u64_t lsn)
 
     if (page_count==0) {
         induce(ErrorInducer::CHANGESET_FLUSH);
-        clear();
+        clear_nolock();
         return (0);
     }
 
@@ -201,18 +204,16 @@ Changeset::flush(ham_u64_t lsn)
     /* now write all the pages to the file; if any of these writes fail,
      * we can still recover from the log */
     while (p) {
-        if (p->is_dirty()) {
-            st=db_flush_page(env, p);
-            if (st)
-                return (st);
-        }
+        st=p->flush();
+        if (st)
+            return (st);
         p=p->get_next(Page::LIST_CHANGESET);
 
         induce(ErrorInducer::CHANGESET_FLUSH);
     }
 
     /* done - we can now clear the changeset and the log */
-    clear();
+    clear_nolock();
     return (log->clear());
 }
 
