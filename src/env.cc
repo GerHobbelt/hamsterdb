@@ -48,8 +48,7 @@ Environment::Environment()
   : m_file_mode(0), m_txn_id(0), m_context(0), m_device(0), m_cache(0), 
     m_alloc(0), m_hdrpage(0), m_oldest_txn(0), m_newest_txn(0), m_log(0), 
     m_journal(0), m_flags(0), m_databases(0), m_pagesize(0), m_cachesize(0),
-    m_max_databases_cached(0), m_is_active(false), m_is_legacy(false),
-    m_file_filters(0)
+    m_max_databases_cached(0), m_is_active(false), m_file_filters(0)
 {
 #if HAM_ENABLE_REMOTE
     m_curl=0;
@@ -182,11 +181,8 @@ _local_fun_create(Environment *env, const char *filename,
     }
     else {
         device=env->get_device();
-        ham_assert(device->get_pagesize(), (0));
-        ham_assert(env->get_pagesize() == device->get_pagesize(), (0));
     }
     ham_assert(device == env->get_device(), (0));
-    ham_assert(env->get_pagesize() == device->get_pagesize(), (""));
 
     /* create the file */
     st=device->create(filename, flags, mode);
@@ -447,24 +443,20 @@ _local_fun_open(Environment *env, const char *filename, ham_u32_t flags,
             goto fail_with_fake_cleansing;
         }
 
-        /* 
-         * check the database version
-         *
-         * if this Database is from 1.0.x: force the PRE110-DAM
-         * TODO this is done again some lines below; remove this and
-         * replace it with a function __is_supported_version()
-         */
+        /* check the database version; everything > 1.0.9 is ok */
         if (envheader_get_version(hdr, 0)>HAM_VERSION_MAJ ||
                 (envheader_get_version(hdr, 0)==HAM_VERSION_MAJ 
                     && envheader_get_version(hdr, 1)>HAM_VERSION_MIN)) {
             ham_log(("invalid file version"));
-            st = HAM_INV_FILE_VERSION;
+            st=HAM_INV_FILE_VERSION;
             goto fail_with_fake_cleansing;
         }
         else if (envheader_get_version(hdr, 0) == 1 &&
             envheader_get_version(hdr, 1) == 0 &&
             envheader_get_version(hdr, 2) <= 9) {
-            env->set_legacy(true);
+            ham_log(("invalid file version; < 1.0.9 is not supported"));
+            st=HAM_INV_FILE_VERSION;
+            goto fail_with_fake_cleansing;
         }
 
         st=0;
@@ -604,10 +596,10 @@ _local_fun_erase_db(Environment *env, ham_u16_t name, ham_u32_t flags)
 
     /* logging enabled? then the changeset and the log HAS to be empty */
 #ifdef HAM_DEBUG
-        if (env->get_flags()&HAM_ENABLE_RECOVERY) {
-            ham_assert(env->get_changeset().is_empty(), (""));
-            ham_assert(env->get_log()->is_empty(), (""));
-        }
+    if (env->get_flags()&HAM_ENABLE_RECOVERY) {
+        ham_assert(env->get_changeset().is_empty(), (""));
+        ham_assert(env->get_log()->is_empty(), (""));
+    }
 #endif
 
     /*
@@ -619,8 +611,10 @@ _local_fun_erase_db(Environment *env, ham_u16_t name, ham_u32_t flags)
      */
     context.db=db;
     be=db->get_backend();
-    if (!be || !be->is_active())
+    if (!be || !be->is_active()) {
+        ham_log(("database is not initialized"));
         return (HAM_INTERNAL_ERROR);
+    }
 
     st=be->enumerate(__free_inmemory_blobs_cb, &context);
     if (st) {
@@ -1040,12 +1034,6 @@ _local_fun_create_db(Environment *env, Database *db,
     env->set_dirty(true);
 
     /* finally calculate and store the data access mode */
-    if (env->get_version(0) == 1 &&
-        env->get_version(1) == 0 &&
-        env->get_version(2) <= 9) {
-        dam |= HAM_DAM_ENFORCE_PRE110_FORMAT;
-        env->set_legacy(true);
-    }
     if (!dam) {
         dam=(flags&HAM_RECORD_NUMBER)
             ? HAM_DAM_SEQUENTIAL_INSERT 
@@ -1239,12 +1227,6 @@ _local_fun_open_db(Environment *env, Database *db,
     }
 
     /* finally calculate and store the data access mode */
-    if (env->get_version(0) == 1 &&
-        env->get_version(1) == 0 &&
-        env->get_version(2) <= 9) {
-        dam |= HAM_DAM_ENFORCE_PRE110_FORMAT;
-        env->set_legacy(true);
-    }
     if (!dam) {
         dam=(db->get_rt_flags()&HAM_RECORD_NUMBER)
             ? HAM_DAM_SEQUENTIAL_INSERT 
@@ -1323,19 +1305,7 @@ _local_fun_txn_commit(Environment *env, Transaction *txn, ham_u32_t flags)
             return (st);
     }
 
-    st=txn_commit(txn, flags);
-
-    /* on success: flush all open file handles if HAM_WRITE_THROUGH is 
-     * enabled; then purge caches */
-    if (st==0) {
-        if (env->get_flags()&HAM_WRITE_THROUGH) {
-            Device *device=env->get_device();
-            (void)env->get_log()->flush();
-            (void)device->flush();
-        }
-    }
-
-    return (st);
+    return (txn_commit(txn, flags));
 }
 
 static ham_status_t
@@ -1355,25 +1325,14 @@ _local_fun_txn_abort(Environment *env, Transaction *txn, ham_u32_t flags)
             && env->get_flags()&HAM_ENABLE_TRANSACTIONS) {
         ham_u64_t lsn;
         st=env_get_incremented_lsn(env, &lsn);
-        if (st==0)
-            st=env->get_journal()->append_txn_abort(txn, lsn);
+        if (st)
+            return (st);
+        st=env->get_journal()->append_txn_abort(txn, lsn);
+        if (st)
+            return (st);
     }
 
-    if (st==0)
-        st=txn_abort(txn, flags);
-
-
-    /* on success: flush all open file handles if HAM_WRITE_THROUGH is 
-     * enabled; then purge caches */
-    if (st==0) {
-        if (env->get_flags()&HAM_WRITE_THROUGH) {
-            Device *device=env->get_device();
-            (void)env->get_log()->flush();
-            (void)device->flush();
-        }
-    }
-
-    return (st);
+    return (txn_abort(txn, flags));
 }
 
 ham_status_t
@@ -1446,8 +1405,7 @@ __flush_txn(Environment *env, Transaction *txn)
     while (op) {
         txn_opnode_t *node=txn_op_get_node(op);
         Backend *be=txn_opnode_get_db(node)->get_backend();
-        if (!be)
-            return (HAM_INTERNAL_ERROR);
+        ham_assert(be!=0, (""));
 
         /* make sure that this op was not yet flushed - this would be
          * a serious bug */

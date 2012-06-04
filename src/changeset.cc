@@ -114,6 +114,9 @@ Changeset::flush(ham_u64_t lsn)
     Page *n, *p=m_head;
     ham_size_t page_count=0;
 
+    if (!p)
+        return (0);
+
     induce(ErrorInducer::CHANGESET_FLUSH);
 
     m_blobs_size=0;
@@ -168,13 +171,17 @@ Changeset::flush(ham_u64_t lsn)
 
     induce(ErrorInducer::CHANGESET_FLUSH);
 
+    bool log_written=false;
+
     // if "others" is not empty then log everything because we don't really
     // know what's going on in this operation. otherwise we only need to log
-    // if there's more than one index page
+    // if there's more than one page in a bucket:
     //
-    // otherwise skip blobs and freelists because they're idempotent (albeit
-    // it's possible that some data is lost, but that's no big deal)
-    if (m_others_size || m_indices_size>1) {
+    // - if there's more than one freelist page modified then the freelist
+    //   operation would be huge and we rather not risk to lose that much space
+    // - if there's more than one index operation then the operation must 
+    //   be atomic
+    if (m_others_size || m_indices_size>1 || m_freelists_size>1) {
         if ((st=log_bucket(m_blobs, m_blobs_size, lsn, page_count)))
             return (st);
         if ((st=log_bucket(m_freelists, m_freelists_size, lsn, page_count)))
@@ -183,16 +190,21 @@ Changeset::flush(ham_u64_t lsn)
             return (st);
         if ((st=log_bucket(m_others, m_others_size, lsn, page_count)))
             return (st);
+        log_written=true;
     }
 
-    induce(ErrorInducer::CHANGESET_FLUSH);
-
-    // now flush all modified pages to disk
     p=m_head;
 
     Environment *env=p->get_device()->get_env();
     Log *log=env->get_log();
 
+    /* flush the file handles (if required) */
+    if (env->get_flags()&HAM_WRITE_THROUGH && log_written)
+        env->get_log()->flush();
+
+    induce(ErrorInducer::CHANGESET_FLUSH);
+
+    // now flush all modified pages to disk
     ham_assert(log!=0, (""));
     ham_assert(env->get_flags()&HAM_ENABLE_RECOVERY, (""));
 
@@ -211,6 +223,10 @@ Changeset::flush(ham_u64_t lsn)
 
         induce(ErrorInducer::CHANGESET_FLUSH);
     }
+
+    /* flush the file handle (if required) */
+    if (env->get_flags()&HAM_WRITE_THROUGH)
+        env->get_device()->flush();
 
     /* done - we can now clear the changeset and the log */
     clear_nolock();

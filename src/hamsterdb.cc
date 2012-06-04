@@ -675,12 +675,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                     ham_trace(("invalid parameter HAM_PARAM_DATA_ACCESS_MODE"));
                     return (HAM_INV_PARAMETER);
                 }
-                if (param->value&HAM_DAM_ENFORCE_PRE110_FORMAT) {
-                    ham_trace(("Data access mode HAM_DAM_ENFORCE_PRE110_FORMAT "
-                                "must not be specified"));
-                    return (HAM_INV_PARAMETER);
-                }
-                if (pdata_access_mode) {
+                if (pdata_access_mode) { 
                     switch (param->value) {
                     case 0: /* ignore 0 */
                         break;
@@ -2286,6 +2281,7 @@ __zlib_before_write_cb(ham_db_t *hdb, ham_record_filter_t *filter,
     }
 
     if (zret!=Z_OK) {
+        ham_log(("zlib compression failed with error %d", (int)zret));
         env->get_allocator()->free(dest);
         return (db->set_error(HAM_INTERNAL_ERROR));
     }
@@ -2342,8 +2338,10 @@ __zlib_after_read_cb(ham_db_t *hdb, ham_record_filter_t *filter,
         ham_assert(origsize==newsize, (""));
         st=0;
     }
-    else
+    else {
+        ham_log(("zlib uncompress failed with error %d", (int)zret));
         st=HAM_INTERNAL_ERROR;
+    }
 
     if (!st)
         record->size=(ham_size_t)newsize;
