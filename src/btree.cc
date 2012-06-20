@@ -130,6 +130,13 @@ btree_calc_maxkeys(ham_size_t pagesize, ham_u16_t keysize)
     return (max&1 ? max-1 : max);
 }
 
+BtreeBackend::BtreeBackend(Database *db, ham_u32_t flags)
+  : Backend(db, flags), m_rootpage(0), m_maxkeys(0),
+    m_keydata1(db->get_env()->get_allocator()),
+    m_keydata2(db->get_env()->get_allocator())
+{
+}
+
 /**                                                                 
  * estimate the number of keys per page, given the keysize          
  */                                                                 
@@ -206,7 +213,6 @@ BtreeBackend::create(ham_u16_t keysize, ham_u32_t flags)
      * and make sure that this number is even
      */
     set_maxkeys((ham_u16_t)maxkeys);
-    set_dirty(true);
     set_keysize(keysize);
     set_flags(flags);
 
@@ -270,15 +276,11 @@ BtreeBackend::open(ham_u32_t flags)
  * @remark this function is called during ham_flush
  */
 ham_status_t
-BtreeBackend::flush()
+BtreeBackend::flush_indexdata()
 {
     Database *db=get_db();
     db_indexdata_t *indexdata=db->get_env()->get_indexdata_ptr(
                                 db->get_indexdata_offset());
-
-    /* nothing to do if the backend was not touched */
-    if (!is_dirty())
-        return (0);
 
     index_set_max_keys(indexdata, get_maxkeys());
     index_set_keysize(indexdata, get_keysize());
@@ -288,7 +290,6 @@ BtreeBackend::flush()
     index_clear_reserved(indexdata);
 
     db->get_env()->set_dirty(true);
-    set_dirty(false);
 
     return (0);
 }
@@ -298,30 +299,11 @@ BtreeBackend::flush()
  *
  * @remark this function is called before the file is closed
  */
-ham_status_t
+void
 BtreeBackend::close()
 {
-    ham_status_t st;
-    Allocator *alloc=get_db()->get_env()->get_allocator();
-
-    /* only flush the backend info if it's dirty */
-    st=flush();
-    if (st)
-        return (st);
-
     /* even when an error occurred, the backend has now been de-activated */
     set_active(false);
-
-    if (get_keydata1()) {
-        alloc->free(get_keydata1());
-        set_keydata1(0);
-    }
-    if (get_keydata2()) {
-        alloc->free(get_keydata2());
-        set_keydata2(0);
-    }
-
-    return (st);
 }
 
 /**
@@ -706,8 +688,7 @@ btree_prepare_key_for_compare(Database *db, int which,
                 btree_key_t *src, ham_key_t *dest)
 {
     BtreeBackend *be=(BtreeBackend *)db->get_backend();
-    Allocator *alloc=be->get_db()->get_env()->get_allocator();
-    void *p;
+    ByteArray *arena;
 
     if (!(key_get_flags(src) & KEY_IS_EXTENDED)) {
         dest->size=key_get_size(src);
@@ -718,20 +699,16 @@ btree_prepare_key_for_compare(Database *db, int which,
     }
 
     dest->size=key_get_size(src);
-    p = which ? be->get_keydata2() : be->get_keydata1();
-    p = alloc->realloc(p, dest->size);
-    if (which) 
-        be->set_keydata2(p); 
-    else 
-        be->set_keydata1(p);
+    arena = which ? be->get_keyarena2() : be->get_keyarena1();
+    arena->resize(dest->size);
 
-    if (!p) {
+    if (!arena->get_ptr()) {
         dest->data=0;
         return (HAM_OUT_OF_MEMORY);
     }
 
-    memcpy(p, key_get_key(src), db_get_keysize(db));
-    dest->data   =p;
+    memcpy(arena->get_ptr(), key_get_key(src), db_get_keysize(db));
+    dest->data   =arena->get_ptr();
     dest->_flags|=KEY_IS_EXTENDED;
     dest->flags |=HAM_KEY_USER_ALLOC;
 

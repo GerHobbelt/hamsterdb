@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or
+ * Free Software Foundation; either version 2 of the License, or 
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -12,14 +12,14 @@
 /**
  * @brief provides forward declarations of internally used types
  *
- * This header file provides these forward declarations to prevent several
- * cyclic dependencies; in particular, the @ref Page is a type used
- * throughout, but a @ref Page contains several other types, which
+ * This header file provides these forward declarations to prevent several 
+ * cyclic dependencies; in particular, the @ref Page is a type used 
+ * throughout, but a @ref Page contains several other types, which 
  * again reference @ref Page pointers either directly or indirectly.
  *
- * To solve this self-referential issue once and for all, all major hamster
- * internal types are forward declared here; when the code requires the actual
- * implementation of a type it can include the related header file any time it
+ * To solve this self-referential issue once and for all, all major hamster 
+ * internal types are forward declared here; when the code requires the actual 
+ * implementation of a type it can include the related header file any time it 
  * wishes.
  *
  * @remark This way of solving the cyclic dependency conundrum has the added
@@ -64,11 +64,8 @@ typedef struct extkey_t extkey_t;
 
 class ExtKeyCache;
 
-struct freelist_entry_t;
-typedef struct freelist_entry_t freelist_entry_t;
-
-struct freelist_cache_t;
-typedef struct freelist_cache_t freelist_cache_t;
+class Freelist;
+struct FreelistEntry;
 
 struct freelist_hints_t;
 typedef struct freelist_hints_t freelist_hints_t;
@@ -91,8 +88,7 @@ typedef struct erase_hints_t erase_hints_t;
 
 #include "packstart.h"
 
-struct freelist_payload_t;
-typedef struct freelist_payload_t freelist_payload_t;
+struct FreelistPayload;
 
 #include "packstop.h"
 

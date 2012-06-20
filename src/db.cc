@@ -561,9 +561,10 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
     ham_assert(0==(flags&~(PAGE_IGNORE_FREELIST|PAGE_CLEAR_WITH_ZERO)), (0));
 
     /* first, we ask the freelist for a page */
-    if (!(flags&PAGE_IGNORE_FREELIST)) {
-        st=freel_alloc_page(&tellpos, env, db);
-        ham_assert(st ? !tellpos : 1, (0));
+    if (!(flags&PAGE_IGNORE_FREELIST) && env->get_freelist()) {
+        st=env->get_freelist()->alloc_page(&tellpos, db);
+        if (st)
+            return (st);
         if (tellpos) {
             ham_assert(tellpos%env->get_pagesize()==0,
                     ("page id %llu is not aligned", tellpos));
@@ -580,8 +581,6 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
             }
             goto done;
         }
-        else if (st)
-            return (st);
     }
 
     if (!page) {
@@ -1781,9 +1780,7 @@ DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key,
         key->size=sizeof(ham_u64_t);
         if (!(flags&HAM_OVERWRITE)) {
             be->set_recno(recno);
-            be->set_dirty(true);
-            be->flush();
-            env->set_dirty(true);
+            be->flush_indexdata();
         }
     }
 
@@ -2145,9 +2142,7 @@ DatabaseImplementationLocal::cursor_insert(Cursor *cursor, ham_key_t *key,
         key->size=sizeof(ham_u64_t);
         if (!(flags&HAM_OVERWRITE)) {
             be->set_recno(recno);
-            be->set_dirty(true);
-            be->flush();
-            env->set_dirty(true);
+            be->flush_indexdata();
         }
     }
 
@@ -2851,17 +2846,10 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
         txn_free_optree(m_db->get_optree());
 
     /* close the backend */
-    if (be && be->is_active()) {
-        st=be->close();
-        if (st && st2==0)
-            st2=st;
-    }
-
     if (be) {
-        ham_assert(!be->is_active(), (0));
+        if (be->is_active())
+            be->close();
         delete be;
-        if (st2==0)
-            st2=st;
         m_db->set_backend(0);
     }
 
