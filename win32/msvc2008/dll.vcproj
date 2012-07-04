@@ -69,6 +69,7 @@
 				AdditionalDependencies="..\..\..\hamsterdb-alien\libcurl\msvc2008\libcurl_x86_debug.lib ..\..\..\hamsterdb-alien\boost\msvc2008\x86\libboost_thread-vc90-mt-gd-1_49.lib ws2_32.lib"
 				OutputFile="$(OutDir)\hamsterdb-2.0.3.dll"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
