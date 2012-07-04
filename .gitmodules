@@ -1,3 +1,6 @@
 [submodule "3rdparty/boost"]
 	path = 3rdparty/boost
 	url = git@github.com:GerHobbelt/boost-svn.git
+[submodule "3rdparty/mongoose"]
+	path = 3rdparty/mongoose
+	url = git@github.com:GerHobbelt/mongoose.git
