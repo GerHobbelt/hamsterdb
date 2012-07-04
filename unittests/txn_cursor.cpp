@@ -160,7 +160,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         node=txn_opnode_create((Database *)m_db, &key);
-        op=txn_opnode_append((Transaction *)txn, node, 
+        op=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_INSERT_DUP, 55, &record);
         BFC_ASSERT(op!=0);
 
@@ -232,7 +232,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         node=txn_opnode_create((Database *)m_db, &key);
-        op=txn_opnode_append((Transaction *)txn, node, 
+        op=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_INSERT_DUP, 55, &record);
         BFC_ASSERT(op!=0);
 
@@ -265,7 +265,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         node=txn_opnode_create((Database *)m_db, &key);
-        op=txn_opnode_append((Transaction *)txn, node, 
+        op=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_INSERT_DUP, 55, &record);
         BFC_ASSERT(op!=0);
 
@@ -292,7 +292,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         node=txn_opnode_create((Database *)m_db, &key);
-        op=txn_opnode_append((Transaction *)txn, node, 
+        op=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_INSERT_DUP, 55, &record);
         BFC_ASSERT(op!=0);
 

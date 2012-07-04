@@ -31,15 +31,15 @@
  * enumerate a whole level in the tree - start with "page" and traverse
  * the linked list of all the siblings
  */
-static ham_status_t 
-_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level, 
+static ham_status_t
+_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_enumerate_cb_t cb, ham_bool_t recursive, void *context);
 
 /**
  * enumerate a single page
  */
 static ham_status_t
-_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level, 
+_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_u32_t count, ham_enumerate_cb_t cb, void *context);
 
 /**
@@ -96,7 +96,7 @@ BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
         /*
          * enumerate the page and all its siblings
          */
-        cb_st = _enumerate_level(this, page, level, cb, 
+        cb_st = _enumerate_level(this, page, level, cb,
                         (cb_st == CB_DO_NOT_DESCEND), context);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
@@ -120,8 +120,8 @@ BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
     return (cb_st < 0 ? cb_st : HAM_SUCCESS);
 }
 
-static ham_status_t 
-_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level, 
+static ham_status_t
+_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_enumerate_cb_t cb, ham_bool_t recursive, void *context)
 {
     ham_status_t st;
@@ -140,7 +140,7 @@ _enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
          */
         node=page_get_btree_node(page);
         if (btree_node_get_right(node)) {
-            st=db_fetch_page(&page, be->get_db(), 
+            st=db_fetch_page(&page, be->get_db(),
                     btree_node_get_right(node), 0);
             ham_assert(st ? !page : 1, (0));
             if (st)
@@ -156,7 +156,7 @@ _enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
 }
 
 ham_status_t
-_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level, 
+_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_u32_t sibcount, ham_enumerate_cb_t cb, void *context)
 {
     ham_size_t i;

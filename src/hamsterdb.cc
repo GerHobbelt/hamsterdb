@@ -255,7 +255,7 @@ __check_recovery_flags(ham_u32_t flags)
 }
 
 ham_status_t
-ham_txn_begin(ham_txn_t **htxn, ham_env_t *henv, const char *name, 
+ham_txn_begin(ham_txn_t **htxn, ham_env_t *henv, const char *name,
                 void *reserved, ham_u32_t flags)
 {
     Transaction **txn=(Transaction **)htxn;
@@ -675,7 +675,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                     ham_trace(("invalid parameter HAM_PARAM_DATA_ACCESS_MODE"));
                     return (HAM_INV_PARAMETER);
                 }
-                if (pdata_access_mode) { 
+                if (pdata_access_mode) {
                     switch (param->value) {
                     case 0: /* ignore 0 */
                         break;
@@ -1993,7 +1993,7 @@ ham_get_error(ham_db_t *hdb)
 
     ScopedLock lock;
     if (db->get_env())
-		lock=ScopedLock(db->get_env()->get_mutex());
+        lock=ScopedLock(db->get_env()->get_mutex());
 
     return (db->get_error());
 }
@@ -3099,7 +3099,7 @@ ham_cursor_find_ex(ham_cursor_t *hcursor, ham_key_t *key,
         ham_trace(("parameter 'key' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
     }
-    if ((flags&HAM_DIRECT_ACCESS) 
+    if ((flags&HAM_DIRECT_ACCESS)
             && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                    "In-Memory Databases"));

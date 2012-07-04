@@ -336,7 +336,7 @@ bail:
 }
 
 ham_status_t
-Log::append_write(ham_u64_t lsn, ham_u32_t flags, ham_offset_t offset, 
+Log::append_write(ham_u64_t lsn, ham_u32_t flags, ham_offset_t offset,
                     ham_u8_t *data, ham_size_t size)
 {
     Log::Entry entry;
@@ -368,11 +368,11 @@ Log::get_path()
         char fname[_MAX_FNAME];
         char ext[_MAX_EXT];
         _splitpath(m_env->get_filename().c_str(), 0, 0, fname, ext);
-		path+=fname;
-		path+=ext;
+        path+=fname;
+        path+=ext;
 #else
         path+="/";
-		path+=::basename((char *)m_env->get_filename().c_str());
+        path+=::basename((char *)m_env->get_filename().c_str());
 #endif
     }
     path+=".log0";

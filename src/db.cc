@@ -272,9 +272,9 @@ __record_filters_after_find(Database *db, ham_record_t *record)
 
 Database::Database()
   : m_error(0), m_context(0), m_backend(0), m_cursors(0),
-    m_prefix_func(0), m_cmp_func(0), m_duperec_func(0), 
-    m_rt_flags(0), m_env(0), m_next(0), m_extkey_cache(0), 
-    m_indexdata_offset(0), m_record_filters(0), m_data_access_mode(0), 
+    m_prefix_func(0), m_cmp_func(0), m_duperec_func(0),
+    m_rt_flags(0), m_env(0), m_next(0), m_extkey_cache(0),
+    m_indexdata_offset(0), m_record_filters(0), m_data_access_mode(0),
     m_is_active(0), m_impl(0)
 {
     memset(&m_perf_data, 0, sizeof(m_perf_data));
@@ -453,7 +453,7 @@ db_default_recno_compare(ham_db_t *db,
 }
 
 ham_status_t
-Database::get_extended_key(ham_u8_t *key_data, 
+Database::get_extended_key(ham_u8_t *key_data,
         ham_size_t key_length, ham_u32_t key_flags, ham_key_t *ext_key)
 {
     ham_offset_t blobid;
@@ -549,7 +549,7 @@ Database::get_extended_key(ham_u8_t *key_data,
 }
 
 ham_status_t
-db_alloc_page_impl(Page **page_ref, Environment *env, Database *db, 
+db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
                 ham_u32_t type, ham_u32_t flags)
 {
     ham_status_t st;
@@ -634,7 +634,7 @@ db_alloc_page(Page **page_ref, Database *db,
     /* hack: prior to 2.0, the type of btree root pages was not set
      * correctly */
     BtreeBackend *be=(BtreeBackend *)db->get_backend();
-    if ((*page_ref)->get_self()==be->get_rootpage() 
+    if ((*page_ref)->get_self()==be->get_rootpage()
             && !(db->get_rt_flags()&HAM_READ_ONLY))
         (*page_ref)->set_type(Page::TYPE_B_ROOT);
     return (0);
@@ -787,7 +787,7 @@ Database::close_cursor(Cursor *cursor)
     delete cursor;
 }
 
-struct keycount_t 
+struct keycount_t
 {
     ham_u64_t c;
     ham_u32_t flags;
@@ -879,7 +879,7 @@ __get_key_count_txn(txn_opnode_t *node, void *data)
 }
 
 static ham_status_t
-db_check_insert_conflicts(Database *db, Transaction *txn, 
+db_check_insert_conflicts(Database *db, Transaction *txn,
                 txn_opnode_t *node, ham_key_t *key, ham_u32_t flags)
 {
     ham_status_t st;
@@ -951,7 +951,7 @@ db_check_insert_conflicts(Database *db, Transaction *txn,
 }
 
 static ham_status_t
-db_check_erase_conflicts(Database *db, Transaction *txn, 
+db_check_erase_conflicts(Database *db, Transaction *txn,
                 txn_opnode_t *node, ham_key_t *key, ham_u32_t flags)
 {
     txn_op_t *op=0;
@@ -1046,8 +1046,8 @@ next:
 }
 
 ham_status_t
-db_insert_txn(Database *db, Transaction *txn, ham_key_t *key, 
-                ham_record_t *record, ham_u32_t flags, 
+db_insert_txn(Database *db, Transaction *txn, ham_key_t *key,
+                ham_record_t *record, ham_u32_t flags,
                 struct txn_cursor_t *cursor)
 {
     ham_status_t st=0;
@@ -1129,7 +1129,7 @@ db_insert_txn(Database *db, Transaction *txn, ham_key_t *key,
 }
 
 static void
-__nil_all_cursors_in_node(Transaction *txn, Cursor *current, 
+__nil_all_cursors_in_node(Transaction *txn, Cursor *current,
                 txn_opnode_t *node)
 {
     txn_op_t *op=txn_opnode_get_newest_op(node);
@@ -1583,7 +1583,7 @@ DatabaseImplementationLocal::get_parameters(ham_parameter_t *param)
     return (0);
 }
 
-ham_status_t 
+ham_status_t
 DatabaseImplementationLocal::check_integrity(Transaction *txn)
 {
     ham_status_t st;
@@ -1612,8 +1612,8 @@ DatabaseImplementationLocal::check_integrity(Transaction *txn)
     return (st);
 }
 
-ham_status_t 
-DatabaseImplementationLocal::get_key_count(Transaction *txn, ham_u32_t flags, 
+ham_status_t
+DatabaseImplementationLocal::get_key_count(Transaction *txn, ham_u32_t flags,
                 ham_offset_t *keycount)
 {
     ham_status_t st;
@@ -1667,7 +1667,7 @@ bail:
 }
 
 ham_status_t
-DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key, 
+DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags)
 {
     Environment *env=m_db->get_env();
@@ -1795,8 +1795,8 @@ DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key,
         return (st);
 }
 
-ham_status_t 
-DatabaseImplementationLocal::erase(Transaction *txn, ham_key_t *key, 
+ham_status_t
+DatabaseImplementationLocal::erase(Transaction *txn, ham_key_t *key,
                 ham_u32_t flags)
 {
     ham_status_t st;
@@ -1863,8 +1863,8 @@ DatabaseImplementationLocal::erase(Transaction *txn, ham_key_t *key,
         return (st);
 }
 
-ham_status_t 
-DatabaseImplementationLocal::find(Transaction *txn, ham_key_t *key, 
+ham_status_t
+DatabaseImplementationLocal::find(Transaction *txn, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags)
 {
     Environment *env=m_db->get_env();
@@ -1892,7 +1892,7 @@ DatabaseImplementationLocal::find(Transaction *txn, ham_key_t *key,
      * only available in ham_cursor_find */
     if (m_db->get_rt_flags()&HAM_ENABLE_DUPLICATES) {
         Cursor *c;
-        st=ham_cursor_create((ham_db_t *)m_db, (ham_txn_t *)txn, 
+        st=ham_cursor_create((ham_db_t *)m_db, (ham_txn_t *)txn,
                 HAM_DONT_LOCK, (ham_cursor_t **)&c);
         if (st)
             return (st);
@@ -2731,11 +2731,11 @@ db_close_callback(Page *page, Database *db, ham_u32_t flags)
         (void)page->uncouple_all_cursors();
 
         /*
-         * if this page has a header, and it's either a B-Tree root page or 
-         * a B-Tree index page: remove all extended keys from the cache, 
+         * if this page has a header, and it's either a B-Tree root page or
+         * a B-Tree index page: remove all extended keys from the cache,
          * and/or free their blobs
          */
-        if (page->get_pers() && 
+        if (page->get_pers() &&
             (!(page->get_flags()&Page::NPERS_NO_HEADER)) &&
                 (page->get_type()==Page::TYPE_B_ROOT ||
                     page->get_type()==Page::TYPE_B_INDEX)) {
@@ -2755,7 +2755,7 @@ db_close_callback(Page *page, Database *db, ham_u32_t flags)
     return (false);
 }
 
-ham_status_t 
+ham_status_t
 DatabaseImplementationLocal::close(ham_u32_t flags)
 {
     Environment *env=m_db->get_env();

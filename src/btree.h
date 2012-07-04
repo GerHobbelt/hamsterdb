@@ -31,7 +31,7 @@
 #define btree_get_minkeys(maxkeys)      (maxkeys/2)
 
 /** defines the maximum number of keys per node */
-#define MAX_KEYS_PER_NODE				0xFFFFU /* max(ham_u16_t) */
+#define MAX_KEYS_PER_NODE               0xFFFFU /* max(ham_u16_t) */
 
 /**
  * the backend structure for a b+tree
@@ -60,15 +60,15 @@ class BtreeBackend : public Backend
     virtual ham_status_t flush_indexdata();
 
     /** find a key in the index */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** insert (or update) a key in the index */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** erase a key in the index */
-    virtual ham_status_t erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags);
 
     /** iterate the whole tree and enumerate every item */
@@ -78,7 +78,7 @@ class BtreeBackend : public Backend
     virtual ham_status_t check_integrity();
 
     /** estimate the number of keys per page, given the keysize */
-    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount, 
+    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize);
 
     /** Close (and free) all cursors related to this database table.  */
@@ -88,17 +88,17 @@ class BtreeBackend : public Backend
     virtual ham_status_t uncouple_all_cursors(Page *page, ham_size_t start);
 
     /** same as above, but sets the cursor to the position */
-    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor, 
+    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor,
                     ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
     /** same as above, but sets the cursor position to the new item */
-    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key,
                         ham_record_t *record, btree_cursor_t *cursor,
                         ham_u32_t flags);
 
     /** same as above, but with a coupled cursor */
-    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key, 
-            			btree_cursor_t *cursor, ham_u32_t flags);
+    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key,
+                        btree_cursor_t *cursor, ham_u32_t flags);
 
     /**
      * Remove all extended keys for the given @a page from the
@@ -123,7 +123,7 @@ class BtreeBackend : public Backend
 
     /** set maximum number of keys per (internal) node */
     void set_maxkeys(ham_u16_t maxkeys) {
-        m_maxkeys=maxkeys; 
+        m_maxkeys=maxkeys;
     }
 
     /** getter for keydata1 */
@@ -237,8 +237,8 @@ btree_cursor_erase_fasttrack(BtreeBackend *be, Transaction *txn,
  * same as above, but only erases a single duplicate
  */
 extern ham_status_t
-btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
-        ham_u32_t dupe_id, 
+btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key,
+        ham_u32_t dupe_id,
         ham_u32_t flags);
 
 /**
@@ -364,7 +364,7 @@ btree_prepare_key_for_compare(Database *db, int which, btree_key_t *src,
  * This routine can cope with HAM_KEY_USER_ALLOC-ated 'dest'-inations.
  */
 extern ham_status_t
-btree_read_key(Database *db, Transaction *txn, btree_key_t *source, 
+btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
                 ham_key_t *dest);
 
 /**
@@ -377,7 +377,7 @@ btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
  * flags: either 0 or HAM_DIRECT_ACCESS
  */
 extern ham_status_t
-btree_read_record(Database *db, Transaction *txn, ham_record_t *record, 
+btree_read_record(Database *db, Transaction *txn, ham_record_t *record,
                 ham_u64_t *ridptr, ham_u32_t flags);
 
 /**

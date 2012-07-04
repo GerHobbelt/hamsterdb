@@ -210,7 +210,7 @@ static const uchar XtimeE[256] = {
 0xd7, 0xd9, 0xcb, 0xc5, 0xef, 0xe1, 0xf3, 0xfd, 0xa7, 0xa9, 0xbb, 0xb5, 0x9f, 0x91, 0x83, 0x8d};
 
 /* exchanges columns in each of 4 rows
- * row0 - unchanged, row1- shifted left 1,
+ * row0 - unchanged, row1 - shifted left 1,
  * row2 - shifted left 2 and row3 - shifted left 3
  */
 static void ShiftRows (uchar *state)
@@ -235,7 +235,7 @@ uchar tmp;
 }
 
 /* restores columns in each of 4 rows
- * row0 - unchanged, row1- shifted right 1,
+ * row0 - unchanged, row1 - shifted right 1,
  * row2 - shifted right 2 and row3 - shifted right 3
  */
 static void InvShiftRows (uchar *state)

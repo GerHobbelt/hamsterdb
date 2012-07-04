@@ -759,7 +759,7 @@ Freelist::alloc_area(ham_offset_t *addr_ref, Database *db, ham_size_t size,
                     if (start_idx == 0)
                         addr = freel_get_start_address(fp);
 
-                    if (len >= entry->allocated_bits) 
+                    if (len >= entry->allocated_bits)
                         fl = entry->allocated_bits;
                     else
                         fl = len;
@@ -1008,7 +1008,7 @@ Freelist::flush_statistics()
 
             pers_stats=freel_get_statistics(fp);
 
-            ham_assert(sizeof(*pers_stats) == 
+            ham_assert(sizeof(*pers_stats) ==
                     sizeof(entry->perf_data._persisted_stats), (0));
             memcpy(pers_stats, &entry->perf_data._persisted_stats,
                     sizeof(*pers_stats));
@@ -1303,7 +1303,7 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                         }
                         if (r == l) {
                             /* a perfect hit: report this one as a match! */
-                            freelist_stats_update(this, 
+                            freelist_stats_update(this,
                                     entry, f, bm_l * 64, hints);
                             return bm_l * 64;
                         }
@@ -1328,7 +1328,7 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                     }
                     if (r == l) {
                         /* a perfect hit: report this one as a match! */
-                        freelist_stats_update(this, 
+                        freelist_stats_update(this,
                                     entry, f, bm_l * 64, hints);
                         return bm_l * 64;
                     }
@@ -1489,7 +1489,7 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                         }
                         if (r == l) {
                             /* a perfect hit: report this one as a match! */
-                            freelist_stats_update(this, 
+                            freelist_stats_update(this,
                                         entry, f, bm_l * 8, hints);
                             return bm_l * 8;
                         }
@@ -2711,7 +2711,7 @@ Freelist::locate_sufficient_free_space(freelist_hints_t *dst,
                          * list will ever get in this millenium ;-) */
                         start_index += 295075153;
                     }
-                    start_index %= (get_count() - hints->start_entry 
+                    start_index %= (get_count() - hints->start_entry
                             - hints->page_span_width + 1);
                     start_index += hints->start_entry;
                 }
@@ -2967,7 +2967,7 @@ Freelist::initialize()
 }
 
 /**
- * Produce the @ref FreelistEntry record which stores the freelist bit 
+ * Produce the @ref FreelistEntry record which stores the freelist bit
  * for the specified @a address.
  */
 ham_status_t
@@ -3038,7 +3038,7 @@ Freelist::get_entry_maxspan()
     ham_assert((size % sizeof(ham_u64_t)) == 0, (""));
     size -= size % sizeof(ham_u64_t);
 
-    /* the multiplication is very important for pre-v1.1.0 databases as those 
+    /* the multiplication is very important for pre-v1.1.0 databases as those
      * have an integer overflow issue right here. */
     return (ham_size_t)(size*8);
 }

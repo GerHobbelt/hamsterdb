@@ -8,8 +8,8 @@ Contents:
 
 1. About
 
-hamsterdb Embedded Storage is a database engine written in ANSI C. It supports 
-a B+Tree index structure, uses memory mapped I/O (if available), 
+hamsterdb Embedded Storage is a database engine written in ANSI C. It supports
+a B+Tree index structure, uses memory mapped I/O (if available),
 fast Cursors and variable length keys and can create In-Memory Databases.
 
 This release fixes several smaller issues, mostly compilation/linker errors
@@ -39,7 +39,7 @@ To see a list of all changes, look in the file ChangeLog.
 3. Roadmap
 
 - fine-grained locking for faster concurrent access
-- more transactional stuff (i.e. recreate pending transactions when 
+- more transactional stuff (i.e. recreate pending transactions when
     recovering from a crash)
 
 4. Features
@@ -53,7 +53,7 @@ To see a list of all changes, look in the file ChangeLog.
 - Support for unlimited number of parallel Transactions
 - Support for partial reading/writing of records
 - Support for network access (remote databases) through http
-- Very fast database cursors 
+- Very fast database cursors
 - Configurable page size, cache size and index key size
 - Runs on Linux, Unices, Microsoft Windows, Windows CE and on many
     architectures (also embedded and SPARC)
@@ -72,19 +72,19 @@ To see a list of all changes, look in the file ChangeLog.
 
 None.
 
-6. Compiling 
+6. Compiling
 
 6.1 Linux and Cygwin/Win32
 
 To compile hamsterdb Embedded Storage, run ./configure, make, make install.
 
-Run `./configure --help' for more options (i.e. static/dynamic library, 
+Run `./configure --help' for more options (i.e. static/dynamic library,
 build with debugging symbols etc).
 
 6.2 Microsoft Visual Studio 8
 
 A Solution file is provided for Microsoft Visual C++ 2005:
-'win32/hamsterdb.sln'. It compiles a static and a dynamic library. 
+'win32/hamsterdb.sln'. It compiles a static and a dynamic library.
 Please read the README.TXT file in the win32 directory.
 All libraries can be downloaded precompiled from the hamsterdb webpage.
 
@@ -95,7 +95,7 @@ http://msdn.microsoft.com/vstudio/express/visualc/default.aspx.
 
 hamsterdb will compile out of the box. On Unix, however, remote functionality
 will be disabled if libcurl and Google protobuf SDKs are not installed. If
-you want to include remote functionality, then you have to download the 
+you want to include remote functionality, then you have to download the
 dependencies from here:
     http://code.google.com/p/protobuf/
     http://curl.haxx.se/libcurl/
@@ -106,13 +106,13 @@ On Ubuntu, you can install the following packages:
     libcurl-dev
     libboost-dev
 
-For Windows, precompiled libcurl/protobuf libraries are available on 
+For Windows, precompiled libcurl/protobuf libraries are available on
 hamsterdb.com.
 
 7. Testing and Example Code
 
 Make automatically compiles several example programs in the directory
-'samples'. To see hamsterdb Embedded Storage in action, just run 'samples/db1' 
+'samples'. To see hamsterdb Embedded Storage in action, just run 'samples/db1'
 or any other sample. (or 'win32/out/samples/db1/db1.exe' on Windows platforms).
 
 8. API Documentation
@@ -141,27 +141,27 @@ and ignore the file 'src/os_posix.c'. Vice versa on non-Windows platforms.
 
 10. Porting hamsterdb Embedded Storage
 
-Porting hamsterdb Embedded Storage shouldn't be too difficult. All operating 
-system dependend functions are declared in 'src/os.h' and defined 
-in 'src/os_win32.c' or 'src/os_posix.c'. 
-Other compiler- and OS-specific macros are in 'include/ham/types.h'. 
-Most likely, these are the only files which have to be touched. Also see item 
-9) for important macros. 
+Porting hamsterdb Embedded Storage shouldn't be too difficult. All operating
+system dependend functions are declared in 'src/os.h' and defined
+in 'src/os_win32.c' or 'src/os_posix.c'.
+Other compiler- and OS-specific macros are in 'include/ham/types.h'.
+Most likely, these are the only files which have to be touched. Also see item
+9) for important macros.
 
 11. Licensing
 
-hamsterdb Embedded Storage can be licensed on a per-developer basis for 
-closed source applications. For more details, see 
+hamsterdb Embedded Storage can be licensed on a per-developer basis for
+closed source applications. For more details, see
 http://hamsterdb.com/licensing and http://hamsterdb.com/store.
 
-hamsterdb Embedded Storage is released under GPL2 or later. There are several 
-exceptions for other open source licenses (see 
-http://hamsterdb.com/licensing/exceptions for legal information and a license 
+hamsterdb Embedded Storage is released under GPL2 or later. There are several
+exceptions for other open source licenses (see
+http://hamsterdb.com/licensing/exceptions for legal information and a license
 list).
 
 12. Contact
 
-Author of hamsterdb Embedded Storage is 
+Author of hamsterdb Embedded Storage is
     Christoph Rupp
     Paul-Preuss-Str. 63
     80995 Muenchen/Germany
@@ -185,7 +185,7 @@ The AES library in '3rdparty/aes' is (C) Karl Malbrain, malbrain@yahoo.com
     RESULTING FROM THE USE, MODIFICATION, OR
     REDISTRIBUTION OF THIS SOFTWARE.
 
-The zlib library in '3rdparty/zlib' is (C) Jean-loup Gailly and Mark Adler. 
+The zlib library in '3rdparty/zlib' is (C) Jean-loup Gailly and Mark Adler.
 It has the following license:
 
     This software is provided 'as-is', without any express or implied
@@ -232,7 +232,7 @@ It has the following license:
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
    THE SOFTWARE.
   
-The libcurl library is Copyright (c) 1996 - 2010, Daniel Stenberg, 
+The libcurl library is Copyright (c) 1996 - 2010, Daniel Stenberg,
 <daniel@haxx.se>. It has the following license:
     COPYRIGHT AND PERMISSION NOTICE
 
@@ -240,8 +240,8 @@ The libcurl library is Copyright (c) 1996 - 2010, Daniel Stenberg,
 
     All rights reserved.
 
-    Permission to use, copy, modify, and distribute this software for any 
-    purpose with or without fee is hereby granted, provided that the above 
+    Permission to use, copy, modify, and distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
     copyright notice and this permission notice appear in all copies.
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -249,12 +249,12 @@ The libcurl library is Copyright (c) 1996 - 2010, Daniel Stenberg,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS.
     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
     DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+    OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
     USE OR OTHER DEALINGS IN THE SOFTWARE.
 
     Except as contained in this notice, the name of a copyright holder shall not
-    be used in advertising or otherwise to promote the sale, use or other 
-    dealings in this Software without prior written authorization of the 
+    be used in advertising or otherwise to promote the sale, use or other
+    dealings in this Software without prior written authorization of the
     copyright holder.
 
 The Google Protocol Buffers ("protobuf") library is Copyright 2008, Google Inc.

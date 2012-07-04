@@ -1,17 +1,17 @@
 # This file is part of Mongoose project, http://code.google.com/p/mongoose
 # $Id: Makefile 473 2009-09-02 11:20:06Z valenok $
 
-PROG=	mongoose
+PROG=   mongoose
 
 
 # Possible COPT values: (in brackets are rough numbers for 'gcc -O2' on i386)
-# -DHAVE_MD5		- use system md5 library (-2kb)
-# -DNDEBUG		- strip off all debug code (-5kb)
-# -DDEBUG		- build debug version (very noisy) (+7kb)
-# -DNO_CGI		- disable CGI support (-5kb)
-# -DNO_SSL		- disable SSL functionality (-2kb)
+# -DHAVE_MD5            - use system md5 library (-2kb)
+# -DNDEBUG              - strip off all debug code (-5kb)
+# -DDEBUG               - build debug version (very noisy) (+7kb)
+# -DNO_CGI              - disable CGI support (-5kb)
+# -DNO_SSL              - disable SSL functionality (-2kb)
 # -DCONFIG_FILE=\"file\" - use `file' as the default config file
-# -DHAVE_STRTOUI64	- use system strtoui64() function for strtoull()
+# -DHAVE_STRTOUI64      - use system strtoui64() function for strtoull()
 # -DSSL_LIB=\"libssl.so.<version>\" - use system versioned SSL shared object
 # -DCRYPTO_LIB=\"libcrypto.so.<version>\" - use system versioned CRYPTO so
 

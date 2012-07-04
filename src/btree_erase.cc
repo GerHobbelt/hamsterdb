@@ -136,7 +136,7 @@ my_copy_key(Database *db, Transaction *txn, btree_key_t *lhs, btree_key_t *rhs);
  * replace two keys in a page
  */
 static ham_status_t
-my_replace_key(Page *page, ham_s32_t slot, btree_key_t *newentry, 
+my_replace_key(Page *page, ham_s32_t slot, btree_key_t *newentry,
         ham_u32_t flags, erase_scratchpad_t *scratchpad, erase_hints_t *hints);
 
 /*
@@ -153,7 +153,7 @@ my_remove_entry(Page *page, ham_s32_t slot,
 #define INTERNAL_KEY 2
 
 static ham_status_t
-btree_erase_impl(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
+btree_erase_impl(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         btree_cursor_t *cursor, ham_u32_t dupe_id, ham_u32_t flags)
 {
     ham_status_t st;
@@ -1187,7 +1187,7 @@ my_copy_key(Database *db, Transaction *txn, btree_key_t *lhs, btree_key_t *rhs)
 }
 
 static ham_status_t
-my_replace_key(Page *page, ham_s32_t slot, btree_key_t *rhs, 
+my_replace_key(Page *page, ham_s32_t slot, btree_key_t *rhs,
         ham_u32_t flags, erase_scratchpad_t *scratchpad, erase_hints_t *hints)
 {
     btree_key_t *lhs;
@@ -1433,15 +1433,15 @@ BtreeBackend::erase(Transaction *txn, ham_key_t *key, ham_u32_t flags)
 }
 
 ham_status_t
-btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
+btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         ham_u32_t dupe_id, ham_u32_t flags)
 {
     return (btree_erase_impl(be, txn, key, 0, dupe_id, flags));
 }
 
 ham_status_t
-BtreeBackend::erase_cursor(Transaction *txn, ham_key_t *key, 
-        btree_cursor_t *cursor, ham_u32_t flags) 
+BtreeBackend::erase_cursor(Transaction *txn, ham_key_t *key,
+        btree_cursor_t *cursor, ham_u32_t flags)
 {
     return (btree_erase_impl(this, txn, key, cursor, 0, flags));
 }

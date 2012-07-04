@@ -627,7 +627,7 @@ _remote_fun_env_close(Environment *env, ham_u32_t flags)
 }
 
 static ham_status_t
-_remote_fun_txn_begin(Environment *env, Transaction **txn, 
+_remote_fun_txn_begin(Environment *env, Transaction **txn,
                 const char *name, ham_u32_t flags)
 {
     ham_status_t st;
@@ -868,7 +868,7 @@ DatabaseImplementationRemote::get_parameters(ham_parameter_t *param)
     return (st);
 }
 
-ham_status_t 
+ham_status_t
 DatabaseImplementationRemote::check_integrity(Transaction *txn)
 {
     ham_status_t st;
@@ -896,8 +896,8 @@ DatabaseImplementationRemote::check_integrity(Transaction *txn)
 }
 
 
-ham_status_t 
-DatabaseImplementationRemote::get_key_count(Transaction *txn, ham_u32_t flags, 
+ham_status_t
+DatabaseImplementationRemote::get_key_count(Transaction *txn, ham_u32_t flags,
                     ham_offset_t *keycount)
 {
     ham_status_t st;
@@ -927,8 +927,8 @@ DatabaseImplementationRemote::get_key_count(Transaction *txn, ham_u32_t flags,
     return (st);
 }
 
-ham_status_t 
-DatabaseImplementationRemote::insert(Transaction *txn, ham_key_t *key, 
+ham_status_t
+DatabaseImplementationRemote::insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
@@ -983,8 +983,8 @@ DatabaseImplementationRemote::insert(Transaction *txn, ham_key_t *key,
     return (st);
 }
 
-ham_status_t 
-DatabaseImplementationRemote::erase(Transaction *txn, ham_key_t *key, 
+ham_status_t
+DatabaseImplementationRemote::erase(Transaction *txn, ham_key_t *key,
                 ham_u32_t flags)
 {
     ham_status_t st;
@@ -1013,8 +1013,8 @@ DatabaseImplementationRemote::erase(Transaction *txn, ham_key_t *key,
 }
 
 
-ham_status_t 
-DatabaseImplementationRemote::find(Transaction *txn, ham_key_t *key, 
+ham_status_t
+DatabaseImplementationRemote::find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
@@ -1372,7 +1372,7 @@ DatabaseImplementationRemote::cursor_move(Cursor *cursor, ham_key_t *key,
                         ? &m_db->get_record_arena()
                         : &txn->get_record_arena();
 
-    request=proto_init_cursor_move_request(cursor->get_remote_handle(), 
+    request=proto_init_cursor_move_request(cursor->get_remote_handle(),
                         key, record, flags);
 
     st=_perform_request(env, env->get_curl(), request, &reply);

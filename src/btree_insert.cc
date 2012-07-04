@@ -113,8 +113,8 @@ __insert_in_page(Page *page, ham_key_t *key,
  * insert a key in a page; the page MUST have free slots
  */
 static ham_status_t
-__insert_nosplit(Page *page, Transaction *txn, ham_key_t *key, 
-                ham_offset_t rid, ham_record_t *record, 
+__insert_nosplit(Page *page, Transaction *txn, ham_key_t *key,
+                ham_offset_t rid, ham_record_t *record,
                 btree_cursor_t *cursor, insert_hints_t *hints);
 
 /**
@@ -126,12 +126,12 @@ __insert_split(Page *page, ham_key_t *key,
                 insert_hints_t *hints);
 
 static ham_status_t
-__insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
+__insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         ham_record_t *record, btree_cursor_t *cursor, insert_hints_t *hints);
 
 
 static ham_status_t
-__append_key(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
+__append_key(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         ham_record_t *record, btree_cursor_t *cursor, insert_hints_t *hints)
 {
     ham_status_t st=0;
@@ -296,7 +296,7 @@ __append_key(BtreeBackend *be, Transaction *txn, ham_key_t *key,
 }
 
 static ham_status_t
-__insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
+__insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         ham_record_t *record, btree_cursor_t *cursor, insert_hints_t *hints)
 {
     ham_status_t st;
@@ -357,7 +357,7 @@ __insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key,
          */
         node=page_get_btree_node(newroot);
         btree_node_set_ptr_left(node, be->get_rootpage());
-        st=__insert_nosplit(newroot, scratchpad.txn, &scratchpad.key, 
+        st=__insert_nosplit(newroot, scratchpad.txn, &scratchpad.key,
                 scratchpad.rid, scratchpad.record, scratchpad.cursor, hints);
         ham_assert(!(scratchpad.key.flags & HAM_KEY_USER_ALLOC), (0));
         scratchpad.cursor=0; /* don't overwrite cursor if __insert_nosplit
@@ -396,13 +396,13 @@ __insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key,
 }
 
 ham_status_t
-BtreeBackend::insert_cursor(Transaction *txn, ham_key_t *key, 
+BtreeBackend::insert_cursor(Transaction *txn, ham_key_t *key,
                 ham_record_t *record, btree_cursor_t *cursor, ham_u32_t flags)
 {
     ham_status_t st;
     Database *db=get_db();
-    insert_hints_t hints = {flags, flags, 
-        cursor ? (ham_cursor_t *)btree_cursor_get_parent(cursor) : 0, 0, 
+    insert_hints_t hints = {flags, flags,
+        cursor ? (ham_cursor_t *)btree_cursor_get_parent(cursor) : 0, 0,
         HAM_FALSE, HAM_FALSE, HAM_FALSE, 0, NULL, -1};
 
     btree_insert_get_hints(&hints, db, key);
@@ -445,7 +445,7 @@ BtreeBackend::insert_cursor(Transaction *txn, ham_key_t *key,
  * @note This is a B+-tree 'backend' method.
  */
 ham_status_t
-BtreeBackend::insert(Transaction *txn, ham_key_t *key, 
+BtreeBackend::insert(Transaction *txn, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags)
 {
     return (insert_cursor(txn, key, record, 0, flags));
@@ -532,7 +532,7 @@ __insert_in_page(Page *page, ham_key_t *key,
      * __insert_nosplit() will do the work for us
      */
     if (btree_node_get_count(node)<maxkeys) {
-        st=__insert_nosplit(page, scratchpad->txn, key, rid, 
+        st=__insert_nosplit(page, scratchpad->txn, key, rid,
                 scratchpad->record, scratchpad->cursor, hints);
         scratchpad->cursor=0; /* don't overwrite cursor if __insert_nosplit
                                  is called again */
@@ -559,7 +559,7 @@ __insert_in_page(Page *page, ham_key_t *key,
                     : 1, (0));
             if (!(hints->flags & (HAM_OVERWRITE | HAM_DUPLICATE)))
                 return (HAM_DUPLICATE_KEY);
-            st=__insert_nosplit(page, scratchpad->txn, key, rid, 
+            st=__insert_nosplit(page, scratchpad->txn, key, rid,
                     scratchpad->record, scratchpad->cursor, hints);
             /* don't overwrite cursor if __insert_nosplit is called again */
             scratchpad->cursor=0;
@@ -571,8 +571,8 @@ __insert_in_page(Page *page, ham_key_t *key,
 }
 
 static ham_status_t
-__insert_nosplit(Page *page, Transaction *txn, ham_key_t *key, 
-                ham_offset_t rid, ham_record_t *record, 
+__insert_nosplit(Page *page, Transaction *txn, ham_key_t *key,
+                ham_offset_t rid, ham_record_t *record,
                 btree_cursor_t *cursor, insert_hints_t *hints)
 {
     ham_status_t st;
@@ -690,7 +690,7 @@ __insert_nosplit(Page *page, Transaction *txn, ham_key_t *key,
         ham_status_t st;
 
         hints->cost++;
-        st=key_set_record(db, txn, bte, record, 
+        st=key_set_record(db, txn, bte, record,
                         cursor
                             ? btree_cursor_get_dupe_id(cursor)
                             : 0,
@@ -930,10 +930,10 @@ __insert_split(Page *page, ham_key_t *key,
     }
 
     if (cmp>=0)
-        st=__insert_nosplit(newpage, scratchpad->txn, key, rid, 
+        st=__insert_nosplit(newpage, scratchpad->txn, key, rid,
                 scratchpad->record, scratchpad->cursor, hints);
     else
-        st=__insert_nosplit(page, scratchpad->txn, key, rid, 
+        st=__insert_nosplit(page, scratchpad->txn, key, rid,
                 scratchpad->record, scratchpad->cursor, hints);
     if (st)
     {

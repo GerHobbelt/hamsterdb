@@ -690,44 +690,44 @@ void mg_vwrite2log(struct mg_connection *conn, const char *logfile, time_t times
   // handle the special case where there's nothing to do in terms of formatting in order to accept arbitrary input lengths then:
   if (!strchr(fmt, '%'))
   {
-	mg_write2log_raw(conn, logfile, timestamp, severity, fmt);
+    mg_write2log_raw(conn, logfile, timestamp, severity, fmt);
   }
   else
   {
-	char buf[MG_MAX(BUFSIZ, 2048)];
+    char buf[MG_MAX(BUFSIZ, 2048)];
 
-	int n = vsnprintf(buf, sizeof(buf), fmt, args);
-	buf[sizeof(buf) - 1] = 0;
-	if (strlen(buf) == sizeof(buf) - 1)
-	{
-		// the absolute max we're going to support is a dump of 2MByte of text!
-		size_t bufsize = 2 * 1024 * 1024;
-		char *buf2;
+    int n = vsnprintf(buf, sizeof(buf), fmt, args);
+    buf[sizeof(buf) - 1] = 0;
+    if (strlen(buf) == sizeof(buf) - 1)
+    {
+        // the absolute max we're going to support is a dump of 2MByte of text!
+        size_t bufsize = 2 * 1024 * 1024;
+        char *buf2;
 
-		strcpy(buf + sizeof(buf) - 1 - 7, " (...)\n"); // mark the string as clipped
-		// make sure the log'line' is NEWLINE terminated (or not) when clipped, depending on the format string input
-		if (fmt[strlen(fmt) - 1] != '\n')
-			buf[sizeof(buf) - 2] = 0;
+        strcpy(buf + sizeof(buf) - 1 - 7, " (...)\n"); // mark the string as clipped
+        // make sure the log'line' is NEWLINE terminated (or not) when clipped, depending on the format string input
+        if (fmt[strlen(fmt) - 1] != '\n')
+            buf[sizeof(buf) - 2] = 0;
 
-		// cope with the special case of overflow by using storage on the allocated heap:
-		buf2 = (char *)malloc(bufsize);
-		// don't mind when this malloc fails! It's just a matter of 'best effort' here!
-		if (buf2)
-		{
-			n = vsnprintf(buf2, bufsize, fmt, args);
-			buf2[bufsize - 1] = 0;
-			if (strlen(buf2) == bufsize - 1)
-			{
-				strcpy(buf2 + bufsize - 1 - 7, " (...)\n"); // mark the string as clipped
-				if (fmt[strlen(fmt) - 1] != '\n')
-					buf2[bufsize - 2] = 0;
-			}
-			mg_write2log_raw(conn, logfile, timestamp, severity, buf2);
-			free(buf2);
-			return;
-		}
-	}
-	mg_write2log_raw(conn, logfile, timestamp, severity, buf);
+        // cope with the special case of overflow by using storage on the allocated heap:
+        buf2 = (char *)malloc(bufsize);
+        // don't mind when this malloc fails! It's just a matter of 'best effort' here!
+        if (buf2)
+        {
+            n = vsnprintf(buf2, bufsize, fmt, args);
+            buf2[bufsize - 1] = 0;
+            if (strlen(buf2) == bufsize - 1)
+            {
+                strcpy(buf2 + bufsize - 1 - 7, " (...)\n"); // mark the string as clipped
+                if (fmt[strlen(fmt) - 1] != '\n')
+                    buf2[bufsize - 2] = 0;
+            }
+            mg_write2log_raw(conn, logfile, timestamp, severity, buf2);
+            free(buf2);
+            return;
+        }
+    }
+    mg_write2log_raw(conn, logfile, timestamp, severity, buf);
   }
 }
 
@@ -832,7 +832,7 @@ int mg_vsnprintf(struct mg_connection *conn, char *buf, size_t buflen,
 
   if (n < 0) {
     mg_cry(conn, "vsnprintf error / overflow");
-	// MSVC produces -1 on printf("%s", str) for very long 'str'!
+    // MSVC produces -1 on printf("%s", str) for very long 'str'!
     n = (int) buflen - 1;
     buf[n] = '\0';
     n = strlen(buf);
@@ -1014,8 +1014,8 @@ static int should_keep_alive(const struct mg_connection *conn) {
   return (!conn->must_close &&
           !conn->request_info.status_code != 401 &&
           !mg_strcasecmp(conn->ctx->config[ENABLE_KEEP_ALIVE], "yes") &&
-			((header == NULL && http_version && !strcmp(http_version, "1.1")) ||
-			(header != NULL && !mg_strcasecmp(header, "keep-alive"))));
+            ((header == NULL && http_version && !strcmp(http_version, "1.1")) ||
+            (header != NULL && !mg_strcasecmp(header, "keep-alive"))));
 }
 
 static const char *suggest_connection_header(const struct mg_connection *conn) {
@@ -1032,7 +1032,7 @@ Send HTTP error response headers.
 static void send_http_error(struct mg_connection *conn, int status,
                             const char *reason, const char *fmt, ...)
 #ifdef __GNUC__
-	__attribute__((format(printf, 4, 5)))
+    __attribute__((format(printf, 4, 5)))
 #endif
 {
   char buf[BUFSIZ];
@@ -1040,7 +1040,7 @@ static void send_http_error(struct mg_connection *conn, int status,
   int len;
 
   if (!reason) {
-	reason = mg_get_response_code_text(status);
+    reason = mg_get_response_code_text(status);
   }
 
   conn->request_info.status_code = status;
@@ -1053,10 +1053,10 @@ static void send_http_error(struct mg_connection *conn, int status,
     if (status > 199 && status != 204 && status != 304) {
       len = mg_snprintf(conn, buf, sizeof(buf), "Error %d: %s", status, reason);
       mg_cry(conn, "%s: %s (HTTP v%s: %s %s%s%s)",
-			__func__, buf,
-			conn->request_info.http_version,
-			conn->request_info.request_method, conn->request_info.uri,
-			(conn->request_info.query_string ? "?" : ""), conn->request_info.query_string);
+            __func__, buf,
+            conn->request_info.http_version,
+            conn->request_info.request_method, conn->request_info.uri,
+            (conn->request_info.query_string ? "?" : ""), conn->request_info.query_string);
       buf[len++] = '\n';
 
       va_start(ap, fmt);
@@ -1147,7 +1147,7 @@ int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *at
   return 0;
 }
 
-#define PTHREAD_RWLOCK_INITIALIZER			{ RTL_SRWLOCK_INIT }
+#define PTHREAD_RWLOCK_INITIALIZER          { RTL_SRWLOCK_INIT }
 
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
     // empty
@@ -1228,7 +1228,7 @@ static void to_unicode(const char *path, wchar_t *wbuf, size_t wbuf_len) {
     WideCharToMultiByte(CP_UTF8, 0, wbuf, (int) wbuf_len, buf2, sizeof(buf2),
                         NULL, NULL);
     if (strcmp(buf, buf2) != 0) {
-	  mg_cry(NULL, "Rejecting malicious path: [%s]", buf);
+      mg_cry(NULL, "Rejecting malicious path: [%s]", buf);
       wbuf[0] = L'\0';
     }
   }
@@ -1918,7 +1918,7 @@ int mg_get_cookie(const struct mg_connection *conn, const char *cookie_name,
       if ((size_t) (p - s) < dst_size) {
         len = (p - s) + 1;
         mg_strlcpy(dst, s, (size_t)len);
-		len--; // don't count the NUL sentinel in the reported length!
+        len--; // don't count the NUL sentinel in the reported length!
       }
       break;
     }
@@ -3199,7 +3199,7 @@ struct cgi_env_block {
 // pointer into the vars array.
 static char *addenv(struct cgi_env_block *block, const char *fmt, ...)
 #ifdef __GNUC__
-	__attribute__((format(printf, 2, 3)))
+    __attribute__((format(printf, 2, 3)))
 #endif
 {
   int n, space;
@@ -3900,16 +3900,16 @@ static int set_timeout(struct socket *sock, int seconds) {
   if (sock->sock != INVALID_SOCKET && user_timeout > 0) {
 
     if (setsockopt(sock->sock, SOL_SOCKET, SO_RCVTIMEO, (const void *)&timeout, sizeof(timeout)) < 0 &&
-	    setsockopt(sock->sock, SOL_SOCKET, SO_SNDTIMEO, (const void *)&timeout, sizeof(timeout)) < 0) {
+        setsockopt(sock->sock, SOL_SOCKET, SO_SNDTIMEO, (const void *)&timeout, sizeof(timeout)) < 0) {
       DEBUG_TRACE(("setsockopt SO_RCVTIMEO and SO_SNDTIMEO timeout %d set failed on socket: %d", seconds, sock->sock));
-	  return -1;
-	}
+      return -1;
+    }
 
 #if defined(TCP_USER_TIMEOUT)
     if (setsockopt(sock->sock, SOL_SOCKET, TCP_USER_TIMEOUT, (const void *)&user_timeout, sizeof(user_timeout)) < 0) {
       DEBUG_TRACE(("setsockopt TCP_USER_TIMEOUT timeout %d set failed on socket: %d", seconds, sock->sock));
-	  return -1;
-	}
+      return -1;
+    }
 #endif
   }
   return 0;
@@ -4437,9 +4437,9 @@ static void process_new_connection(struct mg_connection *conn) {
     conn->buf[conn->request_len - 1] = '\0';
     if (!parse_http_request(conn->buf, ri)
 #if defined(MG_PROXY_SUPPORT)
-		|| (!conn->client.is_proxy && !is_valid_uri(ri->uri))
+        || (!conn->client.is_proxy && !is_valid_uri(ri->uri))
 #endif
-	   ) {
+       ) {
       // Do not put garbage in the access log, just send it back to the client
       send_http_error(conn, 400, NULL,
           "Cannot parse HTTP request: [%.*s]", conn->data_len, conn->buf);
@@ -4457,31 +4457,31 @@ static void process_new_connection(struct mg_connection *conn) {
       conn->logfile_path[0] = 0;
 #if defined(MG_PROXY_SUPPORT)
       if (conn->client.is_proxy)
-	  {
+      {
         handle_proxy_request(conn);
       }
-	  else
+      else
 #endif
-	  {
-	    handle_request(conn);
+      {
+        handle_request(conn);
       }
-	  log_access(conn);
+      log_access(conn);
       discard_current_request_from_buffer(conn);
     }
     if (ri->remote_user != NULL) {
       free((void *) ri->remote_user);
-	  ri->remote_user = NULL;
+      ri->remote_user = NULL;
     }
     // conn->peer is not NULL only for SSL-ed proxy connections
   } while (conn->ctx->stop_flag == 0 &&
 #if defined(MG_PROXY_SUPPORT)
            (conn->peer ||
 #endif
-		    (keep_alive_enabled && should_keep_alive(conn))
+            (keep_alive_enabled && should_keep_alive(conn))
 #if defined(MG_PROXY_SUPPORT)
-		   )
+           )
 #endif
-		   );
+           );
 }
 
 // Worker threads take accepted socket from the queue
@@ -4594,7 +4594,7 @@ static void accept_new_connection(const struct socket *listener,
   if (accepted.sock != INVALID_SOCKET) {
     int keep_alive_timeout = atoi(ctx->config[KEEP_ALIVE_TIMEOUT]);
 
-	if (set_timeout(&accepted, keep_alive_timeout)) {
+    if (set_timeout(&accepted, keep_alive_timeout)) {
       mg_cry(fc(ctx), "%s: %s failed to set the socket timeout",
           __func__, inet_ntoa(accepted.rsa.u.sin.sin_addr));
       (void) closesocket(accepted.sock);
@@ -4651,9 +4651,9 @@ static void master_thread(struct mg_context *ctx) {
       // On windows, if read_set and write_set are empty,
       // select() returns "Invalid parameter" error
       // (at least on my Windows XP Pro). So in this case, we sleep here.
-	  //
-	  // [i_a]: always sleep a bit on error, unless the error is due to a stop signal
-	  if (ctx->stop_flag != 0)
+      //
+      // [i_a]: always sleep a bit on error, unless the error is due to a stop signal
+      if (ctx->stop_flag != 0)
         sleep(1);
     } else {
       for (sp = ctx->listening_sockets; sp != NULL; sp = sp->next) {
@@ -4849,68 +4849,68 @@ struct mg_context *mg_start(const struct mg_user_class_t *user_functions,
 
 const char *mg_get_response_code_text(int response_code)
 {
-	switch (response_code)
-	{
-	case 100:   return "Continue"; // RFC2616 Section 10.1.1:
-	case 101:   return "Switching Protocols"; // RFC2616 Section 10.1.2:
-	case 200:   return "OK"; // RFC2616 Section 10.2.1:
-	case 201:   return "Created"; // RFC2616 Section 10.2.2:
-	case 202:   return "Accepted"; // RFC2616 Section 10.2.3:
-	case 203:   return "Non-Authoritative Information"; // RFC2616 Section 10.2.4:
-	case 204:   return "No Content"; // RFC2616 Section 10.2.5:
-	case 205:   return "Reset Content"; // RFC2616 Section 10.2.6:
-	case 206:   return "Partial Content"; // RFC2616 Section 10.2.7:
-	case 300:   return "Multiple Choices"; // RFC2616 Section 10.3.1:
-	case 301:   return "Moved Permanently"; // RFC2616 Section 10.3.2:
-	case 302:   return "Found"; // RFC2616 Section 10.3.3:
-	case 303:   return "See Other"; // RFC2616 Section 10.3.4:
-	case 304:   return "Not Modified"; // RFC2616 Section 10.3.5:
-	case 305:   return "Use Proxy"; // RFC2616 Section 10.3.6:
-	case 307:   return "Temporary Redirect"; // RFC2616 Section 10.3.8:
-	case 400:   return "Bad Request"; // RFC2616 Section 10.4.1:
-	case 401:   return "Unauthorized"; // RFC2616 Section 10.4.2:
-	case 402:   return "Payment Required"; // RFC2616 Section 10.4.3:
-	case 403:   return "Forbidden"; // RFC2616 Section 10.4.4:
-	case 404:   return "Not Found"; // RFC2616 Section 10.4.5:
-	case 405:   return "Method Not Allowed"; // RFC2616 Section 10.4.6:
-	case 406:   return "Not Acceptable"; // RFC2616 Section 10.4.7:
-	case 407:   return "Proxy Authentication Required"; // RFC2616 Section 10.4.8:
-	case 408:   return "Request Time-out"; // RFC2616 Section 10.4.9:
-	case 409:   return "Conflict"; // RFC2616 Section 10.4.10:
-	case 410:   return "Gone"; // RFC2616 Section 10.4.11:
-	case 411:   return "Length Required"; // RFC2616 Section 10.4.12:
-	case 412:   return "Precondition Failed"; // RFC2616 Section 10.4.13:
-	case 413:   return "Request Entity Too Large"; // RFC2616 Section 10.4.14:
-	case 414:   return "Request-URI Too Large"; // RFC2616 Section 10.4.15:
-	case 415:   return "Unsupported Media Type"; // RFC2616 Section 10.4.16:
-	case 416:   return "Requested range not satisfiable"; // RFC2616 Section 10.4.17:
-	case 417:   return "Expectation Failed"; // RFC2616 Section 10.4.18:
-	case 500:   return "Internal Server Error"; // RFC2616 Section 10.5.1:
-	case 501:   return "Not Implemented"; // RFC2616 Section 10.5.2:
-	case 502:   return "Bad Gateway"; // RFC2616 Section 10.5.3:
-	case 503:   return "Service Unavailable"; // RFC2616 Section 10.5.4:
-	case 504:   return "Gateway Time-out"; // RFC2616 Section 10.5.5:
-	case 505:   return "HTTP Version not supported"; // RFC2616 Section 10.5.6:
+    switch (response_code)
+    {
+    case 100:   return "Continue"; // RFC2616 Section 10.1.1:
+    case 101:   return "Switching Protocols"; // RFC2616 Section 10.1.2:
+    case 200:   return "OK"; // RFC2616 Section 10.2.1:
+    case 201:   return "Created"; // RFC2616 Section 10.2.2:
+    case 202:   return "Accepted"; // RFC2616 Section 10.2.3:
+    case 203:   return "Non-Authoritative Information"; // RFC2616 Section 10.2.4:
+    case 204:   return "No Content"; // RFC2616 Section 10.2.5:
+    case 205:   return "Reset Content"; // RFC2616 Section 10.2.6:
+    case 206:   return "Partial Content"; // RFC2616 Section 10.2.7:
+    case 300:   return "Multiple Choices"; // RFC2616 Section 10.3.1:
+    case 301:   return "Moved Permanently"; // RFC2616 Section 10.3.2:
+    case 302:   return "Found"; // RFC2616 Section 10.3.3:
+    case 303:   return "See Other"; // RFC2616 Section 10.3.4:
+    case 304:   return "Not Modified"; // RFC2616 Section 10.3.5:
+    case 305:   return "Use Proxy"; // RFC2616 Section 10.3.6:
+    case 307:   return "Temporary Redirect"; // RFC2616 Section 10.3.8:
+    case 400:   return "Bad Request"; // RFC2616 Section 10.4.1:
+    case 401:   return "Unauthorized"; // RFC2616 Section 10.4.2:
+    case 402:   return "Payment Required"; // RFC2616 Section 10.4.3:
+    case 403:   return "Forbidden"; // RFC2616 Section 10.4.4:
+    case 404:   return "Not Found"; // RFC2616 Section 10.4.5:
+    case 405:   return "Method Not Allowed"; // RFC2616 Section 10.4.6:
+    case 406:   return "Not Acceptable"; // RFC2616 Section 10.4.7:
+    case 407:   return "Proxy Authentication Required"; // RFC2616 Section 10.4.8:
+    case 408:   return "Request Time-out"; // RFC2616 Section 10.4.9:
+    case 409:   return "Conflict"; // RFC2616 Section 10.4.10:
+    case 410:   return "Gone"; // RFC2616 Section 10.4.11:
+    case 411:   return "Length Required"; // RFC2616 Section 10.4.12:
+    case 412:   return "Precondition Failed"; // RFC2616 Section 10.4.13:
+    case 413:   return "Request Entity Too Large"; // RFC2616 Section 10.4.14:
+    case 414:   return "Request-URI Too Large"; // RFC2616 Section 10.4.15:
+    case 415:   return "Unsupported Media Type"; // RFC2616 Section 10.4.16:
+    case 416:   return "Requested range not satisfiable"; // RFC2616 Section 10.4.17:
+    case 417:   return "Expectation Failed"; // RFC2616 Section 10.4.18:
+    case 500:   return "Internal Server Error"; // RFC2616 Section 10.5.1:
+    case 501:   return "Not Implemented"; // RFC2616 Section 10.5.2:
+    case 502:   return "Bad Gateway"; // RFC2616 Section 10.5.3:
+    case 503:   return "Service Unavailable"; // RFC2616 Section 10.5.4:
+    case 504:   return "Gateway Time-out"; // RFC2616 Section 10.5.5:
+    case 505:   return "HTTP Version not supported"; // RFC2616 Section 10.5.6:
 /*
-	case 102:   return "Processing";  // http://www.askapache.com/htaccess/apache-status-code-headers-errordocument.html#m0-askapache3
-	case 207:   return "Multi-Status";
-	case 418:   return "I'm a teapot";
-	case 419:   return "unused";
-	case 420:   return "unused";
-	case 421:   return "unused";
-	case 422:   return "Unproccessable entity";
-	case 423:   return "Locked";
-	case 424:   return "Failed Dependency";
-	case 425:   return "Node code";
-	case 426:   return "Upgrade Required";
-	case 506:   return "Variant Also Negotiates";
-	case 507:   return "Insufficient Storage";
-	case 508:   return "unused";
-	case 509:   return "unused";
-	case 510:   return "Not Extended";
+    case 102:   return "Processing";  // http://www.askapache.com/htaccess/apache-status-code-headers-errordocument.html#m0-askapache3
+    case 207:   return "Multi-Status";
+    case 418:   return "I'm a teapot";
+    case 419:   return "unused";
+    case 420:   return "unused";
+    case 421:   return "unused";
+    case 422:   return "Unproccessable entity";
+    case 423:   return "Locked";
+    case 424:   return "Failed Dependency";
+    case 425:   return "Node code";
+    case 426:   return "Upgrade Required";
+    case 506:   return "Variant Also Negotiates";
+    case 507:   return "Insufficient Storage";
+    case 508:   return "unused";
+    case 509:   return "unused";
+    case 510:   return "Not Extended";
 */
-	case 577:   return "Mongoose Internal Server Error";
+    case 577:   return "Mongoose Internal Server Error";
 
-	default:   return "Unknown Response Code";
-	}
+    default:   return "Unknown Response Code";
+    }
 }

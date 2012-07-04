@@ -108,7 +108,7 @@ class Log
 
         ham_status_t st=os_get_filesize(m_fd, &size);
         if (st)
-		    return (st ? false : true); /* TODO throw */
+            return (st ? false : true); /* TODO throw */
         if (size && size!=sizeof(Log::Header))
             return (false);
 
@@ -130,8 +130,8 @@ class Log
         return (m_fd);
     }
 
-    /** 
-     * clears the logfile 
+    /**
+     * clears the logfile
      *
      * invoked after every checkpoint (which is immediately after each
      * txn_commit or txn_abort)
@@ -170,7 +170,7 @@ class Log
      *
      * iter must be initialized with zeroes for the first call
      *
-     * 'data' returns the data of the entry, or NULL if there is no data. 
+     * 'data' returns the data of the entry, or NULL if there is no data.
      * The memory has to be freed by the caller.
      *
      * returns SUCCESS and an empty entry (lsn is zero) after the last element.

@@ -126,7 +126,7 @@ class DeviceImplDisk : public DeviceImplementation {
     }
 
     /** Create a new device */
-    virtual ham_status_t create(const char *filename, ham_u32_t flags, 
+    virtual ham_status_t create(const char *filename, ham_u32_t flags,
                 ham_u32_t mode) {
         return (os_create(filename, flags, mode, &m_fd));
     }
@@ -205,7 +205,7 @@ class DeviceImplDisk : public DeviceImplementation {
      * can use mmap if available
      *
      * @note
-     * The caller is responsible for flushing the page; the @ref free_page 
+     * The caller is responsible for flushing the page; the @ref free_page
      * function will assert that the page is not dirty.
      */
     virtual ham_status_t alloc_page(Page *page);
@@ -229,7 +229,7 @@ class DeviceImplInMemory : public DeviceImplementation {
     }
 
     /** Create a new device */
-    virtual ham_status_t create(const char *filename, ham_u32_t flags, 
+    virtual ham_status_t create(const char *filename, ham_u32_t flags,
                 ham_u32_t mode) {
         m_is_open=true;
         return (0);
@@ -338,8 +338,8 @@ class DeviceImplInMemory : public DeviceImplementation {
 class Device {
   public:
     /** constructor */
-    Device(Environment *env, ham_u32_t flags) 
-      : m_env(env), m_flags(flags) { 
+    Device(Environment *env, ham_u32_t flags)
+      : m_env(env), m_flags(flags) {
         if (flags&HAM_IN_MEMORY_DB)
             m_impl=new DeviceImplInMemory(this);
         else
@@ -347,14 +347,14 @@ class Device {
 
         /*
          * initialize the pagesize with a default value - this will be
-         * overwritten i.e. by ham_open, ham_create when the pagesize 
+         * overwritten i.e. by ham_open, ham_create when the pagesize
          * of the file is known
          */
         set_pagesize(get_pagesize());
     }
 
     /** virtual destructor */
-    ~Device() { 
+    ~Device() {
         ScopedLock lock(m_mutex);
         delete m_impl;
         m_impl=0;
@@ -373,7 +373,7 @@ class Device {
     }
 
     /** Create a new device */
-    ham_status_t create(const char *filename, ham_u32_t flags, 
+    ham_status_t create(const char *filename, ham_u32_t flags,
                 ham_u32_t mode) {
         ScopedLock lock(m_mutex);
         m_flags=flags;
@@ -436,7 +436,7 @@ class Device {
     }
 
     /** writes to the device; this function does not use mmap,
-     * and is responsible for writing the data is run through the file 
+     * and is responsible for writing the data is run through the file
      * filters */
     ham_status_t write(ham_offset_t offset, void *buffer, ham_offset_t size) {
         ScopedLock lock(m_mutex);
@@ -455,7 +455,7 @@ class Device {
         return (m_impl->write_page(page));
     }
 
-    /** allocate storage from this device; this function 
+    /** allocate storage from this device; this function
      * will *NOT* use mmap.  */
     ham_status_t alloc(ham_size_t size, ham_offset_t *address) {
         ScopedLock lock(m_mutex);
@@ -463,11 +463,11 @@ class Device {
     }
 
     /**
-     * allocate storage for a page from this device; this function 
+     * allocate storage for a page from this device; this function
      * can use mmap if available
      *
      * @note
-     * The caller is responsible for flushing the page; the @ref free_page 
+     * The caller is responsible for flushing the page; the @ref free_page
      * function will assert that the page is not dirty.
      */
     ham_status_t alloc_page(Page *page) {

@@ -179,7 +179,7 @@ Changeset::flush(ham_u64_t lsn)
     //
     // - if there's more than one freelist page modified then the freelist
     //   operation would be huge and we rather not risk to lose that much space
-    // - if there's more than one index operation then the operation must 
+    // - if there's more than one index operation then the operation must
     //   be atomic
     if (m_others_size || m_indices_size>1 || m_freelists_size>1) {
         if ((st=log_bucket(m_blobs, m_blobs_size, lsn, page_count)))

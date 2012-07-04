@@ -35,7 +35,7 @@
 #if 0
 #  define os_log(x)          ham_log(x)
 #else
-#  define os_log(x)          
+#  define os_log(x)
 #endif
 
 static ham_status_t

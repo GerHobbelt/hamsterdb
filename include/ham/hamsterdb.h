@@ -213,9 +213,9 @@ typedef struct
  * However, when using Database Cursors and the function @ref ham_cursor_move,
  * hamsterdb also returns keys. In this case, the pointer to the key
  * data is provided in @a data. This pointer is only temporary and will be
- * overwritten by subsequent calls to @ref ham_cursor_move using the 
+ * overwritten by subsequent calls to @ref ham_cursor_move using the
  * same Transaction (or, if Transactions are disabled, using the same Database).
- * The pointer will also be invalidated after the Transaction is aborted 
+ * The pointer will also be invalidated after the Transaction is aborted
  * or committed.
  *
  * To avoid this, the calling application can allocate the @a data pointer.
@@ -1776,10 +1776,10 @@ ham_enable_compression(ham_db_t *db, ham_u32_t level, ham_u32_t flags);
  * @a size is 0 and @a data points to NULL.
  *
  * The @a data pointer is a temporary pointer and will be overwritten
- * by subsequent hamsterdb API calls using the same Transaction 
+ * by subsequent hamsterdb API calls using the same Transaction
  * (or, if Transactions are disabled, using the same Database).
- * You can alter this behaviour by allocating the @a data pointer in 
- * the application and setting @a record.flags to @ref HAM_RECORD_USER_ALLOC. 
+ * You can alter this behaviour by allocating the @a data pointer in
+ * the application and setting @a record.flags to @ref HAM_RECORD_USER_ALLOC.
  * Make sure that the allocated buffer is large enough.
  *
  * When specifying @ref HAM_DIRECT_ACCESS, the @a data pointer will point

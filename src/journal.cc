@@ -25,7 +25,7 @@
 #include "util.h"
 #include "journal.h"
 
-static ham_size_t 
+static ham_size_t
 __get_aligned_entry_size(ham_size_t s)
 {
     s += 8-1;
@@ -146,7 +146,7 @@ Journal::open()
 }
 
 ham_status_t
-Journal::append_txn_begin(Transaction *txn, Environment *env, 
+Journal::append_txn_begin(Transaction *txn, Environment *env,
                 const char *name, ham_u64_t lsn)
 {
     ScopedLock lock(m_mutex);
@@ -259,8 +259,8 @@ Journal::append_txn_commit(Transaction *txn, ham_u64_t lsn)
 }
 
 ham_status_t
-Journal::append_insert(Database *db, Transaction *txn, 
-                ham_key_t *key, ham_record_t *record, ham_u32_t flags, 
+Journal::append_insert(Database *db, Transaction *txn,
+                ham_key_t *key, ham_record_t *record, ham_u32_t flags,
                 ham_u64_t lsn)
 {
     ScopedLock lock(m_mutex);
@@ -292,7 +292,7 @@ Journal::append_insert(Database *db, Transaction *txn,
 }
 
 ham_status_t
-Journal::append_erase(Database *db, Transaction *txn, ham_key_t *key, 
+Journal::append_erase(Database *db, Transaction *txn, ham_key_t *key,
                 ham_u32_t dupe, ham_u32_t flags, ham_u64_t lsn)
 {
     ScopedLock lock(m_mutex);
@@ -573,7 +573,7 @@ Journal::recover()
         switch (entry.type) {
         case ENTRY_TYPE_TXN_BEGIN: {
             Transaction *txn;
-            st=ham_txn_begin((ham_txn_t **)&txn, (ham_env_t *)m_env, 
+            st=ham_txn_begin((ham_txn_t **)&txn, (ham_env_t *)m_env,
                     (const char *)aux, 0, HAM_DONT_LOCK);
             /* on success: patch the txn ID */
             if (st==0) {
@@ -626,7 +626,7 @@ Journal::recover()
             if (st)
                 break;
             lock.unlock();
-            st=ham_insert((ham_db_t *)db, (ham_txn_t *)txn, 
+            st=ham_insert((ham_db_t *)db, (ham_txn_t *)txn,
                     &key, &record, ins->insert_flags|HAM_DONT_LOCK);
             lock.lock();
             break;
@@ -654,7 +654,7 @@ Journal::recover()
             key.data=e->get_key_data();
             key.size=e->key_size;
             lock.unlock();
-            st=ham_erase((ham_db_t *)db, (ham_txn_t *)txn, &key, 
+            st=ham_erase((ham_db_t *)db, (ham_txn_t *)txn, &key,
                             e->erase_flags|HAM_DONT_LOCK);
             lock.lock();
             // key might have already been erased when the changeset

@@ -541,7 +541,7 @@ btree_cursor_overwrite(btree_cursor_t *c, ham_record_t *record, ham_u32_t flags)
     key=btree_node_get_key(db, node, btree_cursor_get_coupled_index(c));
 
     /* copy the key flags, and remove all flags concerning the key size */
-    st=key_set_record(db, txn, key, record, 
+    st=key_set_record(db, txn, key, record,
             btree_cursor_get_dupe_id(c), flags|HAM_OVERWRITE, 0);
     if (st)
         return (st);
@@ -706,7 +706,7 @@ btree_cursor_erase(btree_cursor_t *c, ham_u32_t flags)
         btree_node_t *node=page_get_btree_node(page);
         BtreeBackend *be=(BtreeBackend *)db->get_backend();
         ham_size_t maxkeys=be->get_maxkeys();
-        ham_assert(btree_node_is_leaf(node), 
+        ham_assert(btree_node_is_leaf(node),
                 ("iterator points to internal node"));
         if (btree_cursor_get_coupled_index(c)>0
                 && btree_node_get_count(node)>btree_get_minkeys(maxkeys)) {

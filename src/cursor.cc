@@ -88,7 +88,7 @@ Cursor::update_dupecache(ham_u32_t what)
 
         while (op) {
             Transaction *optxn=txn_op_get_txn(op);
-            /* collect all ops that are valid (even those that are 
+            /* collect all ops that are valid (even those that are
              * from conflicting transactions) */
             if (!(txn_get_flags(optxn)&TXN_STATE_ABORTED)) {
                 /* a normal (overwriting) insert will overwrite ALL dupes,
@@ -1172,7 +1172,7 @@ Cursor::get_record_size(Transaction *txn, ham_offset_t *psize)
     return (st);
 }
 
-ham_status_t 
+ham_status_t
 Cursor::overwrite(Transaction *txn, ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st=0;

@@ -137,7 +137,7 @@ class ExtKeyCache
         Environment *env=m_db->get_env();
 
         /* DEBUG build: make sure that the item is not inserted twice!  */
-        ham_assert(m_hash.get(blobid)==0, ("")); 
+        ham_assert(m_hash.get(blobid)==0, (""));
 
         e=(ExtKey *)env->get_allocator()->alloc(SIZEOF_EXTKEY_T+size);
         e->blobid=blobid;
@@ -220,7 +220,7 @@ class ExtKeyCache
  * a combination of extkey_cache_remove and blob_free
  * TODO move this to Database.cc (DatabaseImplementationLocal)
  */
-inline ham_status_t 
+inline ham_status_t
 extkey_remove(Database *db, ham_offset_t blobid)
 {
     if (db->get_extkey_cache())

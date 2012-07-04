@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See file COPYING.GPL2 and COPYING.GPL3 for License information.
@@ -45,7 +45,7 @@ public class DatabaseTest extends TestCase {
 
     public void testGetLicense() {
         License l=Database.getLicense();
-        assertEquals("", l.licensee); /* this fails if you have 
+        assertEquals("", l.licensee); /* this fails if you have
                                         a licensed version */
         assertEquals("hamsterdb embedded storage", l.product);
     }
@@ -113,8 +113,8 @@ public class DatabaseTest extends TestCase {
         
         public int compare(byte[] lhs, byte[] rhs) {
             m_counter++;
-            return m_counter; /* need to return different values, or 
-                                ham_insert thinks we're inserting 
+            return m_counter; /* need to return different values, or
+                                ham_insert thinks we're inserting
                                 duplicates */
         }
     }
@@ -125,8 +125,8 @@ public class DatabaseTest extends TestCase {
         
         public int compare(byte[] lhs, byte[] rhs) {
             m_counter++;
-            return m_counter; /* need to return different values, or 
-                                ham_insert thinks we're inserting 
+            return m_counter; /* need to return different values, or
+                                ham_insert thinks we're inserting
                                 duplicates */
         }
     }
@@ -260,10 +260,10 @@ public class DatabaseTest extends TestCase {
     {
         public int m_counter;
         
-        public int compare(byte[] lhs, int lhs_real_size, 
+        public int compare(byte[] lhs, int lhs_real_size,
                 byte[] rhs, int rhs_real_size) {
-            return ++m_counter; /* need to return different values, 
-                or ham_insert thinks we're inserting 
+            return ++m_counter; /* need to return different values,
+                or ham_insert thinks we're inserting
                 duplicates */
         }
     }

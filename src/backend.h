@@ -37,7 +37,7 @@
 
 
 /**
- * a callback function for enumerating the index nodes/pages using the 
+ * a callback function for enumerating the index nodes/pages using the
  * @ref Backend::enumerate callback/method.
  *
  * @param event one of the @ref ham_cb_event state codes
@@ -74,7 +74,7 @@ struct btree_cursor_t;
 
 /**
  * the backend structure - these functions and members are inherited
- * by every other backend (i.e. btree, hashdb etc). 
+ * by every other backend (i.e. btree, hashdb etc).
  */
 class Backend
 {
@@ -120,7 +120,7 @@ class Backend
     /**
      * find a key in the index
      */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /**
@@ -129,13 +129,13 @@ class Backend
      * the backend is responsible for inserting or updating the
      * record. (see blob.h for blob management functions)
      */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /**
      * erase a key in the index
      */
-    virtual ham_status_t erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags) = 0;
 
     /**
@@ -151,7 +151,7 @@ class Backend
     /**
      * estimate the number of keys per page, given the keysize
      */
-    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount, 
+    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize) = 0;
 
     /**
@@ -170,20 +170,20 @@ class Backend
     /**
      * looks up a key, points cursor to this key
      */
-    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor, 
+    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor,
                         ham_key_t *key, ham_record_t *record,
                         ham_u32_t flags) = 0;
 
     /**
      * inserts a key, points cursor to the new key
      */
-    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key,
                         ham_record_t *record, btree_cursor_t *cursor,
                         ham_u32_t flags) = 0;
 
     /** same as above, but with a coupled cursor */
-    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key, 
-                    	btree_cursor_t *cursor, ham_u32_t flags) = 0;
+    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key,
+                        btree_cursor_t *cursor, ham_u32_t flags) = 0;
 
     /**
      * Remove all extended keys for the given @a page from the

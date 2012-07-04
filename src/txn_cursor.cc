@@ -278,7 +278,7 @@ txn_cursor_is_erased_duplicate(txn_cursor_t *cursor)
 
     while (op) {
         Transaction *optxn=txn_op_get_txn(op);
-        /* only look at ops from the current transaction and from 
+        /* only look at ops from the current transaction and from
          * committed transactions */
         if ((optxn==txn_cursor_get_parent(cursor)->get_txn())
                 || (txn_get_flags(optxn)&TXN_STATE_COMMITTED)) {

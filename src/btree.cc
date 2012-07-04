@@ -137,9 +137,9 @@ BtreeBackend::BtreeBackend(Database *db, ham_u32_t flags)
 {
 }
 
-/**                                                                 
- * estimate the number of keys per page, given the keysize          
- */                                                                 
+/**
+ * estimate the number of keys per page, given the keysize
+ */
 ham_status_t
 BtreeBackend::calc_keycount_per_page(ham_size_t *maxkeys, ham_u16_t keysize)
 {
@@ -173,7 +173,7 @@ BtreeBackend::calc_keycount_per_page(ham_size_t *maxkeys, ham_u16_t keysize)
  * the @a flags are stored in the database; only transfer
  * the persistent flags!
  */
-ham_status_t 
+ham_status_t
 BtreeBackend::create(ham_u16_t keysize, ham_u32_t flags)
 {
     ham_status_t st;
@@ -238,7 +238,7 @@ BtreeBackend::create(ham_u16_t keysize, ham_u32_t flags)
  * @remark this function is called after the ham_db_structure
  * was allocated and the file was opened
  */
-ham_status_t 
+ham_status_t
 BtreeBackend::open(ham_u32_t flags)
 {
     ham_offset_t rootadd;
@@ -321,7 +321,7 @@ BtreeBackend::uncouple_all_cursors(Page *page, ham_size_t start)
 /**
  * Close (and free) all cursors related to this database table.
  */
-ham_status_t 
+ham_status_t
 BtreeBackend::close_cursors(ham_u32_t flags)
 {
     return (btree_close_cursors(get_db(), flags));
@@ -750,7 +750,7 @@ btree_compare_keys(Database *db, Page *page,
 }
 
 ham_status_t
-btree_read_key(Database *db, Transaction *txn, btree_key_t *source, 
+btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
         ham_key_t *dest)
 {
     Allocator *alloc=db->get_env()->get_allocator();
@@ -826,7 +826,7 @@ btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
 }
 
 ham_status_t
-btree_read_record(Database *db, Transaction *txn, ham_record_t *record, 
+btree_read_record(Database *db, Transaction *txn, ham_record_t *record,
                 ham_u64_t *ridptr, ham_u32_t flags)
 {
     ham_bool_t noblob=HAM_FALSE;

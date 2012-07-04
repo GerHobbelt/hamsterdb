@@ -215,7 +215,7 @@ static void init_server_name(void) {
 static void start_mongoose(int argc, char *argv[]) {
     char *options[MAX_OPTIONS * 2] = { NULL };
     int i;
-	struct mg_user_class_t userdef = {0};
+    struct mg_user_class_t userdef = {0};
 
     /* Edit passwords file if -A option is specified */
     if (argc > 1 && argv[1][0] == '-' && argv[1][1] == 'A') {

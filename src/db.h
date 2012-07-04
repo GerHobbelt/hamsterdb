@@ -148,19 +148,19 @@ class DatabaseImplementation
     virtual ham_status_t check_integrity(Transaction *txn) = 0;
 
     /** get number of keys */
-    virtual ham_status_t get_key_count(Transaction *txn, ham_u32_t flags, 
+    virtual ham_status_t get_key_count(Transaction *txn, ham_u32_t flags,
                     ham_offset_t *keycount) = 0;
 
     /** insert a key/value pair */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /** erase a key/value pair */
-    virtual ham_status_t erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags) = 0;
 
     /** lookup of a key/value pair */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /** create a cursor */
@@ -223,18 +223,18 @@ class DatabaseImplementationLocal : public DatabaseImplementation
     virtual ham_status_t check_integrity(Transaction *txn);
 
     /** get number of keys */
-    virtual ham_status_t get_key_count(Transaction *txn, ham_u32_t flags, 
+    virtual ham_status_t get_key_count(Transaction *txn, ham_u32_t flags,
                     ham_offset_t *keycount);
 
     /** insert a key/value pair */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** erase a key/value pair */
     virtual ham_status_t erase(Transaction *txn, ham_key_t *key, ham_u32_t flags);
 
     /** lookup of a key/value pair */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** create a cursor */
@@ -297,18 +297,18 @@ class DatabaseImplementationRemote : public DatabaseImplementation
     virtual ham_status_t check_integrity(Transaction *txn);
 
     /** get number of keys */
-    virtual ham_status_t get_key_count(Transaction *txn, ham_u32_t flags, 
+    virtual ham_status_t get_key_count(Transaction *txn, ham_u32_t flags,
                     ham_offset_t *keycount);
 
     /** insert a key/value pair */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** erase a key/value pair */
     virtual ham_status_t erase(Transaction *txn, ham_key_t *key, ham_u32_t flags);
 
     /** lookup of a key/value pair */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** create a cursor */
@@ -787,11 +787,11 @@ class Database
     /** the object which does the actual work */
     DatabaseImplementation *m_impl;
 
-    /** this is where key->data points to when returning a 
+    /** this is where key->data points to when returning a
      * key to the user; used if Transactions are disabled */
     ByteArray m_key_arena;
 
-    /** this is where record->data points to when returning a 
+    /** this is where record->data points to when returning a
      * record to the user; used if Transactions are disabled */
     ByteArray m_record_arena;
 };
@@ -983,7 +983,7 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
 #define PAGE_CLEAR_WITH_ZERO         16
 
 /**
-* @defgroup ham_database_flags 
+* @defgroup ham_database_flags
 * @{
 */
 
@@ -1008,9 +1008,9 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
  * be attached to the new txn_op structure
  */
 struct txn_cursor_t;
-extern ham_status_t 
-db_insert_txn(Database *db, Transaction *txn, ham_key_t *key, 
-                ham_record_t *record, ham_u32_t flags, 
+extern ham_status_t
+db_insert_txn(Database *db, Transaction *txn, ham_key_t *key,
+                ham_record_t *record, ham_u32_t flags,
                 struct txn_cursor_t *cursor);
 
 /*

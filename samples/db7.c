@@ -64,7 +64,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
             break;
 
 #if defined(HAM_PARAM_CUSTOM_DEVICE)
-		case HAM_PARAM_CUSTOM_DEVICE:
+        case HAM_PARAM_CUSTOM_DEVICE:
             printf("HAM_PARAM_CUSTOM_DEVICE: %p\n", db_params_out[i].value.fn);
             if (db_params_out[i].value.fn)
             {

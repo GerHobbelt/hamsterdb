@@ -122,19 +122,19 @@ public:
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn2, m_env, 0, 0, 0));
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn3, m_env, 0, 0, 0));
 
-        BFC_ASSERT_EQUAL((Transaction *)0, 
+        BFC_ASSERT_EQUAL((Transaction *)0,
                 txn_get_older((Transaction *)txn1));
-        BFC_ASSERT_EQUAL((Transaction *)txn2, 
+        BFC_ASSERT_EQUAL((Transaction *)txn2,
                 txn_get_newer((Transaction *)txn1));
 
-        BFC_ASSERT_EQUAL((Transaction *)txn1, 
+        BFC_ASSERT_EQUAL((Transaction *)txn1,
                 txn_get_older((Transaction *)txn2));
-        BFC_ASSERT_EQUAL((Transaction *)txn3, 
+        BFC_ASSERT_EQUAL((Transaction *)txn3,
                 txn_get_newer((Transaction *)txn2));
 
-        BFC_ASSERT_EQUAL((Transaction *)txn2, 
+        BFC_ASSERT_EQUAL((Transaction *)txn2,
                 txn_get_older((Transaction *)txn3));
-        BFC_ASSERT_EQUAL((Transaction *)0, 
+        BFC_ASSERT_EQUAL((Transaction *)0,
                 txn_get_newer((Transaction *)txn3));
 
         /* have to commit the txns in the same order as they were created,
@@ -142,20 +142,20 @@ public:
          * transaction */
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn1, 0));
 
-        BFC_ASSERT_EQUAL((Transaction *)0, 
+        BFC_ASSERT_EQUAL((Transaction *)0,
                 txn_get_older((Transaction *)txn2));
-        BFC_ASSERT_EQUAL((Transaction *)txn3, 
+        BFC_ASSERT_EQUAL((Transaction *)txn3,
                 txn_get_newer((Transaction *)txn2));
-        BFC_ASSERT_EQUAL((Transaction *)txn2, 
+        BFC_ASSERT_EQUAL((Transaction *)txn2,
                 txn_get_older((Transaction *)txn3));
-        BFC_ASSERT_EQUAL((Transaction *)0, 
+        BFC_ASSERT_EQUAL((Transaction *)0,
                 txn_get_newer((Transaction *)txn3));
 
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn2, 0));
 
-        BFC_ASSERT_EQUAL((Transaction *)0, 
+        BFC_ASSERT_EQUAL((Transaction *)0,
                 txn_get_older((Transaction *)txn3));
-        BFC_ASSERT_EQUAL((Transaction *)0, 
+        BFC_ASSERT_EQUAL((Transaction *)0,
                 txn_get_newer((Transaction *)txn3));
 
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn3, 0));
@@ -294,7 +294,7 @@ public:
 
         /* need at least one txn_op_t structure in this node, otherwise
          * memory won't be cleaned up correctly */
-        (void)txn_opnode_append((Transaction *)txn, node, 0, 
+        (void)txn_opnode_append((Transaction *)txn, node, 0,
                 TXN_OP_INSERT_DUP, 55, &rec);
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn, 0));
     }
@@ -367,7 +367,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         node=txn_opnode_create(m_dbp, &key);
-        op=txn_opnode_append((Transaction *)txn, node, 0, 
+        op=txn_opnode_append((Transaction *)txn, node, 0,
                 TXN_OP_INSERT_DUP, 55, &record);
         BFC_ASSERT(op!=0);
 
@@ -416,13 +416,13 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         node=txn_opnode_create(m_dbp, &key);
-        op1=txn_opnode_append((Transaction *)txn, node, 
+        op1=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_INSERT_DUP, 55, &rec);
         BFC_ASSERT(op1!=0);
-        op2=txn_opnode_append((Transaction *)txn, node, 
+        op2=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_ERASE, 55, &rec);
         BFC_ASSERT(op2!=0);
-        op3=txn_opnode_append((Transaction *)txn, node, 
+        op3=txn_opnode_append((Transaction *)txn, node,
                 0, TXN_OP_NOP, 55, &rec);
         BFC_ASSERT(op3!=0);
 

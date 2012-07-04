@@ -551,11 +551,11 @@ public:
 
         /* generated with `cat ../COPYING.GPL2 | ./db4`; has 2973 entries */
 #if defined(HAM_LITTLE_ENDIAN)
-        BFC_ASSERT_EQUAL(true, 
+        BFC_ASSERT_EQUAL(true,
             os::copy("data/recno-endian-test-open-database-be.hdb",
                     BFC_OPATH(".test")));
 #else
-        BFC_ASSERT_EQUAL(true, 
+        BFC_ASSERT_EQUAL(true,
             os::copy("data/recno-endian-test-open-database-le.hdb",
                     BFC_OPATH(".test")));
 #endif

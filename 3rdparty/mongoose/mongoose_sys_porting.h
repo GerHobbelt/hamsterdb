@@ -303,7 +303,7 @@ typedef void pthread_rwlockattr_t;
 
 int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr);
 
-#define PTHREAD_RWLOCK_INITIALIZER			{ RTL_SRWLOCK_INIT }
+#define PTHREAD_RWLOCK_INITIALIZER          { RTL_SRWLOCK_INIT }
 
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock);
 int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock);

@@ -88,7 +88,7 @@ class Journal
 
     /** constructor */
     Journal(Environment *env)
-      : m_env(env), m_current_fd(0), m_lsn(0), m_last_cp_lsn(0), 
+      : m_env(env), m_current_fd(0), m_lsn(0), m_last_cp_lsn(0),
         m_threshold(JOURNAL_DEFAULT_THRESHOLD) {
         m_fd[0]=HAM_INVALID_FD;
         m_fd[1]=HAM_INVALID_FD;
@@ -121,7 +121,7 @@ class Journal
     }
 
     /* appends a journal entry for ham_txn_begin/ENTRY_TYPE_TXN_BEGIN */
-    ham_status_t append_txn_begin(Transaction *txn, Environment *env, 
+    ham_status_t append_txn_begin(Transaction *txn, Environment *env,
                 const char *name, ham_u64_t lsn);
 
     /** appends a journal entry for
@@ -133,12 +133,12 @@ class Journal
     ham_status_t append_txn_commit(Transaction *txn, ham_u64_t lsn);
 
     /** appends a journal entry for ham_insert/ENTRY_TYPE_INSERT */
-    ham_status_t append_insert(Database *db, Transaction *txn, 
-                ham_key_t *key, ham_record_t *record, ham_u32_t flags, 
+    ham_status_t append_insert(Database *db, Transaction *txn,
+                ham_key_t *key, ham_record_t *record, ham_u32_t flags,
                 ham_u64_t lsn);
 
     /** appends a journal entry for ham_erase/ENTRY_TYPE_ERASE */
-    ham_status_t append_erase(Database *db, Transaction *txn, 
+    ham_status_t append_erase(Database *db, Transaction *txn,
                 ham_key_t *key, ham_u32_t dupe, ham_u32_t flags, ham_u64_t lsn);
 
     /** empties the journal, removes all entries */
@@ -176,7 +176,7 @@ class Journal
 
     /** empties the journal, removes all entries (w/o mutex) */
     ham_status_t clear_nolock() {
-        ham_status_t st; 
+        ham_status_t st;
 
         for (int i=0; i<2; i++) {
             if ((st=clear_file(i)))
@@ -236,8 +236,8 @@ class Journal
     /** a mutex to protect the journal */
     Mutex m_mutex;
 
-	/** references the Environment this journal file is for */
-	Environment *m_env;
+    /** references the Environment this journal file is for */
+    Environment *m_env;
 
     /** the index of the file descriptor we are currently writing to */
     ham_size_t m_current_fd;

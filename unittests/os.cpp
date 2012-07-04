@@ -161,7 +161,7 @@ public:
         BFC_ASSERT_EQUAL(0,
 =======
         BFC_ASSERT_EQUAL(0, os_close(fd));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
 >>>>>>> remotes/cruppstahl/wip/cache
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
         BFC_ASSERT_EQUAL(0, os_close(fd2));
@@ -256,8 +256,8 @@ public:
         
         BFC_ASSERT_EQUAL(0, os_close(fd, 0));
 =======
-		
-		BFC_ASSERT_EQUAL(0, os_close(fd));
+        
+        BFC_ASSERT_EQUAL(0, os_close(fd));
 >>>>>>> remotes/cruppstahl/wip/cache
         free(page);
     }

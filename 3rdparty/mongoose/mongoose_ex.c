@@ -64,7 +64,7 @@ int mg_set_socket_keepalive(struct socket *sock, int on)
 
 int mg_set_socket_timeout(struct socket *sock, int seconds)
 {
-	return set_timeout(sock, seconds);
+    return set_timeout(sock, seconds);
 }
 
 
@@ -147,7 +147,7 @@ void mg_vlog(struct mg_connection *conn, const char *severity, const char *fmt, 
 {
     time_t timestamp = time(NULL);
 
-	mg_vwrite2log(conn, NULL, timestamp, severity, fmt, args);
+    mg_vwrite2log(conn, NULL, timestamp, severity, fmt, args);
 }
 
 

@@ -192,7 +192,7 @@ public:
                                 blobid, &record, 0, &blobid2));
         BFC_ASSERT(blobid2!=0);
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 blob_read((Database *)m_db, 0, blobid2, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer2));
         BFC_ASSERT(0==::memcmp(buffer2, record.data, record.size));
@@ -218,7 +218,7 @@ public:
                                 &record, 0, &blobid));
         BFC_ASSERT(blobid!=0);
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 blob_read((Database *)m_db, 0, blobid, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer));
         BFC_ASSERT(0==::memcmp(buffer, record.data, record.size));
@@ -230,7 +230,7 @@ public:
                     &record, 0, &blobid2));
         BFC_ASSERT(blobid2!=0);
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 blob_read((Database *)m_db, 0, blobid2, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer2));
         BFC_ASSERT(0==::memcmp(buffer2, record.data, record.size));
@@ -255,7 +255,7 @@ public:
                                 0, &blobid));
         BFC_ASSERT(blobid!=0);
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 blob_read((Database *)m_db, 0, blobid, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer));
         BFC_ASSERT(0==::memcmp(buffer, record.data, record.size));
@@ -267,7 +267,7 @@ public:
                                 blobid, &record, 0, &blobid2));
         BFC_ASSERT(blobid2!=0);
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 blob_read((Database *)m_db, 0, blobid2, &record, 0));
         BFC_ASSERT_EQUAL(record.size, (ham_size_t)sizeof(buffer2));
         BFC_ASSERT(0==::memcmp(buffer2, record.data, record.size));
@@ -276,7 +276,7 @@ public:
         if (!m_inmemory) {
             ham_offset_t addr;
             Environment *e=(Environment *)m_env;
-            BFC_ASSERT_EQUAL(0, e->get_freelist()->alloc_area(&addr, 
+            BFC_ASSERT_EQUAL(0, e->get_freelist()->alloc_area(&addr,
                                         (Database *)m_db, 64));
             BFC_ASSERT(addr!=0);
         }
@@ -289,7 +289,7 @@ public:
         if (!m_inmemory) {
             ham_offset_t addr;
             Environment *e=(Environment *)m_env;
-            BFC_ASSERT_EQUAL(0, e->get_freelist()->alloc_area(&addr, 
+            BFC_ASSERT_EQUAL(0, e->get_freelist()->alloc_area(&addr,
                                         (Database *)m_db, 64));
             BFC_ASSERT(addr!=0);
         }
@@ -378,7 +378,7 @@ public:
             BFC_ASSERT_I(buffer!=0, i);
             ::memset(buffer, (char)i, (i+1)*factor);
 
-            BFC_ASSERT_EQUAL_I(0, 
+            BFC_ASSERT_EQUAL_I(0,
                     blob_read((Database *)m_db, 0, blobid[i], &record, 0), i);
             BFC_ASSERT_EQUAL_I(record.size, (ham_size_t)(i+1)*factor, i);
             BFC_ASSERT_I(0==::memcmp(buffer, record.data, record.size), i);

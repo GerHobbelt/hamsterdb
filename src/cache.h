@@ -69,11 +69,11 @@ class Cache
         /* otherwise remove the page from the cache */
         remove_page_nolock(page);
 
-        /* if the flag NOREMOVE is set, then re-insert the page. 
+        /* if the flag NOREMOVE is set, then re-insert the page.
          *
          * The remove/insert trick causes the page to be inserted at the
          * head of the "totallist", and therefore it will automatically move
-         * far away from the tail. And the pages at the tail are highest 
+         * far away from the tail. And the pages at the tail are highest
          * candidates to be deleted when the cache is purged. */
         if (flags&Cache::NOREMOVE)
             put_page_nolock(page);
@@ -144,15 +144,15 @@ class Cache
     }
 
     /** get the capacity (in bytes) */
-    ham_u64_t get_capacity() { 
+    ham_u64_t get_capacity() {
         ScopedLock lock(m_mutex);
-        return (m_capacity); 
+        return (m_capacity);
     }
 
     /** check the cache integrity */
     ham_status_t check_integrity() {
         ScopedLock lock(m_mutex);
-        return (check_integrity_nolock()); 
+        return (check_integrity_nolock());
     }
 
   private:
@@ -203,7 +203,7 @@ class Cache
     void remove_page_nolock(Page *page) {
         bool removed=false;
 
-        /* are we removing the chronologically oldest page? then 
+        /* are we removing the chronologically oldest page? then
          * update the pointer with the next oldest page */
         if (m_totallist_tail==page)
             m_totallist_tail=page->get_previous(Page::LIST_CACHED);
@@ -212,7 +212,7 @@ class Cache
         if (page->get_self()) {
             ham_u64_t hash=calc_hash(page->get_self());
             if (page->is_in_list(m_buckets[hash], Page::LIST_BUCKET)) {
-                m_buckets[hash]=page->list_remove(m_buckets[hash], 
+                m_buckets[hash]=page->list_remove(m_buckets[hash],
                         Page::LIST_BUCKET);
             }
         }
@@ -280,9 +280,9 @@ class Cache
         if (!is_too_big_nolock())
             return (0);
 
-        /* 
+        /*
          * max_pages specifies how many pages we try to flush in case the
-         * cache is full. some benchmarks showed that 10% is a good value. 
+         * cache is full. some benchmarks showed that 10% is a good value.
          *
          * if STRICT cache limits are enabled then purge as much as we can
          */
@@ -321,8 +321,8 @@ class Cache
     }
 
     /** set the HEAD of the global page list */
-    void set_totallist(Page *l) { 
-        m_totallist=l; 
+    void set_totallist(Page *l) {
+        m_totallist=l;
     }
 
     /** a mutex for this Environment */

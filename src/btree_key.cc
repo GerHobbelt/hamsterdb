@@ -53,8 +53,8 @@ key_insert_extended(ham_offset_t *rid_ref, Database *db, Page *page,
 }
 
 ham_status_t
-key_set_record(Database *db, Transaction *txn, btree_key_t *key, 
-        ham_record_t *record, ham_size_t position, ham_u32_t flags, 
+key_set_record(Database *db, Transaction *txn, btree_key_t *key,
+        ham_record_t *record, ham_size_t position, ham_u32_t flags,
         ham_size_t *new_position)
 {
     ham_status_t st;
@@ -246,7 +246,7 @@ key_set_record(Database *db, Transaction *txn, btree_key_t *key,
 }
 
 ham_status_t
-key_erase_record(Database *db, Transaction *txn, btree_key_t *key, 
+key_erase_record(Database *db, Transaction *txn, btree_key_t *key,
         ham_size_t dupe_id, ham_u32_t flags)
 {
     ham_status_t st;

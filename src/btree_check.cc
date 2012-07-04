@@ -67,8 +67,8 @@ __verify_page(Page *parent, Page *leftsib, Page *page,
  * hamsterdb is compiled with HAM_ENABLE_INTERNAL turned on.
  *
  * @note This is a B+-tree 'backend' method.
- */                                                                 
-ham_status_t 
+ */
+ham_status_t
 BtreeBackend::check_integrity()
 {
     Page *page, *parent=0;

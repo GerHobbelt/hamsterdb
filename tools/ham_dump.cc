@@ -253,8 +253,8 @@ main(int argc, const char **argv)
 {
     unsigned opt;
     const char *param;
-	const char *filename=0;
-	char *endptr=0;
+    const char *filename=0;
+    char *endptr=0;
     int key=FMT_BINARY, rec=FMT_BINARY, keysize=16, recsize=16;
     unsigned short dbname=0xffff;
 

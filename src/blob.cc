@@ -55,7 +55,7 @@ __blob_from_cache(Environment *env, ham_size_t size)
  */
 static ham_status_t
 __write_chunks(Environment *env, Page *page, ham_offset_t addr,
-        bool allocated, bool freshly_created, 
+        bool allocated, bool freshly_created,
         ham_u8_t **chunk_data, ham_size_t *chunk_size,
         ham_size_t chunks)
 {
@@ -147,7 +147,7 @@ __write_chunks(Environment *env, Page *page, ham_offset_t addr,
                 bool at_blob_edge = (__blob_from_cache(env, chunk_size[i])
                         || (addr % pagesize) != 0
                         || chunk_size[i] < pagesize);
-                bool cacheonly = (!at_blob_edge 
+                bool cacheonly = (!at_blob_edge
                                     && (!env->get_log()
                                         || freshly_created));
 
@@ -231,8 +231,8 @@ __read_chunk(Environment *env, Page *page, Page **fpage,
             else
                 st=env_fetch_page(&page, env, pageid,
                     __blob_from_cache(env, size) ? 0 : DB_ONLY_FROM_CACHE);
-			if (st)
-				return st;
+            if (st)
+                return st;
             /* blob pages don't have a page header */
             if (page)
                 page->set_flags(page->get_flags()|Page::NPERS_NO_HEADER);
@@ -476,7 +476,7 @@ blob_allocate(Environment *env, Database *db, ham_record_t *record,
         }
     }
     else {
-		ham_assert(st==0, (0));
+        ham_assert(st==0, (0));
         blob_set_alloc_size(&hdr, alloc_size);
     }
 
@@ -630,7 +630,7 @@ blob_allocate(Environment *env, Database *db, ham_record_t *record,
 }
 
 ham_status_t
-blob_read(Database *db, Transaction *txn, ham_offset_t blobid, 
+blob_read(Database *db, Transaction *txn, ham_offset_t blobid,
         ham_record_t *record, ham_u32_t flags)
 {
     ham_status_t st;
@@ -744,9 +744,9 @@ blob_read(Database *db, Transaction *txn, ham_offset_t blobid,
     }
 
     /* third step: read the blob data */
-    st=__read_chunk(db->get_env(), page, 0, 
-                    blobid+sizeof(blob_t)+(flags&HAM_PARTIAL 
-                            ? record->partial_offset 
+    st=__read_chunk(db->get_env(), page, 0,
+                    blobid+sizeof(blob_t)+(flags&HAM_PARTIAL
+                            ? record->partial_offset
                             : 0),
                     db, (ham_u8_t *)record->data, blobsize);
     if (st)
@@ -938,8 +938,8 @@ blob_overwrite(Environment *env, Database *db, ham_offset_t old_blobid,
          */
         if (blob_get_alloc_size(&old_hdr)!=blob_get_alloc_size(&new_hdr)) {
             if (env->get_freelist())
-                env->get_freelist()->mark_free(db, 
-                        blob_get_self(&new_hdr)+blob_get_alloc_size(&new_hdr), 
+                env->get_freelist()->mark_free(db,
+                        blob_get_self(&new_hdr)+blob_get_alloc_size(&new_hdr),
                         (ham_size_t)(blob_get_alloc_size(&old_hdr)-
                         blob_get_alloc_size(&new_hdr)), HAM_FALSE);
         }
@@ -962,7 +962,7 @@ blob_overwrite(Environment *env, Database *db, ham_offset_t old_blobid,
             return (st);
 
         if (env->get_freelist())
-            env->get_freelist()->mark_free(db, old_blobid, 
+            env->get_freelist()->mark_free(db, old_blobid,
                         (ham_size_t)blob_get_alloc_size(&old_hdr), HAM_FALSE);
     }
 
@@ -994,21 +994,21 @@ blob_free(Environment *env, Database *db, ham_offset_t blobid, ham_u32_t flags)
     ham_assert(blob_get_alloc_size(&hdr)%DB_CHUNKSIZE==0, (0));
 
     /* sanity check */
-    ham_verify(blob_get_self(&hdr)==blobid, 
+    ham_verify(blob_get_self(&hdr)==blobid,
             ("invalid blobid %llu != %llu", blob_get_self(&hdr), blobid));
     if (blob_get_self(&hdr)!=blobid)
         return (HAM_BLOB_NOT_FOUND);
 
     /* move the blob to the freelist */
     if (env->get_freelist())
-        st=env->get_freelist()->mark_free(db, blobid, 
+        st=env->get_freelist()->mark_free(db, blobid,
                     (ham_size_t)blob_get_alloc_size(&hdr), HAM_FALSE);
 
     return st;
 }
 
 static ham_size_t
-__get_sorted_position(Database *db, Transaction *txn, dupe_table_t *table, 
+__get_sorted_position(Database *db, Transaction *txn, dupe_table_t *table,
                 ham_record_t *record, ham_u32_t flags)
 {
     ham_duplicate_compare_func_t foo = db->get_duplicate_compare_func();
@@ -1055,7 +1055,7 @@ __get_sorted_position(Database *db, Transaction *txn, dupe_table_t *table,
         item_record._intflags = dupe_entry_get_flags(e)&(KEY_BLOB_SIZE_SMALL
                                                          |KEY_BLOB_SIZE_TINY
                                                          |KEY_BLOB_SIZE_EMPTY);
-        st=btree_read_record(db, txn, &item_record, 
+        st=btree_read_record(db, txn, &item_record,
                     (ham_u64_t *)&dupe_entry_get_ridptr(e), flags);
         if (st)
             return (st);
@@ -1101,15 +1101,15 @@ __get_sorted_position(Database *db, Transaction *txn, dupe_table_t *table,
 }
 
 ham_status_t
-blob_duplicate_insert(Database *db, Transaction *txn, ham_offset_t table_id, 
-        ham_record_t *record, ham_size_t position, ham_u32_t flags, 
-        dupe_entry_t *entries, ham_size_t num_entries, 
+blob_duplicate_insert(Database *db, Transaction *txn, ham_offset_t table_id,
+        ham_record_t *record, ham_size_t position, ham_u32_t flags,
+        dupe_entry_t *entries, ham_size_t num_entries,
         ham_offset_t *rid, ham_size_t *new_position)
 {
     ham_status_t st=0;
     dupe_table_t *table=0;
     bool alloc_table=0;
-	bool resize=0;
+    bool resize=0;
     Page *page=0;
     Environment *env=db->get_env();
 

@@ -196,19 +196,19 @@ class Environment
     /**
      * create a transaction in this environment
      */
-    ham_status_t (*_fun_txn_begin)(Environment *env, Transaction **txn, 
+    ham_status_t (*_fun_txn_begin)(Environment *env, Transaction **txn,
                 const char *name, ham_u32_t flags);
 
     /**
      * aborts a transaction
      */
-    ham_status_t (*_fun_txn_abort)(Environment *env, Transaction *txn, 
+    ham_status_t (*_fun_txn_abort)(Environment *env, Transaction *txn,
                 ham_u32_t flags);
 
     /**
      * commits a transaction
      */
-    ham_status_t (*_fun_txn_commit)(Environment *env, Transaction *txn, 
+    ham_status_t (*_fun_txn_commit)(Environment *env, Transaction *txn,
                 ham_u32_t flags);
 
     /**
@@ -444,7 +444,7 @@ class Environment
         return (m_is_active);
     }
 
-    /** returns true if this Environment is private to a Database 
+    /** returns true if this Environment is private to a Database
      * (was implicitly created in ham_create/ham_open) */
     bool is_private();
 

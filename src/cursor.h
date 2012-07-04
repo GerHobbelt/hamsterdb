@@ -305,7 +305,7 @@ class Cursor
      * local/temporary Transaction that was created only for this single
      * operation.
      */
-    ham_status_t get_duplicate_count(Transaction *txn, ham_u32_t *pcount, 
+    ham_status_t get_duplicate_count(Transaction *txn, ham_u32_t *pcount,
                 ham_u32_t flags);
 
     /**

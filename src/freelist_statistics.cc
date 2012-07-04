@@ -111,7 +111,7 @@
  */
 
 /** scale @a val down by a factor of 256.
- * Make sure non-zero numbers remain non-zero: roundup(x) 
+ * Make sure non-zero numbers remain non-zero: roundup(x)
  */
 #define rescale_256(val)                            \
     val = ((val + 256 - 1) >> 8)
@@ -225,192 +225,192 @@ void
 freelist_stats_fail(Freelist *fl, FreelistEntry *entry, FreelistPayload *f,
                 freelist_hints_t *hints)
 {
-	/*
- 	 * freelist scans with a non-zero lower bound address are SPECIAL searches,
-	 * which should NOT corrupt our statistics in any way.
-	 */
-	if (hints->lower_bound_address == 0) {
-		ham_runtime_statistics_globdata_t *globalstats
+    /*
+     * freelist scans with a non-zero lower bound address are SPECIAL searches,
+     * which should NOT corrupt our statistics in any way.
+     */
+    if (hints->lower_bound_address == 0) {
+        ham_runtime_statistics_globdata_t *globalstats
                     = fl->get_env()->get_global_perf_data();
-		freelist_page_statistics_t *entrystats
+        freelist_page_statistics_t *entrystats
                     = &entry->perf_data._persisted_stats;
-		ham_size_t cost = hints->cost;
+        ham_size_t cost = hints->cost;
 
-		ham_u16_t bucket = ham_bitcount2bucket_index(hints->size_bits);
-		ham_u32_t position = entrystats->persisted_bits;
+        ham_u16_t bucket = ham_bitcount2bucket_index(hints->size_bits);
+        ham_u32_t position = entrystats->persisted_bits;
 
-		// should NOT use freel_get_max_bitsXX(f) here!
-		ham_assert(bucket < HAM_FREELIST_SLOT_SPREAD, (0));
+        // should NOT use freel_get_max_bitsXX(f) here!
+        ham_assert(bucket < HAM_FREELIST_SLOT_SPREAD, (0));
 
         entry->perf_data._dirty = HAM_TRUE;
 
-		if (globalstats->rescale_monitor
+        if (globalstats->rescale_monitor
                 >= HAM_STATISTICS_HIGH_WATER_MARK - cost) {
-			/* rescale cache numbers! */
-			rescale_global_statistics(fl->get_env());
-		}
-		globalstats->rescale_monitor += cost;
+            /* rescale cache numbers! */
+            rescale_global_statistics(fl->get_env());
+        }
+        globalstats->rescale_monitor += cost;
 
-		globalstats->fail_count++;
-		globalstats->search_count++;
-		globalstats->scan_cost[bucket] += cost;
-		globalstats->scan_count[bucket]++;
+        globalstats->fail_count++;
+        globalstats->search_count++;
+        globalstats->scan_cost[bucket] += cost;
+        globalstats->scan_count[bucket]++;
 
-		if (entrystats->rescale_monitor >=
+        if (entrystats->rescale_monitor >=
                 HAM_STATISTICS_HIGH_WATER_MARK - cost) {
-			/* rescale cache numbers! */
-			rescale_freelist_page_stats(fl, entry);
-		}
-		entrystats->rescale_monitor += cost;
+            /* rescale cache numbers! */
+            rescale_freelist_page_stats(fl, entry);
+        }
+        entrystats->rescale_monitor += cost;
 
-		/* we _did_ look in the midrange, but clearly we were not lucky there */
-		if (hints->startpos < entrystats->last_start)
-			entrystats->per_size[bucket].epic_fail_midrange++;
-		entrystats->fail_count++;
-		entrystats->search_count++;
-		entrystats->per_size[bucket].scan_cost += cost;
-		entrystats->per_size[bucket].scan_count++;
+        /* we _did_ look in the midrange, but clearly we were not lucky there */
+        if (hints->startpos < entrystats->last_start)
+            entrystats->per_size[bucket].epic_fail_midrange++;
+        entrystats->fail_count++;
+        entrystats->search_count++;
+        entrystats->per_size[bucket].scan_cost += cost;
+        entrystats->per_size[bucket].scan_count++;
 
-		/*
-		 * only upgrade the fail-based start position to the very edge of
-		 * the freelist page's occupied zone, when the edge is known
-		 * (initialized).
-		 */
-		if (!hints->aligned && position) {
-			ham_u16_t b;
-			/*
-			 * adjust the position to point at a free slot within the
-			 * occupied zone, which would produce such an outcome by having
-			 * too few free slots still in there following such a position.
-			 *
-			 * Hence we're saying there _is_ space (even when there may be
-			 * none at all) but we also say this free space is not large
-			 * enough to suit us.
-			 *
-			 * Why this weird juggling? Because, when the freelist is
-			 * expanded as new (free) pages become registered, we will then
-			 * have (a) sufficient free space (duh!) and most importantly,
-			 * we'll have (b) made sure the next search for available slots
-			 * by then does NOT skip/ignore those last few free bits we
-			 * still _may_ have in this preceding zone, which is a WIN when
-			 * we're into saving disc space.
-			 */
-			ham_u32_t offset = entry->allocated_bits;
-			if (offset > hints->size_bits)
-				offset = hints->size_bits;
-			if (position > offset - 1)
-				position -= offset - 1;
-			/*
-			 * now we are at the first position within the freelist page
-			 * where the reported FAIL for the given size_bits would happen,
-			 * guaranteed.
-			 */
-			for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-				if (entrystats->per_size[b].first_start < position)
-					entrystats->per_size[b].first_start = position;
-				/* also update buckets for larger chunks at the same time */
-			}
+        /*
+         * only upgrade the fail-based start position to the very edge of
+         * the freelist page's occupied zone, when the edge is known
+         * (initialized).
+         */
+        if (!hints->aligned && position) {
+            ham_u16_t b;
+            /*
+             * adjust the position to point at a free slot within the
+             * occupied zone, which would produce such an outcome by having
+             * too few free slots still in there following such a position.
+             *
+             * Hence we're saying there _is_ space (even when there may be
+             * none at all) but we also say this free space is not large
+             * enough to suit us.
+             *
+             * Why this weird juggling? Because, when the freelist is
+             * expanded as new (free) pages become registered, we will then
+             * have (a) sufficient free space (duh!) and most importantly,
+             * we'll have (b) made sure the next search for available slots
+             * by then does NOT skip/ignore those last few free bits we
+             * still _may_ have in this preceding zone, which is a WIN when
+             * we're into saving disc space.
+             */
+            ham_u32_t offset = entry->allocated_bits;
+            if (offset > hints->size_bits)
+                offset = hints->size_bits;
+            if (position > offset - 1)
+                position -= offset - 1;
+            /*
+             * now we are at the first position within the freelist page
+             * where the reported FAIL for the given size_bits would happen,
+             * guaranteed.
+             */
+            for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                if (entrystats->per_size[b].first_start < position)
+                    entrystats->per_size[b].first_start = position;
+                /* also update buckets for larger chunks at the same time */
+            }
 
-			if (entrystats->last_start < position)
-				entrystats->last_start = position;
-			for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-				ham_assert(entrystats->last_start
+            if (entrystats->last_start < position)
+                entrystats->last_start = position;
+            for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                ham_assert(entrystats->last_start
                     >= entrystats->per_size[b].first_start, (0));
-			}
-		}
-	}
+            }
+        }
+    }
 }
 
 void
 freelist_stats_update(Freelist *fl, FreelistEntry *entry, FreelistPayload *f,
                 ham_u32_t position, freelist_hints_t *hints)
 {
-	/*
-	 * freelist scans with a non-zero lower bound address are SPECIAL searches,
-	 * which should NOT corrupt our statistics in any way.
-	 */
-	if (hints->lower_bound_address == 0) {
-		ham_u16_t b;
-		ham_size_t cost = hints->cost;
+    /*
+     * freelist scans with a non-zero lower bound address are SPECIAL searches,
+     * which should NOT corrupt our statistics in any way.
+     */
+    if (hints->lower_bound_address == 0) {
+        ham_u16_t b;
+        ham_size_t cost = hints->cost;
 
-		ham_runtime_statistics_globdata_t *globalstats =
+        ham_runtime_statistics_globdata_t *globalstats =
                     fl->get_env()->get_global_perf_data();
-		freelist_page_statistics_t *entrystats =
+        freelist_page_statistics_t *entrystats =
                     &entry->perf_data._persisted_stats;
 
-		ham_u16_t bucket = ham_bitcount2bucket_index(hints->size_bits);
-		ham_assert(bucket < HAM_FREELIST_SLOT_SPREAD, (0));
+        ham_u16_t bucket = ham_bitcount2bucket_index(hints->size_bits);
+        ham_assert(bucket < HAM_FREELIST_SLOT_SPREAD, (0));
 
         entry->perf_data._dirty = HAM_TRUE;
 
-		if (globalstats->rescale_monitor
+        if (globalstats->rescale_monitor
                 >= HAM_STATISTICS_HIGH_WATER_MARK - cost) {
-			/* rescale cache numbers! */
-			rescale_global_statistics(fl->get_env());
-		}
-		globalstats->rescale_monitor += cost;
+            /* rescale cache numbers! */
+            rescale_global_statistics(fl->get_env());
+        }
+        globalstats->rescale_monitor += cost;
 
-		globalstats->search_count++;
-		globalstats->ok_scan_cost[bucket] += cost;
-		globalstats->scan_cost[bucket] += cost;
-		globalstats->ok_scan_count[bucket]++;
-		globalstats->scan_count[bucket]++;
+        globalstats->search_count++;
+        globalstats->ok_scan_cost[bucket] += cost;
+        globalstats->scan_cost[bucket] += cost;
+        globalstats->ok_scan_count[bucket]++;
+        globalstats->scan_count[bucket]++;
 
-		if (entrystats->rescale_monitor >=
+        if (entrystats->rescale_monitor >=
                 HAM_STATISTICS_HIGH_WATER_MARK - cost) {
-			/* rescale cache numbers! */
-			rescale_freelist_page_stats(fl, entry);
-		}
-		entrystats->rescale_monitor += cost;
+            /* rescale cache numbers! */
+            rescale_freelist_page_stats(fl, entry);
+        }
+        entrystats->rescale_monitor += cost;
 
-		if (hints->startpos < entrystats->last_start) {
-			if (position < entrystats->last_start) {
-				/* we _did_ look in the midrange, but clearly we were not lucky there */
-				entrystats->per_size[bucket].epic_fail_midrange++;
-			}
-			else {
-				entrystats->per_size[bucket].epic_win_midrange++;
-			}
-		}
-		entrystats->search_count++;
-		entrystats->per_size[bucket].ok_scan_cost += cost;
-		entrystats->per_size[bucket].scan_cost += cost;
-		entrystats->per_size[bucket].ok_scan_count++;
-		entrystats->per_size[bucket].scan_count++;
+        if (hints->startpos < entrystats->last_start) {
+            if (position < entrystats->last_start) {
+                /* we _did_ look in the midrange, but clearly we were not lucky there */
+                entrystats->per_size[bucket].epic_fail_midrange++;
+            }
+            else {
+                entrystats->per_size[bucket].epic_win_midrange++;
+            }
+        }
+        entrystats->search_count++;
+        entrystats->per_size[bucket].ok_scan_cost += cost;
+        entrystats->per_size[bucket].scan_cost += cost;
+        entrystats->per_size[bucket].ok_scan_count++;
+        entrystats->per_size[bucket].scan_count++;
 
-		/*
-		 * since we get called here when we just found a suitably large
-		 * free slot, that slot will be _gone_ for the next search, so we
-		 * bump up our 'free slots to be found starting here'
-		 * offset by size_bits, skipping the current space.
-		 */
-		position += hints->size_bits;
-	    
-		for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-			if (entrystats->per_size[b].first_start < position)
-				entrystats->per_size[b].first_start = position;
-			/* also update buckets for larger chunks at the same time */
-		}
+        /*
+         * since we get called here when we just found a suitably large
+         * free slot, that slot will be _gone_ for the next search, so we
+         * bump up our 'free slots to be found starting here'
+         * offset by size_bits, skipping the current space.
+         */
+        position += hints->size_bits;
+        
+        for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+            if (entrystats->per_size[b].first_start < position)
+                entrystats->per_size[b].first_start = position;
+            /* also update buckets for larger chunks at the same time */
+        }
 
-		if (entrystats->last_start < position)
-			entrystats->last_start = position;
-		for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-			ham_assert(entrystats->last_start
+        if (entrystats->last_start < position)
+            entrystats->last_start = position;
+        for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+            ham_assert(entrystats->last_start
                     >= entrystats->per_size[b].first_start, (0));
-		}
+        }
 
-		if (entrystats->persisted_bits < position) {
-			/* overflow? reset this marker! */
-			ham_assert(entrystats->persisted_bits == 0,
+        if (entrystats->persisted_bits < position) {
+            /* overflow? reset this marker! */
+            ham_assert(entrystats->persisted_bits == 0,
                 ("Should not get here when not invoked from the [unit]tests!"));
-			if (hints->size_bits > entry->allocated_bits)
-				entrystats->persisted_bits = position;
-			else
-				/* extra HACKY safety margin */ 
-				entrystats->persisted_bits = position
+            if (hints->size_bits > entry->allocated_bits)
+                entrystats->persisted_bits = position;
+            else
+                /* extra HACKY safety margin */
+                entrystats->persisted_bits = position
                             - hints->size_bits + entry->allocated_bits;
-		}
-	}
+        }
+    }
 }
 
 /*
@@ -427,173 +427,173 @@ freelist_stats_edit(Freelist *fl, FreelistEntry *entry, FreelistPayload *f,
                 ham_u32_t position, ham_size_t size_bits, ham_bool_t free_these,
                 freelist_hints_t *hints)
 {
-	/*
-	 * freelist scans with a non-zero lower bound address are SPECIAL searches,
-	 * which should NOT corrupt our statistics in any way.
-	 * In short: we are not (yet) capable of processing these runs into the
+    /*
+     * freelist scans with a non-zero lower bound address are SPECIAL searches,
+     * which should NOT corrupt our statistics in any way.
+     * In short: we are not (yet) capable of processing these runs into the
      * overall staistics gathering.
-	*/
-	if (hints->lower_bound_address == 0) {
-		ham_runtime_statistics_globdata_t *globalstats
+    */
+    if (hints->lower_bound_address == 0) {
+        ham_runtime_statistics_globdata_t *globalstats
                     = fl->get_env()->get_global_perf_data();
-		freelist_page_statistics_t *entrystats
+        freelist_page_statistics_t *entrystats
                     = &entry->perf_data._persisted_stats;
 
-		ham_u16_t bucket = ham_bitcount2bucket_index(size_bits);
-		ham_assert(bucket < HAM_FREELIST_SLOT_SPREAD, (0));
+        ham_u16_t bucket = ham_bitcount2bucket_index(size_bits);
+        ham_assert(bucket < HAM_FREELIST_SLOT_SPREAD, (0));
 
         entry->perf_data._dirty = HAM_TRUE;
 
-		if (free_these) {
-			/*
-			 * addition of free slots: delete, transaction abort or DB
-			 * extend operation
-			 *
-			 * differentiate between them by checking if the new free zone
-			 * is an entirely fresh addition or sitting somewhere in already
-			 * used (recorded) space: extend or not?
-			 */
-			ham_u16_t b;
+        if (free_these) {
+            /*
+             * addition of free slots: delete, transaction abort or DB
+             * extend operation
+             *
+             * differentiate between them by checking if the new free zone
+             * is an entirely fresh addition or sitting somewhere in already
+             * used (recorded) space: extend or not?
+             */
+            ham_u16_t b;
 
-			ham_assert(entrystats->last_start
+            ham_assert(entrystats->last_start
                     >= entrystats->per_size[bucket].first_start, (0));
-			for (b = 0; b <= bucket; b++) {
-				if (entrystats->per_size[b].first_start > position)
-					entrystats->per_size[b].first_start = position;
-				/* also update buckets for smaller chunks at the same time */
-			}
+            for (b = 0; b <= bucket; b++) {
+                if (entrystats->per_size[b].first_start > position)
+                    entrystats->per_size[b].first_start = position;
+                /* also update buckets for smaller chunks at the same time */
+            }
 
-			/* if we just freed the chunk just BEFORE the 'last_free', why
-			 * not merge them, eh? */
-			if (entrystats->last_start == position + size_bits) {
-				entrystats->last_start = position;
+            /* if we just freed the chunk just BEFORE the 'last_free', why
+             * not merge them, eh? */
+            if (entrystats->last_start == position + size_bits) {
+                entrystats->last_start = position;
 
-				/* when we can adjust the last chunk, we should also adjust
-				 *the start for bigger chunks... */
-				for (b = bucket + 1; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-					if (entrystats->per_size[b].first_start > position)
-						entrystats->per_size[b].first_start = position;
-					/* also update buckets for smaller chunks at the same
-					 * time */
-				}
-			}
-			for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-				ham_assert(entrystats->last_start
+                /* when we can adjust the last chunk, we should also adjust
+                 *the start for bigger chunks... */
+                for (b = bucket + 1; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                    if (entrystats->per_size[b].first_start > position)
+                        entrystats->per_size[b].first_start = position;
+                    /* also update buckets for smaller chunks at the same
+                     * time */
+                }
+            }
+            for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                ham_assert(entrystats->last_start
                         >= entrystats->per_size[b].first_start, (0));
-			}
+            }
 
-			position += size_bits;
+            position += size_bits;
 
-			/* if this is a 'free' for a newly created page, we'd need to
-			 * adjust the outer edge */
-			if (entrystats->persisted_bits < position) {
-				globalstats->extend_count++;
+            /* if this is a 'free' for a newly created page, we'd need to
+             * adjust the outer edge */
+            if (entrystats->persisted_bits < position) {
+                globalstats->extend_count++;
 
-				ham_assert(entrystats->last_start < position, (0));
-				entrystats->persisted_bits = position;
-			}
-			else {
-				//ham_assert(entrystats->last_start >= position, (0));
-				globalstats->delete_count++;
-			}
+                ham_assert(entrystats->last_start < position, (0));
+                entrystats->persisted_bits = position;
+            }
+            else {
+                //ham_assert(entrystats->last_start >= position, (0));
+                globalstats->delete_count++;
+            }
 
-			ham_assert(entrystats->persisted_bits >= position, (0));
+            ham_assert(entrystats->persisted_bits >= position, (0));
 
-			{
-				ham_u32_t entry_index = (ham_u32_t)(entry - fl->get_entries());
+            {
+                ham_u32_t entry_index = (ham_u32_t)(entry - fl->get_entries());
 
-				ham_assert(entry_index >= 0, (0));
-				ham_assert(entry_index < freel_cache_get_count(fl), (0));
+                ham_assert(entry_index >= 0, (0));
+                ham_assert(entry_index < freel_cache_get_count(fl), (0));
 
-				for (b = 0; b <= bucket; b++) {
-					if (globalstats->first_page_with_free_space[b] > entry_index)
-						globalstats->first_page_with_free_space[b] = entry_index;
-					/* also update buckets for smaller chunks at the same
-					 * time */
-				}
-			}
-		}
-		else {
-			ham_u16_t b;
+                for (b = 0; b <= bucket; b++) {
+                    if (globalstats->first_page_with_free_space[b] > entry_index)
+                        globalstats->first_page_with_free_space[b] = entry_index;
+                    /* also update buckets for smaller chunks at the same
+                     * time */
+                }
+            }
+        }
+        else {
+            ham_u16_t b;
 
-			/*
-			 *  occupation of free slots: insert or similar operation
-			 */
-			position += size_bits;
+            /*
+             *  occupation of free slots: insert or similar operation
+             */
+            position += size_bits;
 
-			for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-				if (entrystats->per_size[b].first_start < position)
-					entrystats->per_size[b].first_start = position;
-				/* also update buckets for larger chunks at the same time */
-			}
+            for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                if (entrystats->per_size[b].first_start < position)
+                    entrystats->per_size[b].first_start = position;
+                /* also update buckets for larger chunks at the same time */
+            }
 
-			globalstats->insert_count++;
+            globalstats->insert_count++;
 
-			if (entrystats->last_start < position)
-				entrystats->last_start = position;
-			for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-				ham_assert(entrystats->last_start
+            if (entrystats->last_start < position)
+                entrystats->last_start = position;
+            for (b = 0; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                ham_assert(entrystats->last_start
                         >= entrystats->per_size[b].first_start, (0));
-			}
+            }
 
-			if (entrystats->persisted_bits < position) {
-				/*
-				 * the next is really a HACKY HACKY stop-gap measure:
-				 * we see that the last_ever_seen offset has not been
-				 * initialized (or incorrectly initialized) up to now, so we
-				 * guestimate where it is, guessing on the safe side: we
-				 * assume all free bits are situated past the current
-				 * location, and shift the last_ever_seen position up
-				 * accordingly
-				 */
-				//globalstats->extend_count++;
+            if (entrystats->persisted_bits < position) {
+                /*
+                 * the next is really a HACKY HACKY stop-gap measure:
+                 * we see that the last_ever_seen offset has not been
+                 * initialized (or incorrectly initialized) up to now, so we
+                 * guestimate where it is, guessing on the safe side: we
+                 * assume all free bits are situated past the current
+                 * location, and shift the last_ever_seen position up
+                 * accordingly
+                 */
+                //globalstats->extend_count++;
 
-				ham_assert(entrystats->persisted_bits == 0,
+                ham_assert(entrystats->persisted_bits == 0,
                     ("Should not get here when not invoked from the [unit]tests!"));
-				entrystats->persisted_bits = position +
+                entrystats->persisted_bits = position +
                     size_bits + entry->allocated_bits;
-			}
+            }
 
-			/*
-			 * maxsize within given bucket must still fit in the page, or
-			 * it's useless checking this page again.
-			 */
-			if (ham_bucket_index2bitcount(bucket) > entry->allocated_bits) {
-				ham_u32_t entry_index = (ham_u32_t)(entry - fl->get_entries());
+            /*
+             * maxsize within given bucket must still fit in the page, or
+             * it's useless checking this page again.
+             */
+            if (ham_bucket_index2bitcount(bucket) > entry->allocated_bits) {
+                ham_u32_t entry_index = (ham_u32_t)(entry - fl->get_entries());
 
-				ham_assert(entry_index >= 0, (0));
-				ham_assert(entry_index < freel_cache_get_count(fl), (0));
+                ham_assert(entry_index >= 0, (0));
+                ham_assert(entry_index < freel_cache_get_count(fl), (0));
 
-				/*
-				 * We can update this number ONLY WHEN we have an
-				 * allocation in the edge page;
-				 * this is because we have modes where the freelist is
-				 * checked in random and blindly updating the lower bound
-				 * here would jeopardize the utilization of the DB.
-				 *
-				 * This applies to INCREMENTING the lower bound like we do
-				 * here; we can ALWAYS DECREMENT the lower bound, as we do
-				 * in the 'free_these' branch above.
-				 */
-				if (globalstats->first_page_with_free_space[bucket] == entry_index)
-				{
-					for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
-						if (globalstats->first_page_with_free_space[b] <= entry_index)
-							globalstats->first_page_with_free_space[b] = entry_index + 1;
-						/* also update buckets for smaller chunks at the
-						 * same time */
-					}
-				}
-			}
-		}
-	}
+                /*
+                 * We can update this number ONLY WHEN we have an
+                 * allocation in the edge page;
+                 * this is because we have modes where the freelist is
+                 * checked in random and blindly updating the lower bound
+                 * here would jeopardize the utilization of the DB.
+                 *
+                 * This applies to INCREMENTING the lower bound like we do
+                 * here; we can ALWAYS DECREMENT the lower bound, as we do
+                 * in the 'free_these' branch above.
+                 */
+                if (globalstats->first_page_with_free_space[bucket] == entry_index)
+                {
+                    for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
+                        if (globalstats->first_page_with_free_space[b] <= entry_index)
+                            globalstats->first_page_with_free_space[b] = entry_index + 1;
+                        /* also update buckets for smaller chunks at the
+                         * same time */
+                    }
+                }
+            }
+        }
+    }
 }
 
 void
 freelist_globalhints_no_hit(Freelist *fl, FreelistEntry *entry,
                 freelist_hints_t *hints)
 {
-	ham_runtime_statistics_globdata_t *globalstats = fl->get_env()->get_global_perf_data();
+    ham_runtime_statistics_globdata_t *globalstats = fl->get_env()->get_global_perf_data();
 
     ham_u16_t bucket = ham_bitcount2bucket_index(hints->size_bits);
     ham_u32_t entry_index = (ham_u32_t)(entry - fl->get_entries());
@@ -636,7 +636,7 @@ freelist_globalhints_no_hit(Freelist *fl, FreelistEntry *entry,
 void
 freelist_get_global_hints(Freelist *fl, freelist_global_hints_t *dst)
 {
-	ham_runtime_statistics_globdata_t *globalstats = fl->get_env()->get_global_perf_data();
+    ham_runtime_statistics_globdata_t *globalstats = fl->get_env()->get_global_perf_data();
 
     ham_u32_t offset;
     ham_size_t pos;
@@ -702,14 +702,14 @@ freelist_get_global_hints(Freelist *fl, freelist_global_hints_t *dst)
     }
 #endif
 
-	/*
-	determine where the search range starts; usually this is at the first 
-	freelist page.
-	*/
-	ham_assert(HAM_MAX_U32 >= dst->lower_bound_address / (DB_CHUNKSIZE * dst->freelist_pagesize_bits), (0));
-	pos = (ham_size_t)(dst->lower_bound_address / (DB_CHUNKSIZE * dst->freelist_pagesize_bits));
-	if (dst->start_entry < pos)
-		dst->start_entry = pos;
+    /*
+    determine where the search range starts; usually this is at the first
+    freelist page.
+    */
+    ham_assert(HAM_MAX_U32 >= dst->lower_bound_address / (DB_CHUNKSIZE * dst->freelist_pagesize_bits), (0));
+    pos = (ham_size_t)(dst->lower_bound_address / (DB_CHUNKSIZE * dst->freelist_pagesize_bits));
+    if (dst->start_entry < pos)
+        dst->start_entry = pos;
 
     /*
      * improve our start position, when we know there's nothing to be
@@ -758,7 +758,7 @@ freelist_get_global_hints(Freelist *fl, freelist_global_hints_t *dst)
         {
     default:
             /* dst->max_rounds = freel_cache_get_count(fl); */
-            dst->max_rounds = 32; /* speed up 'classic' for LARGE 
+            dst->max_rounds = 32; /* speed up 'classic' for LARGE
                                      databases anyhow! */
         }
         if (0)
@@ -834,11 +834,11 @@ freelist_get_global_hints(Freelist *fl, freelist_global_hints_t *dst)
         break;
     }
 
-	/*
-	 * and it's no use trying more times (and freelist entries) then we 
-	 * know we have available within the designated search range.
-	 */
-	if (dst->max_rounds > freel_cache_get_count(fl) - dst->start_entry) 
+    /*
+     * and it's no use trying more times (and freelist entries) then we
+     * know we have available within the designated search range.
+     */
+    if (dst->max_rounds > freel_cache_get_count(fl) - dst->start_entry)
         dst->max_rounds = freel_cache_get_count(fl) - dst->start_entry;
 
     /*
@@ -996,7 +996,7 @@ freelist_get_entry_hints(Freelist *fl, FreelistEntry *entry,
      */
     offset = entrystats->per_size[bucket].first_start;
     if (dst->startpos < offset)
-		dst->startpos = offset;
+        dst->startpos = offset;
 
     offset = entrystats->persisted_bits;
     if (offset == 0) {
@@ -1038,7 +1038,7 @@ freelist_get_entry_hints(Freelist *fl, FreelistEntry *entry,
 
         /* take alignment into account as well! */
         if (dst->aligned) {
-			ham_u32_t alignment = fl->get_env()->get_pagesize() / DB_CHUNKSIZE;
+            ham_u32_t alignment = fl->get_env()->get_pagesize() / DB_CHUNKSIZE;
             dst->startpos += alignment - 1;
             dst->startpos -= dst->startpos % alignment;
         }

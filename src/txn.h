@@ -328,11 +328,11 @@ class Transaction
     }
 
   private:
-    /** this is where key->data points to when returning a 
+    /** this is where key->data points to when returning a
      * key to the user */
     ByteArray m_key_arena;
 
-    /** this is where record->data points to when returning a 
+    /** this is where record->data points to when returning a
      * record to the user */
     ByteArray m_record_arena;
 };
@@ -488,7 +488,7 @@ txn_opnode_get_previous_sibling(txn_opnode_t *node);
  * @remark flags are defined below
  */
 extern ham_status_t
-txn_begin(Transaction **ptxn, Environment *env, const char *name, 
+txn_begin(Transaction **ptxn, Environment *env, const char *name,
                 ham_u32_t flags);
 
 /* #define HAM_TXN_READ_ONLY       1   -- already defined in hamsterdb.h */

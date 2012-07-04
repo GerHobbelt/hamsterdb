@@ -75,7 +75,7 @@ main(int argc, char **argv)
         record.data=key.data;
 
         st=ham_insert(db, 0, &key, &record, 0);
-		if (st!=HAM_SUCCESS)
+        if (st!=HAM_SUCCESS)
             error("ham_insert", st);
     }
 
@@ -136,6 +136,6 @@ main(int argc, char **argv)
     ham_delete(db);
 
     printf("success!\n");
-	return (0);
+    return (0);
 }
 

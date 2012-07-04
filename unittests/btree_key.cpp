@@ -160,7 +160,7 @@ public:
         if (!flags)
             memset(key, 0, sizeof(*key));
         memset(&rec, 0, sizeof(rec));
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_set_record(m_dbp, 0, key, &rec, 0, flags, 0));
         if (!(flags&HAM_DUPLICATE))
             BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(key));
@@ -202,7 +202,7 @@ public:
         rec.data=(void *)data;
         rec.size=size;
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_set_record(m_dbp, 0, key, &rec, 0, flags, 0));
         if (!(flags&HAM_DUPLICATE)) {
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_BLOB_SIZE_TINY,
@@ -248,7 +248,7 @@ public:
         rec.data=(void *)data;
         rec.size=sizeof(ham_offset_t);
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_set_record(m_dbp, 0, key, &rec, 0, flags, 0));
         if (!(flags&HAM_DUPLICATE)) {
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_BLOB_SIZE_SMALL,
@@ -295,7 +295,7 @@ public:
         rec.data=(void *)data;
         rec.size=size;
 
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_set_record(m_dbp, 0, key, &rec, 0, flags, 0));
         if (flags&HAM_DUPLICATE)
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_HAS_DUPLICATES,
@@ -555,7 +555,7 @@ public:
         duplicateNormal(&key, "abc4567812345678", 16);
         checkDupe(&key, 0, 0, 0);
         checkDupe(&key, 1, "abc4567812345678", 16);
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_erase_record(m_dbp, 0, &key, 0, HAM_ERASE_ALL_DUPLICATES));
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
@@ -565,7 +565,7 @@ public:
         duplicateNormal(&key, "abc4567812345678", 16);
         checkDupe(&key, 0, "1234", 4);
         checkDupe(&key, 1, "abc4567812345678", 16);
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_erase_record(m_dbp, 0, &key, 0, HAM_ERASE_ALL_DUPLICATES));
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
@@ -575,7 +575,7 @@ public:
         duplicateNormal(&key, "abc4567812345678", 16);
         checkDupe(&key, 0, "12345678", 8);
         checkDupe(&key, 1, "abc4567812345678", 16);
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_erase_record(m_dbp, 0, &key, 0, HAM_ERASE_ALL_DUPLICATES));
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
@@ -585,7 +585,7 @@ public:
         duplicateNormal(&key, "abc4567812345678", 16);
         checkDupe(&key, 0, "1234123456785678", 16);
         checkDupe(&key, 1, "abc4567812345678", 16);
-        BFC_ASSERT_EQUAL(0, 
+        BFC_ASSERT_EQUAL(0,
                 key_erase_record(m_dbp, 0, &key, 0, HAM_ERASE_ALL_DUPLICATES));
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
