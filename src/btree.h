@@ -87,6 +87,19 @@ class BtreeBackend : public Backend
     /** uncouple all cursors from a page */
     virtual ham_status_t uncouple_all_cursors(Page *page, ham_size_t start);
 
+    /** same as above, but sets the cursor to the position */
+    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor, 
+                    ham_key_t *key, ham_record_t *record, ham_u32_t flags);
+
+    /** same as above, but sets the cursor position to the new item */
+    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key, 
+                        ham_record_t *record, btree_cursor_t *cursor,
+                        ham_u32_t flags);
+
+    /** same as above, but with a coupled cursor */
+    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key, 
+            			btree_cursor_t *cursor, ham_u32_t flags);
+
     /**
      * Remove all extended keys for the given @a page from the
      * extended key cache.
@@ -211,35 +224,6 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 
 /** get a btree_node_t from a Page */
 #define page_get_btree_node(p)          ((btree_node_t *)p->get_payload())
-
-/**
- * search the btree structures for a record
- *
- * @remark this function returns HAM_SUCCESS and sets the cursor to
- * the record position, if the @a key was found; otherwise
- * an error code is returned
- *
- * @remark this function is exported through the backend structure.
- */
-extern ham_status_t 
-btree_find_cursor(BtreeBackend *be, Transaction *txn, btree_cursor_t *cursor, 
-           ham_key_t *key, ham_record_t *record, ham_u32_t flags);
-
-/**
- * insert a new tuple (key/record) in the tree
- *
- * sets the cursor position to the new item
- */
-extern ham_status_t
-btree_insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
-        ham_record_t *record, btree_cursor_t *cursor, ham_u32_t flags);
-
-/**
- * erase a key from the tree
- */
-extern ham_status_t
-btree_erase_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
-        btree_cursor_t *cursor, ham_u32_t flags);
 
 /**
  * same as above, but assumes that the cursor is coupled to a leaf page

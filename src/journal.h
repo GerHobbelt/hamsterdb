@@ -233,16 +233,11 @@ class Journal
         return (m_env->get_allocator()->free(ptr));
     }
 
-<<<<<<< HEAD
-    /** references the Environment this journal file is for */
-    Environment *m_env;
-=======
     /** a mutex to protect the journal */
     Mutex m_mutex;
 
 	/** references the Environment this journal file is for */
 	Environment *m_env;
->>>>>>> remotes/cruppstahl/wip/cache
 
     /** the index of the file descriptor we are currently writing to */
     ham_size_t m_current_fd;

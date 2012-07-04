@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="unittests"
 	ProjectGUID="{0C5D0A1D-A98A-4A4A-A954-EC15F8A611A6}"
 	RootNamespace="unittests"
@@ -15,336 +15,22 @@
 		<Platform
 			Name="x64"
 		/>
-		<Platform
-			Name="Itanium"
-		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
-				StringPooling="true"
-				ExceptionHandling="2"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				DisableLanguageExtensions="false"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4100,4127,4324"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
-				GenerateMapFile="true"
-				MapFileName="$(IntDir)\$(TargetFileName).map"
-				MapExports="true"
-				SubSystem="1"
-				OptimizeReferences="2"
-				LinkTimeCodeGeneration="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="1"
-				Profile="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
-				StringPooling="true"
-				ExceptionHandling="2"
-				RuntimeLibrary="2"
-				BufferSecurityCheck="false"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				DisableLanguageExtensions="false"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4100,4127,4324"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
-				GenerateMapFile="true"
-				MapFileName="$(IntDir)\$(TargetFileName).map"
-				MapExports="true"
-				SubSystem="1"
-				OptimizeReferences="2"
-				LinkTimeCodeGeneration="1"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				TargetMachine="17"
-				Profile="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-				EnableFxCop="true"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Itanium"
-			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="2"
-				HeaderFileName=""
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
-				StringPooling="true"
-				ExceptionHandling="2"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				DisableLanguageExtensions="false"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4100,4127,4324"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
-				GenerateMapFile="true"
-				MapFileName="$(IntDir)\$(TargetFileName).map"
-				MapExports="true"
-				SubSystem="1"
-				OptimizeReferences="2"
-				LinkTimeCodeGeneration="1"
-				TargetMachine="5"
-				Profile="true"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			OutputDirectory="out\unittests_debug"
+			IntermediateDirectory="tmp\unittests_debug"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -354,69 +40,52 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
-				StringPooling="true"
-				MinimalRebuild="false"
-				ExceptionHandling="2"
+				AdditionalIncludeDirectories="../../include;../../../hamsterdb-alien/boost;../../../hamsterdb-alien/libcurl/msvc2008"
+				PreprocessorDefinitions="WIN32;HAM_DEBUG;DEBUG;_DEBUG;_CONSOLE;HAM_LITTLE_ENDIAN;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;VISUAL_STUDIO;HAM_ENABLE_REMOTE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				DisableLanguageExtensions="false"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
-				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4100,4127,4324"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="../../../hamsterdb-alien/boost"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
-				GenerateMapFile="true"
-				MapFileName="$(IntDir)\$(TargetFileName).map"
-				MapExports="true"
 				SubSystem="1"
-				OptimizeReferences="2"
-				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
-				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -430,21 +99,16 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			OutputDirectory="out\unittests_debug_x64"
+			IntermediateDirectory="tmp\unittests_debug_x64"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -455,71 +119,52 @@
 			<Tool
 				Name="VCMIDLTool"
 				TargetEnvironment="3"
-				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				EnableIntrinsicFunctions="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
-				StringPooling="true"
-				MinimalRebuild="false"
-				ExceptionHandling="2"
+				AdditionalIncludeDirectories="../../include;../../../hamsterdb-alien/boost;../../../hamsterdb-alien/libcurl/msvc2008"
+				PreprocessorDefinitions="WIN64;WIN32;HAM_DEBUG;DEBUG;_DEBUG;_CONSOLE;HAM_LITTLE_ENDIAN;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;VISUAL_STUDIO;HAM_ENABLE_REMOTE"
+				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				DisableLanguageExtensions="false"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4100,4127,4324"
-				EnablePREfast="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
-				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="../../../hamsterdb-alien/boost/x64"
+				GenerateManifest="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
-				GenerateMapFile="true"
-				MapFileName="$(IntDir)\$(TargetFileName).map"
-				MapExports="true"
 				SubSystem="1"
-				OptimizeReferences="2"
-				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="17"
-				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -532,22 +177,18 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Debug|Itanium"
-			OutputDirectory="$(SolutionDir)bin/$(PlatformName)_MSVC2008.$(ConfigurationName)"
-			IntermediateDirectory="$(SolutionDir)obj/$(ProjectName)_$(PlatformName)_MSVC2008.$(ConfigurationName)"
+			Name="Release|Win32"
+			OutputDirectory="out\unittests"
+			IntermediateDirectory="tmp\unittests"
 			ConfigurationType="1"
-			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine=""
-				AdditionalDependencies=""
-				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -557,68 +198,128 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TargetEnvironment="2"
-				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\..\include"
-				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
-				StringPooling="true"
-				MinimalRebuild="false"
-				ExceptionHandling="2"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
-				EnableEnhancedInstructionSet="1"
-				DisableLanguageExtensions="false"
-				WarningLevel="4"
-				SuppressStartupBanner="true"
+				AdditionalIncludeDirectories="../../include;../../../hamsterdb-alien/boost;../../../hamsterdb-alien/libcurl/msvc2008"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;HAM_LITTLE_ENDIAN;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;VISUAL_STUDIO;HAM_ENABLE_REMOTE"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
-				CompileAs="0"
-				DisableSpecificWarnings="4100,4127,4324"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories="../../../hamsterdb-alien/boost"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
-				GenerateMapFile="true"
-				MapFileName="$(IntDir)\$(TargetFileName).map"
-				MapExports="true"
 				SubSystem="1"
 				OptimizeReferences="2"
-				LinkTimeCodeGeneration="1"
-				TargetMachine="5"
-				Profile="true"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
+				UseFAT32Workaround="true"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
 			/>
 			<Tool
 				Name="VCBscMakeTool"
-				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="out\unittests_x64"
+			IntermediateDirectory="tmp\unittests_x64"
+			ConfigurationType="1"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="../../include;../../../hamsterdb-alien/boost;../../../hamsterdb-alien/libcurl/msvc2008"
+				PreprocessorDefinitions="WIN32;WIN64;NDEBUG;_CONSOLE;HAM_LITTLE_ENDIAN;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;VISUAL_STUDIO;HAM_ENABLE_REMOTE"
+				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="../../../hamsterdb-alien/boost/x64"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+				UseFAT32Workaround="true"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -634,174 +335,166 @@
 	<References>
 	</References>
 	<Files>
-		<Filter
-			Name="Header Files"
+		<File
+			RelativePath="..\..\unittests\api110.cpp"
 			>
-			<File
-				RelativePath="..\..\unittests\bfc-signal.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\bfc-testsuite.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\hamster_fixture.hpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\memtracker.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\os.hpp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Source Files"
+		</File>
+		<File
+			RelativePath="..\..\unittests\approx.cpp"
 			>
-			<File
-				RelativePath="..\..\unittests\api110.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\blob.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\bt_cursor.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\btree_erase.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\btree_insert.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\cache.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\check.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\cppapi.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\db.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\device.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\device_graph.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\duplicates.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\empty_sample.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\endian.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\env.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\error.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\extkeys.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\filter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\freelist.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\hamsterdb.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\keys.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\log.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\main.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\mem.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\memtracker.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\os.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\page.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\partial.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\recno.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\remote.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\txn.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\unittests\util.cpp"
-				>
-			</File>
-			<Filter
-				Name="BFC framework"
-				>
-				<File
-					RelativePath="..\..\unittests\bfc-signal.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\unittests\bfc-testsuite.cpp"
-					>
-				</File>
-			</Filter>
-		</Filter>
+		</File>
+		<File
+			RelativePath="..\..\unittests\bfc-signal.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\bfc-signal.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\bfc-testsuite.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\bfc-testsuite.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\blob.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\btree_cursor.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\btree_erase.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\btree_insert.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\btree_key.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\cache.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\changeset.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\check.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\cppapi.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\cursor.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\db.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\device.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\duplicates.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\empty_sample.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\endian.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\env.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\error.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\extkeys.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\filter.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\freelist.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\hamster_fixture.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\hamsterdb.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\journal.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\log.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\main.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\misc.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\os.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\os.hpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\page.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\partial.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\recno.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\remote.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\txn.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\unittests\txn_cursor.cpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

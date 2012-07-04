@@ -13,7 +13,9 @@
 #include "config.h"
 
 #include <string.h>
-#include <libgen.h>
+#ifndef HAM_OS_WIN32
+#  include <libgen.h>
+#endif
 
 #include "db.h"
 #include "device.h"
@@ -84,39 +86,6 @@ Log::open()
     return (0);
 }
 
-<<<<<<< HEAD
-bool
-Log::is_empty(void)
-{
-    ham_status_t st;
-    ham_offset_t size;
-
-    st=os_get_filesize(m_fd, &size);
-    if (st)
-        return (st ? false : true); /* TODO throw */
-    if (size && size!=sizeof(Log::Header))
-        return (false);
-
-    return (true);
-}
-
-ham_status_t
-Log::clear(void)
-{
-    ham_status_t st;
-
-    st=os_truncate(m_fd, sizeof(Log::Header));
-    if (st)
-        return (st);
-
-    /* after truncate, the file pointer is far beyond the new end of file;
-     * reset the file pointer, or the next write will resize the file to
-     * the original size */
-    return (os_seek(m_fd, sizeof(Log::Header), HAM_OS_SEEK_SET));
-}
-
-=======
->>>>>>> remotes/cruppstahl/wip/cache
 ham_status_t
 Log::get_entry(Log::Iterator *iter, Log::Entry *entry, ham_u8_t **data)
 {
@@ -367,17 +336,7 @@ bail:
 }
 
 ham_status_t
-<<<<<<< HEAD
-Log::flush(void)
-{
-    return (os_flush(m_fd));
-}
-
-ham_status_t
-Log::append_write(ham_u64_t lsn, ham_u32_t flags, ham_offset_t offset,
-=======
 Log::append_write(ham_u64_t lsn, ham_u32_t flags, ham_offset_t offset, 
->>>>>>> remotes/cruppstahl/wip/cache
                     ham_u8_t *data, ham_size_t size)
 {
     Log::Entry entry;

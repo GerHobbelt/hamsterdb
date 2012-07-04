@@ -63,30 +63,22 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ham_info", "ham_info.vcxpro
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ham_dump", "ham_dump.vcxproj", "{D11CE71E-716F-46B0-9DDD-74125DA7985A}"
 	ProjectSection(ProjectDependencies) = postProject
-		{B82D2DF8-F8B2-4331-86D0-508BBD806507} = {B82D2DF8-F8B2-4331-86D0-508BBD806507}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_db7", "sample_db7.vcxproj", "{75A749F2-CB37-4743-952E-7AB1AE1286B4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_env4", "sample_env4.vcxproj", "{6D52827A-E575-4C6B-BFFF-C33273D71A52}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507} = {B82D2DF8-F8B2-4331-86D0-508BBD806507}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sample_client1", "sample_client1.vcxproj", "{57E4D0EF-945D-46A7-B189-20940FFB7096}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bfc_sample", "bfc-sample.vcxproj", "{78A614AB-C5D5-4C12-B927-079388A77DDB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdparty_json", "3rdparty_json.vcxproj", "{6C5BF542-782B-4C2E-AD5A-0BC25CCEF5DA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ham_service", "ham_service.vcxproj", "{4A4316D5-CDF6-477C-BFDC-85A4A1798561}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507} = {B82D2DF8-F8B2-4331-86D0-508BBD806507}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hamzilla", "hamzilla.vcxproj", "{D11CE719-716F-46B0-9DDA-74125DA7985A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3rdparty_mongoose", "3rdparty_mongoose.vcxproj", "{FC4EFF85-2C41-4ED6-A13E-EB98409DE435}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{246D9674-3F3C-4D48-AD84-DE889E81BBEB}"
-	ProjectSection(SolutionItems) = preProject
-		Performance1.psess = Performance1.psess
+		{AB99816E-52C4-4420-B8DD-63892A380173} = {AB99816E-52C4-4420-B8DD-63892A380173}
+		{AB99816E-52C4-44CE-B8DD-604DCA380173} = {AB99816E-52C4-44CE-B8DD-604DCA380173}
 	EndProjectSection
 EndProject
 Global
@@ -117,12 +109,10 @@ Global
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Debug|Win32.Build.0 = Debug|Win32
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Debug|x64.ActiveCfg = Debug|x64
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Release|Itanium.ActiveCfg = Release|Itanium
-		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Release|Itanium.Build.0 = Release|Itanium
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Release|Win32.ActiveCfg = Release|Win32
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Release|Win32.Build.0 = Release|Win32
 		{B82D2DF8-F8B2-4331-86D0-508BBD806507}.Release|x64.ActiveCfg = Release|x64
 		{8FE983E8-8B32-4524-9BEF-1303B7ABC142}.Debug|Itanium.ActiveCfg = Debug|Itanium
-		{8FE983E8-8B32-4524-9BEF-1303B7ABC142}.Debug|Itanium.Build.0 = Debug|Itanium
 		{8FE983E8-8B32-4524-9BEF-1303B7ABC142}.Debug|Win32.ActiveCfg = Debug|Win32
 		{8FE983E8-8B32-4524-9BEF-1303B7ABC142}.Debug|Win32.Build.0 = Debug|Win32
 		{8FE983E8-8B32-4524-9BEF-1303B7ABC142}.Debug|x64.ActiveCfg = Debug|x64

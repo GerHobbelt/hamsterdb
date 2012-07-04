@@ -116,12 +116,7 @@ class Log
     }
 
     /** adds an AFTER-image of a page */
-<<<<<<< HEAD
-    ham_status_t append_page(Page *page, ham_u64_t lsn,
-                ham_size_t page_count);
-=======
     ham_status_t append_page(Page *page, ham_u64_t lsn, ham_size_t page_count);
->>>>>>> remotes/cruppstahl/wip/cache
 
     /** retrieves the current lsn */
     ham_u64_t get_lsn(void) {
@@ -135,26 +130,8 @@ class Log
         return (m_fd);
     }
 
-<<<<<<< HEAD
-    /**
-     * returns the next log entry
-     *
-     * iter must be initialized with zeroes for the first call
-     *
-     * 'data' returns the data of the entry, or NULL if there is no data.
-     * The memory has to be freed by the caller.
-     *
-     * returns SUCCESS and an empty entry (lsn is zero) after the last element.
-     */
-    ham_status_t get_entry(Log::Iterator *iter, Log::Entry *entry,
-                ham_u8_t **data);
-
-    /**
-     * clears the logfile
-=======
     /** 
      * clears the logfile 
->>>>>>> remotes/cruppstahl/wip/cache
      *
      * invoked after every checkpoint (which is immediately after each
      * txn_commit or txn_abort)

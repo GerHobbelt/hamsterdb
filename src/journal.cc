@@ -25,13 +25,7 @@
 #include "util.h"
 #include "journal.h"
 
-<<<<<<< HEAD
-#define JOURNAL_DEFAULT_THRESHOLD   16
-
-static ham_size_t
-=======
 static ham_size_t 
->>>>>>> remotes/cruppstahl/wip/cache
 __get_aligned_entry_size(ham_size_t s)
 {
     s += 8-1;
@@ -39,21 +33,6 @@ __get_aligned_entry_size(ham_size_t s)
     return (s);
 }
 
-<<<<<<< HEAD
-Journal::Journal(Environment *env)
-  : m_env(env), m_current_fd(0), m_lsn(0), m_last_cp_lsn(0),
-    m_threshold(JOURNAL_DEFAULT_THRESHOLD)
-{
-    m_fd[0]=HAM_INVALID_FD;
-    m_fd[1]=HAM_INVALID_FD;
-    m_open_txn[0]=0;
-    m_open_txn[1]=0;
-    m_closed_txn[0]=0;
-    m_closed_txn[1]=0;
-}
-
-=======
->>>>>>> remotes/cruppstahl/wip/cache
 ham_status_t
 Journal::create()
 {
@@ -166,27 +145,6 @@ Journal::open()
     return (0);
 }
 
-<<<<<<< HEAD
-bool
-Journal::is_empty(void)
-{
-    ham_status_t st;
-    ham_offset_t size;
-    int i;
-
-    for (i=0; i<2; i++) {
-        st=os_get_filesize(m_fd[i], &size);
-        if (st)
-            return (false); /* TODO throw exception */
-        if (size && size!=sizeof(Header))
-            return (false);
-    }
-
-    return (true);
-}
-
-=======
->>>>>>> remotes/cruppstahl/wip/cache
 ham_status_t
 Journal::append_txn_begin(Transaction *txn, Environment *env, 
                 const char *name, ham_u64_t lsn)
@@ -362,23 +320,6 @@ Journal::append_erase(Database *db, Transaction *txn, ham_key_t *key,
 }
 
 ham_status_t
-<<<<<<< HEAD
-Journal::clear()
-{
-    ham_status_t st;
-    int i;
-
-    for (i=0; i<2; i++) {
-        if ((st=clear_file(i)))
-            return (st);
-    }
-
-    return (0);
-}
-
-ham_status_t
-=======
->>>>>>> remotes/cruppstahl/wip/cache
 Journal::get_entry(Iterator *iter, JournalEntry *entry, void **aux)
 {
     ham_status_t st;
