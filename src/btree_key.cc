@@ -10,19 +10,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "blob.h"
-#include "btree.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "extkeys.h"
-#include "btree_key.h"
-#include "mem.h"
-#include "page.h"
+#include "internal_preparation.h"
 
 
 ham_status_t

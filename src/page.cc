@@ -10,21 +10,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "cache.h"
-#include "cursor.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
+#include "internal_preparation.h"
 
 
 int Page::sizeof_persistent_header=(OFFSETOF(page_data_t, _s._payload));

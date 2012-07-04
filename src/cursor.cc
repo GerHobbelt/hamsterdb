@@ -10,17 +10,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "cursor.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "mem.h"
-#include "btree_cursor.h"
-#include "btree_key.h"
+#include "internal_preparation.h"
 
 
 static ham_bool_t

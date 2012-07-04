@@ -10,32 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "db.h"
-#include "env.h"
-#include "btree_stats.h"
-#include "device.h"
-#include "version.h"
-#include "serial.h"
-#include "txn.h"
-#include "device.h"
-#include "btree.h"
-#include "mem.h"
-#include "freelist.h"
-#include "extkeys.h"
-#include "backend.h"
-#include "cache.h"
-#include "log.h"
-#include "journal.h"
-#include "btree_key.h"
-#include "os.h"
-#include "blob.h"
-#include "txn_cursor.h"
-#include "cursor.h"
-#include "btree_cursor.h"
 
 typedef struct free_cb_context_t
 {

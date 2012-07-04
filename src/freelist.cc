@@ -10,19 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "db.h"
-#include "device.h"
-#include "endianswap.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "mem.h"
-#include "btree_stats.h"
-#include "txn.h"
 
 /**
  * replacement for env->set_dirty(); will call the macro, but also

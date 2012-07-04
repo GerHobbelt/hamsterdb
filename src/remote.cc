@@ -10,15 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "db.h"
-#include "txn.h"
-#include "env.h"
-#include "mem.h"
-#include "cursor.h"
 
 #if HAM_ENABLE_REMOTE
 

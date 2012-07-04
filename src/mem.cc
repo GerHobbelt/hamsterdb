@@ -10,21 +10,10 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
 #include <stack>
 
-#ifdef HAVE_MALLOC_H
-#  include <malloc.h>
-#else
-#  include <stdlib.h>
-#endif
-
-#include "db.h"
-#include "error.h"
-#include "mem.h"
-#include "txn.h"
 
 class DefaultAllocator : public Allocator
 {

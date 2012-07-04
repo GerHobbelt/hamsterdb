@@ -13,27 +13,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "internal_fwd_decl.h"
-#include "blob.h"
-#include "btree.h"
-#include "btree_cursor.h"
-#include "cursor.h"
-#include "cache.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "btree_key.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "txn.h"
-#include "util.h"
 
 /* a unittest hook triggered when a page is split */
 void (*g_BTREE_INSERT_SPLIT_HOOK)(void);

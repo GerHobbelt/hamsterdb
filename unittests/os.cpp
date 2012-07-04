@@ -156,7 +156,7 @@ public:
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd));
         BFC_ASSERT_EQUAL(HAM_WOULD_BLOCK,
                 os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
-        BFC_ASSERT_EQUAL(0, os_close(fd, HAM_LOCK_EXCLUSIVE));
+        BFC_ASSERT_EQUAL(0, os_close(fd));
         BFC_ASSERT_EQUAL(0,
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
         BFC_ASSERT_EQUAL(0, os_close(fd2));
@@ -248,7 +248,7 @@ public:
         /* compare */
         BFC_ASSERT_EQUAL(0x13, page[0]);
 
-        BFC_ASSERT_EQUAL(0, os_close(fd, 0));
+        BFC_ASSERT_EQUAL(0, os_close(fd));
         free(page);
     }
 

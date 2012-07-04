@@ -13,23 +13,8 @@
  * @brief btree cursors - implementation
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "blob.h"
-#include "btree.h"
-#include "btree_cursor.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "btree_key.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "txn.h"
-#include "util.h"
-#include "cursor.h"
 
 static ham_status_t
 btree_cursor_couple(btree_cursor_t *c)

@@ -10,17 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "db.h"
-#include "device.h"
-#include "error.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
-#include "env.h"
 
 ham_status_t
 DeviceImplDisk::alloc_page(Page *page)

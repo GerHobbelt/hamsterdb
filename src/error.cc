@@ -10,18 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <ham/hamsterdb.h>
-
-#include "error.h"
-#include "mem.h"
-#include "util.h"
 
 static int         g_level   =0;
 static const char *g_file    =0;

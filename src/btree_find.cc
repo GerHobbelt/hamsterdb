@@ -13,21 +13,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "btree.h"
-#include "cursor.h"
-#include "btree_cursor.h"
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "btree_key.h"
-#include "mem.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "util.h"
+#include "internal_preparation.h"
 
 
 ham_status_t

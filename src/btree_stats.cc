@@ -10,26 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-#include <stdio.h>
-
-#include <ham/hamsterdb_stats.h>
-
-#include "btree.h"
-#include "btree_cursor.h"
-#include "cursor.h"
-#include "cache.h"
-#include "db.h"
-#include "endianswap.h"
-#include "env.h"
-#include "error.h"
-#include "freelist_statistics.h"
-#include "mem.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "util.h"
 
 /*
  *  TODO statistics gatherer/hinter:

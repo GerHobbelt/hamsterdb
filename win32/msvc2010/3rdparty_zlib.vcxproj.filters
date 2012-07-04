@@ -42,6 +42,7 @@
     <ClInclude Include="..\..\3rdparty\zlib\trees.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\3rdparty\zlib\zconf.in.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3rdparty\zlib\adler32.c">

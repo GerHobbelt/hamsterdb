@@ -9,13 +9,8 @@
  * See files COPYING.* for License information.
  */
 
-#include "page.h"
-#include "changeset.h"
-#include "env.h"
-#include "log.h"
-#include "device.h"
-#include "db.h"
-#include "errorinducer.h"
+#include "internal_preparation.h"
+
 
 #define induce(id)                                                          \
     while (m_inducer) {                                                     \

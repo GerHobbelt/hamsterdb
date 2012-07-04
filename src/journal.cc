@@ -10,20 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "mem.h"
-#include "log.h"
-#include "os.h"
-#include "txn.h"
-#include "util.h"
-#include "journal.h"
 
 static ham_size_t
 __get_aligned_entry_size(ham_size_t s)

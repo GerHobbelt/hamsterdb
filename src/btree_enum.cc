@@ -14,18 +14,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-#include <stdio.h>
-
-#include "btree.h"
-#include "db.h"
-#include "env.h"
-#include "device.h"
-#include "error.h"
-#include "mem.h"
-#include "page.h"
 
 /**
  * enumerate a whole level in the tree - start with "page" and traverse

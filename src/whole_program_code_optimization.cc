@@ -16,6 +16,7 @@
 
 #include "internal_preparation.h"
 
+
 #if (HAM_LEAN_AND_MEAN_FOR_PROFILING_LEVEL > 11)
 
 #include "blob.c"
@@ -49,11 +50,9 @@
 #include "devices/stream_compression.c"
 #include "env.c"
 #include "error.c"
-#include "extkeys.c"
 #include "fraction.c"
 #include "freelist.c"
 #include "freelist_statistics.c"
-#include "freelist_v2.c"
 #include "freel_prealloc_mgt.c"
 #include "hamsterdb.c"
 #include "keys.c"

@@ -337,15 +337,15 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_new(&db));
 
-        BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
+        BFC_ASSERT_EQUAL(false, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_create(db, BFC_OPATH(".test"), 0, 0664));
-        BFC_ASSERT_EQUAL(1u, ((Database *)db)->is_active());
+        BFC_ASSERT_EQUAL(true, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
+        BFC_ASSERT_EQUAL(false, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_open(db, BFC_OPATH(".test"), 0));
-        BFC_ASSERT_EQUAL(1u, ((Database *)db)->is_active());
+        BFC_ASSERT_EQUAL(true, ((Database *)db)->is_active());
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
+        BFC_ASSERT_EQUAL(false, ((Database *)db)->is_active());
 
         ham_delete(db);
     }
@@ -1031,7 +1031,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
          * right key values */
         ::memset(&rec, 0, sizeof(rec));
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_EXACT_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         my_rec_t *r = (my_rec_t *)rec.data;
         my_key_t *k = (my_key_t *)key.data;
         BFC_ASSERT_EQUAL((unsigned)r->rec_val1, (unsigned)1000);
@@ -1042,7 +1042,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         r = (my_rec_t *)rec.data;
         k = (my_key_t *)key.data;
         BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
@@ -1055,7 +1055,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         r = (my_rec_t *)rec.data;
         k = (my_key_t *)key.data;
         BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
@@ -1068,7 +1068,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
         BFC_ASSERT_EQUAL(0, ham_find(db, 0, &key, &rec, HAM_FIND_NEAR_MATCH));
-        BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+        BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
         r = (my_rec_t *)rec.data;
         k = (my_key_t *)key.data;
         BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
@@ -1107,7 +1107,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             ::memset(&rec, 0, sizeof(rec));
             BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
-            BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+            BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
             r = (my_rec_t *)rec.data;
             k = (my_key_t *)key.data;
             BFC_ASSERT_NOTEQUAL(r->rec_val1, (unsigned)0);
@@ -1275,7 +1275,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             ::memset(&rec, 0, sizeof(rec));
             BFC_ASSERT_EQUAL(0,
                     ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
-            BFC_ASSERT_NOTEQUAL((rec.data && key.data), 0);
+            BFC_ASSERT_NOTEQUAL((rec.data && key.data), false);
             r = (my_rec_t *)rec.data;
             k = (my_key_t *)key.data;
             BFC_ASSERT_NOTEQUAL(r->rec_val1, (unsigned)0);

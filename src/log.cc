@@ -10,22 +10,11 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
 #ifndef HAM_OS_WIN32
 #  include <libgen.h>
 #endif
-
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "log.h"
-#include "mem.h"
-#include "os.h"
-#include "txn.h"
-#include "util.h"
 
 
 ham_status_t

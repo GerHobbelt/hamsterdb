@@ -10,13 +10,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-
-#include "util.h"
+#include "internal_preparation.h"
 
 
 int

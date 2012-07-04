@@ -12,6 +12,10 @@
 
 *.bak
 
+*.user
+*.ncb
+*.suo
+
 documentation/html
 documentation/latex
 Makefile
@@ -38,3 +42,6 @@ win32/msvc2010/bin
 win32/msvc2010/obj
 win32/msvc2010/ipch
 
+win32/msvc2008/bin
+win32/msvc2008/obj
+win32/msvc2008/ipch

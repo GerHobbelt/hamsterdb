@@ -10,22 +10,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "blob.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "txn.h"
-#include "btree.h"
-#include "btree_key.h"
+#include "internal_preparation.h"
 
 
 #define SMALLEST_CHUNK_SIZE  (sizeof(ham_offset_t)+sizeof(blob_t)+1)
@@ -155,7 +140,7 @@ __write_chunks(Environment *env, Page *page, ham_offset_t addr,
                         cacheonly ? DB_ONLY_FROM_CACHE :
                         at_blob_edge ? 0 : 0/*DB_NEW_PAGE_DOES_THRASH_CACHE*/);
                 ham_assert(st ? !page : 1, (0));
-                ham_assert(!st ? page : 1, (0));
+                ham_assert(!st ? !!page : 1, (0));
                 /* blob pages don't have a page header */
                 if (page)
                     page->set_flags(page->get_flags()|Page::NPERS_NO_HEADER);

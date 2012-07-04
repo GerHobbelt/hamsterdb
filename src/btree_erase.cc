@@ -14,26 +14,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "blob.h"
-#include "btree.h"
-#include "cache.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "extkeys.h"
-#include "btree_key.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "txn.h"
-#include "util.h"
-#include "cursor.h"
+#include "internal_preparation.h"
 
 
 /*

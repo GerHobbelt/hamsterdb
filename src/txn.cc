@@ -10,22 +10,8 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "db.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "log.h"
-#include "mem.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "btree_key.h"
-#include "txn.h"
-#include "txn_cursor.h"
-#include "cursor.h"
 
 /* stuff for rb.h */
 #ifndef __ssize_t_defined

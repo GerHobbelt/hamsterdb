@@ -33,7 +33,6 @@
 
 #include "os.h"
 
-#include "packstart.h"
 
 /**
  * a Log object
@@ -43,6 +42,8 @@ class Log
   public:
     /** the magic of the header */
     static const ham_u32_t HEADER_MAGIC=(('h'<<24)|('l'<<16)|('o'<<8)|'g');
+
+#include "packstart.h"
 
     /**
      * the header structure of a log file
@@ -83,6 +84,8 @@ class Log
         /** the size of the data */
         ham_u64_t data_size;
     } HAM_PACK_2;
+
+#include "packstop.h"
 
     /** flags for Entry::flags */
     static const ham_u32_t CHANGESET_IS_COMPLETE = 1;
@@ -226,7 +229,6 @@ class Log
     ham_fd_t m_fd;
 };
 
-#include "packstop.h"
 
 
 #endif /* HAM_LOG_H__ */

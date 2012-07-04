@@ -29,7 +29,8 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -58,7 +59,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;../../3rdparty/boost"
 				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -67,6 +68,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="internal_preparation.h"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -129,7 +132,8 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -159,7 +163,7 @@
 				Optimization="0"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;../../3rdparty/boost"
 				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -168,6 +172,8 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="internal_preparation.h"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -231,7 +237,8 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -260,7 +267,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;../../3rdparty/boost"
 				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -269,11 +276,13 @@
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="internal_preparation.h"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4127;4100;4706"
+				DisableSpecificWarnings="4127;4100;4706;4204"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -329,7 +338,8 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -361,13 +371,15 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;../../3rdparty/boost"
 				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="internal_preparation.h"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -389,7 +401,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)\$(TargetFileName).map"
@@ -430,7 +442,8 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -463,7 +476,7 @@
 				FavorSizeOrSpeed="1"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;../../3rdparty/boost"
 				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL;CODE_ANALYSIS"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -471,6 +484,8 @@
 				BufferSecurityCheck="false"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="internal_preparation.h"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -492,7 +507,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)\$(TargetFileName).map"
@@ -534,7 +549,8 @@
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -566,18 +582,20 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;../../3rdparty/boost"
 				PreprocessorDefinitions="_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_WINDOWS;_USRDLL;DLL_EXPORTS;HAM_LITTLE_ENDIAN;HAM_ENABLE_INTERNAL"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				EnableEnhancedInstructionSet="1"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="internal_preparation.h"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 				CompileAs="0"
-				DisableSpecificWarnings="4127;4100;4706"
+				DisableSpecificWarnings="4127;4100;4706;4204"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -594,7 +612,7 @@
 				Name="VCLinkerTool"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				ProgramDatabaseFile="$(IntDir)\$(TargetFileName).pdb"
 				GenerateMapFile="true"
 				MapFileName="$(IntDir)\$(TargetFileName).map"
@@ -669,11 +687,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\btree_classic.h"
+					RelativePath="..\..\src\btree_cursor.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\btree_cursor.h"
+					RelativePath="..\..\src\btree_key.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\btree_stats.h"
 					>
 				</File>
 				<File
@@ -681,15 +703,11 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\changeset.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\config.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\cuckoo_hash.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\cuckoo_hash_cursor.h"
 					>
 				</File>
 				<File
@@ -717,6 +735,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\errorinducer.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\extkeys.h"
 					>
 				</File>
@@ -729,11 +751,23 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\hash-table.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\internal_fwd_decl.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\keys.h"
+					RelativePath="..\..\src\internal_preparation.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\journal.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\journal_entries.h"
 					>
 				</File>
 				<File
@@ -761,11 +795,19 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\statistics.h"
+					RelativePath="..\..\src\rb.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\serial.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\txn.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\txn_cursor.h"
 					>
 				</File>
 				<File
@@ -782,95 +824,99 @@
 			Name="Source Files"
 			>
 			<File
-				RelativePath="..\..\src\blob.c"
+				RelativePath="..\..\src\blob.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree.c"
+				RelativePath="..\..\src\btree.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_check.c"
+				RelativePath="..\..\src\btree_check.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_cursor.c"
+				RelativePath="..\..\src\btree_cursor.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_enum.c"
+				RelativePath="..\..\src\btree_enum.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_erase.c"
+				RelativePath="..\..\src\btree_erase.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_find.c"
+				RelativePath="..\..\src\btree_find.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_insert.c"
+				RelativePath="..\..\src\btree_insert.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\btree_time_compressed_a_la_PI.c"
+				RelativePath="..\..\src\btree_key.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cache.c"
+				RelativePath="..\..\src\btree_stats.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cuckoo_hash.c"
+				RelativePath="..\..\src\cache.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\db.c"
+				RelativePath="..\..\src\changeset.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\env.c"
+				RelativePath="..\..\src\cursor.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\error.c"
+				RelativePath="..\..\src\db.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\extkeys.c"
+				RelativePath="..\..\src\device.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\freelist.c"
+				RelativePath="..\..\src\env.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\freelist_statistics.c"
+				RelativePath="..\..\src\error.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\freelist_v2.c"
+				RelativePath="..\..\src\freelist.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\hamsterdb.c"
+				RelativePath="..\..\src\freelist_statistics.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\keys.c"
+				RelativePath="..\..\src\hamsterdb.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\log.c"
+				RelativePath="..\..\src\journal.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\mem.c"
+				RelativePath="..\..\src\log.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\os_posix.c"
+				RelativePath="..\..\src\mem.cc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\os_posix.cc"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -878,6 +924,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -886,6 +933,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -894,6 +942,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -902,6 +951,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -910,6 +960,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -918,109 +969,138 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\src\os_win32.c"
+				RelativePath="..\..\src\os_win32.cc"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Itanium"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Itanium"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\page.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\page.c"
+				RelativePath="..\..\src\precompiled_headers.cc"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Itanium"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|x64"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Itanium"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\src\remote.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\statistics.c"
+				RelativePath="..\..\src\txn.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\txn.c"
+				RelativePath="..\..\src\txn_cursor.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\udb_digital_trie.c"
+				RelativePath="..\..\src\util.cc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\util.c"
+				RelativePath="..\..\src\whole_program_code_optimization.cc"
 				>
 			</File>
-			<File
-				RelativePath="..\..\src\whole_program_code_optimization.c"
-				>
-			</File>
-			<Filter
-				Name="Devices"
-				>
-				<File
-					RelativePath="..\..\src\devices\cachedev.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\compression.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\crypter.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\db_partitioner.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\device.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\event_sender.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\field_partitioner.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\file_per_rid.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\flashmem.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\flatfile.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\graph_mgr.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\https.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\key_partitioner.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\logger_swapper.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\mallocmem.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\rid_partitioner.c"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\devices\stream_compression.c"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Misc"

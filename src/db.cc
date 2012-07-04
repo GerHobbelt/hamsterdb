@@ -10,33 +10,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-#include <math.h>
-#include <float.h>
-
-#include "blob.h"
-#include "btree.h"
-#include "cache.h"
-#include "cursor.h"
-#include "device.h"
-#include "btree_cursor.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "extkeys.h"
-#include "freelist.h"
-#include "log.h"
-#include "journal.h"
-#include "mem.h"
-#include "os.h"
-#include "page.h"
-#include "btree_stats.h"
-#include "txn.h"
-#include "txn_cursor.h"
-#include "version.h"
+#include "internal_preparation.h"
 
 
 #define PURGE_THRESHOLD       (500 * 1024 * 1024) /* 500 mb */

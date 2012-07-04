@@ -14,16 +14,7 @@
  *
  */
 
-#include "config.h"
-
-#include <string.h>
-
-#include "cache.h"
-#include "env.h"
-#include "error.h"
-#include "mem.h"
-#include "page.h"
-#include "changeset.h"
+#include "internal_preparation.h"
 
 
 Cache::Cache(Environment *env, ham_u64_t capacity_bytes)

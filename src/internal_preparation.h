@@ -66,6 +66,7 @@
 #if defined(HAM_DEBUG)
 #ifdef _MSC_VER
 #pragma warning(disable: 4710) /* warning disabled: function not inlined */
+#pragma warning(disable: 4100) /* warning disabled: unreferenced formal parameter */
 #endif
 #endif
 
@@ -94,6 +95,14 @@
 #include "serial.h"
 #include "version.h"
 #include "util.h"
+
+#include "btree.h"
+#include "btree_cursor.h"
+#include "journal.h"
+#include "txn_cursor.h"
+
+#include "changeset.h"
+#include "errorinducer.h"
 
 
 #ifdef __cplusplus

@@ -9,14 +9,8 @@
  * See files COPYING.* for License information.
  */
 
-#include "internal_fwd_decl.h"
-#include "txn_cursor.h"
-#include "txn.h"
-#include "db.h"
-#include "env.h"
-#include "mem.h"
-#include "cursor.h"
-#include "btree_cursor.h"
+#include "internal_preparation.h"
+
 
 ham_status_t
 txn_cursor_create(Database *db, Transaction *txn, ham_u32_t flags,
