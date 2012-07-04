@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -31,22 +31,22 @@
  * enumerate a whole level in the tree - start with "page" and traverse
  * the linked list of all the siblings
  */
-static ham_status_t 
-_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level, 
+static ham_status_t
+_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_enumerate_cb_t cb, ham_bool_t recursive, void *context);
 
 /**
  * enumerate a single page
  */
 static ham_status_t
-_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level, 
+_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_u32_t count, ham_enumerate_cb_t cb, void *context);
 
-/**                                                                 
+/**
  * iterate the whole tree and enumerate every item.
  *
  * @note This is a B+-tree 'backend' method.
- */                                                                 
+ */
 ham_status_t
 BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
 {
@@ -77,15 +77,15 @@ BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
 
         /*
          * WARNING:WARNING:WARNING:WARNING:WARNING
-         * 
-         * the current Btree page must be 'pinned' during each callback 
-         * invocation during the enumeration; if you don't (by temporarily 
-         * bumping up its reference count) callback methods MAY flush the 
-         * page from the page cache without us being aware of such until after 
-         * the fact, when the hamster will CRASH as page pointers and content 
+         *
+         * the current Btree page must be 'pinned' during each callback
+         * invocation during the enumeration; if you don't (by temporarily
+         * bumping up its reference count) callback methods MAY flush the
+         * page from the page cache without us being aware of such until after
+         * the fact, when the hamster will CRASH as page pointers and content
          * are invalidated.
-         *    
-         * To prevent such mishaps, all user-callback invocations in here 
+         *
+         * To prevent such mishaps, all user-callback invocations in here
          * are surrounded
          * by this page 'pinning' countermeasure.
          */
@@ -96,7 +96,7 @@ BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
         /*
          * enumerate the page and all its siblings
          */
-        cb_st = _enumerate_level(this, page, level, cb, 
+        cb_st = _enumerate_level(this, page, level, cb,
                         (cb_st == CB_DO_NOT_DESCEND), context);
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
@@ -120,8 +120,8 @@ BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
     return (cb_st < 0 ? cb_st : HAM_SUCCESS);
 }
 
-static ham_status_t 
-_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level, 
+static ham_status_t
+_enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_enumerate_cb_t cb, ham_bool_t recursive, void *context)
 {
     ham_status_t st;
@@ -135,12 +135,12 @@ _enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
         if (cb_st == CB_STOP || cb_st < 0 /* error */)
             break;
 
-        /* 
+        /*
          * get the right sibling
          */
         node=page_get_btree_node(page);
         if (btree_node_get_right(node)) {
-            st=db_fetch_page(&page, be->get_db(), 
+            st=db_fetch_page(&page, be->get_db(),
                     btree_node_get_right(node), 0);
             ham_assert(st ? !page : 1, (0));
             if (st)
@@ -156,7 +156,7 @@ _enumerate_level(BtreeBackend *be, Page *page, ham_u32_t level,
 }
 
 ham_status_t
-_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level, 
+_enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
         ham_u32_t sibcount, ham_enumerate_cb_t cb, void *context)
 {
     ham_size_t i;
@@ -177,15 +177,15 @@ _enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
 
     /*
      * WARNING:WARNING:WARNING:WARNING:WARNING
-     * 
-     * the current Btree page must be 'pinned' during each callback 
-     * invocation during the enumeration; if you don't (by temporarily 
-     * bumping up its reference count) callback methods MAY flush the 
-     * page from the page cache without us being aware of such until after 
-     * the fact, when the hamster will CRASH as page pointers and content 
+     *
+     * the current Btree page must be 'pinned' during each callback
+     * invocation during the enumeration; if you don't (by temporarily
+     * bumping up its reference count) callback methods MAY flush the
+     * page from the page cache without us being aware of such until after
+     * the fact, when the hamster will CRASH as page pointers and content
      * are invalidated.
-     *    
-     * To prevent such mishaps, all user-callback invocations in here 
+     *
+     * To prevent such mishaps, all user-callback invocations in here
      * are surrounded
      * by this page 'pinning' countermeasure.
      */
@@ -193,7 +193,7 @@ _enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
     if (cb_st == CB_STOP || cb_st < 0 /* error */)
         return (cb_st);
 
-    for (i=0; (i < count) && (cb_st != CB_DO_NOT_DESCEND); i++) 
+    for (i=0; (i < count) && (cb_st != CB_DO_NOT_DESCEND); i++)
     {
         bte = btree_node_get_key(db, node, i);
 

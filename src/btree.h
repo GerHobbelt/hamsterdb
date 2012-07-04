@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -31,7 +31,7 @@
 #define btree_get_minkeys(maxkeys)      (maxkeys/2)
 
 /** defines the maximum number of keys per node */
-#define MAX_KEYS_PER_NODE				0xFFFFU /* max(ham_u16_t) */
+#define MAX_KEYS_PER_NODE               0xFFFFU /* max(ham_u16_t) */
 
 
 class BtreeBackend : public Backend
@@ -55,15 +55,15 @@ class BtreeBackend : public Backend
     virtual ham_status_t flush_indexdata();
 
     /** find a key in the index */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** insert (or update) a key in the index */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** erase a key in the index */
-    virtual ham_status_t erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags);
 
     /** iterate the whole tree and enumerate every item */
@@ -73,7 +73,7 @@ class BtreeBackend : public Backend
     virtual ham_status_t check_integrity();
 
     /** estimate the number of keys per page, given the keysize */
-    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount, 
+    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize);
 
     /** Close (and free) all cursors related to this database table.  */
@@ -83,17 +83,17 @@ class BtreeBackend : public Backend
     virtual ham_status_t uncouple_all_cursors(Page *page, ham_size_t start);
 
     /** same as above, but sets the cursor to the position */
-    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor, 
+    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor,
                     ham_key_t *key, ham_record_t *record, ham_u32_t flags);
 
     /** same as above, but sets the cursor position to the new item */
-    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key,
                         ham_record_t *record, btree_cursor_t *cursor,
                         ham_u32_t flags);
 
     /** same as above, but with a coupled cursor */
-    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key, 
-            			btree_cursor_t *cursor, ham_u32_t flags);
+    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key,
+                        btree_cursor_t *cursor, ham_u32_t flags);
 
     /**
      * Remove all extended keys for the given @a page from the
@@ -118,7 +118,7 @@ class BtreeBackend : public Backend
 
     /** set maximum number of keys per (internal) node */
     void set_maxkeys(ham_u16_t maxkeys) {
-        m_maxkeys=maxkeys; 
+        m_maxkeys=maxkeys;
     }
 
     /** getter for keydata1 */
@@ -161,10 +161,10 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
     /**
      * flags of this node - flags are always the first member
      * of every page - regardless of the backend.
-	 *
+     *
      * Currently only used for the page type.
-	 *
-	 * @sa page_type_codes
+     *
+     * @sa page_type_codes
      */
     ham_u16_t _flags;
 
@@ -178,8 +178,8 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
     ham_offset_t _right;
 
     /**
-     * address of child node whose items are smaller than all items 
-     * in this node 
+     * address of child node whose items are smaller than all items
+     * in this node
      */
     ham_offset_t _ptr_left;
 
@@ -221,7 +221,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 btree_node_t
 #define page_get_btree_node(p)          ((btree_node_t *)p->get_payload())
 
 /**
- * same as above, but assumes that the cursor is coupled to a leaf page 
+ * same as above, but assumes that the cursor is coupled to a leaf page
  * and the key can be removed without rebalancing the tree
  */
 extern ham_status_t
@@ -232,20 +232,20 @@ btree_cursor_erase_fasttrack(BtreeBackend *be, Transaction *txn,
  * same as above, but only erases a single duplicate
  */
 extern ham_status_t
-btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key, 
-        ham_u32_t dupe_id, 
+btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key,
+        ham_u32_t dupe_id,
         ham_u32_t flags);
 
 /**
  * find the child page for a key
  *
  * @return returns the child page in @a page_ref
- * @remark if @a idxptr is a valid pointer, it will store the anchor index 
+ * @remark if @a idxptr is a valid pointer, it will store the anchor index
  *      of the loaded page
  */
 extern ham_status_t
-btree_traverse_tree(Page **page_ref, ham_s32_t *idxptr, 
-					Database *db, Page *page, ham_key_t *key);
+btree_traverse_tree(Page **page_ref, ham_s32_t *idxptr,
+                    Database *db, Page *page, ham_key_t *key);
 
 /**
  * search a leaf node for a key
@@ -253,12 +253,12 @@ btree_traverse_tree(Page **page_ref, ham_s32_t *idxptr,
  * !!!
  * only works with leaf nodes!!
  *
- * @return returns the index of the key, or -1 if the key was not found, or 
- *         another negative @ref ham_status_codes value when an 
+ * @return returns the index of the key, or -1 if the key was not found, or
+ *         another negative @ref ham_status_codes value when an
  *         unexpected error occurred.
  */
-extern ham_s32_t 
-btree_node_search_by_key(Database *db, Page *page, ham_key_t *key, 
+extern ham_s32_t
+btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
                 ham_u32_t flags);
 
 /**
@@ -283,8 +283,8 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
  * also returns the comparison value in cmp; if *cmp == 0 then the keys are
  * equal
  */
-extern ham_status_t 
-btree_get_slot(Database *db, Page *page, 
+extern ham_status_t
+btree_get_slot(Database *db, Page *page,
         ham_key_t *key, ham_s32_t *slot, int *cmp);
 
 /**
@@ -296,25 +296,25 @@ btree_calc_maxkeys(ham_size_t pagesize, ham_u16_t keysize);
 /**
  * close all cursors in this Database
  */
-extern ham_status_t 
+extern ham_status_t
 btree_close_cursors(Database *db, ham_u32_t flags);
 
 /**
  * compare a public key (ham_key_t, LHS) to an internal key indexed in a
  * page
  *
- * @return -1, 0, +1 or higher positive values are the result of a successful 
- *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1 
+ * @return -1, 0, +1 or higher positive values are the result of a successful
+ *         key comparison (0 if both keys match, -1 when LHS < RHS key, +1
  *         when LHS > RHS key).
  *
- * @return values less than -1 are @ref ham_status_t error codes and indicate 
- *         a failed comparison execution: these are listed in 
+ * @return values less than -1 are @ref ham_status_t error codes and indicate
+ *         a failed comparison execution: these are listed in
  *         @ref ham_status_codes .
  *
- * @sa ham_status_codes 
+ * @sa ham_status_codes
  */
 extern int
-btree_compare_keys(Database *db, Page *page, 
+btree_compare_keys(Database *db, Page *page,
                 ham_key_t *lhs, ham_u16_t rhs);
 
 /**
@@ -326,19 +326,19 @@ btree_compare_keys(Database *db, Page *page,
  * @param which specifies whether keydata1 (which = 0) or keydata2 is used
  * to store the pointer in the backend. The pointers are kept to avoid
  * permanent re-allocations (improves performance)
- * 
+ *
  * Used in conjunction with @ref btree_release_key_after_compare
  */
-extern ham_status_t 
-btree_prepare_key_for_compare(Database *db, int which, btree_key_t *src, 
+extern ham_status_t
+btree_prepare_key_for_compare(Database *db, int which, btree_key_t *src,
                 ham_key_t *dest);
 
 /**
  * read a key
  *
- * @a dest must have been initialized before calling this function; the 
+ * @a dest must have been initialized before calling this function; the
  * dest->data space will be reused when the specified size is large enough;
- * otherwise the old dest->data will be ham_mem_free()d and a new 
+ * otherwise the old dest->data will be ham_mem_free()d and a new
  * space allocated.
  *
  * This can save superfluous heap free+allocation actions in there.
@@ -347,45 +347,45 @@ btree_prepare_key_for_compare(Database *db, int which, btree_key_t *src,
  * This routine can cope with HAM_KEY_USER_ALLOC-ated 'dest'-inations.
  */
 extern ham_status_t
-btree_read_key(Database *db, Transaction *txn, btree_key_t *source, 
+btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
                 ham_key_t *dest);
 
 /**
- * read a record 
+ * read a record
  *
  * @param rid same as record->_rid, if key is not TINY/SMALL. Otherwise,
- * and if HAM_DIRECT_ACCESS is set, we use the rid-pointer to the 
+ * and if HAM_DIRECT_ACCESS is set, we use the rid-pointer to the
  * original record ID
  *
  * flags: either 0 or HAM_DIRECT_ACCESS
  */
 extern ham_status_t
-btree_read_record(Database *db, Transaction *txn, ham_record_t *record, 
+btree_read_record(Database *db, Transaction *txn, ham_record_t *record,
                 ham_u64_t *ridptr, ham_u32_t flags);
 
-/** 
+/**
  * copy a key
  *
  * returns 0 if memory can not be allocated, or a pointer to @a dest.
  * uses ham_mem_malloc() - memory in dest->key has to be freed by the caller
- * 
- * @a dest must have been initialized before calling this function; the 
+ *
+ * @a dest must have been initialized before calling this function; the
  * dest->data space will be reused when the specified size is large enough;
- * otherwise the old dest->data will be ham_mem_free()d and a new space 
+ * otherwise the old dest->data will be ham_mem_free()d and a new space
  * allocated.
- * 
+ *
  * This can save superfluous heap free+allocation actions in there.
- * 
+ *
  * @note
  * This routine can cope with HAM_KEY_USER_ALLOC-ated 'dest'-inations.
- * 
+ *
  * @note
- * When an error is returned the 'dest->data' 
- * pointer is either NULL or still pointing at allocated space (when 
+ * When an error is returned the 'dest->data'
+ * pointer is either NULL or still pointing at allocated space (when
  * HAM_KEY_USER_ALLOC was not set).
  */
 extern ham_status_t
-btree_copy_key_int2pub(Database *db, const btree_key_t *source, 
+btree_copy_key_int2pub(Database *db, const btree_key_t *source,
                 ham_key_t *dest);
 
 

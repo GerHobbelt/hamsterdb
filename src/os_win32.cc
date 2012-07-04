@@ -94,7 +94,7 @@ DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
 /*
  * MS says:
  *
- * Security Alert  
+ * Security Alert
  *
  * Using the MultiByteToWideChar function incorrectly can compromise the
  * security of your application. Calling this function can easily cause a
@@ -102,7 +102,7 @@ DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
  * lpMultiByteStr equals the number of bytes in the string, while the size of
  * the output buffer indicated by lpWideCharStr equals the number of WCHAR
  * values.
- * 
+ *
  * To avoid a buffer overrun, your application must specify a buffer size
  * appropriate for the data type the buffer receives. For more information, see
  * Security Considerations: International Features.
@@ -347,7 +347,7 @@ os_seek(ham_fd_t fd, ham_offset_t offset, int whence)
     DWORD st;
     LARGE_INTEGER i;
     i.QuadPart=offset;
-   
+
     i.LowPart=SetFilePointer((HANDLE)fd, i.LowPart,
             &i.HighPart, whence);
     if (i.LowPart==INVALID_SET_FILE_POINTER &&
@@ -474,7 +474,7 @@ os_flush(ham_fd_t fd)
     if (!FlushFileBuffers((HANDLE)fd)) {
         char buf[256];
         st=(ham_status_t)GetLastError();
-        ham_log(("FlushFileBuffers failed with OS status %u (%s)", 
+        ham_log(("FlushFileBuffers failed with OS status %u (%s)",
                 st, DisplayError(buf, sizeof(buf), st)));
         return (HAM_IO_ERROR);
     }

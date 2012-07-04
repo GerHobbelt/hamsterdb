@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -25,11 +25,11 @@
 */
 
 /** continue with the traversal */
-#define CB_CONTINUE            0 
+#define CB_CONTINUE            0
 /** do not not descend another level (or descend from page to key traversal) */
-#define CB_DO_NOT_DESCEND    1 
+#define CB_DO_NOT_DESCEND    1
 /** stop the traversal entirely */
-#define CB_STOP                2 
+#define CB_STOP                2
 
 /**
  * @}
@@ -37,15 +37,15 @@
 
 
 /**
- * a callback function for enumerating the index nodes/pages using the 
+ * a callback function for enumerating the index nodes/pages using the
  * @ref Backend::enumerate callback/method.
  *
  * @param event one of the @ref ham_cb_event state codes
  *
- * @return one of the @ref ham_cb_status values or a @ref ham_status_codes 
+ * @return one of the @ref ham_cb_status values or a @ref ham_status_codes
  *         error code when an error occurred.
  */
-typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1, 
+typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1,
                     void *param2, void *context);
 
 /**
@@ -62,7 +62,7 @@ typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1,
 /** end of a new page; param1 points to the page */
 #define ENUM_EVENT_PAGE_STOP    3
 
-/** an item in the page; param1 points to the key; param2 is the index 
+/** an item in the page; param1 points to the key; param2 is the index
  * of the key in the page */
 #define ENUM_EVENT_ITEM         4
 
@@ -74,7 +74,7 @@ struct btree_cursor_t;
 
 /**
  * the backend structure - these functions and members are inherited
- * by every other backend (i.e. btree, hashdb etc). 
+ * by every other backend (i.e. btree, hashdb etc).
  */
 class Backend
 {
@@ -120,7 +120,7 @@ class Backend
     /**
      * find a key in the index
      */
-    virtual ham_status_t find(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /**
@@ -129,13 +129,13 @@ class Backend
      * the backend is responsible for inserting or updating the
      * record. (see blob.h for blob management functions)
      */
-    virtual ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /**
      * erase a key in the index
      */
-    virtual ham_status_t erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags) = 0;
 
     /**
@@ -151,7 +151,7 @@ class Backend
     /**
      * estimate the number of keys per page, given the keysize
      */
-    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount, 
+    virtual ham_status_t calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize) = 0;
 
     /**
@@ -170,20 +170,20 @@ class Backend
     /**
      * looks up a key, points cursor to this key
      */
-    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor, 
+    virtual ham_status_t find_cursor(Transaction *txn, btree_cursor_t *cursor,
                         ham_key_t *key, ham_record_t *record,
                         ham_u32_t flags) = 0;
 
     /**
      * inserts a key, points cursor to the new key
      */
-    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t insert_cursor(Transaction *txn, ham_key_t *key,
                         ham_record_t *record, btree_cursor_t *cursor,
                         ham_u32_t flags) = 0;
 
     /** same as above, but with a coupled cursor */
-    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key, 
-                    	btree_cursor_t *cursor, ham_u32_t flags) = 0;
+    virtual ham_status_t erase_cursor(Transaction *txn, ham_key_t *key,
+                        btree_cursor_t *cursor, ham_u32_t flags) = 0;
 
     /**
      * Remove all extended keys for the given @a page from the

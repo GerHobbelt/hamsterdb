@@ -3,7 +3,7 @@
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or 
+ * Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * See files COPYING.* for License information.
@@ -129,7 +129,7 @@ class ExtKeyCache
 
     /**
      * insert a new extended key in the cache
-     * will assert that there's no duplicate key! 
+     * will assert that there's no duplicate key!
      */
     void insert(ham_offset_t blobid, ham_size_t size, const ham_u8_t *data) {
         ScopedLock lock(m_mutex);
@@ -137,7 +137,7 @@ class ExtKeyCache
         Environment *env=m_db->get_env();
 
         /* DEBUG build: make sure that the item is not inserted twice!  */
-        ham_assert(m_hash.get(blobid)==0, ("")); 
+        ham_assert(m_hash.get(blobid)==0, (""));
 
         e=(ExtKey *)env->get_allocator()->alloc(SIZEOF_EXTKEY_T+size);
         e->blobid=blobid;
@@ -179,14 +179,14 @@ class ExtKeyCache
         else
             return (HAM_KEY_NOT_FOUND);
     }
-    
+
     /** removes all OLD keys from the cache */
     void purge() {
         ScopedLock lock(m_mutex);
         m_extkeyhelper->m_removeall=false;
         m_hash.remove_if();
     }
-    
+
     /** removes ALL keys from the cache */
     void purge_all() {
         ScopedLock lock(m_mutex);
@@ -220,7 +220,7 @@ class ExtKeyCache
  * a combination of extkey_cache_remove and blob_free
  * TODO move this to Database.cc (DatabaseImplementationLocal)
  */
-inline ham_status_t 
+inline ham_status_t
 extkey_remove(Database *db, ham_offset_t blobid)
 {
     if (db->get_extkey_cache())
