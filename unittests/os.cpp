@@ -156,13 +156,8 @@ public:
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd));
         BFC_ASSERT_EQUAL(HAM_WOULD_BLOCK,
                 os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
-<<<<<<< HEAD
         BFC_ASSERT_EQUAL(0, os_close(fd, HAM_LOCK_EXCLUSIVE));
         BFC_ASSERT_EQUAL(0,
-=======
-        BFC_ASSERT_EQUAL(0, os_close(fd));
-        BFC_ASSERT_EQUAL(0,
->>>>>>> remotes/cruppstahl/wip/cache
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd2));
         BFC_ASSERT_EQUAL(0, os_close(fd2));
         BFC_ASSERT_EQUAL(0, os_open(BFC_OPATH(".test"), 0, &fd2));
@@ -252,13 +247,8 @@ public:
         BFC_ASSERT_EQUAL(0, os_pread(fd, 0, page, ps));
         /* compare */
         BFC_ASSERT_EQUAL(0x13, page[0]);
-<<<<<<< HEAD
 
         BFC_ASSERT_EQUAL(0, os_close(fd, 0));
-=======
-
-        BFC_ASSERT_EQUAL(0, os_close(fd));
->>>>>>> remotes/cruppstahl/wip/cache
         free(page);
     }
 

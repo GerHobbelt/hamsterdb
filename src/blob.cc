@@ -1314,9 +1314,8 @@ blob_duplicate_erase(Database *db, Transaction *txn, ham_offset_t table_id,
                 }
             }
         }
-        st=blob_free(env, db, table_id, 0); /* [i_a] isn't this superfluous (&
-                                        * dangerous), thanks to the
-                                        * free_all_dupes loop above??? */
+        /* now free the table itself */
+        st=blob_free(env, db, table_id, 0); /* [i_a] isn't this superfluous (& dangerous), thanks to the free_all_dupes loop above??? */
 //      env->get_allocator()->free(table);
         if (st)
             return (st);

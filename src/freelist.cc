@@ -2718,7 +2718,6 @@ Freelist::locate_sufficient_free_space(freelist_hints_t *dst,
             }
         }
         else {
-
             /*
              * 'regular' modes: does this freelist entry have enough
              * allocated blocks to satisfy the request?

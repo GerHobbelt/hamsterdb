@@ -242,18 +242,6 @@ btree_erase_duplicate(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         ham_u32_t flags);
 
 /**
- * enumerate all items
- */
-extern ham_status_t
-btree_enumerate(BtreeBackend *be, ham_enumerate_cb_t cb, void *context);
-
-/**
- * verify the whole tree
- */
-extern ham_status_t
-btree_check_integrity(BtreeBackend *be);
-
-/**
  * find the child page for a key
  *
  * @return returns the child page in @a page_ref

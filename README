@@ -28,7 +28,7 @@ Bugfixes
 * Fixed linker error when libboost_thread-mt.lib is installed
 * Fixed compilation error in OSX Lion
 * Fixed HAM_INTERNAL_ERROR when creating database with
-    HAM_ENABLE_RECOVERY but without HAM_ENABLE_TRANSACTIONS
+  HAM_ENABLE_RECOVERY but without HAM_ENABLE_TRANSACTIONS
 
 Other Changes
 * Several code cleanups; more modules were converted to C++
@@ -40,7 +40,7 @@ To see a list of all changes, look in the file ChangeLog.
 
 - fine-grained locking for faster concurrent access
 - more transactional stuff (i.e. recreate pending transactions when
-    recovering from a crash)
+  recovering from a crash)
 
 4. Features
 
@@ -56,14 +56,14 @@ To see a list of all changes, look in the file ChangeLog.
 - Very fast database cursors
 - Configurable page size, cache size and index key size
 - Runs on Linux, Unices, Microsoft Windows, Windows CE and on many
-    architectures (also embedded and SPARC)
+  architectures (also embedded and SPARC)
 - Endian-independent file format
 - Uses memory mapped I/O for fast disk access (but falls back to read/write if
-    mmap is not available)
+  mmap is not available)
 - Uses 64bit file pointers and supports huge files (>2 GB)
 - Easy to use and well-documented
 - Supports rudimentary live-reorganization by automatically
-    merging freelist entries
+  merging freelist entries
 - Open source and released under the GPL 2.0 or later
 - Supports AES encryption and zlib compression
 - Wrappers for C++, Python, Java and .NET
@@ -129,7 +129,7 @@ environment, you have to set some preprocessor macros:
 DEBUG                   enable debugging output and diagnostic checks (slow!)
 HAM_LITTLE_ENDIAN       compile for little endian machines (i.e. x86)
 HAM_BIG_ENDIAN          compile for big endian machines (most other
-                            architectures)
+                        architectures)
 HAM_32BIT               compile for 32bit (alias: WIN32)
 HAM_64BIT               compile for 64bit (alias: WIN64, also needs WIN32)
 HAM_DISABLE_COMPRESSION build without support for zlib compression
@@ -267,15 +267,15 @@ It has the following license:
     modification, are permitted provided that the following conditions are
     met:
 
-        * Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
-        * Redistributions in binary form must reproduce the above
-    copyright notice, this list of conditions and the following disclaimer
-    in the documentation and/or other materials provided with the
-    distribution.
-        * Neither the name of Google Inc. nor the names of its
-    contributors may be used to endorse or promote products derived from
-    this software without specific prior written permission.
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following disclaimer
+      in the documentation and/or other materials provided with the
+      distribution.
+    * Neither the name of Google Inc. nor the names of its
+      contributors may be used to endorse or promote products derived from
+      this software without specific prior written permission.
 
     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
     "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
