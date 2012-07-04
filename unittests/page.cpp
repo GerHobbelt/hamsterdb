@@ -67,7 +67,7 @@ public:
                                 flags, 0644, 0));
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -121,7 +121,7 @@ public:
         BFC_ASSERT_EQUAL(0, page->allocate());
         BFC_ASSERT_EQUAL(ps*2, page->get_self());
         BFC_ASSERT_EQUAL(0, page->free());
-        
+
         BFC_ASSERT_EQUAL(0, page->fetch(page->get_self()));
         memset(page->get_pers(), 0x13, ps);
         page->set_dirty(true);

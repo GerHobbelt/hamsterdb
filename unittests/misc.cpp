@@ -62,7 +62,7 @@ public:
         BFC_ASSERT_EQUAL(0,
                     ham_env_create_db(m_env, m_db, 1, 0, 0));
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

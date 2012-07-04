@@ -33,7 +33,7 @@ struct find_hints_t
 
     /* [in/out] find flags */
     ham_u32_t flags;
- 
+
     /* [out] page/btree leaf to check first */
     ham_offset_t leaf_page_addr;
 
@@ -51,7 +51,7 @@ struct insert_hints_t
 {
     /* [in] insert flags */
     ham_u32_t original_flags;
-    
+
     /* [in/out] insert flags; may be modified while performing the insert */
     ham_u32_t flags;
 
@@ -63,18 +63,18 @@ struct insert_hints_t
 
     /* [out] check specified btree leaf node page first */
     ham_bool_t try_fast_track;
-    
+
     /* [out] not (yet) part of the hints, but a result from it: informs
      * insert_nosplit() that the insertion position (slot) is already known */
     ham_bool_t force_append;
-    
+
     /* [out] not (yet) part of the hints, but a result from it: informs
      * insert_nosplit() that the insertion position (slot) is already known */
     ham_bool_t force_prepend;
- 
+
     /* [feedback] cost tracking for our statistics */
     ham_size_t cost;
- 
+
     /* [feedback] the btree leaf page which received the inserted key */
     Page *processed_leaf_page;
 
@@ -85,28 +85,28 @@ struct insert_hints_t
 
 struct erase_hints_t
 {
- 
+
     /* [in] insert flags */
     ham_u32_t original_flags;
- 
+
     /* [in/out] insert flags; may be modified while performing the insert */
     ham_u32_t flags;
- 
+
     /* [in] */
     ham_cursor_t *cursor;
- 
+
     /* [out] page/btree leaf to check first */
     ham_offset_t leaf_page_addr;
- 
+
     /* [out] */
     ham_bool_t key_is_out_of_bounds;
-    
+
     /* [out] check specified btree leaf node page first */
     ham_bool_t try_fast_track;
- 
+
     /* [feedback] cost tracking for our statistics */
     ham_size_t cost;
- 
+
     /* [feedback] the btree leaf page which received the inserted key */
     Page *processed_leaf_page;
 

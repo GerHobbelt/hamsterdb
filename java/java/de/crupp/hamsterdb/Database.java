@@ -17,16 +17,16 @@ public class Database {
     private native static int ham_get_version(int which);
 
     private native static String ham_get_license(int which);
-    
+
     private native static void ham_set_errhandler(ErrorHandler eh);
-    
+
     private native long ham_new();
-    
+
     private native void ham_delete(long handle);
-            
+
     private native int ham_create_ex(long handle, String filename, int flags,
             int mode, Parameter[] params);
-    
+
     private native int ham_open_ex(long handle, String filename, int flags,
             Parameter[] params);
 
@@ -34,25 +34,25 @@ public class Database {
 
     private native void ham_set_compare_func(long handle,
             CompareCallback cmp);
-    
+
     private native void ham_set_prefix_compare_func(long handle,
             PrefixCompareCallback cmp);
 
     private native void ham_set_duplicate_compare_func(long handle,
             DuplicateCompareCallback cmp);
-    
+
     private native int ham_enable_compression(long handle, int level,
             int flags);
-    
+
     private native Environment ham_get_env(long handle);
-    
+
     private native byte[] ham_find(long handle, long txnhandle,
             byte[] key, int flags);
-    
+
     private native int ham_flush(long handle, int flags);
 
     private native int ham_get_parameters(long handle, Parameter[] params);
-    
+
     private native int ham_insert(long handle, long txnhandle,
             byte[] key, byte[] record, int flags);
 
@@ -63,7 +63,7 @@ public class Database {
             int flags);
 
     private native int ham_close(long handle, int flags);
-    
+
     /**
      * Sets the global error handler.
      * <p>
@@ -103,7 +103,7 @@ public class Database {
         v.revision=ham_get_version(2);
         return v;
     }
-    
+
     /**
      * Returns the name of the licensee and the name of the licensed product.
      * <p>
@@ -121,13 +121,13 @@ public class Database {
         l.product=ham_get_license(1);
         return l;
     }
-    
+
     /**
      * Constructor - creates a Database object
      */
     public Database() {
     }
-    
+
     /**
      * Constructor - creates a Database object and binds it to a
      * native hamsterdb handle.
@@ -135,7 +135,7 @@ public class Database {
     public Database(long handle) {
         m_handle=handle;
     }
-    
+
     /**
      * Destructor - closes the Database, if it is still open.
      */
@@ -153,7 +153,7 @@ public class Database {
             throws DatabaseException {
         create(filename, 0, 0644, null);
     }
-    
+
     /**
      * Creates a Database
      *
@@ -163,7 +163,7 @@ public class Database {
             throws DatabaseException {
         create(filename, flags, 0644, null);
     }
-    
+
     /**
      * Creates a Database
      *
@@ -272,7 +272,7 @@ public class Database {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Opens an existing Database
      *
@@ -282,7 +282,7 @@ public class Database {
             throws DatabaseException {
         open(filename, 0, null);
     }
-    
+
     /**
      * Opens an existing Database
      *
@@ -292,7 +292,7 @@ public class Database {
             throws DatabaseException {
         open(filename, flags, null);
     }
-    
+
     /**
      * Opens an existing Database
      * <p>
@@ -368,7 +368,7 @@ public class Database {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Returns the last error code
      * <p>
@@ -381,7 +381,7 @@ public class Database {
     public synchronized int getError() {
         return ham_get_error(m_handle);
     }
-    
+
     /**
      * Sets the comparison function
      * <p>
@@ -409,7 +409,7 @@ public class Database {
         m_cmp=cmp;
         ham_set_compare_func(m_handle, cmp);
     }
-     
+
     /**
      * Sets the prefix comparison function
      * <p>
@@ -490,7 +490,7 @@ public class Database {
             throws DatabaseException {
         return find(null, key);
     }
-    
+
     /**
      * Inserts a Database item
      *
@@ -500,7 +500,7 @@ public class Database {
             throws DatabaseException {
         insert(key, record, 0);
     }
-    
+
     /**
      * Inserts a Database item
      *
@@ -567,7 +567,7 @@ public class Database {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Erases a Database item
      *
@@ -577,7 +577,7 @@ public class Database {
             throws DatabaseException {
         erase(null, key);
     }
-    
+
     /**
      * Erases a Database item
      * <p>
@@ -636,7 +636,7 @@ public class Database {
             throws DatabaseException {
         enableCompression(0);
     }
-    
+
     /**
      * Enables zlib compression for all inserted records
      * <p>
@@ -729,7 +729,7 @@ public class Database {
     public void close() {
         close(0);
     }
-    
+
     /**
      * Closes the Database
      * <p>
@@ -767,7 +767,7 @@ public class Database {
     private PrefixCompareCallback m_prefix_cmp;
     private DuplicateCompareCallback m_dupe_cmp;
     private static ErrorHandler m_eh;
-    
+
     static {
         System.loadLibrary("hamsterdb-java");
     }

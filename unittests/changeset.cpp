@@ -52,7 +52,7 @@ public:
                 HAM_ENABLE_RECOVERY, 0644, 0));
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

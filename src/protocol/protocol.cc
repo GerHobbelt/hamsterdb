@@ -63,7 +63,7 @@ proto_pack(proto_wrapper_t *wrapper, Allocator *alloc,
         alloc->free(p);
         return (HAM_FALSE);
     }
-    
+
     *data=p;
     *size=packed_size+8;
     return (HAM_TRUE);

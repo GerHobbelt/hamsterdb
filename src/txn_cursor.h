@@ -64,7 +64,7 @@ typedef struct txn_cursor_t
         struct txn_cursor_t *_previous;
 
     } _coupled;
-    
+
 } txn_cursor_t;
 
 /** get the database pointer */

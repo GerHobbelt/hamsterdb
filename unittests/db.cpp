@@ -71,7 +71,7 @@ public:
                         HAM_ENABLE_DUPLICATES, 0));
         m_dbp=(Database *)m_db;
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

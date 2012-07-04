@@ -13,20 +13,20 @@
 package de.crupp.hamsterdb;
 
 public class Cursor {
-    
+
     private native long ham_cursor_create(long dbhandle, long txnhandle);
 
     private native long ham_cursor_clone(long handle);
-    
+
     private native int ham_cursor_move_to(long handle, int flags);
-    
+
     private native byte[] ham_cursor_get_key(long handle, int flags);
-    
+
     private native byte[] ham_cursor_get_record(long handle, int flags);
-    
+
     private native int ham_cursor_overwrite(long handle,
             byte[] record, int flags);
-    
+
     private native int ham_cursor_find(long handle,
             byte[] key, int flags);
 
@@ -35,10 +35,10 @@ public class Cursor {
 
     private native int ham_cursor_erase(long handle,
             int flags);
-    
+
     private native int ham_cursor_get_duplicate_count(long handle,
             int flags);
-    
+
     private native long ham_cursor_get_record_size(long handle);
 
     private native int ham_cursor_close(long handle);
@@ -50,7 +50,7 @@ public class Cursor {
         m_db=db;
         m_handle=handle;
     }
-    
+
     /**
      * Constructor - creates a new Cursor of a Database
      *
@@ -71,7 +71,7 @@ public class Cursor {
             throws DatabaseException {
         create(db, txn);
     }
-    
+
     /**
      * Destructor - automatically closes the Cursor
      */
@@ -79,7 +79,7 @@ public class Cursor {
             throws DatabaseException {
         close();
     }
-    
+
     /**
      * Creates a new Cursor
      * <p>
@@ -140,7 +140,7 @@ public class Cursor {
             throw new DatabaseException(m_db.getError());
         return new Cursor(m_db, newhandle);
     }
-    
+
     /**
      * Moves the Cursor to the direction specified in the flags.
      * <p>
@@ -191,7 +191,7 @@ public class Cursor {
             throws DatabaseException {
         move(Const.HAM_CURSOR_FIRST);
     }
-    
+
     /**
      * Moves the Cursor to the last Database element
      *
@@ -201,7 +201,7 @@ public class Cursor {
             throws DatabaseException {
         move(Const.HAM_CURSOR_LAST);
     }
-    
+
     /**
      * Moves the Cursor to the next Database element
      *
@@ -222,7 +222,7 @@ public class Cursor {
             throws DatabaseException {
         move(Const.HAM_CURSOR_NEXT|flags);
     }
-    
+
     /**
      * Moves the Cursor to the previous Database element
      *
@@ -243,7 +243,7 @@ public class Cursor {
             throws DatabaseException {
         move(Const.HAM_CURSOR_PREVIOUS|flags);
     }
-    
+
     /**
      * Retrieves the Key of the current item
      * <p>
@@ -314,7 +314,7 @@ public class Cursor {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Searches a key and points the Cursor to this key
      * <p>
@@ -341,7 +341,7 @@ public class Cursor {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Inserts a Database item and points the Cursor to the inserted item
      *
@@ -351,7 +351,7 @@ public class Cursor {
             throws DatabaseException {
         insert(key, record, 0);
     }
-    
+
     /**
      * Inserts a Database item and points the Cursor to the inserted item
      * <p>
@@ -411,7 +411,7 @@ public class Cursor {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Erases the current key
      * <p>
@@ -436,7 +436,7 @@ public class Cursor {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Returns the number of duplicate keys
      * <p>
@@ -481,7 +481,7 @@ public class Cursor {
             throw new DatabaseException(m_db.getError());
         return size;
     }
-    
+
     /**
      * Closes the Cursor
      * <p>
@@ -504,14 +504,14 @@ public class Cursor {
             throw new DatabaseException(status);
         m_handle=0;
     }
-    
+
     /**
      * Returns the Cursor handle
      */
     public long getHandle() {
         return m_handle;
     }
-    
+
     private long m_handle;
     private Database m_db;
 }

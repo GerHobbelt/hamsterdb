@@ -235,7 +235,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_close(m_db, HAM_AUTO_CLEANUP));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
     }
-    
+
     void insertDuplicatesTest(void)
     {
         ham_key_t key;
@@ -412,7 +412,7 @@ public:
         BFC_ASSERT_EQUAL(0, ::memcmp(data, rec2.data, 16));
         free(data);
     }
-    
+
     void insertMoveForwardTest(void)
     {
         ham_key_t key;
@@ -586,7 +586,7 @@ public:
         ham_size_t count;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "3333333333");
@@ -638,7 +638,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("000", "aaaaaaaaaa");
         insertData("111", "1111111111");
         insertData("111", "2222222222");
@@ -670,7 +670,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("000", "aaaaaaaaaa");
         insertData("111", "8888888888");
         insertData("111", "9999999999");
@@ -702,7 +702,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("1", "1");
         insertData("1", "2");
         insertData("1", "3");
@@ -957,7 +957,7 @@ public:
         BFC_ASSERT(((Database *)m_db)->get_rt_flags()&HAM_ENABLE_DUPLICATES);
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData("111", "4444444444");
         insertData("111", "5555555555");
         insertData("111", "6666666666");
@@ -984,7 +984,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "3333333333");
         insertData(0, "2222222222");
         insertData(0, "1111111111");
@@ -1286,7 +1286,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "3333333333");
@@ -1328,7 +1328,7 @@ public:
         ::memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "33");
@@ -1372,7 +1372,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c1));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c2));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c3));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "33");
@@ -1433,7 +1433,7 @@ public:
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_cursor_move(c, 0, 0,
                         HAM_SKIP_DUPLICATES|HAM_ONLY_DUPLICATES));
-        
+
         ham_cursor_close(c);
     }
 
@@ -1516,7 +1516,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec,
                                 HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES));
         BFC_ASSERT_EQUAL(_ham_byteswap32(142), *(unsigned int *)rec.data);
-        
+
         memset(&rec, 0, sizeof(rec));
         BFC_ASSERT_EQUAL(0, ham_cursor_move(c, 0, &rec,
                                 HAM_CURSOR_NEXT|HAM_ONLY_DUPLICATES));
@@ -1541,7 +1541,7 @@ public:
         ham_cursor_t *c;
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         insertData(0, "1111111111");
         insertData(0, "2222222222");
         insertData(0, "3333333333");
@@ -1585,7 +1585,7 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
@@ -1623,7 +1623,7 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
@@ -1661,7 +1661,7 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
@@ -1701,7 +1701,7 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<4; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.data=(void *)values[i];
@@ -1743,7 +1743,7 @@ public:
         memset(&key, 0, sizeof(key));
 
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int s=0; s<5; s++) {
             for (int i=s, j=0; i<s+4; i++, j++) {
                 memset(&rec, 0, sizeof(rec));
@@ -1865,7 +1865,7 @@ public:
 
         memset(&key, 0, sizeof(key));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &c));
-        
+
         for (int i=0; i<256; i++) {
             memset(&rec, 0, sizeof(rec));
             rec.size=sizeof(i);
@@ -1999,7 +1999,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_close(m_db, HAM_AUTO_CLEANUP));
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
     }
-    
+
     void insertDuplicate(ham_u32_t value)
     {
         ham_key_t key;
@@ -2138,7 +2138,7 @@ public:
                 ham_cursor_insert(c, &key, &rec, 0));
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_cursor_overwrite(c, &rec, 0));
-        
+
         ham_cursor_close(c);
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
         BFC_ASSERT_EQUAL(0, ham_delete(db));

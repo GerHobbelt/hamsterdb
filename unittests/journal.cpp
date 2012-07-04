@@ -127,10 +127,10 @@ public:
                         HAM_ENABLE_DUPLICATES
                         |HAM_ENABLE_TRANSACTIONS
                         |HAM_ENABLE_RECOVERY, 0644));
-    
+
         m_env=(Environment *)ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

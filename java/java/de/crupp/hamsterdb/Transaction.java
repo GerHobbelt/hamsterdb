@@ -13,11 +13,11 @@
 package de.crupp.hamsterdb;
 
 public class Transaction {
-    
+
     private native int ham_txn_commit(long handle, int flags);
 
     private native int ham_txn_abort(long handle, int flags);
-    
+
     /**
      * Constructor - assigns an Environment object and a Transaction handle
      */
@@ -25,7 +25,7 @@ public class Transaction {
         m_env=env;
         m_handle=handle;
     }
-    
+
     /**
      * Destructor - automatically aborts the Transaction
      */
@@ -33,7 +33,7 @@ public class Transaction {
             throws DatabaseException {
         abort();
     }
-    
+
     /**
      * Aborts the Transaction
      * <p>
@@ -87,7 +87,7 @@ public class Transaction {
     public long getHandle() {
         return m_handle;
     }
-    
+
     private long m_handle;
     private Environment m_env;
 }

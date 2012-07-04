@@ -619,7 +619,7 @@ Freelist::alloc_area(ham_offset_t *addr_ref, Database *db, ham_size_t size,
         ham_assert(i<(ham_s32_t)m_entries.size(), (0));
 
         entry=&m_entries[i];
-            
+
         /*
          * when we look for a free slot for a multipage spanning blob
          * ('huge blob'), we could, of course, play nice, and check every
@@ -734,7 +734,7 @@ Freelist::alloc_area(ham_offset_t *addr_ref, Database *db, ham_size_t size,
                 /* we have a hit! */
                 i -= start_idx;
                 end_idx += start_idx;
-                
+
                 start_idx = 0;
                 for (len = hints.size_bits; len > 0; i++, start_idx++) {
                     ham_size_t fl;
@@ -957,7 +957,7 @@ Freelist::init_perf_data(FreelistEntry *entry, FreelistPayload *fp)
         entrystats->persisted_bits = (ham_u32_t)filesize;
     }
 }
-                                                                    
+
 #define DUMMY_LSN  1
 
 ham_status_t
@@ -995,7 +995,7 @@ Freelist::flush_statistics()
             /* otherwise just fetch the page from the cache or the disk */
             else {
                 Page *page;
-                
+
                 st = env_fetch_page(&page, m_env, entry->page_id, 0);
                 if (st)
                     return (st);
@@ -1644,7 +1644,7 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                     ham_u32_t d = 1;
                     for (;;) {
                         hints->cost++;
-    
+
                         if (p64[r] != 0xFFFFFFFFFFFFFFFFULL) {
                             l = r + 1; /* lowest PROBABLY okay probe location */
                             break;
@@ -2207,7 +2207,7 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                         for (bm_l += 2; bm_l < ub && !p[bm_l]; bm_l += 2)
                             hints->cost++;
                     }
-                    
+
                     /*
                      * BM: a miss: skip to next opportunity
                      * sequentially:
@@ -2917,7 +2917,7 @@ Freelist::initialize()
     ham_size_t size;
     FreelistEntry entry={0};
     FreelistPayload *fp=m_env->get_freelist_payload();
-    
+
     ham_assert(m_entries.empty(), (""));
 
     /* add the header page to the freelist */
@@ -2975,7 +2975,7 @@ Freelist::get_entry(FreelistEntry **entry_ref, ham_offset_t address)
 {
     ham_size_t i=0;
     ham_status_t st=0;
-    
+
     ham_assert(entry_ref != NULL, (0));
     for (;;) {
         ham_size_t add;
@@ -2983,7 +2983,7 @@ Freelist::get_entry(FreelistEntry **entry_ref, ham_offset_t address)
 
         for (; i < m_entries.size(); i++) {
             FreelistEntry *entry=&m_entries[i];
-    
+
             ham_assert(address >= entry->start_address, (""));
 
             if (address >= entry->start_address
@@ -3181,13 +3181,13 @@ Freelist::set_bits(FreelistEntry *entry, FreelistPayload *fp,
             ham_size_t n = size_bits;
             ham_u64_t *p64=(ham_u64_t *)freel_get_bitmap(fp);
             p64 += qw_start;
-            
+
             if (qw_offset) {
                 p = (ham_u8_t *)&p64[-1];
 
                 for (i = qw_offset; i < 64; i++)
                     p[i>>3] |= 1 << (i&(8-1));
-                
+
                 n -= 64 - qw_offset;
             }
 

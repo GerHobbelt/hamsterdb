@@ -369,7 +369,7 @@ my_erase_recursive(Page **page_ref, Page *page, ham_offset_t left, ham_offset_t 
             int cmp=btree_compare_keys(db, page, scratchpad->key, slot);
             if (cmp < -1)
                 return (ham_status_t)cmp;
-            
+
             if (cmp==0) {
                 newme=page;
             }
@@ -648,7 +648,7 @@ my_merge_pages(Page **newpage_ref, Page *page, Page *sibpage,
     hints->cost += btree_stats_memmove_cost((db_get_int_key_header_size()+
                         keysize)*c);
     memcpy(bte_lhs, bte_rhs, (db_get_int_key_header_size()+keysize)*c);
-            
+
     /*
      * as sibnode is merged into node, we will also need to ensure that our
      * statistics node/page tracking is corrected accordingly: what was in
@@ -690,7 +690,7 @@ my_merge_pages(Page **newpage_ref, Page *page, Page *sibpage,
         if (btree_node_get_right(sibnode)) {
             Page *p;
             btree_node_t *n;
-            
+
             st=db_fetch_page(&p, page->get_db(),
                     btree_node_get_right(sibnode), 0);
             if (st)
@@ -704,7 +704,7 @@ my_merge_pages(Page **newpage_ref, Page *page, Page *sibpage,
         else
             btree_node_set_right(node, 0);
     }
-    
+
     /*
      * return this page for deletion
      */
@@ -788,7 +788,7 @@ my_shift_pages(Page **newpage_ref, Page *page, Page *sibpage, ham_offset_t ancho
             if (st) {
                 return st;
             }
-    
+
             /*
              * append the anchor node to the page
              */
@@ -964,7 +964,7 @@ my_shift_pages(Page **newpage_ref, Page *page, Page *sibpage, ham_offset_t ancho
         {
             btree_key_t *bte;
             ham_key_t key;
-    
+
             bte =btree_node_get_key(db, sibnode, 0);
             memset(&key, 0, sizeof(key));
             key._flags=key_get_flags(bte);
@@ -1354,7 +1354,7 @@ my_remove_entry(Page *page, ham_s32_t slot,
                 }
                 btc=next;
             }
-    
+
             /*
              * return immediately
              *

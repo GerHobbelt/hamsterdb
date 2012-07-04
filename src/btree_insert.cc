@@ -697,7 +697,7 @@ __insert_nosplit(Page *page, Transaction *txn, ham_key_t *key,
                         hints->flags, &new_dupe_id);
         if (st)
             return (st);
-        
+
         hints->processed_leaf_page = page;
         hints->processed_slot = slot;
     }
@@ -878,7 +878,7 @@ __insert_split(Page *page, ham_key_t *key,
                ((char *)obte)+(db_get_int_key_header_size()+keysize)*(pivot+1),
                (db_get_int_key_header_size()+keysize)*(count-pivot-1));
     }
-    
+
     /*
      * store the pivot element, we'll need it later to propagate it
      * to the parent page

@@ -169,7 +169,7 @@ next:
         txn_cursor_couple(cursor, op);
         return (0);
     }
- 
+
     return (HAM_KEY_NOT_FOUND);
 }
 

@@ -15,37 +15,37 @@ package de.crupp.hamsterdb;
 import de.crupp.hamsterdb.Transaction;
 
 public class Environment {
-    
+
     private native long ham_env_new();
-    
+
     private native void ham_env_delete(long handle);
-            
+
     private native int ham_env_create_ex(long handle, String filename,
             int flags, int mode, Parameter[] params);
-    
+
     private native int ham_env_open_ex(long handle, String filename, int flags,
             Parameter[] params);
-    
+
     private native long ham_env_create_db(long handle, short name, int flags,
             Parameter[] params);
-    
+
     private native long ham_env_open_db(long handle, short name, int flags,
             Parameter[] params);
 
     private native int ham_env_get_parameters(long handle, Parameter[] params);
-    
+
     private native int ham_env_rename_db(long handle, short oldname,
             short newname, int flags);
 
     private native int ham_env_erase_db(long handle, short name, int flags);
-    
+
     private native int ham_env_enable_encryption(long handle, byte[] key,
             int flags);
-    
+
     private native short[] ham_env_get_database_names(long handle);
 
     private native int ham_env_flush(long handle);
-    
+
     private native long ham_txn_begin(long handle, int flags);
 
     private native int ham_env_close(long handle, int flags);
@@ -55,7 +55,7 @@ public class Environment {
      */
     public Environment() {
     }
-    
+
     /**
      * Destructor - closes the Environment
      */
@@ -63,7 +63,7 @@ public class Environment {
             throws DatabaseException {
         close();
     }
-    
+
     /**
      * Creates a new Database Environment
      *
@@ -73,7 +73,7 @@ public class Environment {
             throws DatabaseException {
         create(filename, 0, 0644, null);
     }
-    
+
     /**
      * Creates a new Database Environment
      *
@@ -83,7 +83,7 @@ public class Environment {
             throws DatabaseException {
         create(filename, flags, 0644, null);
     }
-    
+
     /**
      * Creates a new Database Environment
      *
@@ -174,7 +174,7 @@ public class Environment {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Opens an existing Database Environment
      *
@@ -184,7 +184,7 @@ public class Environment {
             throws DatabaseException {
         open(filename, 0, null);
     }
-    
+
     /**
      * Opens an existing Database Environment
      *
@@ -194,7 +194,7 @@ public class Environment {
             throws DatabaseException {
         open(filename, flags, null);
     }
-    
+
     /**
      * Opens an existing Database Environment
      * <p>
@@ -269,7 +269,7 @@ public class Environment {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Creates a new Database in this Database Environment
      *
@@ -279,7 +279,7 @@ public class Environment {
             throws DatabaseException {
         return createDatabase(name, 0, null);
     }
-    
+
     /**
      * Creates a new Database in this Database Environment
      *
@@ -289,7 +289,7 @@ public class Environment {
             throws DatabaseException {
         return createDatabase(name, flags, null);
     }
-    
+
     /**
      * Creates a new Database in this Database Environment
      * <p>
@@ -344,7 +344,7 @@ public class Environment {
         // ham_env_create_db will throw an DatabaseException if it fails
         return new Database(ham_env_create_db(m_handle, name, flags, params));
     }
-    
+
     /**
      * Opens a Database in a Database Environment
      *
@@ -354,7 +354,7 @@ public class Environment {
             throws DatabaseException {
         return openDatabase(name, 0, null);
     }
-    
+
     /**
      * Opens a Database in a Database Environment
      * <p>
@@ -390,7 +390,7 @@ public class Environment {
         // ham_env_open_db will throw an DatabaseException if it fails
         return new Database(ham_env_open_db(m_handle, name, flags, params));
     }
-    
+
     /**
      * Renames a Database in this Environment
      * <p>
@@ -412,7 +412,7 @@ public class Environment {
         if (status!=0)
             throw new DatabaseException(status);
     }
-     
+
     /**
      * Deletes a Database from this Environment
      * <p>
@@ -431,7 +431,7 @@ public class Environment {
             if (status!=0)
                 throw new DatabaseException(status);
     }
-    
+
     /**
      * Enables AES encryption
      * <p>
@@ -460,7 +460,7 @@ public class Environment {
         if (status!=0)
             throw new DatabaseException(status);
     }
-    
+
     /**
      * Returns the names of all Databases in this Environment
      * <p>
@@ -552,11 +552,11 @@ public class Environment {
         ham_env_delete(m_handle);
         m_handle=0;
     }
-    
+
     static {
         System.loadLibrary("hamsterdb-java");
     }
-    
+
     private long m_handle;
 
 }

@@ -13,7 +13,7 @@
 package de.crupp.hamsterdb;
 
 public interface PrefixCompareCallback {
-    
+
     /**
      * The compare method compares the prefixes of two keys - the
      * "left-hand side" (lhs) and the "right-hand side (rhs).

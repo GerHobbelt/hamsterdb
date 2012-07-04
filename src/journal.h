@@ -62,10 +62,10 @@ class Journal
 
         /** the magic */
         ham_u32_t magic;
-    
+
         /* a reserved field */
         ham_u32_t _reserved;
-    
+
         /** the last used lsn */
         ham_u64_t lsn;
     } HAM_PACK_2;

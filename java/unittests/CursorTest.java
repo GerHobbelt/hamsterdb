@@ -18,7 +18,7 @@ public class CursorTest extends TestCase {
     private class MyComparator implements CompareCallback
     {
         public int m_counter;
-        
+
         public int compare(byte[] b1, byte[] b2) {
             m_counter++;
             if (b1.length < b2.length)
@@ -34,12 +34,12 @@ public class CursorTest extends TestCase {
             return 0;
         }
     }
-    
+
     private Database m_db;
 
     protected void setUp() throws Exception {
         super.setUp();
-        
+
         m_db=new Database();
         try {
             m_db.create("jtest.db", Const.HAM_ENABLE_DUPLICATES);
@@ -108,7 +108,7 @@ public class CursorTest extends TestCase {
             fail("DatabaseException "+err.getMessage());
         }
     }
-    
+
     public void testMoveNegative() {
         try {
             Cursor c=new Cursor(m_db);
@@ -170,10 +170,10 @@ public class CursorTest extends TestCase {
             fail("DatabaseException "+err.getMessage());
         }
     }
-    
+
     public void assertByteArrayEquals(byte[] r1, byte[] r2) {
         assertEquals(r1.length, r2.length);
-        
+
         for (int i=0; i<r1.length; i++) {
             assertEquals(r1[i], r2[i]);
         }
@@ -324,7 +324,7 @@ public class CursorTest extends TestCase {
             fail("DatabaseException "+err.getMessage());
         }
     }
-    
+
     public void testSetComparator() {
         byte[] k=new byte[5];
         byte[] r=new byte[5];

@@ -75,10 +75,10 @@ public:
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, BFC_OPATH(".test"),
                         HAM_ENABLE_TRANSACTIONS, 0644));
-    
+
         m_env=(Environment *)ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -371,7 +371,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_open(m_db, BFC_OPATH(".test"), 0));
         m_env=(Environment *)ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

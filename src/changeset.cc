@@ -212,7 +212,7 @@ Changeset::flush(ham_u64_t lsn)
      * and can be used to make a backup copy of the logfile */
     if (g_CHANGESET_POST_LOG_HOOK)
         g_CHANGESET_POST_LOG_HOOK();
-    
+
     /* now write all the pages to the file; if any of these writes fail,
      * we can still recover from the log */
     while (p) {

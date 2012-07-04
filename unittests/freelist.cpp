@@ -68,7 +68,7 @@ public:
         m_env=ham_get_env(m_db);
         m_freelist=((Environment *)m_env)->get_freelist();
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

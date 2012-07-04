@@ -83,7 +83,7 @@ DeviceImplDisk::read_page(Page *page)
     ham_file_filter_t *head=0;
     ham_size_t size=m_pagesize;
     bool alloc=false;
-    
+
     head=m_device->m_env->get_file_filter();
 
     /*

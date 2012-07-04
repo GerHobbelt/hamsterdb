@@ -68,7 +68,7 @@ btree_get_slot(Database *db, Page *page,
             ham_assert(i<(int)MAX_KEYS_PER_NODE+1, (0));
             break;
         }
-        
+
         /* compare it against the key */
         cmp=btree_compare_keys(db, page, key, (ham_u16_t)i);
         if (cmp < -1)
@@ -94,7 +94,7 @@ btree_get_slot(Database *db, Page *page,
             l=i+1;
         }
     }
-    
+
 bail:
     if (pcmp)
         *pcmp=cmp;
@@ -541,7 +541,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
          All we need to do is make sure sure we pass along the proper LT/GT
          'sign' flags for outer level result processing.
 
-      
+
         Fourth scenario: key < 3
 
         again, we get either:
@@ -557,7 +557,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
         but this time around, since we are looking for LT, we'll need to
         adjust the second result, when that happens by slot++ and sending
         the appropriate 'sign' flags.
-    
+
       Fifth scenario: key ~ 5
 
         which given us:
@@ -679,7 +679,7 @@ btree_close_cursors(Database *db, ham_u32_t flags)
         }
         db->set_cursors(0);
     }
-    
+
     return (st2);
 }
 

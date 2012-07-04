@@ -291,7 +291,7 @@ main(int argc, const char **argv)
         st=ham_new(&db);
         if (st)
             error("ham_new", st);
-    
+
         st=ham_env_open_db(env, db, dbname, 0, 0);
         if (st==HAM_DATABASE_NOT_FOUND) {
             printf("Database %u (0x%x) not found\n", dbname, dbname);
@@ -299,9 +299,9 @@ main(int argc, const char **argv)
         }
         else if (st)
             error("ham_env_open_db", st);
-    
+
         print_database(db, dbname, full);
-    
+
         st=ham_close(db, 0);
         if (st)
             error("ham_close", st);
@@ -315,13 +315,13 @@ main(int argc, const char **argv)
             st=ham_new(&db);
             if (st)
                 error("ham_new", st);
-    
+
             st=ham_env_open_db(env, db, names[i], 0, 0);
             if (st)
                 error("ham_env_open_db", st);
-    
+
             print_database(db, names[i], full);
-    
+
             st=ham_close(db, 0);
             if (st)
                 error("ham_close", st);

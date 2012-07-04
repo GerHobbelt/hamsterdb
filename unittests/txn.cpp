@@ -89,7 +89,7 @@ public:
                 ham_env_create_db(m_env, m_db, 13, 0, 0));
         m_dbp=(Database *)m_db;
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -829,7 +829,7 @@ public:
     {
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
     }
-    
+
     virtual void teardown()
     {
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));

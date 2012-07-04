@@ -562,7 +562,7 @@ _local_fun_rename_db(Environment *env, ham_u16_t oldname,
     /* flush the header page if logging is enabled */
     if (env->get_flags()&HAM_ENABLE_RECOVERY)
         return (env->get_header_page()->flush());
-    
+
     return (0);
 }
 

@@ -69,7 +69,7 @@ public:
                 ham_env_create_db(m_env, m_db, 13,
                         HAM_ENABLE_DUPLICATES, 0));
     }
-    
+
     virtual void teardown() {
         __super::teardown();
 
@@ -126,7 +126,7 @@ public:
         page->set_pers(0);
         delete page;
     }
-    
+
     void putGetReplaceTest(void)
     {
         Page *page1, *page2;
@@ -159,7 +159,7 @@ public:
         page2->set_pers(0);
         delete page2;
     }
-    
+
     void multiplePutTest(void)
     {
         Page *page[20];
@@ -187,7 +187,7 @@ public:
         }
         delete cache;
     }
-    
+
     void negativeGetTest(void)
     {
         Cache *cache=new Cache((Environment *)m_env, 15);
@@ -196,7 +196,7 @@ public:
         }
         delete cache;
     }
-    
+
     void overflowTest(void)
     {
         Cache *cache=new Cache((Environment *)m_env, 15*os_get_pagesize());

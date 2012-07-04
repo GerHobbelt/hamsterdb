@@ -14,10 +14,10 @@ import de.crupp.hamsterdb.*;
 import junit.framework.TestCase;
 
 public class DatabaseTest extends TestCase {
-    
+
     private class MyErrorHandler implements ErrorHandler {
         public int m_counter;
-        
+
         public void handleMessage(int level, String message) {
             m_counter++;
         }
@@ -67,7 +67,7 @@ public class DatabaseTest extends TestCase {
             fail("Exception "+err);
         }
     }
-    
+
     public void testCreateInvalidParameters() {
         Parameter[] params=new Parameter[3];
         params[1]=new Parameter();
@@ -106,11 +106,11 @@ public class DatabaseTest extends TestCase {
         }
         assertEquals(Const.HAM_INV_PARAMETER, db.getError());
     }
-    
+
     private class MyComparator implements CompareCallback
     {
         public int m_counter;
-        
+
         public int compare(byte[] lhs, byte[] rhs) {
             m_counter++;
             return m_counter; /* need to return different values, or
@@ -122,7 +122,7 @@ public class DatabaseTest extends TestCase {
     private class MyDupeComparator implements DuplicateCompareCallback
     {
         public int m_counter;
-        
+
         public int compare(byte[] lhs, byte[] rhs) {
             m_counter++;
             return m_counter; /* need to return different values, or
@@ -259,7 +259,7 @@ public class DatabaseTest extends TestCase {
     private class MyPrefixComparator implements PrefixCompareCallback
     {
         public int m_counter;
-        
+
         public int compare(byte[] lhs, int lhs_real_size,
                 byte[] rhs, int rhs_real_size) {
             return ++m_counter; /* need to return different values,

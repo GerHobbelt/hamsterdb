@@ -91,7 +91,7 @@ protected:
 
         os::unlink(BFC_OPATH(".test"));
     }
-    
+
     void structureTest()
     {
         ham_env_t *henv;
@@ -188,7 +188,7 @@ protected:
         BFC_ASSERT_EQUAL(0,
                 ham_env_create(env, BFC_OPATH(".test"), m_flags, 0664));
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
-        
+
         if (!(m_flags&HAM_IN_MEMORY_DB)) {
             BFC_ASSERT_EQUAL(0u, ((Environment *)env)->is_active());
             BFC_ASSERT_EQUAL(0, ham_env_open(env, BFC_OPATH(".test"), 0));
@@ -693,7 +693,7 @@ protected:
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
         BFC_ASSERT_EQUAL(0, ham_env_delete(env));
     }
-    
+
     void openDbWithDamTest(void)
     {
         ham_env_t *env;
@@ -849,7 +849,7 @@ protected:
                     memset(&rec, 0, sizeof(rec));
                     key.data=(void *)&value;
                     key.size=sizeof(value);
-    
+
                     BFC_ASSERT_EQUAL(0, ham_find(db[i], 0, &key, &rec, 0));
                     BFC_ASSERT_EQUAL(value, *(int *)key.data);
                     BFC_ASSERT_EQUAL((ham_u16_t)sizeof(value), key.size);
@@ -929,7 +929,7 @@ protected:
                     key.data=buffer;
                     key.size=sizeof(buffer);
                     sprintf(buffer, "%08x%08x", j, i+1);
-    
+
                     BFC_ASSERT_EQUAL(0, ham_find(db[i], 0, &key, &rec, 0));
                     BFC_ASSERT_EQUAL((ham_size_t)sizeof(buffer), rec.size);
                     BFC_ASSERT_EQUAL(0, memcmp(buffer, rec.data, rec.size));
@@ -1023,7 +1023,7 @@ protected:
                     key.data=buffer;
                     key.size=sizeof(buffer);
                     sprintf(buffer, "%08x%08x", j, i+1);
-    
+
                     if (j&1) { // must exist
                         BFC_ASSERT_EQUAL(0,
                                 ham_find(db[i], 0, &key, &rec, 0));
@@ -1130,7 +1130,7 @@ protected:
                     sprintf(buffer, "%08x%08x", j, i+1);
                     key.data=buffer;
                     key.size=(ham_u16_t)strlen(buffer)+1;
-    
+
                     if (j&1) { // must exist
                         BFC_ASSERT_EQUAL(0,
                                 ham_cursor_find(cursor[i], &key, 0));
@@ -1593,7 +1593,7 @@ protected:
                 ham_open(db, BFC_OPATH(".test"), m_flags));
         BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
-    
+
     void createFullEnvOpenDbTest(void)
     {
         ham_env_t *env;

@@ -103,7 +103,7 @@ show_index(struct mg_connection *conn,
         "<input type=\"text\" name=\"name1\"/>"
         "<input type=\"submit\" "
         "value=\"set new value using POST method\"></form>");
-        
+
     mg_printf(conn, "%s",
         "<hr><li><a href=\"/secret\">"
         "Protected page</a> (guest:guest)<hr>"
@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
 {
     int         data = 1234567;
     struct mg_context   *ctx;
-    
+
     /* Get rid of warnings */
     argc = argc;
     argv = argv;

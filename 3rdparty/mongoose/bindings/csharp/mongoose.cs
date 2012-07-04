@@ -96,7 +96,7 @@ public class Mongoose {
             delegates2 += callback;
         mg_set_uri_callback(this.ctx, uri_regex, callback, IntPtr.Zero);
     }
-    
+
     public void set_log_callback(MongooseCallback func) {
         delegates1 += func;
         mg_set_log_callback(this.ctx, func);

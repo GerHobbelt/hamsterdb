@@ -206,7 +206,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_env_new(&m_env));
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

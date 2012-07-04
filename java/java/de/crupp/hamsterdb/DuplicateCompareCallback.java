@@ -13,7 +13,7 @@
 package de.crupp.hamsterdb;
 
 public interface DuplicateCompareCallback {
-    
+
     /**
      * The compare method compares two records -
      * "left-hand side" (lhs) and the "right-hand side (rhs).

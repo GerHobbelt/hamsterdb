@@ -187,7 +187,7 @@ protected:
         BFC_ASSERT_EQUAL(0,
                 ham_env_create(env, SERVER_URL, 0, 0664));
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
-        
+
         BFC_ASSERT_EQUAL(0u, ((Environment *)env)->is_active());
         BFC_ASSERT_EQUAL(0,
             ham_env_open(env, SERVER_URL, 0));
@@ -687,7 +687,7 @@ protected:
         BFC_ASSERT_EQUAL(0, ham_insert(db, 0, &key, &rec, 0));
         BFC_ASSERT_EQUAL(8, key.size);
         BFC_ASSERT_EQUAL(1ull, *(ham_offset_t *)key.data);
-        
+
         memset(&key, 0, sizeof(key));
         BFC_ASSERT_EQUAL(0, ham_insert(db, 0, &key, &rec, 0));
         BFC_ASSERT_EQUAL(8, key.size);
@@ -959,7 +959,7 @@ protected:
         BFC_ASSERT_EQUAL(0, ham_cursor_insert(cursor, &key, &rec, 0));
         BFC_ASSERT_EQUAL(8, key.size);
         BFC_ASSERT_EQUAL(1ull, *(ham_offset_t *)key.data);
-        
+
         memset(&key, 0, sizeof(key));
         BFC_ASSERT_EQUAL(0, ham_cursor_insert(cursor, &key, &rec, 0));
         BFC_ASSERT_EQUAL(8, key.size);
@@ -1449,7 +1449,7 @@ protected:
         for (i=0; i<6; i+=2) {
             BFC_ASSERT_EQUAL(0, ham_insert(db, 0, &key, &rec, 0));
         }
-        
+
         /* and search for them */
         i=3;
         key.data=(void *)&i;

@@ -26,7 +26,7 @@
 #include "mem.h"
 #include "util.h"
 
- 
+
 /**
  * statistics gatherer/hinter:
  *
@@ -385,7 +385,7 @@ freelist_stats_update(Freelist *fl, FreelistEntry *entry, FreelistPayload *f,
          * offset by size_bits, skipping the current space.
          */
         position += hints->size_bits;
-        
+
         for (b = bucket; b < HAM_FREELIST_SLOT_SPREAD; b++) {
             if (entrystats->per_size[b].first_start < position)
                 entrystats->per_size[b].first_start = position;
@@ -688,7 +688,7 @@ freelist_get_global_hints(Freelist *fl, freelist_global_hints_t *dst)
                     + globalstats->insert_query_count) {
                 ham_u64_t trials_per_query = 0;
                 int i;
-                
+
                 for (i = 0; i < HAM_FREELIST_SLOT_SPREAD; i++)
                     trials_per_query += globalstats->scan_count[i];
                 trials_per_query *= 1000;
@@ -935,7 +935,7 @@ freelist_get_entry_hints(Freelist *fl, FreelistEntry *entry,
             + globalstats->insert_query_count) {
             ham_u64_t trials_per_query = 0;
             int i;
-            
+
             for (i = 0; i < HAM_FREELIST_SLOT_SPREAD; i++)
             {
                 trials_per_query += globalstats->scan_count[i];
@@ -1125,7 +1125,7 @@ freelist_fill_statistics_t(Freelist *fl, ham_statistics_t *dst)
             collect_freelistdata = HAM_FALSE;
         else {
             ham_size_t count = freel_cache_get_count(fl);
-            
+
             if (count > 0) {
                 ham_freelist_page_statistics_t *d;
                 ham_size_t i;
@@ -1157,7 +1157,7 @@ freelist_fill_statistics_t(Freelist *fl, ham_statistics_t *dst)
 
     /* and finally mark which sections have actually been fetched */
     dst->dont_collect_freelist_stats = !collect_freelistdata;
-    
+
     return 0;
 }
 

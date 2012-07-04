@@ -20,7 +20,7 @@
    NOTE THAT WE KNOWINGLY TAKE SEVERAL SHORTCUTS IN THIS IMPLEMENTATION, CUTTING A FEW
    DANGEROUS CORNERS REGARDING QUEUED UNRELIABLE & RELIABLE SIGNALS HERE. However,
    we feel this is permissible for two reasons:
-   
+
    1) the signals we catch/handle here, all assume some type of failure
        occurring within the Function-Under-Test (or it's accompanying fixture
        setup or teardown code), WHILE WE ASSUME THAT THE BFC FRAMEWORK ITSELF WILL
@@ -34,12 +34,12 @@
        additional, significant GNU configure / etc. code portability
        configuration effort. By chosing the path of the Lowest Common Denominator
        here, we introduce an implicit requirement for BFC and some risk as well:
-   
+
    2a) FUTs which come with their own signal setup/teardown code, may do so,
        but this MAY clash with our 'rig' here. When you've got FUTs/fixtures like
        that, YOU ARE IMPLICITLY ASSUMED TO KNOW WHAT YOU ARE DOING. In other
        words: Caveat Emptor.
-   
+
        (Hint: you may wish to #define
                 BFC_HAS_CUSTOM_SIGNAL_SETUP
        in your project to disable this default implementation.)

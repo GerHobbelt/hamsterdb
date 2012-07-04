@@ -347,7 +347,7 @@ os_seek(ham_fd_t fd, ham_offset_t offset, int whence)
     DWORD st;
     LARGE_INTEGER i;
     i.QuadPart=offset;
-   
+
     i.LowPart=SetFilePointer((HANDLE)fd, i.LowPart,
             &i.HighPart, whence);
     if (i.LowPart==INVALID_SET_FILE_POINTER &&

@@ -360,7 +360,7 @@ blob_allocate(Environment *env, Database *db, ham_record_t *record,
     ham_size_t chunk_size[2];
     Device *device=env->get_device();
     bool freshly_created = false;
-   
+
     *blobid=0;
 
     /*
@@ -609,7 +609,7 @@ blob_allocate(Environment *env, Database *db, ham_record_t *record,
                 if (st)
                     return (st);
             }
-            
+
             /* now write the remainder, which is less than a pagesize */
             ham_assert(gapsize<env->get_pagesize(), (""));
 
@@ -781,7 +781,7 @@ blob_get_datasize(Database *db, ham_offset_t blobid, ham_offset_t *size)
                 (ham_u8_t *)&hdr, sizeof(hdr));
     if (st)
         return (st);
-    
+
     if (blob_get_self(&hdr)!=blobid)
         return (HAM_BLOB_NOT_FOUND);
 
@@ -1044,7 +1044,7 @@ __get_sorted_position(Database *db, Transaction *txn, dupe_table_t *table,
         m = (l + r) / 2;
     }
     ham_assert(m <= r, (0));
-        
+
     while (l <= r) {
         ham_assert(m<dupe_table_get_count(table), (""));
 

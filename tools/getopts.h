@@ -83,7 +83,7 @@
  * Now the parameters can be checked with getopts(). getopts() will return
  * the symbolic name of the parameter, or one of the predefined constants
  * defined below (i.e. GETOPTS_UNKNOWN for an unknown parameter).
- 
+
     unsigned int opt;
     char *param;
     while ((opt=getopts(&opts[0], &param))) {

@@ -518,7 +518,7 @@ class Database
     void set_extkey_cache(ExtKeyCache *c) {
         m_extkey_cache=c;
     }
- 
+
     /** get the index of this database in the indexdata array */
     ham_u16_t get_indexdata_offset(void) {
         return (m_indexdata_offset);
@@ -615,16 +615,16 @@ class Database
         int cmp=HAM_PREFIX_REQUEST_FULLKEY;
         ham_compare_func_t foo=get_compare_func();
         ham_prefix_compare_func_t prefoo=get_prefix_compare_func();
-    
+
         set_error(0);
-    
+
         /* need prefix compare? if no key is extended we can just call the
          * normal compare function */
         if (!(lhs->_flags&KEY_IS_EXTENDED) && !(rhs->_flags&KEY_IS_EXTENDED)) {
             return (foo((ham_db_t *)this, (ham_u8_t *)lhs->data, lhs->size,
                             (ham_u8_t *)rhs->data, rhs->size));
         }
-    
+
         /* yes! - run prefix comparison */
         if (prefoo) {
             ham_size_t lhsprefixlen, rhsprefixlen;
@@ -636,14 +636,14 @@ class Database
                 rhsprefixlen=db_get_keysize(this)-sizeof(ham_offset_t);
             else
                 rhsprefixlen=rhs->size;
-    
+
             cmp=prefoo((ham_db_t *)this,
                         (ham_u8_t *)lhs->data, lhsprefixlen, lhs->size,
                         (ham_u8_t *)rhs->data, rhsprefixlen, rhs->size);
             if (cmp<-1 && cmp!=HAM_PREFIX_REQUEST_FULLKEY)
                 return (cmp); /* unexpected error! */
         }
-    
+
         if (cmp==HAM_PREFIX_REQUEST_FULLKEY) {
             /* 1. load the first key, if needed */
             if (lhs->_flags&KEY_IS_EXTENDED) {
@@ -653,7 +653,7 @@ class Database
                     return st;
                 lhs->_flags&=~KEY_IS_EXTENDED;
             }
-    
+
             /* 2. load the second key, if needed */
             if (rhs->_flags&KEY_IS_EXTENDED) {
                 ham_status_t st=get_extended_key((ham_u8_t *)rhs->data,

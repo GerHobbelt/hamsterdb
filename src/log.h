@@ -50,7 +50,7 @@ class Log
     HAM_PACK_0 struct HAM_PACK_1 Header
     {
         Header() : magic(0), _reserved(0), lsn(0) { };
-    
+
         /* the magic */
         ham_u32_t magic;
 
@@ -70,10 +70,10 @@ class Log
 
         /** the lsn of this entry */
         ham_u64_t lsn;
-    
+
         /** the flags of this entry, see below */
         ham_u32_t flags;
-    
+
         /** a reserved value */
         ham_u32_t _reserved;
 

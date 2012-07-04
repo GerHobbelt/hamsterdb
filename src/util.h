@@ -29,7 +29,7 @@ class ByteArray
     : m_alloc(alloc), m_ptr(0), m_size(0) {
         resize(size);
     }
-    
+
     ~ByteArray() {
         clear();
     }

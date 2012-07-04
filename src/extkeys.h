@@ -179,14 +179,14 @@ class ExtKeyCache
         else
             return (HAM_KEY_NOT_FOUND);
     }
-    
+
     /** removes all OLD keys from the cache */
     void purge() {
         ScopedLock lock(m_mutex);
         m_extkeyhelper->m_removeall=false;
         m_hash.remove_if();
     }
-    
+
     /** removes ALL keys from the cache */
     void purge_all() {
         ScopedLock lock(m_mutex);

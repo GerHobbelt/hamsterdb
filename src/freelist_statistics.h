@@ -49,7 +49,7 @@ typedef HAM_PACK_0 struct HAM_PACK_1 freelist_slotsize_stats_t
     /** number of scans per size range */
     ham_u32_t scan_count;
     ham_u32_t ok_scan_count;
-    
+
     /** summed cost ('duration') of all scans per size range.  */
     ham_u32_t scan_cost;
     ham_u32_t ok_scan_cost;

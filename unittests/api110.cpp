@@ -63,7 +63,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY_DB, 0));
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -133,7 +133,7 @@ public:
         BFC_ASSERT_EQUAL(0,
                 ham_env_open_db(m_env, m_db2, HAM_FIRST_DATABASE_NAME /* 1 */,
                     0, 0));
-        
+
         BFC_ASSERT_EQUAL(0, ham_close(m_db2, 0));
         ham_delete(m_db2);
         BFC_ASSERT_EQUAL(0, ham_env_close(m_env, 0));

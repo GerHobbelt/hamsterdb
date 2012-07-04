@@ -125,7 +125,7 @@ static int handle_jsonp(struct mg_connection *conn,
   if (cb[0] != '\0') {
     mg_printf(conn, "%s(", cb);
   }
- 
+
   return cb[0] == '\0' ? 0 : 1;
 }
 

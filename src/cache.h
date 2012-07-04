@@ -177,11 +177,11 @@ class Cache
             /* pick the first unused page (not in a changeset) */
             if (!m_env->get_changeset().contains(page))
                 break;
-        
+
             page=page->get_previous(Page::LIST_CACHED);
             ham_assert(page!=oldest, (0));
         } while (page && page!=oldest);
-    
+
         if (!page)
             return (0);
 
@@ -270,7 +270,7 @@ class Cache
 
         ham_assert(check_integrity_nolock()==0, (""));
     }
-    
+
     /** purges max. 20 pages (and not more to avoid I/O spikes) */
     ham_status_t purge_max20(PurgeCallback cb, bool strict) {
         ham_status_t st;

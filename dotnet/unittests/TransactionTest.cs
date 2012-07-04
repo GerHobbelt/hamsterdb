@@ -34,7 +34,7 @@ namespace Unittests
             env.Create("test.db", HamConst.HAM_ENABLE_TRANSACTIONS);
             db = env.CreateDatabase(1);
         }
-        
+
         [TestCleanup()]
         public void MyTestCleanup()
         {
@@ -107,7 +107,7 @@ namespace Unittests
             t.Commit();
             db.Erase(k);
         }
-        
+
         [TestMethod()]
         public void CursorTest() {
             Transaction t=env.Begin();

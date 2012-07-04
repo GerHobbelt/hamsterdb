@@ -53,7 +53,7 @@ public:
         BFC_ASSERT(c!=0);
         ((Database *)m_db)->set_extkey_cache(c);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

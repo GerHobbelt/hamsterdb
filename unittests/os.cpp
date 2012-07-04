@@ -151,7 +151,7 @@ public:
         BFC_ASSERT_EQUAL(0, os_create(BFC_OPATH(".test"),
                     HAM_LOCK_EXCLUSIVE, 0664, &fd));
         BFC_ASSERT_EQUAL(0, os_close(fd));
-        
+
         BFC_ASSERT_EQUAL(0,
                          os_open(BFC_OPATH(".test"), HAM_LOCK_EXCLUSIVE, &fd));
         BFC_ASSERT_EQUAL(HAM_WOULD_BLOCK,
@@ -253,10 +253,10 @@ public:
         /* compare */
         BFC_ASSERT_EQUAL(0x13, page[0]);
 <<<<<<< HEAD
-        
+
         BFC_ASSERT_EQUAL(0, os_close(fd, 0));
 =======
-        
+
         BFC_ASSERT_EQUAL(0, os_close(fd));
 >>>>>>> remotes/cruppstahl/wip/cache
         free(page);

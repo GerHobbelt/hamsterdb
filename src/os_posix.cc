@@ -259,7 +259,7 @@ os_pwrite(ham_fd_t fd, ham_offset_t addr, const void *buffer,
     return (st);
 #endif
 }
- 
+
 ham_status_t
 os_writev(ham_fd_t fd, void *buffer1, ham_offset_t buffer1_len,
                 void *buffer2, ham_offset_t buffer2_len,

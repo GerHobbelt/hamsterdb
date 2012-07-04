@@ -47,7 +47,7 @@ testrunner::bfc_signal_context_t testrunner::m_current_signal_context;
    NOTE THAT WE KNOWINGLY TAKE SEVERAL SHORTCUTS IN THIS IMPLEMENTATION, CUTTING A FEW
    DANGEROUS CORNERS REGARDING QUEUED UNRELIABLE & RELIABLE SIGNALS HERE. However,
    we feel this is permissible for two reasons:
-   
+
    1) the signals we catch/handle here, all assume some type of failure
        occurring within the Function-Under-Test (or it's accompanying fixture
        setup or teardown code), WHILE WE ASSUME THAT THE BFC FRAMEWORK ITSELF WILL
@@ -61,12 +61,12 @@ testrunner::bfc_signal_context_t testrunner::m_current_signal_context;
        additional, significant GNU configure / etc. code portability
        configuration effort. By chosing the path of the Lowest Common Denominator
        here, we introduce an implicit requirement for BFC and some risk as well:
-   
+
    2a) FUTs which come with their own signal setup/teardown code, may do so,
        but this MAY clash with our 'rig' here. When you've got FUTs/fixtures like
        that, YOU ARE IMPLICITLY ASSUMED TO KNOW WHAT YOU ARE DOING. In other
        words: Caveat Emptor.
-   
+
        (Hint: you may wish to #define
                 BFC_HAS_CUSTOM_SIGNAL_SETUP
        in your project to disable this default implementation.)
@@ -470,9 +470,9 @@ testrunner::exec_testfun(testrunner *me, fixture *f, method m,
                 __except(is_hw_exception(GetExceptionCode(),
                         GetExceptionInformation(), &er)) {
                     cvt_hw_ex_as_cpp_ex(&er, me, f, m, funcname, ex);
-                    
+
                     std::cout << ex.m_message << std::endl;
-                    
+
                     threw_ex = true;
                 }
 #else
@@ -988,7 +988,7 @@ error::~error()
 void error::vfmt_message(const char *msg, va_list args)
 {
     char buf[2048];
-    
+
     if (!msg)
     {
         *buf = 0;
@@ -1137,7 +1137,7 @@ testrunner::run(bool print_err_report)
 {
     std::string fixname("");
     std::string testname("");
-        
+
     return run(fixname, testname, fixname, testname,
             true, false, print_err_report);
 }
@@ -1150,7 +1150,7 @@ testrunner::run(const char *fixture_name, const char *test_name,
 {
     std::string fixname(fixture_name ? fixture_name : "");
     std::string testname(test_name ? test_name : "");
-        
+
     return run(fixname, testname, fixname, testname,
             true, true, print_err_report);
 }
@@ -1310,7 +1310,7 @@ testrunner::run(fixture *f, const test *test,
 
             /*
             dump the error list NOW, while we still got a chance.
-            
+
             ignore the fact we may print the error list once again in
             the outer call.
             */

@@ -66,7 +66,7 @@ public:
         m_env=ham_get_env(m_db);
         m_dev=((Environment *)m_env)->get_device();
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

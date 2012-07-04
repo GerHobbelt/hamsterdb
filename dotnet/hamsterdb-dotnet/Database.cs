@@ -1001,7 +1001,7 @@ namespace Hamster
         {
             cursors.Remove(c);
         }
-        
+
         private static Parameter[] AppendNullParameter(Parameter[] parameters) {
             Parameter[] newArray = new Parameter[parameters.GetLength(0)+1];
             for (int i = 0; i < parameters.GetLength(0); i++)

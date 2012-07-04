@@ -53,7 +53,7 @@ public:
         BFC_ASSERT_EQUAL(0,
                 ham_create(m_db, BFC_OPATH(".test"), m_flags, 0644));
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

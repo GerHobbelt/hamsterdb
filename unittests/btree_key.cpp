@@ -66,7 +66,7 @@ public:
         m_dbp=(Database *)m_db;
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -119,7 +119,7 @@ public:
         BFC_ASSERT_EQUAL(0, page->free());
         delete page;
     }
-    
+
     void endianTest(void)
     {
         ham_u8_t buffer[64]={
@@ -164,7 +164,7 @@ public:
                 key_set_record(m_dbp, 0, key, &rec, 0, flags, 0));
         if (!(flags&HAM_DUPLICATE))
             BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(key));
-        
+
         if (!(flags&HAM_DUPLICATE)) {
             BFC_ASSERT_EQUAL((ham_u8_t)KEY_BLOB_SIZE_EMPTY,
                     key_get_flags(key));

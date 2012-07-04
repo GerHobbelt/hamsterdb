@@ -148,7 +148,7 @@ Cursor::update_dupecache(ham_u32_t what)
                     ham_assert(txn_op_get_flags(op)==TXN_OP_NOP, (""));
                 }
             }
-    
+
             /* continue with the previous/older operation */
             op=txn_op_get_next_in_node(op);
         }
@@ -345,7 +345,7 @@ Cursor::compare(void)
     if (btree_cursor_is_coupled(btrc)) {
         /* clone the cursor, then uncouple the clone; get the uncoupled key
          * and discard the clone again */
-        
+
         /*
          * TODO TODO TODO
          * this is all correct, but of course quite inefficient, because

@@ -47,7 +47,7 @@ namespace Hamster
         [DllImport("hamsterdb-2.0.3.dll", EntryPoint = "ham_set_errhandler",
             CallingConvention = CallingConvention.Cdecl)]
         static public extern void SetErrorHandler(ErrorHandler eh);
-        
+
         [DllImport("hamsterdb-2.0.3.dll", EntryPoint = "ham_strerror",
             CallingConvention=CallingConvention.Cdecl)]
         static public extern String StringError(int error);
@@ -116,7 +116,7 @@ namespace Hamster
            CallingConvention = CallingConvention.Cdecl)]
         static public extern int EnvGetDatabaseNamesLow(IntPtr handle,
                 IntPtr dbnames, ref int count);
-        
+
         static public int EnvGetDatabaseNames(IntPtr handle, out short[] names) {
             // alloc space for 2000 database names
             int count = 2000;
@@ -312,12 +312,12 @@ namespace Hamster
            CallingConvention = CallingConvention.Cdecl)]
         static private extern int CursorMoveLow(IntPtr handle,
                 IntPtr key, IntPtr record, int flags);
-        
+
         [DllImport("hamsterdb-2.0.3.dll", EntryPoint = "ham_cursor_move",
            CallingConvention = CallingConvention.Cdecl)]
         static private extern int CursorMoveLow(IntPtr handle,
                 ref KeyStruct key, IntPtr record, int flags);
-        
+
         [DllImport("hamsterdb-2.0.3.dll", EntryPoint = "ham_cursor_move",
            CallingConvention = CallingConvention.Cdecl)]
         static private extern int CursorMoveLow(IntPtr handle,

@@ -27,7 +27,7 @@ public class Parameter {
      */
     public Parameter() {
     }
-    
+
     /**
      * Constructor
      * <p>
@@ -47,7 +47,7 @@ public class Parameter {
         this.name=name;
         this.stringValue=value;
     }
-    
+
     /** the name of the parameter; all names start with Const.HAM_PARAM_* */
     public int name;
 

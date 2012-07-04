@@ -34,7 +34,7 @@ namespace Hamster
             handle = ptr;
             initialized = false; // do NOT close when going out of scope!
         }
-        
+
         /// <summary>
         /// Destructor - automatically closes the Environment
         /// </summary>

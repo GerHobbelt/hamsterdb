@@ -40,7 +40,7 @@ my_snprintf(char *str, size_t size, const char *format, ...)
     va_start(ap, format);
     s=util_vsnprintf(str, size, format, ap);
     va_end(ap);
-    
+
     return (s);
 }
 
@@ -128,7 +128,7 @@ dbg_verify_failed(const char *format, ...)
         util_vsnprintf(buffer+s, sizeof(buffer)-s, format, ap);
         va_end(ap);
     }
-    
+
     g_hand(g_level, buffer);
 
     /* [i_a] ALWAYS offer the user-def'able abort

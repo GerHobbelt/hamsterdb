@@ -72,7 +72,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_delete(m_db));
     }
-    
+
     void createCloseTest(void)
     {
         BFC_ASSERT_EQUAL(0,

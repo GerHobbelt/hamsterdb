@@ -792,7 +792,7 @@ btree_cursor_points_to_key(btree_cursor_t *btc, ham_key_t *key)
     else {
         ham_assert(!"shouldn't be here", (""));
     }
-    
+
     return (ret);
 }
 

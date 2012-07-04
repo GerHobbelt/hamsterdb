@@ -13,7 +13,7 @@
 package de.crupp.hamsterdb;
 
 public interface ErrorHandler {
-    
+
     /**
      * The handleMessage method is called whenever a message
      * is emitted.

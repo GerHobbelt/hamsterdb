@@ -59,7 +59,7 @@ __verify_level(Page *parent, Page *page,
 static ham_status_t
 __verify_page(Page *parent, Page *leftsib, Page *page,
         ham_u32_t level, ham_u32_t count, check_scratchpad_t *scratchpad);
-    
+
 /**
  * verify the whole tree
  *
@@ -300,7 +300,7 @@ __verify_page(Page *parent, Page *leftsib, Page *page,
                 return (HAM_INTEGRITY_VIOLATED);
             }
         }
-        
+
         cmp=__key_compare_int_to_int(db, page, (ham_u16_t)i, (ham_u16_t)(i+1));
 
         if (cmp < -1)

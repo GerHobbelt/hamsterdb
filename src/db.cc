@@ -308,7 +308,7 @@ db_default_prefix_compare(ham_db_t *db,
                    ham_size_t rhs_real_length)
 {
     int m;
-    
+
     (void)db;
 
     /*
@@ -1422,7 +1422,7 @@ retry:
         memcpy(txnkey.data, k->data, txnkey.size);
 
         ham_key_set_intflags(key, 0);
-        
+
         // the "exact match" key was erased? then don't fetch it again
         if (exact_is_erased)
             flags=flags&(~HAM_FIND_EXACT_MATCH);
@@ -1841,7 +1841,7 @@ DatabaseImplementationLocal::erase(Transaction *txn, ham_key_t *key,
     if (st) {
         if (local_txn)
             (void)txn_abort(local_txn, 0);
-    
+
         env->get_changeset().clear();
         return (st);
     }
@@ -2740,7 +2740,7 @@ db_close_callback(Page *page, Database *db, ham_u32_t flags)
                 (page->get_type()==Page::TYPE_B_ROOT ||
                     page->get_type()==Page::TYPE_B_INDEX)) {
             Backend *be;
-        
+
             ham_assert(page->get_db(),
                 ("Must be set as page owner when this is a Btree page"));
             be=page->get_db()->get_backend();
@@ -2789,7 +2789,7 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
         if (st)
             return (st);
     }
-    
+
     btree_stats_flush_dbdata(m_db, m_db->get_perf_data(), has_other_db);
 
     /*

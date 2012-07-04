@@ -357,7 +357,7 @@ public:
         }
         catch (ham::error &) {
         }
-        
+
         db.enable_compression(0);
 #endif
     }
@@ -397,7 +397,7 @@ public:
 
         /* let the objects go out of scope */
     }
-    
+
     void envGetDatabaseNamesTest(void)
     {
         ham::env env;

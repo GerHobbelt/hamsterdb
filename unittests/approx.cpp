@@ -120,7 +120,7 @@ public:
             BFC_ASSERT(ham_key_get_intflags(&k)&KEY_IS_APPROXIMATE);
         return (strcmp(expected, (const char *)r.data));
     }
-    
+
     void lessThanTest(void)
     {
         // btree < nil

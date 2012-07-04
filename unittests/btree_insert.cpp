@@ -64,7 +64,7 @@ public:
                                 0644, &params[0]));
         m_env=(Environment *)ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

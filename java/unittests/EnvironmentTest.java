@@ -131,10 +131,10 @@ public class EnvironmentTest extends TestCase {
         }
         env.close();
     }
-    
+
     public void assertByteArrayEquals(byte[] r1, byte[] r2) {
         assertEquals(r1.length, r2.length);
-        
+
         for (int i=0; i<r1.length; i++) {
             assertEquals(r1[i], r2[i]);
         }

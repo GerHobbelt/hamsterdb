@@ -13,7 +13,7 @@
 package de.crupp.hamsterdb;
 
 public class Const {
-    
+
     /** Data Access Mode - random read/write */
     public final static int HAM_DAM_RANDOM_WRITE                =        1;
 
@@ -190,7 +190,7 @@ public class Const {
 
     /** Flag for Database.create, Database.open(), ... */
     public final static int HAM_SORT_DUPLICATES                 =  0x100000;
-    
+
     /** Parameter name for Database.open(), Database.create() */
     public final static int HAM_PARAM_CACHESIZE                 =    0x100;
 
@@ -225,7 +225,7 @@ public class Const {
     /** Parameter name for Database.getParameters() */
     public final static int HAM_PARAM_GET_DAM                   =    0x205;
     public final static int HAM_PARAM_GET_DATA_ACCESS_MODE      =    0x205;
-    
+
     /** Flag for Database.insert(), Cursor.insert() */
     public final static int HAM_OVERWRITE                       =        1;
 
@@ -270,7 +270,7 @@ public class Const {
 
     /* Flag for Database.close() */
     public final static int HAM_TXN_AUTO_COMMIT                 =        8;
-    
+
     /** Flag for Cursor.move() */
     public final static int HAM_CURSOR_FIRST                    =        1;
 
@@ -309,5 +309,5 @@ public class Const {
     /** Flag for Database.find() */
     public final static int HAM_FIND_NEAR_MATCH                 =
                 HAM_FIND_GEQ_MATCH|HAM_FIND_LEQ_MATCH;
-    
+
 }

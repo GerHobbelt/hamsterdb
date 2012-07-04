@@ -389,7 +389,7 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
          * created */
         if (created_env) {
             ham_db_t *db;
-    
+
             for (d=0; d<params->envs[e].db_count; d++) {
                 ham_u32_t flags=format_flags(params->envs[e].dbs[d].flags);
 

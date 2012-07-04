@@ -325,7 +325,7 @@ bail:
     /* restore the file filters */
     if (head)
         m_env->set_file_filter(head);
-    
+
     /* clean up memory */
     if (data) {
         m_env->get_allocator()->free(data);

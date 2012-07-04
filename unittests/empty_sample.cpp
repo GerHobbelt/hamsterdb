@@ -69,7 +69,7 @@ protected:
 
         // add your own setup code, which is run before each test invocation
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

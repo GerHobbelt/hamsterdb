@@ -65,7 +65,7 @@ public:
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, &params[0]));
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -1180,7 +1180,7 @@ public:
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, &params[0]));
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -1537,7 +1537,7 @@ public:
                         m_inmemory ? HAM_IN_MEMORY_DB : 0, 0644, 0));
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();

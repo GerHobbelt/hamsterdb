@@ -51,7 +51,7 @@ public class DatabaseException extends java.lang.Exception {
     public String getMessage() {
         return ham_strerror(m_errno);
     }
-    
+
     /**
      * Returns an English error description.
      * <p>
@@ -62,12 +62,12 @@ public class DatabaseException extends java.lang.Exception {
     public String toString() {
         return getMessage();
     }
-    
+
     /**
      * The hamsterdb status code
      */
     private int m_errno;
-    
+
     static {
         System.loadLibrary("hamsterdb-java");
     }

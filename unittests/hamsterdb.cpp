@@ -151,7 +151,7 @@ public:
 
         m_env=ham_get_env(m_db);
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -655,14 +655,14 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
 
         my_key_t my_key;
         my_rec_t my_rec;
-        
+
         time(&t[0]);
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(0,
                 ham_env_create_ex(env, BFC_OPATH(".test"),
                     HAM_DISABLE_MMAP, 0644, ps));
-        
+
         BFC_ASSERT_EQUAL(0, ham_new(&db));
         ham_size_t keycount = 0;
         BFC_ASSERT_EQUAL(0, ham_env_create_db(env, db, 1, 0, ps2));
@@ -674,7 +674,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
                 ham_set_prefix_compare_func(db, &my_prefix_compare_func_u32));
         BFC_ASSERT_EQUAL(0,
                 ham_set_compare_func(db, &my_compare_func_u32));
-        
+
         std::cerr << "1K inserts: ";
 
         /* insert the records: key=2*i; rec=100*i */
@@ -699,7 +699,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
             key.data = (void *)&my_key;
             key.size = sizeof(my_key);
             key.flags = HAM_KEY_USER_ALLOC;
- 
+
             BFC_ASSERT_EQUAL_I(0, ham_cursor_insert(cursor, &key, &rec, 0), i);
 
             if (i % 1000 == 999) {
@@ -946,7 +946,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         time(&t[4]);
 
         double dt[4];
-            
+
         dt[0] = difftime(t[1], t[0]);
         dt[1] = difftime(t[2], t[1]);
         dt[2] = difftime(t[3], t[2]);
@@ -990,7 +990,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
                 ham_set_prefix_compare_func(db, &my_prefix_compare_func_u32));
         BFC_ASSERT_EQUAL(0,
                 ham_set_compare_func(db, &my_compare_func_u32));
-        
+
         ham_key_t key;
         ham_record_t rec;
         const int vals[] =
@@ -1004,7 +1004,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.data = &my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
-        
+
         /* empty DB: LT/GT must turn up error */
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_find(db, 0, &key, &rec, HAM_FIND_EXACT_MATCH));
@@ -1026,7 +1026,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         my_key.key_val1 = vals[fill++];
 
         BFC_ASSERT_EQUAL(0, ham_insert(db, 0, &key, &rec, 0));
-        
+
         /* one record in DB: LT/GT must turn up that one for the
          * right key values */
         ::memset(&rec, 0, sizeof(rec));
@@ -1036,7 +1036,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         my_key_t *k = (my_key_t *)key.data;
         BFC_ASSERT_EQUAL((unsigned)r->rec_val1, (unsigned)1000);
         BFC_ASSERT_EQUAL((unsigned)k->key_val1, (ham_u32_t)vals[fill-1]);
-        
+
         ::memset(&rec, 0, sizeof(rec));
         key.data = &my_key;
         key.size = MY_KEY_SIZE;
@@ -1048,7 +1048,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
         BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)vals[fill-1]);
         BFC_ASSERT_EQUAL(ham_key_get_approximate_match_type(&key), 0);
-        
+
         ::memset(&rec, 0, sizeof(rec));
         my_key.key_val1 = vals[fill-1] - 1;
         key.data = &my_key;
@@ -1061,7 +1061,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(r->rec_val1, (unsigned)1000);
         BFC_ASSERT_EQUAL(k->key_val1, (ham_u32_t)vals[fill-1]);
         BFC_ASSERT_EQUAL(ham_key_get_approximate_match_type(&key), 1);
-        
+
         ::memset(&rec, 0, sizeof(rec));
         my_key.key_val1 = vals[fill-1] + 2;
         key.data = &my_key;
@@ -1078,7 +1078,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         key.data = (void *)&my_key;
         key.size = MY_KEY_SIZE;
         key.flags = HAM_KEY_USER_ALLOC;
-        
+
         /* add two more records */
         unsigned int i;
         for (i = 0; i < 2; i++)
@@ -1284,7 +1284,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         BFC_ASSERT_EQUAL(HAM_KEY_NOT_FOUND,
                 ham_cursor_move(cursor, &key, &rec, HAM_CURSOR_NEXT));
         BFC_ASSERT_EQUAL(0, ham_cursor_close(cursor));
-        
+
         BFC_ASSERT_EQUAL(0, ham_close(db, HAM_AUTO_CLEANUP));
         BFC_ASSERT_EQUAL(0, ham_delete(db));
     }
@@ -1801,7 +1801,7 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
         int off=(int)btree_node_get_key_offset(page, 0);
         int l = Page::sizeof_persistent_header; // 12
         l += OFFSETOF(btree_node_t, _entries); // 40-12
-     
+
         l = db_get_int_key_header_size();
         l += db_get_keysize(page->get_db());
 

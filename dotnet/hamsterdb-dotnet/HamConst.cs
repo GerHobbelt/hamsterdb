@@ -143,7 +143,7 @@ namespace Hamster
         public const int HAM_CACHE_UNLIMITED                =  0x40000;
         /// <summary>Flag for Database.Create, Database.Open</summary>
         public const int HAM_SORT_DUPLICATES                =  0x100000;
-    
+
         // Extended parameters
         /// <summary>Parameter name for Database.Open, Database.Create</summary>
         public const int HAM_PARAM_CACHESIZE                =    0x100;
@@ -155,7 +155,7 @@ namespace Hamster
         public const int HAM_PARAM_MAX_ENV_DATABASES        =    0x103;
         /// <summary>Parameter name for Database.Create, Database.Open</summary>
         public const int HAM_PARAM_DATA_ACCESS_MODE         =    0x104;
-    
+
         // Database operations
         /// <summary>Parameter for GetParameters</summary>
         public const int HAM_PARAM_GET_FLAGS            =        0x00000200;
@@ -203,7 +203,7 @@ namespace Hamster
         public const int HAM_TXN_AUTO_ABORT                 =        4;
         /// <summary>Flag for Database.Close</summary>
         public const int HAM_TXN_AUTO_COMMIT                =        8;
-    
+
         // Cursor operations
         /// <summary>Flag for Cursor.Move</summary>
         public const int HAM_CURSOR_FIRST                   =        1;

@@ -2837,7 +2837,7 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
     env_flush_committed_txns(env);
 
     db->set_error(0);
-    
+
     /* the function pointer will do the actual implementation */
     st=(*db)()->close(flags);
     if (st)
@@ -2879,7 +2879,7 @@ ham_cursor_create(ham_db_t *hdb, ham_txn_t *htxn, ham_u32_t flags,
     Transaction *txn=(Transaction *)htxn;
     Environment *env;
     Cursor **cursor=0;
-    
+
     if (!db) {
         ham_trace(("parameter 'db' must not be NULL"));
         return HAM_INV_PARAMETER;
@@ -3577,7 +3577,7 @@ ham_get_key_count(ham_db_t *hdb, ham_txn_t *htxn, ham_u32_t flags,
         ham_trace(("parameter 'db' must not be NULL"));
         return (HAM_INV_PARAMETER);
     }
-    
+
     if (!keycount) {
         ham_trace(("parameter 'keycount' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));

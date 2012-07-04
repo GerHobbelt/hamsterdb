@@ -43,7 +43,7 @@ __freel_flush_stats32(Device *device, Environment *env)
              * if freelist_v2 is used, the file is always 1.1.+ format.
              */
             ham_size_t i;
-            
+
             for (i = freel_cache_get_count(cache); i-- > 0; ) {
                 freelist_entry_t *entry = entries + i;
 
@@ -62,7 +62,7 @@ __freel_flush_stats32(Device *device, Environment *env)
                          * disk
                          */
                         Page *page;
-                        
+
                         st = env_fetch_page(&page, env,
                                 freel_entry_get_page_id(entry), 0);
                         if (!page)

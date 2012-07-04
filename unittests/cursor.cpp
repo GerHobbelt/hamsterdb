@@ -53,7 +53,7 @@ public:
     {
         return (ham_cursor_create(m_db, 0, 0, p));
     }
-    
+
     virtual void setup()
     {
         __super::setup();
@@ -441,7 +441,7 @@ public:
     {
         return (ham_cursor_create(m_db, m_txn, 0, p));
     }
-    
+
     LongTxnCursorTest()
     : BaseCursorTest("LongTxnCursorTest")
     {
@@ -912,7 +912,7 @@ public:
                 txn_cursor_get_coupled_op(cl->get_txn_cursor()));
         BFC_ASSERT_EQUAL(0, ham_cursor_close(clone));
         BFC_ASSERT_EQUAL(1u, txn_get_cursor_refcount((Transaction *)m_txn));
-                
+
     }
 
     void closeCoupledTxnCursorTest(void)
@@ -926,9 +926,9 @@ public:
 
         BFC_ASSERT_EQUAL(0,
                     ham_cursor_insert(m_cursor, &key, &rec, 0));
-        
+
         /* will be closed in teardown() */
-                
+
     }
 
     void moveFirstInEmptyTransactionTest(void)

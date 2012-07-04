@@ -236,7 +236,7 @@ namespace Unittests
             db.EnableCompression();
             db.Close();
         }
-    
+
         [TestMethod()]
         public void EnableCompressionInt() {
             Database db = new Database();
@@ -474,7 +474,7 @@ namespace Unittests
         public void Recovery() {
             Database db = new Database();
             db.Create("ntest.db", HamConst.HAM_ENABLE_RECOVERY);
-            
+
             byte[] k = new byte[5];
             byte[] r = new byte[5];
             db.Insert(k, r);

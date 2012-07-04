@@ -481,7 +481,7 @@ handle_env_erase_db(ham_env_t *env, struct mg_connection *conn,
     reply=proto_init_env_erase_db_reply(ham_env_erase_db(env,
                 proto_env_erase_db_request_get_dbname(request),
                 proto_env_erase_db_request_get_flags(request)));
-            
+
     send_wrapper(env, conn, reply);
     proto_delete(reply);
 }
@@ -1445,7 +1445,7 @@ ham_srv_add_env(ham_srv_t *srv, ham_env_t *env, const char *urlname)
 
     if (i==MAX_ENVIRONMENTS)
         return (HAM_LIMITS_REACHED);
-    
+
     mg_set_uri_callback(srv->mg_ctxt, urlname,
                         request_handler, &srv->environments[i]);
     return (HAM_SUCCESS);

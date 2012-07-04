@@ -102,7 +102,7 @@ public:
                 ham_env_create_db(m_env, m_db, 13, 0, 0));
         BFC_ASSERT_EQUAL(0, ham_cursor_create(m_db, 0, 0, &m_cursor));
     }
-    
+
     virtual void teardown()
     {
         __super::teardown();
@@ -168,7 +168,7 @@ public:
         txn_cursor_set_coupled_op(&c1, op);
         txn_cursor_t c2=c1;
         txn_cursor_t c3=c1;
-        
+
         BFC_ASSERT_EQUAL((txn_cursor_t *)0, txn_op_get_cursors(op));
 
         txn_op_add_cursor(op, &c1);

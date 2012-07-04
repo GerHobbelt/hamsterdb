@@ -99,7 +99,7 @@ typedef struct ham_freelist_slotsize_stats_t
     ham_u32_t scan_count;
 
     ham_u32_t ok_scan_count;
-    
+
     /** summed cost ('duration') of all scans per size range */
     ham_u32_t scan_cost;
     ham_u32_t ok_scan_cost;
@@ -167,7 +167,7 @@ typedef struct ham_runtime_statistics_globdata_t
     /** number of scans per size range */
     ham_u32_t scan_count[HAM_FREELIST_SLOT_SPREAD];
     ham_u32_t ok_scan_count[HAM_FREELIST_SLOT_SPREAD];
-    
+
     /** summed cost ('duration') of all scans per size range */
     ham_u32_t scan_cost[HAM_FREELIST_SLOT_SPREAD];
     ham_u32_t ok_scan_cost[HAM_FREELIST_SLOT_SPREAD];
@@ -314,7 +314,7 @@ typedef struct ham_runtime_statistics_opdbdata_t
     ham_u32_t btree_fail_count;
     ham_u32_t btree_cost;
     ham_u32_t btree_fail_cost;
-        
+
     ham_offset_t btree_last_page_addr;
 
     /**

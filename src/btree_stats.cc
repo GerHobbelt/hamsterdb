@@ -180,7 +180,7 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
         HAM_LOG2_16_STAGES(value, power);
 #endif
     } while (value);
-    
+
     return power;
 
 #else /* if 0 */
@@ -219,7 +219,7 @@ static __inline ham_u16_t ham_log16(ham_size_t v)
 {
     register ham_size_t value = v;
     register ham_u16_t power = !!value;
-    
+
     if (value)
     {
         do
@@ -227,7 +227,7 @@ static __inline ham_u16_t ham_log16(ham_size_t v)
             power++;
         } while (value >>= 4);
     }
-    
+
     return power;
 }
 
@@ -329,7 +329,7 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
     rescale_256(opstats->btree_fail_count);
     rescale_256(opstats->btree_cost);
     rescale_256(opstats->btree_fail_cost);
-    
+
     // opstats->btree_last_page_addr;
     rescale_256(opstats->btree_last_page_sq_hits);
 
@@ -342,7 +342,7 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
     rescale_256(opstats->btree_fail_count);
     rescale_256(opstats->btree_cost);
     rescale_256(opstats->btree_fail_cost);
-    
+
     // opstats->btree_last_page_addr;
     rescale_256(opstats->btree_last_page_sq_hits);
 
@@ -355,7 +355,7 @@ rescale_db_stats(ham_runtime_statistics_dbdata_t *dbstats)
     rescale_256(opstats->btree_fail_count);
     rescale_256(opstats->btree_cost);
     rescale_256(opstats->btree_fail_cost);
-    
+
     // opstats->btree_last_page_addr;
     rescale_256(opstats->btree_last_page_sq_hits);
 
@@ -401,7 +401,7 @@ stats_update_fail(int op, Database *db, ham_size_t cost,
     opstats->btree_fail_count++;
     opstats->btree_cost += cost;
     opstats->btree_fail_cost += cost;
-    
+
     //opstats->btree_last_page_addr = 0; -- keep page from previous match around!
     opstats->btree_last_page_sq_hits = 0; /* reset */
 
@@ -450,7 +450,7 @@ stats_update(int op, Database *db, Page *page, ham_size_t cost,
         }
         opstats->btree_hinting_count++;
     }
-    
+
     if (opstats->btree_last_page_addr
         && opstats->btree_last_page_addr == page->get_self())
     {
@@ -805,10 +805,10 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
 
     /*
     age the hinting statistics
-    
+
     This is different from the need to rescale the statistics data, as the latter is due to
     the risk of integer overflow when accounting for a zillion operations.
-    
+
     Instead, the hinting costs are 'aged' to reduce the influence of older hinting
     results on subsequent hinter output.
 
@@ -875,7 +875,7 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
             }
             else {
                 int cmp;
-            
+
                 ham_assert(dbdata->lower_bound_index == 0, (0));
                 ham_assert(dbdata->lower_bound.data == NULL ?
                     dbdata->lower_bound.size == 0 :
@@ -893,7 +893,7 @@ btree_find_get_hints(find_hints_t *hints, Database *db, ham_key_t *key)
         if (dbdata->upper_bound_set
                 && !dam_is_set(flags, HAM_FIND_LT_MATCH)) {
             int cmp;
-            
+
             ham_assert(dbdata->upper_bound_index >= 0, (0));
             ham_assert(dbdata->upper_bound.data == NULL ?
                 dbdata->upper_bound.size == 0 :
@@ -1004,7 +1004,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
     - when the given key is positioned beyond the end, hint 'append' anyway.
 
     - When the given key is positioned before the start, hint 'prepend' anyway.
-    
+
     NOTE: This 'auto-detect' mechanism (thanks to the key bounds being collected through
     the statistics gathering calls) renders the manual option HAM_HINT_APPEND/_PREPEND
     somewhat obsolete, really.
@@ -1104,7 +1104,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
                     hints->force_append = HAM_TRUE;
                 }
             }
-            
+
             if (dbdata->lower_bound_set)
             {
                 if (dbdata->lower_bound_index == 1)
@@ -1121,7 +1121,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
                 else
                 {
                     int cmp;
-                    
+
                     ham_assert(dbdata->lower_bound_index == 0, (0));
                     ham_assert(dbdata->lower_bound.data == NULL ?
                         dbdata->lower_bound.size == 0 :
@@ -1142,7 +1142,7 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
             if (dbdata->upper_bound_set)
             {
                 int cmp;
-                
+
                 ham_assert(dbdata->upper_bound_index >= 0, (0));
                 ham_assert(dbdata->upper_bound.data == NULL ?
                     dbdata->upper_bound.size == 0 :
@@ -1164,9 +1164,9 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
 
     /*
     we don't yet hint about jumping to the last accessed leaf node immediately (yet)
-    
+
     EDIT:
-    
+
     now we do: see the flags + dam code above: this happens when neither PREPEND
     nor APPEND hints are specified
     */
@@ -1198,7 +1198,7 @@ btree_erase_get_hints(erase_hints_t *hints, Database *db, ham_key_t *key)
         else
         {
             int cmp;
-            
+
             ham_assert(dbdata->lower_bound_index == 0, (0));
             ham_assert(dbdata->lower_bound.data == NULL ?
                 dbdata->lower_bound.size == 0 :
@@ -1217,7 +1217,7 @@ btree_erase_get_hints(erase_hints_t *hints, Database *db, ham_key_t *key)
     if (dbdata->upper_bound_set)
     {
         int cmp;
-        
+
         ham_assert(dbdata->upper_bound_index >= 0, (0));
         ham_assert(dbdata->upper_bound.data == NULL ?
             dbdata->upper_bound.size == 0 :
@@ -1327,7 +1327,7 @@ btree_stats_fill_ham_statistics_t(Environment *env, Database *db,
     /* and finally mark which sections have actually been fetched */
     dst->dont_collect_global_stats = !collect_globdata;
     dst->dont_collect_db_stats = !collect_dbdata;
-    
+
     return st;
 }
 
