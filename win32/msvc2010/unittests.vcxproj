@@ -184,6 +184,7 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>../../3rdparty/boost/stage/lib</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -246,6 +247,7 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX64</TargetMachine>
       <Profile>true</Profile>
+      <AdditionalLibraryDirectories>../../3rdparty/boost/stage/lib</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -303,6 +305,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <TargetMachine>MachineIA64</TargetMachine>
+      <AdditionalLibraryDirectories>../../3rdparty/boost/stage/lib</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -359,6 +362,7 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>../../3rdparty/boost/stage/lib</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -417,6 +421,7 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX64</TargetMachine>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>../../3rdparty/boost/stage/lib</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -471,6 +476,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <TargetMachine>MachineIA64</TargetMachine>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>../../3rdparty/boost/stage/lib</AdditionalLibraryDirectories>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -480,7 +486,6 @@
     <ClInclude Include="..\..\unittests\bfc-signal.h" />
     <ClInclude Include="..\..\unittests\bfc-testsuite.hpp" />
     <ClInclude Include="..\..\unittests\hamster_fixture.hpp" />
-    <ClInclude Include="..\..\unittests\memtracker.h" />
     <ClInclude Include="..\..\unittests\os.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -513,8 +518,6 @@
     <ClCompile Include="..\..\unittests\journal.cpp" />
     <ClCompile Include="..\..\unittests\log.cpp" />
     <ClCompile Include="..\..\unittests\main.cpp" />
-    <ClCompile Include="..\..\unittests\mem.cpp" />
-    <ClCompile Include="..\..\unittests\memtracker.cpp" />
     <ClCompile Include="..\..\unittests\misc.cpp" />
     <ClCompile Include="..\..\unittests\os.cpp" />
     <ClCompile Include="..\..\unittests\page.cpp" />

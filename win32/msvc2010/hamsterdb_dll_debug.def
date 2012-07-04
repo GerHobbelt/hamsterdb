@@ -3,56 +3,56 @@
 
 EXPORTS
 	;page_get_next
-	_ham_default_allocator_new
+	;_ham_default_allocator_new
 	blob_allocate
 	blob_duplicate_get
 	blob_free
 	blob_overwrite
 	blob_read
-	bt_cursor_uncouple
-	cache_delete
-	cache_get_page
-	cache_get_unused_page
-	cache_new
-	cache_put_page
-	cache_remove_page
+	;bt_cursor_uncouple
+	;cache_delete
+	;cache_get_page
+	;cache_get_unused_page
+	;cache_new
+	;cache_put_page
+	;cache_remove_page
 	db_alloc_page
 	db_default_compare
 	db_default_prefix_compare
 	db_fetch_page
-	db_flush_page
-	db_free_page
-	db_uncouple_all_cursors
+	;db_flush_page
+	;db_free_page
+	;db_uncouple_all_cursors
 	dbg_lock
 	dbg_log
 	dbg_prepare
 	dbg_unlock
 	dbg_verify_failed
-	env_reserve_space
-	extkey_cache_fetch
-	extkey_cache_insert
-	extkey_cache_new
-	extkey_cache_remove
-	freel_alloc_area
-	freel_alloc_page
-	freel_mark_free
-	ham_device_new
-	ham_get_default_allocator_template
-	ham_log_add_page_before
-	ham_log_append_checkpoint
-	ham_log_append_flush_page
-	ham_log_append_prewrite
-	ham_log_append_txn_abort
-	ham_log_append_txn_begin
-	ham_log_append_txn_commit
-	ham_log_append_write
-	ham_log_clear
-	ham_log_close
-	ham_log_create
-	ham_log_get_entry
-	ham_log_is_empty
-	ham_log_open
-	ham_set_default_allocator_template
+	;env_reserve_space
+	;extkey_cache_fetch
+	;extkey_cache_insert
+	;extkey_cache_new
+	;extkey_cache_remove
+	;freel_alloc_area
+	;freel_alloc_page
+	;freel_mark_free
+	;ham_device_new
+	;ham_get_default_allocator_template
+	;ham_log_add_page_before
+	;ham_log_append_checkpoint
+	;ham_log_append_flush_page
+	;ham_log_append_prewrite
+	;ham_log_append_txn_abort
+	;ham_log_append_txn_begin
+	;ham_log_append_txn_commit
+	;ham_log_append_write
+	;ham_log_clear
+	;ham_log_close
+	;ham_log_create
+	;ham_log_get_entry
+	;ham_log_is_empty
+	;ham_log_open
+	;ham_set_default_allocator_template
 	ham_test_abort
 	key_erase_record
 	key_set_record
@@ -69,12 +69,12 @@ EXPORTS
 	os_seek
 	os_tell
 	os_truncate
-	page_alloc
-	page_delete
-	page_fetch
-	page_flush
-	page_free
-	page_new
-	util_copy_key
-	util_copy_key_int2pub
-	util_read_record    
+	;page_alloc
+	;page_delete
+	;page_fetch
+	;page_flush
+	;page_free
+	;page_new
+	;util_copy_key
+	;util_copy_key_int2pub
+	;util_read_record    
