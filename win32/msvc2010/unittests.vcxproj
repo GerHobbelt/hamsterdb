@@ -30,6 +30,7 @@
     <ProjectGuid>{0C5D0A1D-A98A-4A4A-A954-EC15F8A611A6}</ProjectGuid>
     <RootNamespace>unittests</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <ProjectName>hamsterdb_unittests</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
