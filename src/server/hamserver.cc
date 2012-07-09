@@ -10,7 +10,7 @@
  */
 
 
-#include <mongoose/mongoose.h>
+#include <mongoose/mongoose_ex.h>
 
 #include <ham/types.h>
 #include <ham/hamsterdb_srv.h>
@@ -384,7 +384,7 @@ handle_env_create_db(struct env_t *envh, ham_env_t *env,
     ham_assert(proto_env_create_db_request_get_num_params(request)<100, (""));
     for (i=0; i<proto_env_create_db_request_get_num_params(request); i++) {
         params[i].name =proto_env_create_db_request_get_param_names(request)[i];
-        params[i].value=proto_env_create_db_request_get_param_values(request)[i];
+        params[i].value.size=proto_env_create_db_request_get_param_values(request)[i];
     }
 
     /* create the database */
@@ -427,7 +427,7 @@ handle_env_open_db(struct env_t *envh, ham_env_t *env,
     ham_assert(proto_env_open_db_request_get_num_params(request)<100, (""));
     for (i=0; i<proto_env_open_db_request_get_num_params(request); i++) {
         params[i].name =proto_env_open_db_request_get_param_names(request)[i];
-        params[i].value=proto_env_open_db_request_get_param_values(request)[i];
+        params[i].value.size=proto_env_open_db_request_get_param_values(request)[i];
     }
 
     /* check if the database is already open */
@@ -1231,6 +1231,9 @@ static void *request_handler(enum mg_event event, struct mg_connection *conn)
 	struct mg_user_class_t *user_data = mg_get_user_data(mg_get_context(conn));
 	struct mg_request_info *ri = mg_get_request_info(conn);
     ham_srv_t *srv;
+	ham_u8_t *rx_buf;
+	size_t rx_bufsize;
+	size_t rx_length;
 
 	if (event != MG_NEW_REQUEST)
 		return 0;
@@ -1248,11 +1251,37 @@ static void *request_handler(enum mg_event event, struct mg_connection *conn)
 	if (!env)
 		return 0;
 
+	rx_buf = (ham_u8_t *)malloc(rx_bufsize = 65536);
+	if (!rx_buf)
+		return 0;
+
     os_critsec_enter(&env->cs);
 
-    wrapper=proto_unpack(ri->post_data_len, (ham_u8_t *)ri->post_data);
+	// read post data into buffer:
+	for (rx_length = 0;;) {
+		int n = mg_read(conn, rx_buf + rx_length, rx_bufsize - rx_length);
+		if (n < 0) {
+			free(rx_buf);
+			mg_send_http_error(conn, 500, NULL, "read error %d(%s)", ERRNO, mg_strerror(ERRNO));
+			return (void *)1;
+		}
+		if (n == 0)
+			break;
+		rx_length += n;
+		if (rx_bufsize == rx_length)
+		{
+			rx_bufsize *= 2;
+			rx_buf = (ham_u8_t *)realloc(rx_buf, rx_bufsize);
+			if (!rx_buf)
+			{
+				mg_send_http_error(conn, 500, NULL, "out of memory");
+				return (void *)1;
+			}
+		}
+	}
+    wrapper=proto_unpack(rx_length, rx_buf);
     if (!wrapper) {
-        ham_trace(("failed to unpack wrapper (%d bytes)\n", ri->post_data_len));
+        ham_trace(("failed to unpack wrapper (%d bytes)\n", (int)rx_length));
         goto bail;
     }
 
@@ -1383,7 +1412,7 @@ static void *request_handler(enum mg_event event, struct mg_connection *conn)
     printf("Query string: [%s]\n",
             ri->query_string ? ri->query_string: "");
     printf("POST data: [%.*s]\n",
-            ri->post_data_len, ri->post_data);
+            (int)rx_length, rx_buf);
     printf("Remote IP: [%lu]\n", ri->remote_ip);
     printf("Remote port: [%d]\n", ri->remote_port);
     printf("Remote user: [%s]\n",
