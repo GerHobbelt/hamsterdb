@@ -40,6 +40,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
     for (i = 0; db_params_out[i].name; i++)
     {
         const char *desc;
+		unsigned int v = db_params_out[i].value.size;
 
         switch (db_params_out[i].name)
         {
@@ -61,6 +62,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
 
         case HAM_PARAM_DBNAME:
             desc = "HAM_PARAM_DBNAME: db ID in database environment (%u)";
+			v = db_params_out[i].value.id;
             break;
 
 #if defined(HAM_PARAM_CUSTOM_DEVICE)
@@ -90,14 +92,16 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
 
         case HAM_PARAM_GET_FLAGS:
             desc = "HAM_PARAM_GET_FLAGS: %08x";
+			v = db_params_out[i].value.flags;
             break;
 
         case HAM_PARAM_GET_FILEMODE:
             desc = "HAM_PARAM_GET_FILEMODE: %04o";
+			v = db_params_out[i].value.flags;
             break;
 
         case HAM_PARAM_GET_FILENAME:
-            printf("HAM_PARAM_GET_FILENAME: %s\n", *db_params_out[i].value.str_ref);
+            printf("HAM_PARAM_GET_FILENAME: %s\n", db_params_out[i].value.str_out.buf);
             continue;
 
         case HAM_PARAM_GET_KEYS_PER_PAGE:
@@ -107,7 +111,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
         default:
             continue;
         }
-        printf(desc, (unsigned int)db_params_out[i].value.n);
+        printf(desc, v);
         puts("");
     }
 }
@@ -126,7 +130,7 @@ main(int argc, char **argv)
         { HAM_PARAM_KEYSIZE, sizeof(approx_key) },
         {0,0},
     };
-    const char *filename_param_str = NULL;
+    const char filename_param_str[256];
     ham_parameter_t db_params_out[] =
     {
         { HAM_PARAM_PAGESIZE, 0 },
@@ -151,7 +155,8 @@ main(int argc, char **argv)
         "e1 e2 e3 e4\n"
     };
 
-    db_params_out[7].value.str_ref = &filename_param_str;
+    db_params_out[7].value.str_out.buf = filename_param_str;
+    db_params_out[7].value.str_out.max_bufsize = sizeof(filename_param_str);
 
     printf("This sample uses hamsterdb and approximate keys to list all words "
             "in the\noriginal order, together with their line number.\n");

@@ -751,7 +751,7 @@ _local_fun_close(Environment *env, ham_u32_t flags)
     /* close the log and the journal */
     if (env->get_log()) {
         Log *log=env->get_log();
-        st=log->close(flags&HAM_DONT_CLEAR_LOG);
+        st=log->close(!!(flags&HAM_DONT_CLEAR_LOG));
         if (!st2)
             st2 = st;
         delete log;
@@ -759,7 +759,7 @@ _local_fun_close(Environment *env, ham_u32_t flags)
     }
     if (env->get_journal()) {
         Journal *journal=env->get_journal();
-        st=journal->close(flags&HAM_DONT_CLEAR_LOG);
+        st=journal->close(!!(flags&HAM_DONT_CLEAR_LOG));
         if (!st2)
             st2 = st;
         delete journal;
@@ -778,34 +778,28 @@ _local_fun_get_parameters(Environment *env, ham_parameter_t *param)
         for (; p->name; p++) {
             switch (p->name) {
             case HAM_PARAM_CACHESIZE:
-                p->value=env->get_cache()->get_capacity();
+                p->value.size=env->get_cache()->get_capacity();
                 break;
             case HAM_PARAM_PAGESIZE:
-                p->value=env->get_pagesize();
+                p->value.size=env->get_pagesize();
                 break;
             case HAM_PARAM_MAX_ENV_DATABASES:
-                p->value=env->get_max_databases();
+                p->value.size=env->get_max_databases();
                 break;
             case HAM_PARAM_GET_FLAGS:
-                p->value=env->get_flags();
+                p->value.flags=env->get_flags();
                 break;
             case HAM_PARAM_GET_FILEMODE:
-                p->value=env->get_file_mode();
+                p->value.flags=env->get_file_mode();
                 break;
             case HAM_PARAM_GET_FILENAME:
-                if (env->get_filename().size())
-                    p->value=(ham_u64_t)(PTR_TO_U64(env->get_filename().c_str()));
-                else
-                    p->value=0;
+                p->value.str_out.copy(env->get_filename().c_str());
                 break;
             case HAM_PARAM_LOG_DIRECTORY:
-                if (env->get_log_directory().size())
-                    p->value=(ham_u64_t)(PTR_TO_U64(env->get_log_directory().c_str()));
-                else
-                    p->value=0;
+                p->value.str_out.copy(env->get_log_directory().c_str());
                 break;
             case HAM_PARAM_GET_STATISTICS:
-                if (!p->value) {
+                if (!p->value.stats_ref) {
                     ham_trace(("the value for parameter "
                                "'HAM_PARAM_GET_STATISTICS' must not be NULL "
                                "and reference a ham_statistics_t data "
@@ -815,7 +809,7 @@ _local_fun_get_parameters(Environment *env, ham_parameter_t *param)
                 }
                 else {
                     ham_status_t st = btree_stats_fill_ham_statistics_t(env, 0,
-                            (ham_statistics_t *)U64_TO_PTR(p->value));
+                            p->value.stats_ref);
                     if (st)
                         return st;
                 }

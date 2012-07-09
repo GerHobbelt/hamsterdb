@@ -605,11 +605,11 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
             switch (param->name) {
             case HAM_PARAM_CACHESIZE:
                 if (pcachesize)
-                    cachesize=param->value;
+                    cachesize=param->value.size;
                 break;
 
             case HAM_PARAM_LOG_DIRECTORY:
-                logdir=(const char *)param->value;
+                logdir=param->value.str_in.str;
                 break;
 
             case HAM_PARAM_KEYSIZE:
@@ -618,7 +618,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                     return (HAM_INV_PARAMETER);
                 }
                 if (pkeysize) {
-                    keysize=(ham_u16_t)param->value;
+                    keysize=(ham_u16_t)param->value.size;
                     if (flags & HAM_RECORD_NUMBER) {
                         if (keysize > 0 && keysize < sizeof(ham_u64_t)) {
                             ham_trace(("invalid keysize %u - must be 8 for "
@@ -631,12 +631,12 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                 break;
             case HAM_PARAM_PAGESIZE:
                 if (ppagesize) {
-                    if (param->value!=1024 && param->value%2048!=0) {
+                    if (param->value.size!=1024 && param->value.size%2048!=0) {
                         ham_trace(("invalid pagesize - must be 1024 or "
                                 "a multiple of 2048"));
                         return (HAM_INV_PAGESIZE);
                     }
-                    pagesize=(ham_size_t)param->value;
+                    pagesize=(ham_size_t)param->value.size;
                     break;
                 }
                 goto default_case;
@@ -648,17 +648,17 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                     return (HAM_INV_PARAMETER);
                 }
                 if (pdata_access_mode) {
-                    switch (param->value) {
+                    switch (param->value.flags) {
                     case 0: /* ignore 0 */
                         break;
                     case HAM_DAM_SEQUENTIAL_INSERT:
                     case HAM_DAM_RANDOM_WRITE:
-                        dam=(ham_u16_t)param->value;
+                        dam=(ham_u16_t)param->value.flags;
                         break;
                     default:
                         ham_trace(("invalid value 0x%04x specified for "
                                 "parameter HAM_PARAM_DATA_ACCESS_MODE",
-                                (unsigned)param->value));
+                                (unsigned)param->value.flags));
                         return (HAM_INV_PARAMETER);
                     }
                     break;
@@ -667,16 +667,16 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
 
             case HAM_PARAM_MAX_ENV_DATABASES:
                 if (pmaxdbs) {
-                    if (param->value==0 || param->value >= HAM_DEFAULT_DATABASE_NAME) {
-                        if (param->value==0) {
+                    if (param->value.size==0 || param->value.size >= HAM_DEFAULT_DATABASE_NAME) {
+                        if (param->value.size==0) {
                             ham_trace(("invalid value %u for parameter "
                                        "HAM_PARAM_MAX_ENV_DATABASES",
-                                       (unsigned)param->value));
+                                       (unsigned)param->value.size));
                             return (HAM_INV_PARAMETER);
                         }
                     }
                     else {
-                        dbs=(ham_u16_t)param->value;
+                        dbs=(ham_u16_t)param->value.size;
                     }
                     break;
                 }
@@ -685,7 +685,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
             case HAM_PARAM_GET_DATABASE_NAME:
                 if (pdbname) {
                     if (dbname == HAM_DEFAULT_DATABASE_NAME || dbname == HAM_FIRST_DATABASE_NAME) {
-                        dbname=(ham_u16_t)param->value;
+                        dbname=param->value.id;
 
                         if (!dbname
                             || (dbname != HAM_FIRST_DATABASE_NAME
@@ -1737,10 +1737,10 @@ ham_open_ex(ham_db_t *hdb, const char *filename,
      * create an Environment handle and open the Environment
      */
     env_param[0].name=HAM_PARAM_CACHESIZE;
-    env_param[0].value=cachesize;
+    env_param[0].value.size=cachesize;
     if (logdir.size()) {
         env_param[1].name=HAM_PARAM_LOG_DIRECTORY;
-        env_param[1].value=(ham_u64_t)logdir.c_str();
+        env_param[1].value.str_in.str=logdir.c_str();
     }
     env_flags=flags & ~(HAM_ENABLE_DUPLICATES|HAM_SORT_DUPLICATES);
 
@@ -1772,7 +1772,7 @@ ham_open_ex(ham_db_t *hdb, const char *filename,
             |DB_ENV_IS_PRIVATE);
 
     db_param[0].name=HAM_PARAM_DATA_ACCESS_MODE;
-    db_param[0].value=dam;
+    db_param[0].value.flags=dam;
     db_param[1].name=0;
 
     /* now open the Database in this Environment */
@@ -1858,14 +1858,14 @@ ham_create_ex(ham_db_t *hdb, const char *filename,
      * setup the parameters for ham_env_create_ex
      */
     env_param[0].name=HAM_PARAM_CACHESIZE;
-    env_param[0].value=(flags&HAM_IN_MEMORY_DB) ? 0 : cachesize;
+    env_param[0].value.size=(flags&HAM_IN_MEMORY_DB) ? 0 : cachesize;
     env_param[1].name=HAM_PARAM_PAGESIZE;
-    env_param[1].value=pagesize;
+    env_param[1].value.size=pagesize;
     env_param[2].name=HAM_PARAM_MAX_ENV_DATABASES;
-    env_param[2].value=maxdbs;
+    env_param[2].value.size=maxdbs;
     if (logdir.size()) {
         env_param[3].name=HAM_PARAM_LOG_DIRECTORY;
-        env_param[3].value=(ham_u64_t)logdir.c_str();
+        env_param[3].value.str_in.str=logdir.c_str();
     }
     env_flags=flags & ~(HAM_ENABLE_DUPLICATES|HAM_SORT_DUPLICATES);
 
@@ -1900,9 +1900,9 @@ ham_create_ex(ham_db_t *hdb, const char *filename,
             |DB_ENV_IS_PRIVATE);
 
     db_param[0].name=HAM_PARAM_KEYSIZE;
-    db_param[0].value=keysize;
+    db_param[0].value.size=keysize;
     db_param[1].name=HAM_PARAM_DATA_ACCESS_MODE;
-    db_param[1].value=dam;
+    db_param[1].value.flags=dam;
     db_param[2].name=0;
 
     /* now create the Database */

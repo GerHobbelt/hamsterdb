@@ -10,6 +10,10 @@
  */
 
 
+#include <stdio.h> /* needed for mongoose.h */
+#include <malloc.h>
+#include <string.h>
+
 #include <mongoose/mongoose.h>
 
 #include <ham/types.h>
@@ -60,7 +64,6 @@ struct ham_srv_t
     /* handlers for each Environment */
     struct env_t environments[MAX_ENVIRONMENTS];
 
-	struct mg_user_class_t mg_usr;
 };
 
 static ham_u64_t
@@ -1225,10 +1228,12 @@ bail:
     proto_delete(reply);
 }
 
-static void *request_handler(enum mg_event event, struct mg_connection *conn)
+static void
+request_handler(struct mg_connection *conn, const struct mg_request_info *ri,
+                void *user_data)
 {
     proto_wrapper_t *wrapper;
-    struct env_t *env = (struct env_t *)user_data;
+    struct env_t *env=(struct env_t *)user_data;
 
     mg_authorize(conn);
 
@@ -1354,7 +1359,7 @@ static void *request_handler(enum mg_event event, struct mg_connection *conn)
         break;
     }
 
-#if 01
+#if 0
     printf("Method: [%s]\n", ri->request_method);
     printf("URI: [%s]\n", ri->uri);
     printf("HTTP version: [%d.%d]\n", ri->http_version_major,
@@ -1389,37 +1394,37 @@ ham_srv_init(ham_srv_config_t *config, ham_srv_t **psrv)
     ham_srv_t *srv;
     char buf[32];
     sprintf(buf, "%d", (int)config->port);
-	const char *options[] =
-	{
-		"ports", buf,
-		"enable_directory_listing", "no",
-		NULL, NULL,
-		NULL, NULL,
-		NULL, NULL
-	};
-	const char **o = &options[4];
 
     srv=(ham_srv_t *)malloc(sizeof(ham_srv_t));
     if (!srv)
         return (HAM_OUT_OF_MEMORY);
     memset(srv, 0, sizeof(*srv));
 
-	if (config->access_log_path) {
-		*o++ = "access_log";
-		*o++ = config->access_log_path;
-	}
-	if (config->error_log_path) {
-		*o++ = "error_log";
-		*o++ = config->error_log_path;
-	}
+    srv->mg_ctxt=mg_start();
+    mg_set_option(srv->mg_ctxt, "ports", buf);
+    mg_set_option(srv->mg_ctxt, "dir_list", "no");
+    if (config->access_log_path) {
+        if (!mg_set_option(srv->mg_ctxt, "access_log",
+                    config->access_log_path)) {
+            ham_log(("failed to write access log file '%s'",
+                        config->access_log_path));
+            mg_stop(srv->mg_ctxt);
+            free(srv);
+            return (HAM_IO_ERROR);
+        }
+    }
+    if (config->error_log_path) {
+        if (!mg_set_option(srv->mg_ctxt, "error_log",
+                    config->error_log_path)) {
+            ham_log(("failed to write access log file '%s'",
+                        config->access_log_path));
+            mg_stop(srv->mg_ctxt);
+            free(srv);
+            return (HAM_IO_ERROR);
+        }
+    }
 
-	srv->mg_usr.user_data = srv;
-	srv->mg_usr.user_callback = request_handler;
-	srv->mg_ctxt = mg_start(&srv->mg_usr, options);
-	if (!srv->mg_ctxt)
-		return (HAM_IO_ERROR);
-
-    *psrv = srv;
+    *psrv=srv;
     return (HAM_SUCCESS);
 }
 

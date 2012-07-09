@@ -271,7 +271,49 @@ typedef struct {
     ham_u32_t name;
 
     /** The value of the parameter. */
-    ham_u64_t value;
+    union
+    {
+		ham_u16_t id;
+
+		ham_u64_t size;
+
+		unsigned int flags;
+
+        struct
+		{
+			char *buf;
+			ham_size_t max_bufsize;
+
+#ifdef __cplusplus
+			void copy(const char *src)
+			{
+				if (max_bufsize > 0)
+				{
+					buf[0];
+					if (src)
+					{
+						strncpy(buf, src, max_bufsize);
+						buf[max_bufsize - 1] = 0;
+					}
+				}
+			};
+#endif // __cplusplus
+
+		} str_out;
+		struct
+		{
+			const char *str;
+			ham_size_t max_bufsize;
+		} str_in;
+
+		struct ham_statistics_t *stats_ref;
+#if 0
+		ham_db_info_t *db_info_ref;
+        ham_env_info_t *env_info_ref;
+
+        ham_parameter_function_t *fn;
+#endif
+	} value;
 
 } ham_parameter_t;
 

@@ -1484,55 +1484,50 @@ DatabaseImplementationLocal::get_parameters(ham_parameter_t *param)
         for (; p->name; p++) {
             switch (p->name) {
             case HAM_PARAM_CACHESIZE:
-                p->value=env->get_cache()->get_capacity();
+                p->value.size=env->get_cache()->get_capacity();
                 break;
             case HAM_PARAM_PAGESIZE:
-                p->value=env->get_pagesize();
+                p->value.size=env->get_pagesize();
                 break;
             case HAM_PARAM_KEYSIZE:
-                p->value=m_db->get_backend() ? db_get_keysize(m_db) : 21;
+                p->value.size=m_db->get_backend() ? db_get_keysize(m_db) : 21;
                 break;
             case HAM_PARAM_MAX_ENV_DATABASES:
-                p->value=env->get_max_databases();
+                p->value.size=env->get_max_databases();
                 break;
             case HAM_PARAM_GET_FLAGS:
-                p->value=m_db->get_rt_flags();
+                p->value.flags=m_db->get_rt_flags();
                 break;
             case HAM_PARAM_GET_FILEMODE:
-                p->value=m_db->get_env()->get_file_mode();
+                p->value.flags=m_db->get_env()->get_file_mode();
                 break;
             case HAM_PARAM_GET_FILENAME:
-                if (env->get_filename().size())
-                    p->value=(ham_u64_t)PTR_TO_U64(env->get_filename().c_str());
-                else
-                    p->value=0;
+                p->value.str_out.copy(env->get_filename().c_str());
                 break;
             case HAM_PARAM_LOG_DIRECTORY:
-                if (env->get_log_directory().size())
-                    p->value=(ham_u64_t)(PTR_TO_U64(env->get_log_directory().c_str()));
-                else
-                    p->value=0;
+                p->value.str_out.copy(env->get_log_directory().c_str());
                 break;
             case HAM_PARAM_GET_DATABASE_NAME:
-                p->value=(ham_offset_t)m_db->get_name();
+                p->value.id=m_db->get_name();
                 break;
             case HAM_PARAM_GET_KEYS_PER_PAGE:
                 if (m_db->get_backend()) {
-                    ham_size_t count=0, size=db_get_keysize(m_db);
+                    ham_size_t count=0;
+					ham_u16_t size=db_get_keysize(m_db);
                     Backend *be = m_db->get_backend();
                     ham_status_t st;
 
                     st=be->calc_keycount_per_page(&count, size);
                     if (st)
                         return (st);
-                    p->value=count;
+                    p->value.size=count;
                 }
                 break;
             case HAM_PARAM_GET_DATA_ACCESS_MODE:
-                p->value=m_db->get_data_access_mode();
+                p->value.flags=m_db->get_data_access_mode();
                 break;
             case HAM_PARAM_GET_STATISTICS:
-                if (!p->value) {
+                if (!p->value.stats_ref) {
                     ham_trace(("the value for parameter "
                                "'HAM_PARAM_GET_STATISTICS' must not be NULL "
                                "and reference a ham_statistics_t data "
@@ -1542,7 +1537,7 @@ DatabaseImplementationLocal::get_parameters(ham_parameter_t *param)
                 }
                 else {
                     ham_status_t st=btree_stats_fill_ham_statistics_t(env,
-                            m_db, (ham_statistics_t *)U64_TO_PTR(p->value));
+                            m_db, p->value.stats_ref);
                     if (st)
                         return (st);
                 }
