@@ -10,10 +10,6 @@
  */
 
 
-#include <stdio.h> /* needed for mongoose.h */
-#include <malloc.h>
-#include <string.h>
-
 #include <mongoose/mongoose.h>
 
 #include <ham/types.h>
@@ -40,12 +36,12 @@ static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
 #define HANDLE_TYPE_TRANSACTION 2
 #define HANDLE_TYPE_CURSOR 3
 
-typedef struct srv_handle_t
+struct srv_handle_t
 {
     void *ptr;
     int type;
     ham_u64_t handle;
-} srv_handle_t;
+};
 
 struct env_t {
     ham_env_t *env;
@@ -54,7 +50,7 @@ struct env_t {
     srv_handle_t *handles;
     ham_u32_t handles_ctr;
     ham_u32_t handles_size;
-} env_t;
+};
 
 struct ham_srv_t
 {
@@ -62,8 +58,9 @@ struct ham_srv_t
     struct mg_context *mg_ctxt;
 
     /* handlers for each Environment */
-    struct env_t environments[MAX_ENVIRONMENTS];
+    env_t environments[MAX_ENVIRONMENTS];
 
+	struct mg_user_class_t mg_usr;
 };
 
 static ham_u64_t
@@ -188,28 +185,27 @@ handle_env_get_parameters(ham_env_t *env, struct mg_connection *conn,
         switch (params[i].name) {
         case HAM_PARAM_CACHESIZE:
             proto_env_get_parameters_reply_set_cachesize(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_PAGESIZE:
             proto_env_get_parameters_reply_set_pagesize(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_MAX_ENV_DATABASES:
             proto_env_get_parameters_reply_set_max_env_databases(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_GET_FLAGS:
             proto_env_get_parameters_reply_set_flags(reply,
-                            (int)params[i].value);
+                            params[i].value.flags);
             break;
         case HAM_PARAM_GET_FILEMODE:
             proto_env_get_parameters_reply_set_filemode(reply,
-                            (int)params[i].value);
+                            params[i].value.flags);
             break;
         case HAM_PARAM_GET_FILENAME:
-            if (params[i].value)
-                proto_env_get_parameters_reply_set_filename(reply,
-                            (const char *)(U64_TO_PTR(params[i].value)));
+            proto_env_get_parameters_reply_set_filename(reply,
+                            params[i].value.str_out.buf);
             break;
         default:
             ham_trace(("unsupported parameter %u", (unsigned)params[i].name));
@@ -266,43 +262,43 @@ handle_db_get_parameters(struct env_t *envh, struct mg_connection *conn,
             continue;
         case HAM_PARAM_CACHESIZE:
             proto_db_get_parameters_reply_set_cachesize(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_PAGESIZE:
             proto_db_get_parameters_reply_set_pagesize(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_MAX_ENV_DATABASES:
             proto_db_get_parameters_reply_set_max_env_databases(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_GET_FLAGS:
             proto_db_get_parameters_reply_set_flags(reply,
-                            (int)params[i].value);
+                            params[i].value.flags);
             break;
         case HAM_PARAM_GET_FILEMODE:
             proto_db_get_parameters_reply_set_filemode(reply,
-                            (int)params[i].value);
+                            params[i].value.flags);
             break;
         case HAM_PARAM_GET_FILENAME:
             proto_db_get_parameters_reply_set_filename(reply,
-                            (char *)(U64_TO_PTR(params[i].value)));
+                            params[i].value.str_out.buf);
             break;
         case HAM_PARAM_KEYSIZE:
             proto_db_get_parameters_reply_set_keysize(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_GET_DATABASE_NAME:
             proto_db_get_parameters_reply_set_dbname(reply,
-                            (int)params[i].value);
+                            params[i].value.id);
             break;
         case HAM_PARAM_GET_KEYS_PER_PAGE:
             proto_db_get_parameters_reply_set_keys_per_page(reply,
-                            (int)params[i].value);
+                            params[i].value.size);
             break;
         case HAM_PARAM_GET_DATA_ACCESS_MODE:
             proto_db_get_parameters_reply_set_dam(reply,
-                            (int)params[i].value);
+                            params[i].value.flags);
             break;
         default:
             ham_trace(("unsupported parameter %u", (unsigned)params[i].name));
@@ -1228,14 +1224,29 @@ bail:
     proto_delete(reply);
 }
 
-static void
-request_handler(struct mg_connection *conn, const struct mg_request_info *ri,
-                void *user_data)
+static void *request_handler(enum mg_event event, struct mg_connection *conn)
 {
     proto_wrapper_t *wrapper;
-    struct env_t *env=(struct env_t *)user_data;
+    env_t *env = NULL;
+	struct mg_user_class_t *user_data = mg_get_user_data(mg_get_context(conn));
+	struct mg_request_info *ri = mg_get_request_info(conn);
+    ham_srv_t *srv;
 
-    mg_authorize(conn);
+	if (event != MG_NEW_REQUEST)
+		return 0;
+
+	srv = (ham_srv_t *)user_data->user_data;
+	/* search for registration */
+    for (int i=0; i<MAX_ENVIRONMENTS; i++) {
+        if (srv->environments[i].urlname && 0 == strcmp(ri->uri, srv->environments[i].urlname))	{
+            env = &srv->environments[i];
+            break;
+        }
+    }
+
+    //mg_authorize(conn);
+	if (!env)
+		return 0;
 
     os_critsec_enter(&env->cs);
 
@@ -1359,13 +1370,12 @@ request_handler(struct mg_connection *conn, const struct mg_request_info *ri,
         break;
     }
 
-#if 0
+#if 01
     printf("Method: [%s]\n", ri->request_method);
     printf("URI: [%s]\n", ri->uri);
-    printf("HTTP version: [%d.%d]\n", ri->http_version_major,
-            ri->http_version_minor);
+    printf("HTTP version: [%s]\n", ri->http_version);
 
-    for (i = 0; i < ri->num_headers; i++)
+    for (int i = 0; i < ri->num_headers; i++)
         printf("HTTP header [%s]: [%s]\n",
              ri->http_headers[i].name,
              ri->http_headers[i].value);
@@ -1386,6 +1396,8 @@ bail:
         proto_delete(wrapper);
 
     os_critsec_leave(&env->cs);
+
+	return (void *)1;
 }
 
 ham_status_t
@@ -1394,37 +1406,37 @@ ham_srv_init(ham_srv_config_t *config, ham_srv_t **psrv)
     ham_srv_t *srv;
     char buf[32];
     sprintf(buf, "%d", (int)config->port);
+	const char *options[] =
+	{
+		"ports", buf,
+		"enable_directory_listing", "no",
+		NULL, NULL,
+		NULL, NULL,
+		NULL, NULL
+	};
+	const char **o = &options[4];
 
     srv=(ham_srv_t *)malloc(sizeof(ham_srv_t));
     if (!srv)
         return (HAM_OUT_OF_MEMORY);
     memset(srv, 0, sizeof(*srv));
 
-    srv->mg_ctxt=mg_start();
-    mg_set_option(srv->mg_ctxt, "ports", buf);
-    mg_set_option(srv->mg_ctxt, "dir_list", "no");
-    if (config->access_log_path) {
-        if (!mg_set_option(srv->mg_ctxt, "access_log",
-                    config->access_log_path)) {
-            ham_log(("failed to write access log file '%s'",
-                        config->access_log_path));
-            mg_stop(srv->mg_ctxt);
-            free(srv);
-            return (HAM_IO_ERROR);
-        }
-    }
-    if (config->error_log_path) {
-        if (!mg_set_option(srv->mg_ctxt, "error_log",
-                    config->error_log_path)) {
-            ham_log(("failed to write access log file '%s'",
-                        config->access_log_path));
-            mg_stop(srv->mg_ctxt);
-            free(srv);
-            return (HAM_IO_ERROR);
-        }
-    }
+	if (config->access_log_path) {
+		*o++ = "access_log";
+		*o++ = config->access_log_path;
+	}
+	if (config->error_log_path) {
+		*o++ = "error_log";
+		*o++ = config->error_log_path;
+	}
 
-    *psrv=srv;
+	srv->mg_usr.user_data = srv;
+	srv->mg_usr.user_callback = request_handler;
+	srv->mg_ctxt = mg_start(&srv->mg_usr, options);
+	if (!srv->mg_ctxt)
+		return (HAM_IO_ERROR);
+
+    *psrv = srv;
     return (HAM_SUCCESS);
 }
 
@@ -1446,8 +1458,6 @@ ham_srv_add_env(ham_srv_t *srv, ham_env_t *env, const char *urlname)
     if (i==MAX_ENVIRONMENTS)
         return (HAM_LIMITS_REACHED);
 
-    mg_set_uri_callback(srv->mg_ctxt, urlname,
-                        request_handler, &srv->environments[i]);
     return (HAM_SUCCESS);
 }
 
