@@ -128,7 +128,7 @@ BtreeBackend::BtreeBackend(Database *db, ham_u32_t flags)
  * estimate the number of keys per page, given the keysize
  */
 ham_status_t
-BtreeBackend::calc_keycount_per_page(ham_size_t *maxkeys, ham_u16_t keysize)
+BtreeBackend::do_calc_keycount_per_page(ham_size_t *maxkeys, ham_u16_t keysize)
 {
     Database *db=get_db();
 
@@ -161,7 +161,7 @@ BtreeBackend::calc_keycount_per_page(ham_size_t *maxkeys, ham_u16_t keysize)
  * the persistent flags!
  */
 ham_status_t
-BtreeBackend::create(ham_u16_t keysize, ham_u32_t flags)
+BtreeBackend::do_create(ham_u16_t keysize, ham_u32_t flags)
 {
     ham_status_t st;
     Page *root;
@@ -226,7 +226,7 @@ BtreeBackend::create(ham_u16_t keysize, ham_u32_t flags)
  * was allocated and the file was opened
  */
 ham_status_t
-BtreeBackend::open(ham_u32_t flags)
+BtreeBackend::do_open(ham_u32_t flags)
 {
     ham_offset_t rootadd;
     ham_offset_t recno;
@@ -263,7 +263,7 @@ BtreeBackend::open(ham_u32_t flags)
  * @remark this function is called during ham_flush
  */
 ham_status_t
-BtreeBackend::flush_indexdata()
+BtreeBackend::do_flush_indexdata()
 {
     Database *db=get_db();
     db_indexdata_t *indexdata=db->get_env()->get_indexdata_ptr(
@@ -287,8 +287,24 @@ BtreeBackend::flush_indexdata()
  * @remark this function is called before the file is closed
  */
 void
-BtreeBackend::close()
+BtreeBackend::do_close(ham_u32_t flags)
 {
+    Database *db=get_db();
+
+    /* auto-cleanup cursors? */
+    if (db->get_cursors()) {
+        Cursor *c=db->get_cursors();
+        while (c) {
+            Cursor *next=c->get_next();
+            if (flags&HAM_AUTO_CLEANUP)
+                db->close_cursor(c);
+            else
+                c->close();
+            c=next;
+        }
+        db->set_cursors(0);
+    }
+    
     /* even when an error occurred, the backend has now been de-activated */
     set_active(false);
 }
@@ -300,18 +316,9 @@ BtreeBackend::close()
  * becoming invalid
  */
 ham_status_t
-BtreeBackend::uncouple_all_cursors(Page *page, ham_size_t start)
+BtreeBackend::do_uncouple_all_cursors(Page *page, ham_size_t start)
 {
     return (btree_uncouple_all_cursors(page, start));
-}
-
-/**
- * Close (and free) all cursors related to this database table.
- */
-ham_status_t
-BtreeBackend::close_cursors(ham_u32_t flags)
-{
-    return (btree_close_cursors(get_db(), flags));
 }
 
 /**
@@ -640,38 +647,9 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
     return (slot);
 }
 
-/**
- * Always make sure the db cursor set is released, no matter what happens.
- */
-ham_status_t
-btree_close_cursors(Database *db, ham_u32_t flags)
-{
-    ham_status_t st = HAM_SUCCESS;
-    ham_status_t st2 = HAM_SUCCESS;
 
-    /* auto-cleanup cursors? */
-    if (db->get_cursors()) {
-        Cursor *c=db->get_cursors();
-        while (c) {
-            Cursor *next=c->get_next();
-            if (flags&HAM_AUTO_CLEANUP)
-                db->close_cursor(c);
-            else
-                c->close();
-            if (st) {
-                if (st2 == 0) st2 = st;
-                /* continue to try to close the other cursors, though */
-            }
-            c=next;
-        }
-        db->set_cursors(0);
-    }
-
-    return (st2);
-}
-
-ham_status_t
-btree_prepare_key_for_compare(Database *db, int which,
+ham_status_t 
+btree_prepare_key_for_compare(Database *db, int which, 
                 btree_key_t *src, ham_key_t *dest)
 {
     BtreeBackend *be=(BtreeBackend *)db->get_backend();

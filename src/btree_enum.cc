@@ -38,7 +38,7 @@ _enumerate_page(BtreeBackend *be, Page *page, ham_u32_t level,
  * @note This is a B+-tree 'backend' method.
  */
 ham_status_t
-BtreeBackend::enumerate(ham_enumerate_cb_t cb, void *context)
+BtreeBackend::do_enumerate(ham_enumerate_cb_t cb, void *context)
 {
     Page *page;
     ham_u32_t level=0;

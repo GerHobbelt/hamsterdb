@@ -12,7 +12,6 @@
 
 #include "internal_preparation.h"
 
-
 int
 util_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
@@ -22,8 +21,7 @@ util_vsnprintf(char *str, size_t size, const char *format, va_list ap)
     return _vsnprintf(str, size, format, ap);
 #else
     (void)size;
-    return vsprintf(str, format, ap);
+    return (vsprintf(str, format, ap));
 #endif
 }
-
 

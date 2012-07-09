@@ -15,6 +15,83 @@ I'm using multiple threads b/c my CPU has multiple cores, and expect hamsterdb
 to scale with the number of cores.
 ==============================================================================
 
+o clean up and refactor the code
+    x os.h
+    x os_posix.cc
+    x os_win32.cc
+    x packstart.h
+    x packstop.h
+    x rb.h
+    x serial.h
+    x version.h
+    x util.cc
+    x util.h
+    x config.h
+    x internal_fwd_decl.h
+    x errorinducer.h
+    x endianswap.h
+    x mem.cc
+    x mem.h
+    o error.cc
+        fill dbg_lock, dbg_unlock
+    o error.h
+        ham_assert/ham_verify: remove second parameter
+    o hash-table.h
+        replace this with a boost class
+    o cache.cc
+    o cache.h
+    o changeset.cc
+    o changeset.h
+    o device.cc
+    o device.h
+    o journal.cc
+    o journal_entries.h
+        find a decent way to handle endian-dependent structures
+    o journal.h
+    o log.cc
+    o log.h
+        find a decent way to handle endian-dependent structures
+    o page.cc
+    o page.h
+        find a decent way to handle endian-dependent structures
+    o remote.cc
+    o extkeys.h
+    o blob.cc
+    o blob.h
+
+    o backend.h
+    o btree.h
+    o btree_key.cc
+    o btree_key.h
+    o btree_stats.cc
+    o btree_stats.h
+    o btree.cc
+    o btree_check.cc
+    o btree_cursor.cc
+    o btree_cursor.h
+    o btree_enum.cc
+    o btree_erase.cc
+    o btree_find.cc
+    o btree_insert.cc
+
+    o freelist.cc
+    o freelist.h
+    o freelist_statistics.cc
+    o freelist_statistics.h
+
+    o cursor.cc
+    o cursor.h
+    o db.cc
+    o db.h
+    o env.cc
+    o env.h
+
+    o txn.cc
+    o txn_cursor.cc
+    o txn_cursor.h
+    o txn.h
+
+    o hamsterdb.cc
 o more fine-grained locking
     x cache
         x make sure it's perfectly abstracted
@@ -58,9 +135,12 @@ o more fine-grained locking
         x remove be_set_dirty, replace with be->_fun_flush()
         x btree has keydata1, keydata2 - why? better use DynamicArray?
         x BtreeBackend does not require to store in little/big-endian!
-        o btree.h declares many static functions - still used?
-        o include the functions in btree_insert.cc, btree_erase.cc etc
-        o improve abstraction
+        x btree.h declares many static functions; rewrite them as methods
+            - no, will do that later
+        x include the functions in btree_insert.cc, btree_erase.cc etc
+            - no, will do that later
+        x improve abstraction
+        o protect with a mutex
     o statistics
         o split into env/db/freelist
         o remove unused code - also from public interface?
