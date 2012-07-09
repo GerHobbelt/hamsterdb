@@ -38,8 +38,12 @@ public:
         if (!ms_tls.get())
             ms_tls.reset(new boost::thread::id());
         *ms_tls.get()=boost::this_thread::get_id();
-        sleep(1);
-        assert(*ms_tls.get()==boost::this_thread::get_id());
+#if defined(WIN32) || defined(_WIN32)
+		Sleep(1000);
+#else
+		sleep(1);
+#endif
+		assert(*ms_tls.get()==boost::this_thread::get_id());
     }
 
     void tlsTest() {
