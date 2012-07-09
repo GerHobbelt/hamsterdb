@@ -290,9 +290,9 @@ protected:
             ham_env_create_ex(env, BFC_OPATH(".test"),
                 m_flags, 0664, parameters));
         BFC_ASSERT_EQUAL(0, ham_env_get_parameters(env, ps));
-        BFC_ASSERT(ps[0].value == 128*1024);
-        BFC_ASSERT(ps[1].value == 64*1024);
-        BFC_ASSERT(ps[2].value == 128 /* 2029 */ );
+        BFC_ASSERT(ps[0].value.size == 128*1024);
+        BFC_ASSERT(ps[1].value.size == 64*1024);
+        BFC_ASSERT(ps[2].value.size == 128 /* 2029 */ );
 
         /* close and re-open the ENV */
         if (!(m_flags&HAM_IN_MEMORY_DB)) {
@@ -305,9 +305,9 @@ protected:
         }
 
         BFC_ASSERT_EQUAL(0, ham_env_get_parameters(env, ps));
-        BFC_ASSERT_EQUAL(128*1024u, ps[0].value);
-        BFC_ASSERT_EQUAL(1024*64u, ps[1].value);
-        BFC_ASSERT_EQUAL(128u, ps[2].value);
+        BFC_ASSERT_EQUAL(128*1024u, ps[0].value.size);
+        BFC_ASSERT_EQUAL(1024*64u, ps[1].value.size);
+        BFC_ASSERT_EQUAL(128u, ps[2].value.size);
 
         /* now create 128 DBs; we said we would, anyway, when creating the
          * ENV ! */
@@ -323,11 +323,11 @@ protected:
                     ham_env_open_db(env, db[i], i + 100, 0, 0), i);
 
             for (j = 0; ps[j].name; j++)
-                ps[j].value = 0;
+                ps[j].value.size = 0;
             BFC_ASSERT_EQUAL(0, ham_get_parameters(db[i], ps));
-            BFC_ASSERT_EQUAL(128*1024u, ps[0].value);
-            BFC_ASSERT_EQUAL(1024*64u, ps[1].value);
-            BFC_ASSERT_EQUAL(128u, ps[2].value);
+            BFC_ASSERT_EQUAL(128*1024u, ps[0].value.size);
+            BFC_ASSERT_EQUAL(1024*64u, ps[1].value.size);
+            BFC_ASSERT_EQUAL(128u, ps[2].value.size);
         }
 
         BFC_ASSERT_EQUAL(0, ham_delete(dbx));
@@ -488,7 +488,7 @@ protected:
         // in-memory db does not allow the cachesize parameter
         if (m_flags&HAM_IN_MEMORY_DB) {
             parameters[2].name=0;
-            parameters[2].value=0;
+            parameters[2].value.size=0;
         }
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
@@ -568,7 +568,7 @@ protected:
             BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create_ex(env, BFC_OPATH(".test"),
                     m_flags, 0644, parameters2));
-            parameters2[1].value = 0; // pagesize := 0
+            parameters2[1].value.size = 0; // pagesize := 0
         }
         else {
             BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
@@ -577,10 +577,10 @@ protected:
             BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create_ex(env, BFC_OPATH(".test"),
                     m_flags, 0644, parameters2)); // pagesize too small for DB#
-            parameters2[1].value = 65536; // pagesize := 64K
+            parameters2[1].value.size = 65536; // pagesize := 64K
         }
         if (m_flags&HAM_IN_MEMORY_DB) {
-            parameters2[0].value = 0; // cachesize := 0
+            parameters2[0].value.size = 0; // cachesize := 0
         }
         BFC_ASSERT_EQUAL(0,
             ham_env_create_ex(env, BFC_OPATH(".test"),
@@ -1724,32 +1724,32 @@ protected:
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
 
-        ps[0].value=0;
+        ps[0].value.size=0;
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
 
-        ps[0].value=5;
+        ps[0].value.size=5;
         BFC_ASSERT_EQUAL(0,
                 ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
         BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
 
         if (os_get_pagesize()==1024*16 || m_flags&HAM_IN_MEMORY_DB) {
-            ps[0].value=493;
+            ps[0].value.size=493;
             BFC_ASSERT_EQUAL(0,
                     ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
             BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
 
-            ps[0].value=507;
+            ps[0].value.size=507;
             BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                     ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
         }
         else if (os_get_pagesize()==1024*64) {
-            ps[0].value=2029;
+            ps[0].value.size=2029;
             BFC_ASSERT_EQUAL(0,
                     ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
             BFC_ASSERT_EQUAL(0, ham_env_close(env, 0));
 
-            ps[0].value=2030;
+            ps[0].value.size=2030;
             BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                     ham_env_create_ex(env, BFC_OPATH(".test"), m_flags, 0664, ps));
         }

@@ -273,9 +273,9 @@ typedef struct {
     /** The value of the parameter. */
     union
     {
-		ham_u16_t id;
+		ham_u64_t size;		// MUST be first in the union as most parameters are sizes and thus allow for fast compile-time initialization in the declaration of a ham_parameter_t[] array.
 
-		ham_u64_t size;
+		ham_u16_t id;
 
 		unsigned int flags;
 

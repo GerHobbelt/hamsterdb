@@ -321,7 +321,7 @@ public:
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0644, &ps[0]));
         BFC_ASSERT_EQUAL(0u, ((Database *)db)->is_active());
 
-        ps[0].value=1024;
+        ps[0].value.size=1024;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0644, &ps[0]));
         BFC_ASSERT_EQUAL(1u, ((Database *)db)->is_active());
@@ -411,22 +411,22 @@ public:
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 
-        p[1].value=15;
+        p[1].value.size=15;
 
         // only pagesize of 1k, 2k, multiples of 2k are allowed
-        p[0].value=1024;
+        p[0].value.size=1024;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        p[0].value=2048;
+        p[0].value.size=2048;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        p[0].value=4096;
+        p[0].value.size=4096;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
-        p[0].value=1024*3;
+        p[0].value.size=1024*3;
         BFC_ASSERT_EQUAL(HAM_INV_PAGESIZE,
                 ham_create_ex(db, BFC_OPATH(".test"), 0, 0664, &p[0]));
         BFC_ASSERT_EQUAL(0, ham_delete(db));
@@ -2249,10 +2249,12 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
     void overwriteLogDirectoryTest()
     {
         ham_db_t *db;
+		char buf[256];
         ham_parameter_t ps[]={
-            {HAM_PARAM_LOG_DIRECTORY, (ham_u64_t)"data"},
+            {HAM_PARAM_LOG_DIRECTORY, 0},
             {0, 0}
         };
+		ps[0].value.str_in.str = "data";
 
         os::unlink("data/test.db.log0");
         os::unlink("data/test.db.jrn0");
@@ -2274,11 +2276,13 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
                 ham_open_ex(db, "test.db",
                         HAM_ENABLE_TRANSACTIONS, &ps[0]));
 
+        ps[0].value.str_out.buf = buf;
+        ps[0].value.str_out.max_bufsize = sizeof(buf);
         BFC_ASSERT_EQUAL(0, ham_env_get_parameters(ham_get_env(db), &ps[0]));
-        BFC_ASSERT_EQUAL(0, strcmp("data", (const char *)ps[0].value));
-        ps[0].value=0;
+        BFC_ASSERT_EQUAL(0, strcmp("data", ps[0].value.str_out.buf));
+        buf[0] = 0;
         BFC_ASSERT_EQUAL(0, ham_get_parameters(db, &ps[0]));
-        BFC_ASSERT_EQUAL(0, strcmp("data", (const char *)ps[0].value));
+        BFC_ASSERT_EQUAL(0, strcmp("data", ps[0].value.str_out.buf));
 
         BFC_ASSERT_EQUAL(0, ham_close(db, 0));
 

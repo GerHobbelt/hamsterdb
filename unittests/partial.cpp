@@ -56,7 +56,7 @@ public:
 
         if (m_pagesize) {
             params[0].name=HAM_PARAM_PAGESIZE;
-            params[0].value=m_pagesize;
+            params[0].value.size=m_pagesize;
         }
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
@@ -1171,7 +1171,7 @@ public:
 
         if (m_pagesize) {
             params[0].name=HAM_PARAM_PAGESIZE;
-            params[0].value=m_pagesize;
+            params[0].value.size=m_pagesize;
         }
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));

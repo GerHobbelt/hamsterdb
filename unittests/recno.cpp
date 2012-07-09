@@ -494,7 +494,7 @@ public:
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_flags|HAM_RECORD_NUMBER, 0664, &p[0]));
 
-        p[0].value=9;
+        p[0].value.size=9;
         BFC_ASSERT_EQUAL(0,
                 ham_create_ex(m_db, BFC_OPATH(".test"),
                         m_flags|HAM_RECORD_NUMBER, 0664, &p[0]));
