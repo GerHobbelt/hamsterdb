@@ -492,7 +492,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\unittests\api110.cpp" />
     <ClCompile Include="..\..\unittests\approx.cpp" />
-    <ClCompile Include="..\..\unittests\bfc-sample.cpp" />
     <ClCompile Include="..\..\unittests\bfc-signal.c" />
     <ClCompile Include="..\..\unittests\bfc-testsuite.cpp" />
     <ClCompile Include="..\..\unittests\blob.cpp" />
@@ -524,7 +523,6 @@
     <ClCompile Include="..\..\unittests\page.cpp" />
     <ClCompile Include="..\..\unittests\partial.cpp" />
     <ClCompile Include="..\..\unittests\recno.cpp" />
-    <ClCompile Include="..\..\unittests\recovery.cpp" />
     <ClCompile Include="..\..\unittests\remote.cpp" />
     <ClCompile Include="..\..\unittests\threading.cpp" />
     <ClCompile Include="..\..\unittests\txn.cpp" />

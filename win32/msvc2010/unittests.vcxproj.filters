@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\unittests\api110.cpp" />
+    <ClCompile Include="..\..\unittests\approx.cpp" />
+    <ClCompile Include="..\..\unittests\bfc-signal.c" />
+    <ClCompile Include="..\..\unittests\bfc-testsuite.cpp" />
+    <ClCompile Include="..\..\unittests\blob.cpp" />
+    <ClCompile Include="..\..\unittests\btree_cursor.cpp" />
+    <ClCompile Include="..\..\unittests\btree_erase.cpp" />
+    <ClCompile Include="..\..\unittests\btree_insert.cpp" />
+    <ClCompile Include="..\..\unittests\btree_key.cpp" />
+    <ClCompile Include="..\..\unittests\cache.cpp" />
+    <ClCompile Include="..\..\unittests\changeset.cpp" />
+    <ClCompile Include="..\..\unittests\check.cpp" />
+    <ClCompile Include="..\..\unittests\cppapi.cpp" />
+    <ClCompile Include="..\..\unittests\cursor.cpp" />
+    <ClCompile Include="..\..\unittests\db.cpp" />
+    <ClCompile Include="..\..\unittests\device.cpp" />
+    <ClCompile Include="..\..\unittests\duplicates.cpp" />
+    <ClCompile Include="..\..\unittests\empty_sample.cpp" />
+    <ClCompile Include="..\..\unittests\endian.cpp" />
+    <ClCompile Include="..\..\unittests\env.cpp" />
+    <ClCompile Include="..\..\unittests\error.cpp" />
+    <ClCompile Include="..\..\unittests\extkeys.cpp" />
+    <ClCompile Include="..\..\unittests\filter.cpp" />
+    <ClCompile Include="..\..\unittests\freelist.cpp" />
+    <ClCompile Include="..\..\unittests\hamsterdb.cpp" />
+    <ClCompile Include="..\..\unittests\journal.cpp" />
+    <ClCompile Include="..\..\unittests\log.cpp" />
+    <ClCompile Include="..\..\unittests\main.cpp" />
+    <ClCompile Include="..\..\unittests\misc.cpp" />
+    <ClCompile Include="..\..\unittests\os.cpp" />
+    <ClCompile Include="..\..\unittests\page.cpp" />
+    <ClCompile Include="..\..\unittests\partial.cpp" />
+    <ClCompile Include="..\..\unittests\recno.cpp" />
+    <ClCompile Include="..\..\unittests\remote.cpp" />
+    <ClCompile Include="..\..\unittests\threading.cpp" />
+    <ClCompile Include="..\..\unittests\txn.cpp" />
+    <ClCompile Include="..\..\unittests\txn_cursor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\unittests\bfc-signal.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\unittests\bfc-testsuite.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\unittests\hamster_fixture.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\unittests\os.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{76495001-8817-42e8-8fe8-c0085b4aa099}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

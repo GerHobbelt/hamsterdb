@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\server\hamserver.cc" />
+    <ClCompile Include="..\..\src\server\os.c" />
+    <ClCompile Include="..\..\src\protocol\protocol.cc">
+      <Filter>protocol</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\server\os.h" />
+    <ClInclude Include="..\..\src\protocol\protocol.h">
+      <Filter>protocol</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\server\Makefile.am" />
+    <None Include="..\..\src\protocol\Makefile.am">
+      <Filter>protocol</Filter>
+    </None>
+    <None Include="..\..\src\protocol\messages.proto">
+      <Filter>protocol</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="protocol">
+      <UniqueIdentifier>{91db59e6-32fe-4eb3-9520-3a3c5497ee4b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
