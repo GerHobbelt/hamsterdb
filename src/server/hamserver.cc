@@ -28,10 +28,6 @@
 #define MAX_ENVIRONMENTS    128
 #define MAX_DATABASES       512
 
-static const char *standard_reply = "HTTP/1.1 200 OK\r\n"
-                                    "Content-Type: text/plain\r\n"
-                                    "Connection: close\r\n\r\n";
-
 #define HANDLE_TYPE_DATABASE 1
 #define HANDLE_TYPE_TRANSACTION 2
 #define HANDLE_TYPE_CURSOR 3
@@ -129,8 +125,13 @@ send_wrapper(ham_env_t *henv, struct mg_connection *conn,
 
     ham_trace(("type %u: sending %d bytes",
                 proto_get_type(wrapper), data_size));
-    mg_printf(conn, "%s", standard_reply);
-    mg_write(conn, data, data_size);
+
+	mg_connection_must_close(conn);
+	mg_add_response_header(conn, 0, "Content-Type", "text/plain");
+	mg_add_response_header(conn, 0, "Connection", "close");
+	mg_write_http_response_head(conn, 200, 0);
+
+	mg_write(conn, data, data_size);
 
     env->get_allocator()->free(data);
 }
@@ -671,7 +672,7 @@ handle_db_get_key_count(struct env_t *envh, struct mg_connection *conn,
         }
     }
 
-    reply=proto_init_db_get_key_count_reply(st, keycount);
+    reply=proto_init_db_get_key_count_reply(st, st ? 0 : keycount);
     send_wrapper(envh->env, conn, reply);
     proto_delete(reply);
 }

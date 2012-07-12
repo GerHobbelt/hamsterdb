@@ -27,6 +27,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 
 noinst_LTLIBRARIES = libmongoose.la
 
-libmongoose_la_SOURCES = mongoose/mongoose.c
+libmongoose_la_SOURCES = mongoose/mongoose_ex.c
 
 
