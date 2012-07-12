@@ -1,0 +1,10 @@
+*.txt           text
+*.vcproj        eol=crlf
+*.vcxproj       eol=crlf
+*.sln           eol=crlf
+*.sh            eol=lf
+*.am            eol=lf
+*.ac            eol=lf
+*.in            eol=lf
+Makefile        eol=lf
+configure       eol=lf
