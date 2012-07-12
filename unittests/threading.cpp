@@ -34,36 +34,37 @@ public:
 public:
     static boost::thread_specific_ptr<boost::thread::id> ms_tls;
 
-    static void tlsThread() {
-        if (!ms_tls.get())
-            ms_tls.reset(new boost::thread::id());
-        *ms_tls.get()=boost::this_thread::get_id();
-#if defined(WIN32) || defined(_WIN32)
-		Sleep(1000);
-#else
-		sleep(1);
-#endif
-		assert(*ms_tls.get()==boost::this_thread::get_id());
-    }
-
-    void tlsTest() {
-        Thread thread0(tlsThread);
-        Thread thread1(tlsThread);
-        Thread thread2(tlsThread);
-        Thread thread3(tlsThread);
-        Thread thread4(tlsThread);
-        Thread thread5(tlsThread);
-
-        thread0.join();
-        thread1.join();
-        thread2.join();
-        thread3.join();
-        thread4.join();
-        thread5.join();
-    }
-
+    void tlsTest(void);
 };
 
+static void tlsThread(void) {
+    if (!ThreadingTest::ms_tls.get())
+        ThreadingTest::ms_tls.reset(new boost::thread::id());
+    *ThreadingTest::ms_tls.get()=boost::this_thread::get_id();
+#if defined(WIN32) || defined(_WIN32)
+	Sleep(1000);
+#else
+	sleep(1);
+#endif
+	assert(*ThreadingTest::ms_tls.get()==boost::this_thread::get_id());
+}
+
 boost::thread_specific_ptr<boost::thread::id> ThreadingTest::ms_tls;
+
+void ThreadingTest::tlsTest(void) {
+    Thread thread0(tlsThread);
+    Thread thread1(tlsThread);
+    Thread thread2(tlsThread);
+    Thread thread3(tlsThread);
+    Thread thread4(tlsThread);
+    Thread thread5(tlsThread);
+
+    thread0.join();
+    thread1.join();
+    thread2.join();
+    thread3.join();
+    thread4.join();
+    thread5.join();
+}
 
 BFC_REGISTER_FIXTURE(ThreadingTest);
