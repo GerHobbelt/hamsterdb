@@ -51,7 +51,7 @@ Journal::create()
         }
     }
 
-    return (st);
+    return (0);
 }
 
 ham_status_t

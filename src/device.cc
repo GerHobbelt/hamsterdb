@@ -69,7 +69,7 @@ DeviceImplDisk::read(ham_offset_t offset, void *buffer, ham_offset_t size)
 ham_status_t
 DeviceImplDisk::read_page(Page *page)
 {
-    ham_u8_t *buffer;
+    ham_u8_t *buffer = NULL;
     ham_status_t st;
     ham_file_filter_t *head=0;
     ham_size_t size=m_pagesize;
