@@ -15,9 +15,6 @@
 
 #define PURGE_THRESHOLD       (500 * 1024 * 1024) /* 500 mb */
 #define DUMMY_LSN                               1
-#define SHITTY_HACK_FIX_ME                    999
-#define SHITTY_HACK_DONT_MOVE_DUPLICATE 0xf000000
-#define SHITTY_HACK_REACHED_EOF         0xf100000
 
 typedef struct
 {
@@ -580,6 +577,7 @@ done:
     /* initialize the page; also set the 'dirty' flag to force logging */
     page->set_type(type);
     page->set_dirty(true);
+    page->set_db(db);
 
     /* clear the page with zeroes?  */
     if (flags&PAGE_CLEAR_WITH_ZERO)
@@ -796,8 +794,10 @@ __get_key_count_txn(txn_opnode_t *node, void *data)
             ; /* nop */
         else if ((txn_get_flags(optxn)&TXN_STATE_COMMITTED)
                     || (kc->txn==optxn)) {
+            if (txn_op_get_flags(op)&TXN_OP_FLUSHED)
+                ; /* nop */
             /* if key was erased then it doesn't exist */
-            if (txn_op_get_flags(op)&TXN_OP_ERASE)
+            else if (txn_op_get_flags(op)&TXN_OP_ERASE)
                 return;
             else if (txn_op_get_flags(op)&TXN_OP_NOP)
                 ; /* nop */
@@ -880,7 +880,9 @@ db_check_insert_conflicts(Database *db, Transaction *txn,
                     || (txn==optxn)) {
             /* if key was erased then it doesn't exist and can be
              * inserted without problems */
-            if (txn_op_get_flags(op)&TXN_OP_ERASE)
+            if (txn_op_get_flags(op)&TXN_OP_FLUSHED)
+                ; /* nop */
+            else if (txn_op_get_flags(op)&TXN_OP_ERASE)
                 return (0);
             else if (txn_op_get_flags(op)&TXN_OP_NOP)
                 ; /* nop */
@@ -949,9 +951,11 @@ db_check_erase_conflicts(Database *db, Transaction *txn,
             ; /* nop */
         else if ((txn_get_flags(optxn)&TXN_STATE_COMMITTED)
                     || (txn==optxn)) {
+            if (txn_op_get_flags(op)&TXN_OP_FLUSHED)
+                ; /* nop */
             /* if key was erased then it doesn't exist and we fail with
              * an error */
-            if (txn_op_get_flags(op)&TXN_OP_ERASE)
+            else if (txn_op_get_flags(op)&TXN_OP_ERASE)
                 return (HAM_KEY_NOT_FOUND);
             else if (txn_op_get_flags(op)&TXN_OP_NOP)
                 ; /* nop */
@@ -1330,14 +1334,16 @@ retry:
             ; /* nop */
         else if ((txn_get_flags(optxn)&TXN_STATE_COMMITTED)
                     || (txn==optxn)) {
+            if (txn_op_get_flags(op)&TXN_OP_FLUSHED)
+                ; /* nop */
             /* if key was erased then it doesn't exist and we can return
              * immediately
              *
              * if an approximate match is requested then move to the next
              * or previous node
              */
-            if (txn_op_get_flags(op)&TXN_OP_ERASE) {
-                if (first_loop
+            else if (txn_op_get_flags(op)&TXN_OP_ERASE) {
+                if (first_loop 
                         && !(ham_key_get_intflags(key)&KEY_IS_APPROXIMATE))
                     exact_is_erased=true;
                 first_loop=false;
@@ -1404,10 +1410,17 @@ retry:
         // now lookup in the btree
         st=be->find(txn, key, record, flags);
         if (st==HAM_KEY_NOT_FOUND) {
-            if (txnkey.data)
+            if (!(key->flags&HAM_KEY_USER_ALLOC) && txnkey.data) {
+                arena->resize(txnkey.size);
+                key->data=arena->get_ptr();
+            }
+            if (txnkey.data) {
+                memcpy(key->data, txnkey.data, txnkey.size);
                 db->get_env()->get_allocator()->free(txnkey.data);
-            ham_key_set_intflags(key,
-                (ham_key_get_intflags(key)|KEY_IS_APPROXIMATE));
+            }
+            key->size=txnkey.size;
+            key->_flags=txnkey._flags;
+
             return (copy_record(db, txn, op, record));
         }
         else if (st)
@@ -1449,7 +1462,7 @@ retry:
             return (st);
         }
         else { // use txn
-            if (!key->flags&HAM_KEY_USER_ALLOC && txnkey.data) {
+            if (!(key->flags&HAM_KEY_USER_ALLOC) && txnkey.data) {
                 arena->resize(txnkey.size);
                 key->data=arena->get_ptr();
             }
