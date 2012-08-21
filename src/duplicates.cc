@@ -10,18 +10,9 @@
  *
  */
 
-#include "config.h"
+#include "internal_preparation.h"
 
-#include <string.h>
-
-#include "blob.h"
-#include "db.h"
-#include "device.h"
-#include "env.h"
-#include "error.h"
-#include "freelist.h"
-#include "duplicates.h"
-
+namespace ham {
 
 ham_status_t
 DuplicateManager::get_table(dupe_table_t **table_ref, Page **page,
@@ -464,3 +455,5 @@ DuplicateManager::get_table(ham_offset_t table_id, dupe_table_t **ptable,
 
   return (0);
 }
+
+} // namespace ham

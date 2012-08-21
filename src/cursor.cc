@@ -12,6 +12,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 static ham_bool_t
 __btree_cursor_is_nil(btree_cursor_t *btc)

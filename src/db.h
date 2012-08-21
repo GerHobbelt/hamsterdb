@@ -683,7 +683,7 @@ class Database
                         source->size, source->_flags, dest);
             if (st)
                 return st;
-            ham_assert(dest->data!=0, ("invalid extended key"));
+            ham_assert1(dest->data!=0, ("invalid extended key"));
             /* dest->size is set by db->get_extended_key() */
             ham_assert(dest->size == source->size);
             /* the extended flag is set later, when this key is inserted */
@@ -893,7 +893,8 @@ db_default_dupe_compare(ham_db_t *db,
  * @return a NULL value in @a *page_ref and HAM_SUCCESS when the page
  *      could not be retrieved because the set conditions were not be
  *      met (see @ref DB_ONLY_FROM_CACHE)
- * @return one of the @ref ham_status_codes error codes as an error occurred.
+ * @return one of the @ref ham_status_codes error codes as an error 
+ * occurred and set @a *page_ref to NULL.
  */
 extern ham_status_t
 db_fetch_page(Page **page_ref, Database *db,
@@ -957,6 +958,11 @@ db_flush_all(Cache *cache, ham_u32_t flags);
  *
  * @note The page will be aligned at the current page size. Any wasted
  * space (due to the alignment) is added to the freelist.
+ *
+ * @return the allocated page in @a *page_ref and HAM_SUCCESS as a
+ *      function return value.
+ * @return one of the @ref ham_status_codes error codes as an error 
+ * occurred and set @a *page_ref to NULL.
  */
 extern ham_status_t
 db_alloc_page(Page **page_ref, Database *db,

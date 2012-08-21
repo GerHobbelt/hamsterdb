@@ -172,6 +172,7 @@ btree_erase_impl(BtreeBackend *be, Transaction *txn, ham_key_t *key,
     if (hints.try_fast_track)
     {
         /* TODO */
+        ham_assert1(1, ("TODO"));
     }
 
     /*
@@ -182,7 +183,7 @@ btree_erase_impl(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         btree_stats_update_erase_fail(db, &hints);
         return HAM_KEY_NOT_FOUND;
     }
-    st=db_fetch_page(&root, db, rootaddr, flags);
+    st=db_fetch_page(&root, db, rootaddr, 0); // !! got the wrong flags before !!
     if (st)
         return (st);
 
@@ -643,8 +644,8 @@ my_merge_pages(Page **newpage_ref, Page *page, Page *sibpage,
 
     page->set_dirty(true);
     sibpage->set_dirty(true);
-    ham_assert(btree_node_get_count(node)+c <= 0xFFFF);
-    btree_node_set_count(node, btree_node_get_count(node)+c);
+    ham_assert(btree_node_get_count(node) + c <= 0xFFFF);
+    btree_node_set_count(node, btree_node_get_count(node) + c);
     btree_node_set_count(sibnode, 0);
 
     /*
@@ -1272,8 +1273,8 @@ my_remove_entry(Page *page, ham_s32_t slot,
     if ((st=btree_uncouple_all_cursors(page, 0)))
         return st;
 
-    ham_assert(slot>=0);
-    ham_assert(slot<btree_node_get_count(node));
+    ham_assert1(slot >= 0, ("invalid slot %ld", slot));
+    ham_assert1(slot < btree_node_get_count(node), ("invalid slot %ld", slot));
 
     /*
      * leaf page: get rid of the record

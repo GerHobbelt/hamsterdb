@@ -16,6 +16,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 /**
  * enumerate a whole level in the tree - start with "page" and traverse

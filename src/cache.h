@@ -50,7 +50,7 @@ class Cache
      * @return 0 if the page was not cached
      */
     Page *get_page(ham_offset_t address, ham_u32_t flags=0) {
-      ham_u64_t hash = calc_hash(address);
+      unsigned int hash = calc_hash(address);
       Page *page = m_buckets[hash];
       while (page) {
         if (page->get_self() == address)
@@ -78,7 +78,7 @@ class Cache
 
     /** store a page in the cache */
     void put_page(Page *page) {
-      ham_u64_t hash = calc_hash(page->get_self());
+      unsigned int hash = calc_hash(page->get_self());
 
       ham_assert(page->get_pers());
 
@@ -127,7 +127,7 @@ class Cache
 
       /* remove the page from the cache buckets */
       if (page->get_self()) {
-        ham_u64_t hash = calc_hash(page->get_self());
+        unsigned int hash = calc_hash(page->get_self());
         if (page->is_in_list(m_buckets[hash], Page::LIST_BUCKET)) {
           m_buckets[hash] = page->list_remove(m_buckets[hash],
                         Page::LIST_BUCKET);
@@ -276,8 +276,8 @@ class Cache
     }
 
     /** calculate the hash of a page address */
-    ham_u64_t calc_hash(ham_offset_t o) {
-      return (o % CACHE_BUCKET_SIZE);
+    unsigned int calc_hash(ham_offset_t o) {
+      return (unsigned int)(o % CACHE_BUCKET_SIZE);
     }
 
     /** set the HEAD of the global page list */

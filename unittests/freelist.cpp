@@ -24,6 +24,7 @@
 #include "hamster_fixture.hpp"
 
 using namespace bfc;
+using namespace ham;
 
 class FreelistBaseTest : public hamsterDB_fixture
 {
@@ -118,7 +119,7 @@ public:
         for (int i=0; i<10; i++) {
             BFC_ASSERT_EQUAL(0,
                     m_freelist->mark_free((Database *)m_db,
-                            ps+i*DB_CHUNKSIZE, DB_CHUNKSIZE, HAM_FALSE));
+                            ps+i*DB_CHUNKSIZE, DB_CHUNKSIZE));
         }
 
         for (int i=0; i<10; i++) {
@@ -144,7 +145,7 @@ public:
 
         BFC_ASSERT_EQUAL(0,
                     m_freelist->mark_free((Database *)m_db,
-                            ps, ps, HAM_FALSE));
+                            ps, ps));
         ham_offset_t o;
         BFC_ASSERT_EQUAL(0, m_freelist->alloc_page(&o, (Database *)m_db));
         BFC_ASSERT_EQUAL((ham_offset_t)ps, o);
@@ -160,7 +161,7 @@ public:
         for (int i=60; i<70; i++) {
             BFC_ASSERT_EQUAL(0,
                     m_freelist->mark_free((Database *)m_db,
-                            ps+i*DB_CHUNKSIZE, DB_CHUNKSIZE, HAM_FALSE));
+                            ps+i*DB_CHUNKSIZE, DB_CHUNKSIZE));
         }
 
         for (int i=60; i<70; i++) {
@@ -188,7 +189,7 @@ public:
         for (int i=60; i<70; i++) {
             BFC_ASSERT_EQUAL_I(0,
                     m_freelist->mark_free((Database *)m_db, offset,
-                        (i+1)*DB_CHUNKSIZE, HAM_FALSE), i);
+                        (i+1)*DB_CHUNKSIZE), i);
             offset+=(i+1)*DB_CHUNKSIZE;
         }
 
@@ -216,7 +217,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
 
         BFC_ASSERT_EQUAL(0,
-               m_freelist->mark_free((Database *)m_db, o, DB_CHUNKSIZE, false));
+               m_freelist->mark_free((Database *)m_db, o, DB_CHUNKSIZE));
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn, 0));
 
         /* need to clear the changeset, otherwise ham_close() will complain */
@@ -234,7 +235,7 @@ public:
         BFC_ASSERT_EQUAL((ham_offset_t)0, addr);
 
         BFC_ASSERT_EQUAL(0,
-               m_freelist->mark_free((Database *)m_db, o*2, DB_CHUNKSIZE, false));
+               m_freelist->mark_free((Database *)m_db, o*2, DB_CHUNKSIZE));
 
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn, 0));
         /* need to clear the changeset, otherwise ham_close() will complain */
@@ -259,7 +260,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
 
         BFC_ASSERT_EQUAL(0,
-               m_freelist->mark_free((Database *)m_db, o*3, DB_CHUNKSIZE, false));
+               m_freelist->mark_free((Database *)m_db, o*3, DB_CHUNKSIZE));
         /*
          * The hinters must be disabled for this test to succeed; at least
          * they need to be instructed to kick in late.
@@ -289,7 +290,7 @@ public:
         BFC_ASSERT_EQUAL((ham_offset_t)0, addr);
 
         BFC_ASSERT_EQUAL(0,
-               m_freelist->mark_free((Database *)m_db, o*10, DB_CHUNKSIZE, false));
+               m_freelist->mark_free((Database *)m_db, o*10, DB_CHUNKSIZE));
         BFC_ASSERT_EQUAL(0,
                 m_freelist->alloc_area(&addr, (Database *)m_db, DB_CHUNKSIZE));
         BFC_ASSERT_EQUAL(10*o, addr);
@@ -314,7 +315,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
 
         BFC_ASSERT_EQUAL(0,
-               m_freelist->mark_free((Database *)m_db, o, DB_CHUNKSIZE*2, false));
+               m_freelist->mark_free((Database *)m_db, o, DB_CHUNKSIZE*2));
         /*
          * The hinters must be disabled for this test to succeed; at least
          * they need to be instructed to kick in late.
@@ -363,7 +364,7 @@ public:
         BFC_ASSERT_EQUAL((ham_offset_t)o+DB_CHUNKSIZE, addr);
 
         BFC_ASSERT_EQUAL(0,
-               m_freelist->mark_free((Database *)m_db, o, DB_CHUNKSIZE, false));
+               m_freelist->mark_free((Database *)m_db, o, DB_CHUNKSIZE));
         BFC_ASSERT_EQUAL(0,
                 m_freelist->alloc_area(&addr, (Database *)m_db, DB_CHUNKSIZE));
         BFC_ASSERT_EQUAL(o, addr);
@@ -377,7 +378,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
         // this code snippet crashed in an acceptance test
         BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, 2036736,
-                    ((Environment *)m_env)->get_pagesize()-1024, HAM_FALSE));
+                    ((Environment *)m_env)->get_pagesize()-1024));
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn, 0));
     }
 
@@ -388,7 +389,7 @@ public:
         ham_txn_t *txn;
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
 
-        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps, false));
+        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps));
         BFC_ASSERT_EQUAL(0, m_freelist->alloc_page(&addr, (Database *)m_db));
         BFC_ASSERT_EQUAL(ps, addr);
         BFC_ASSERT_EQUAL(0,
@@ -404,7 +405,7 @@ public:
         ham_txn_t *txn;
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
 
-        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps*2, false));
+        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps*2));
         BFC_ASSERT_EQUAL(0, m_freelist->alloc_page(&addr, (Database *)m_db));
         BFC_ASSERT_EQUAL((ham_u64_t)ps*1, addr);
         BFC_ASSERT_EQUAL(0, m_freelist->alloc_page(&addr, (Database *)m_db));
@@ -441,9 +442,9 @@ public:
         ham_txn_t *txn;
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
 
-        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps, false));
-        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps, false));
-        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps, false));
+        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps));
+        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps));
+        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps));
         ham_offset_t o;
         BFC_ASSERT_EQUAL(0, m_freelist->alloc_page(&o, (Database *)m_db));
         BFC_ASSERT_EQUAL((ham_offset_t)ps, o);
@@ -455,7 +456,7 @@ public:
         ham_size_t ps=((Environment *)m_env)->get_pagesize();
         ham_txn_t *txn;
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, m_env, 0, 0, 0));
-        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps, false));
+        BFC_ASSERT_EQUAL(0, m_freelist->mark_free((Database *)m_db, ps, ps));
         BFC_ASSERT_EQUAL(0, ham_txn_commit(txn, 0));
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
         BFC_ASSERT_EQUAL(0, open(HAM_ENABLE_TRANSACTIONS));

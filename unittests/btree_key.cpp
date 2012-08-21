@@ -26,7 +26,7 @@
 #include "hamster_fixture.hpp"
 
 using namespace bfc;
-namespace ham {
+using namespace ham;
 
 class KeyTest : public hamsterDB_fixture
 {
@@ -644,10 +644,7 @@ public:
         BFC_ASSERT_EQUAL((ham_u8_t)0, key_get_flags(&key));
         BFC_ASSERT_EQUAL((ham_offset_t)0, key_get_ptr(&key));
     }
-
 };
-
-} // namespace ham
 
 BFC_REGISTER_FIXTURE(KeyTest);
 

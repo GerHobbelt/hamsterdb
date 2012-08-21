@@ -11,6 +11,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 #define induce(id)                                                  \
   while (m_inducer) {                                               \

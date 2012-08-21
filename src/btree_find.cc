@@ -15,6 +15,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 ham_status_t
 BtreeBackend::do_find(Transaction *txn, Cursor *hcursor, ham_key_t *key,
@@ -46,7 +48,6 @@ BtreeBackend::do_find(Transaction *txn, Cursor *hcursor, ham_key_t *key,
          * should be discarded.
          */
         st = db_fetch_page(&page, db, hints.leaf_page_addr, DB_ONLY_FROM_CACHE);
-        ham_assert1(st ? !page : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
         if (st)
             return st;
         if (page) {
@@ -90,8 +91,6 @@ no_fast_track:
 
         /* load the root page */
         st=db_fetch_page(&page, db, get_rootpage(), 0);
-        ham_assert1(!st ? page != NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
-        ham_assert1(st ? page == NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
         if (st) {
             btree_stats_update_find_fail(db, &hints);
             return (st);
@@ -108,9 +107,9 @@ no_fast_track:
             for (;;) {
                 hints.cost++;
                 st=btree_traverse_tree(&page, 0, db, page, key);
-                if (!page) {
+                if (st) {
                     btree_stats_update_find_fail(db, &hints);
-                    return st ? st : HAM_KEY_NOT_FOUND;
+                    return st;
                 }
 
                 node=page_get_btree_node(page);
@@ -174,7 +173,6 @@ no_fast_track:
 
                     hints.cost++;
                     st = db_fetch_page(&page, db, btree_node_get_left(node), 0);
-                    ham_assert1(st ? !page : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
                     if (st) {
                         btree_stats_update_find_fail(db, &hints);
                         return (st);

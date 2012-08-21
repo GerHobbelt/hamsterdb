@@ -470,8 +470,7 @@ BITSCAN_LSBit8(ham_u8_t v, ham_u32_t pos)
 }
 
 ham_status_t
-Freelist::mark_free(Database *db, ham_offset_t address, ham_size_t size,
-                ham_bool_t overwrite)
+Freelist::mark_free(Database *db, ham_offset_t address, ham_size_t size)
 {
     ham_status_t st;
     Page *page=0;
@@ -533,7 +532,7 @@ Freelist::mark_free(Database *db, ham_offset_t address, ham_size_t size,
         ham_assert(address>=freel_get_start_address(fp));
 
         /* set the bits and update the values in the cache and the fp */
-        s = set_bits(entry, fp, overwrite,
+        s = set_bits(entry, fp, 
                 (ham_size_t)(address-freel_get_start_address(fp))
                         / DB_CHUNKSIZE,
                 size/DB_CHUNKSIZE, true, &hints);
@@ -750,7 +749,7 @@ Freelist::alloc_area(ham_offset_t *addr_ref, Database *db, ham_size_t size,
                         fl = entry->allocated_bits;
                     else
                         fl = len;
-                    set_bits(entry, fp, false, 0, fl, false, &hints);
+                    set_bits(entry, fp, 0, fl, false, &hints);
                     freel_set_allocated_bits(fp,
                               (ham_u32_t)(freel_get_allocated_bits(fp) - fl));
                     entry->allocated_bits = freel_get_allocated_bits(fp);
@@ -803,7 +802,7 @@ Freelist::alloc_area(ham_offset_t *addr_ref, Database *db, ham_size_t size,
              */
             s = search_bits(entry, fp, size/DB_CHUNKSIZE, &hints);
             if (s != -1) {
-                set_bits(entry, fp, false, s, size/DB_CHUNKSIZE, false, &hints);
+                set_bits(entry, fp, s, size/DB_CHUNKSIZE, false, &hints);
                 if (page)
                     __page_set_dirty(page);
                 else
@@ -2499,10 +2498,10 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                  */
                 l = 8 * (ham_u32_t)(p - ((ham_u8_t *)p64)); /* ADD: the number of all-0 bytes we traversed + START offset */
 
-                ham_assert(p[0]);
+                ham_assert1(p[0], ("we are sure we will hit a match in here!"));
 
                 for (r = 0;; r++) {
-                    ham_assert(r < 8);
+                    ham_assert1(r < 8, ("we are sure we will hit a match in here!"));
                     if (p[0] & (1 << r)) {
                         l += r; /* lowest (last) okay probe location */
                         break;
@@ -2552,7 +2551,7 @@ Freelist::search_bits(FreelistEntry *entry, FreelistPayload *f,
                  */
                 l = 8 * (ham_u32_t)(p - ((ham_u8_t *)p64)); /* ADD: the number of all-0 bytes we traversed + START offset */
 
-                ham_assert(p[0]);
+                ham_assert1(p[0], ("we are sure we will hit a match in here!"));
 
                 for (r = 0;; r++) {
                     ham_assert(r < 8);
@@ -2933,7 +2932,9 @@ Freelist::get_entry(FreelistEntry **entry_ref, ham_offset_t address)
         add /= DB_CHUNKSIZE;
 
         single_size_bits=get_entry_maxspan();
-        ham_assert(((single_size_bits/8) % sizeof(ham_u64_t)) == 0);
+        ham_assert1(((single_size_bits/8) % sizeof(ham_u64_t)) == 0,
+                ("freelist bitarray size must be == 0 MOD sizeof(ham_u64_t) "
+                 "due to the scan algorithm"));
 
         add += single_size_bits - 1;
         add /= single_size_bits;
@@ -2974,7 +2975,9 @@ Freelist::resize(ham_size_t new_count)
 {
     ham_size_t i;
     ham_size_t size_bits = get_entry_maxspan();
-    ham_assert(((size_bits/8) % sizeof(ham_u64_t)) == 0);
+    ham_assert1(((size_bits/8) % sizeof(ham_u64_t)) == 0,
+            ("freelist bitarray size must be == 0 MOD sizeof(ham_u64_t) "
+             "due to the scan algorithm"));
 
     ham_assert(new_count > m_entries.size());
 
@@ -3004,7 +3007,9 @@ Freelist::alloc_page(Page **page_ref, FreelistEntry *entry)
     FreelistPayload *fp;
     ham_size_t size_bits=get_entry_maxspan();
 
-    ham_assert(((size_bits/8) % sizeof(ham_u64_t)) == 0);
+    ham_assert1(((size_bits/8) % sizeof(ham_u64_t)) == 0,
+            ("freelist bitarray size must be == 0 MOD sizeof(ham_u64_t) "
+             "due to the scan algorithm"));
 
     *page_ref = 0;
 
@@ -3075,7 +3080,7 @@ Freelist::alloc_page(Page **page_ref, FreelistEntry *entry)
 
 ham_size_t
 Freelist::set_bits(FreelistEntry *entry, FreelistPayload *fp,
-            bool overwrite, ham_size_t start_bit, ham_size_t size_bits,
+            ham_size_t start_bit, ham_size_t size_bits,
             bool set, freelist_hints_t *hints)
 {
     ham_size_t i;

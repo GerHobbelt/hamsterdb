@@ -67,13 +67,9 @@ class Freelist
     /**
      * mark an area in the file as "free"
      *
-     * if 'overwrite' is true, will not assert that the bits are all
-     * set to zero
-     *
      * @note will assert that address and size are DB_CHUNKSIZE-aligned!
      */
-    ham_status_t mark_free(Database *db, ham_offset_t address, ham_size_t size,
-                    ham_bool_t overwrite);
+    ham_status_t mark_free(Database *db, ham_offset_t address, ham_size_t size);
 
     /**
      * try to allocate (possibly aligned) space from the freelist,
@@ -143,7 +139,7 @@ class Freelist
 
     /** sets (or resets) all bits in a given range */
     ham_size_t set_bits(FreelistEntry *entry, FreelistPayload *fp,
-                bool overwrite, ham_size_t start_bit, ham_size_t size_bits,
+                ham_size_t start_bit, ham_size_t size_bits,
                 bool set, freelist_hints_t *hints);
 
     /** searches for a free bit array in the whole list */

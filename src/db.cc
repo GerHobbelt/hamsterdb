@@ -608,6 +608,8 @@ db_alloc_page(Page **page_ref, Database *db,
 {
     ham_status_t st;
     st=db_alloc_page_impl(page_ref, db->get_env(), db, type, flags);
+	ham_assert1(!st ? *page_ref != NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	ham_assert1(st ? *page_ref == NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
     if (st)
         return (st);
 
@@ -617,7 +619,7 @@ db_alloc_page(Page **page_ref, Database *db,
     if ((*page_ref)->get_self()==be->get_rootpage()
             && !(db->get_rt_flags()&HAM_READ_ONLY))
         (*page_ref)->set_type(Page::TYPE_B_ROOT);
-    return (0);
+    return (HAM_SUCCESS);
 }
 
 ham_status_t
@@ -679,7 +681,11 @@ ham_status_t
 db_fetch_page(Page **page_ref, Database *db,
                 ham_offset_t address, ham_u32_t flags)
 {
-    return (db_fetch_page_impl(page_ref, db->get_env(), db, address, flags));
+    ham_status_t st = db_fetch_page_impl(page_ref, db->get_env(), db, address, flags);
+	if (!(flags & DB_ONLY_FROM_CACHE))
+		ham_assert1(!st ? *page_ref != NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	ham_assert1(st ? *page_ref == NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	return st;
 }
 
 static bool

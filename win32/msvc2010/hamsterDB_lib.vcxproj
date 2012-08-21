@@ -457,6 +457,7 @@
     <ClInclude Include="..\..\src\cursor.h" />
     <ClInclude Include="..\..\src\db.h" />
     <ClInclude Include="..\..\src\device.h" />
+    <ClInclude Include="..\..\src\duplicates.h" />
     <ClInclude Include="..\..\src\endianswap.h" />
     <ClInclude Include="..\..\src\env.h" />
     <ClInclude Include="..\..\src\error.h" />
@@ -601,6 +602,7 @@
     <ClCompile Include="..\..\src\cursor.cc" />
     <ClCompile Include="..\..\src\db.cc" />
     <ClCompile Include="..\..\src\device.cc" />
+    <ClCompile Include="..\..\src\duplicates.cc" />
     <ClCompile Include="..\..\src\env.cc" />
     <ClCompile Include="..\..\src\error.cc" />
     <ClCompile Include="..\..\src\freelist.cc" />

@@ -33,7 +33,7 @@ class BtreeCheckAction
         ham_offset_t ptr_left;
         Database *db=m_backend->get_db();
 
-        ham_assert(m_backend->get_rootpage()!=0);
+        ham_assert(m_backend->get_rootpage() != 0);
 
         /* get the root page of the tree */
         st=db_fetch_page(&page, db, m_backend->get_rootpage(), 0);

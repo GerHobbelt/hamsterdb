@@ -12,6 +12,8 @@
 
 #include "internal_preparation.h"
 
+#include <ham/hamsterdb_stats.h>
+
 #if HAM_ENABLE_REMOTE
 #  define CURL_STATICLIB /* otherwise libcurl uses wrong __declspec */
 #  include <curl/curl.h>
@@ -29,6 +31,8 @@
 #    include "../3rdparty/zlib/zlib.h"
 #  endif
 #endif
+
+using namespace ham;
 
 
 /*
@@ -2043,7 +2047,7 @@ __aes_after_read_cb(ham_env_t *henv, ham_file_filter_t *filter,
     ham_size_t i;
     ham_size_t blocks=page_size/16;
 
-    ham_assert(page_size%16==0);
+    ham_assert1(page_size % 16 == 0, ("bogus pagesize"));
 
     for (i = 0; i < blocks; i++) {
         aes_decrypt(&page_data[i*16], (ham_u8_t *)filter->userdata,
@@ -3571,7 +3575,7 @@ ham_clean_statistics_datarec(ham_statistics_t *s)
     if (s->_free_func)
         s->_free_func(s);
 
-    ham_assert(s->_free_func == 0,
+    ham_assert1(s->_free_func == 0,
         ("the cleanup function must eradicate itself from the struct"));
 
     return (0);

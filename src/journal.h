@@ -148,10 +148,11 @@ class Journal
       ham_status_t st;
 
       for (int i = 0; i < 2; i++) {
-        if ((st = clear_file(i)))
+		st = clear_file(i);
+        if (st)
           return (st);
       }
-      return (0);
+      return (HAM_SUCCESS);
     }
 
     /** Closes the journal, frees all allocated resources */

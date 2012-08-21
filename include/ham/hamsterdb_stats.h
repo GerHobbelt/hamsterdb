@@ -28,12 +28,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-namespace ham {
 #endif
-
-struct ham_statistics_t;
-typedef struct ham_statistics_t ham_statistics_t;
-
 
 /**
  * function prototype for the hamsterdb-specified @ref ham_statistics_t cleanup
@@ -537,7 +532,6 @@ ham_clean_statistics_datarec(ham_statistics_t *stats);
 
 
 #ifdef __cplusplus
-} // namespace ham
 } // extern "C"
 #endif
 

@@ -928,9 +928,9 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
             if (btree_cursor_is_coupled(cursor)) {
                 Page *page = btree_cursor_get_coupled_page(cursor);
                 btree_node_t *node = page_get_btree_node(page);
-                ham_assert(btree_node_is_leaf(node),
+                ham_assert1(btree_node_is_leaf(node),
                             ("cursor points to internal node"));
-                //ham_assert(!btree_node_get_right(node), ("cursor points to leaf node which is NOT the uppermost/last one"));
+                //ham_assert1(!btree_node_get_right(node), ("cursor points to leaf node which is NOT the uppermost/last one"));
                 /*
                  * if cursor is not coupled to the LAST (right-most) leaf
                  * in the Database, it does not make sense to append
@@ -961,9 +961,9 @@ btree_insert_get_hints(insert_hints_t *hints, Database *db, ham_key_t *key)
             if (btree_cursor_is_coupled(cursor)) {
                 Page *page = btree_cursor_get_coupled_page(cursor);
                 btree_node_t *node = page_get_btree_node(page);
-                ham_assert(btree_node_is_leaf(node),
+                ham_assert1(btree_node_is_leaf(node),
                         ("cursor points to internal node"));
-                //ham_assert(!btree_node_get_left(node), ("cursor points to leaf node which is NOT the lowest/first one"));
+                //ham_assert1(!btree_node_get_left(node), ("cursor points to leaf node which is NOT the lowest/first one"));
                 /*
                  * if cursor is not coupled to the FIRST (left-most) leaf
                  * in the Database, it does not make sense to prepend

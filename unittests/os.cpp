@@ -216,7 +216,7 @@ public:
         }
         for (i=0; i<10; i++) {
             memset(p1, i, ps);
-            st=os_mmap(fd, &mmaph, i*ps, ps, 0, &p2);
+            st=os_mmap(fd, &mmaph, i*ps, ps, false, &p2);
             BFC_ASSERT(st==0);
             BFC_ASSERT(0==memcmp(p1, p2, ps));
             st=os_munmap(&mmaph, p2, ps);
@@ -238,7 +238,7 @@ public:
         memset(page, 0x13, ps);
         BFC_ASSERT_EQUAL(0, os_pwrite(fd, 0, page, ps));
 
-        BFC_ASSERT_EQUAL(0, os_mmap(fd, &mmaph, 0, ps, 0, &mapped));
+        BFC_ASSERT_EQUAL(0, os_mmap(fd, &mmaph, 0, ps, false, &mapped));
         /* modify the page */
         memset(mapped, 0x42, ps);
         /* unmap */
@@ -272,7 +272,7 @@ public:
         for (i=0; i<10; i++) {
             memset(p1, i, ps);
             BFC_ASSERT_EQUAL(0, os_mmap(fd, &mmaph, i*ps, ps,
-                    HAM_READ_ONLY, &p2));
+                    !!HAM_READ_ONLY, &p2));
             BFC_ASSERT_EQUAL(0, memcmp(p1, p2, ps));
             BFC_ASSERT_EQUAL(0, os_munmap(&mmaph, p2, ps));
         }
@@ -308,7 +308,7 @@ public:
 
             p1=(ham_u8_t *)malloc((size_t)size);
             memset(p1, i, (size_t)size);
-            st=os_mmap(fd, &mmaph, addr, (ham_size_t)size, 0, &p2);
+            st=os_mmap(fd, &mmaph, addr, (ham_size_t)size, false, &p2);
             BFC_ASSERT(st==0);
             BFC_ASSERT(0==memcmp(p1, p2, (size_t)size));
             st=os_munmap(&mmaph, p2, (ham_size_t)size);
@@ -330,7 +330,7 @@ public:
         // on MacOS...
 #ifndef __MACH__
         BFC_ASSERT_EQUAL(HAM_IO_ERROR,
-                os_mmap(fd, &mmaph, 33, 66, 0, &page));
+                os_mmap(fd, &mmaph, 33, 66, false, &page));
 #endif
         BFC_ASSERT_EQUAL(0, os_close(fd));
     }

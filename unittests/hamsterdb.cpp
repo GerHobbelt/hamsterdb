@@ -29,6 +29,7 @@
 #include "hamster_fixture.hpp"
 
 using namespace bfc;
+using namespace ham;
 
 static int HAM_CALLCONV
 my_compare_func(ham_db_t *db,

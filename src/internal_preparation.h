@@ -104,6 +104,7 @@
 #include "changeset.h"
 #include "errorinducer.h"
 
+#include "duplicates.h"
 
 #ifdef __cplusplus
 extern "C" {

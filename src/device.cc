@@ -12,6 +12,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 ham_status_t
 DeviceImplDisk::alloc_page(Page *page)
@@ -85,7 +87,7 @@ DeviceImplDisk::read_page(Page *page)
    */
   if (!(m_device->m_flags&HAM_DISABLE_MMAP)) {
     st = os_mmap(m_fd, page->get_mmap_handle_ptr(), page->get_self(), size,
-                m_device->m_flags&HAM_READ_ONLY, &buffer);
+                !!(m_device->m_flags & HAM_READ_ONLY), &buffer);
     if (st && st != HAM_LIMITS_REACHED)
       return (st);
     if (st == HAM_LIMITS_REACHED) {

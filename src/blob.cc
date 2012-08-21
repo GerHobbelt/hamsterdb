@@ -12,6 +12,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 #define SMALLEST_CHUNK_SIZE  (sizeof(ham_offset_t) + sizeof(blob_t) + 1)
 
@@ -90,17 +92,17 @@ BlobManager::write_chunks(Page *page, ham_offset_t addr, bool allocated,
         chunk_size[i] -= writesize;
       }
       else {
-          ham_size_t s = chunk_size[i];
-          /* limit to the next page boundary */
-          if (s > pageid + pagesize - addr)
-            s = (ham_size_t)(pageid + pagesize - addr);
+        ham_size_t s = chunk_size[i];
+        /* limit to the next page boundary */
+        if (s > pageid + pagesize - addr)
+          s = (ham_size_t)(pageid + pagesize - addr);
 
-          st = device->write(addr, chunk_data[i], s);
-          if (st)
-            return st;
-          addr += s;
-          chunk_data[i] += s;
-          chunk_size[i] -= s;
+        st = device->write(addr, chunk_data[i], s);
+        if (st)
+          return st;
+        addr += s;
+        chunk_data[i] += s;
+        chunk_size[i] -= s;
       }
     }
   }
@@ -284,7 +286,7 @@ BlobManager::allocate(Database *db, ham_record_t *record, ham_u32_t flags,
       /* move the remaining space to the freelist */
       if (m_env->get_freelist())
         m_env->get_freelist()->mark_free(db, addr + alloc_size,
-                      m_env->get_pagesize() - alloc_size, false);
+                      m_env->get_pagesize() - alloc_size);
       blob_set_alloc_size(&hdr, alloc_size);
     }
     else {
@@ -304,7 +306,7 @@ BlobManager::allocate(Database *db, ham_record_t *record, ham_u32_t flags,
         if (diff > SMALLEST_CHUNK_SIZE) {
           if (m_env->get_freelist())
             m_env->get_freelist()->mark_free(db, addr + alloc_size,
-                          diff, false);
+                          diff);
           blob_set_alloc_size(&hdr, aligned - diff);
         }
         else {
@@ -535,7 +537,7 @@ BlobManager::read(Database *db, Transaction *txn, ham_offset_t blobid,
     return (0);
   }
 
-  ham_assert(blobid % DB_CHUNKSIZE==0);
+  ham_assert1(blobid % DB_CHUNKSIZE == 0, ("blobid is %llu", blobid));
 
   /* first step: read the blob header */
   st=read_chunk(0, &page, blobid, db,
@@ -608,7 +610,7 @@ BlobManager::get_datasize(Database *db, ham_offset_t blobid, ham_offset_t *size)
     return (0);
   }
 
-  ham_assert(blobid % DB_CHUNKSIZE == 0);
+  ham_assert1(blobid % DB_CHUNKSIZE == 0, ("blobid is %llu", blobid));
 
   /* read the blob header */
   st=read_chunk(0, &page, blobid, db, (ham_u8_t *)&hdr, sizeof(hdr));
@@ -661,7 +663,7 @@ BlobManager::overwrite(Database *db, ham_offset_t old_blobid,
       else {
         memmove(p + sizeof(blob_t), record->data, record->size);
       }
-      *new_blobid = (ham_offset_t)PTR_TO_U64(phdr);
+      *new_blobid = (ham_offset_t)PTR_TO_U64(phdr);  // MSVC: Conversion from 'ham::blob_t *' to 'ham_offset_t' is sign-extended. This may cause unexpected runtime behavior, but that's okay here.
     }
     else {
       st = m_env->get_blob_manager()->allocate(db, record, flags, new_blobid);
@@ -696,7 +698,9 @@ BlobManager::overwrite(Database *db, ham_offset_t old_blobid,
   ham_assert(blob_get_alloc_size(&old_hdr) % DB_CHUNKSIZE == 0);
 
   /* sanity check */
-  ham_assert(blob_get_self(&old_hdr) == old_blobid);
+  ham_assert1(blob_get_self(&old_hdr) == old_blobid,
+              ("invalid blobid %llu != %llu", blob_get_self(&old_hdr),
+               old_blobid));
   if (blob_get_self(&old_hdr) != old_blobid)
     return (HAM_BLOB_NOT_FOUND);
 
@@ -760,7 +764,7 @@ BlobManager::overwrite(Database *db, ham_offset_t old_blobid,
         m_env->get_freelist()->mark_free(db,
                     blob_get_self(&new_hdr) + blob_get_alloc_size(&new_hdr),
                     (ham_size_t)(blob_get_alloc_size(&old_hdr) -
-                        blob_get_alloc_size(&new_hdr)), false);
+                        blob_get_alloc_size(&new_hdr)));
     }
 
     /* the old rid is the new rid */
@@ -779,7 +783,7 @@ BlobManager::overwrite(Database *db, ham_offset_t old_blobid,
 
     if (m_env->get_freelist())
       m_env->get_freelist()->mark_free(db, old_blobid,
-                    (ham_size_t)blob_get_alloc_size(&old_hdr), false);
+                    (ham_size_t)blob_get_alloc_size(&old_hdr));
   }
 
   return (HAM_SUCCESS);
@@ -817,7 +821,7 @@ BlobManager::free(Database *db, ham_offset_t blobid, ham_u32_t flags)
   /* move the blob to the freelist */
   if (m_env->get_freelist())
     st = m_env->get_freelist()->mark_free(db, blobid,
-                  (ham_size_t)blob_get_alloc_size(&hdr), false);
+                  (ham_size_t)blob_get_alloc_size(&hdr));
 
   return st;
 }

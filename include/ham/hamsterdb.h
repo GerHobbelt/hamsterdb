@@ -148,6 +148,10 @@ typedef struct ham_env_t ham_env_t;
 struct ham_cursor_t;
 typedef struct ham_cursor_t ham_cursor_t;
 
+/* forward def for struct which is defined in hamsterdb_stats.h, but may be used as a parameter here */
+struct ham_statistics_t;
+typedef struct ham_statistics_t ham_statistics_t;
+
 /**
  * A generic record.
  *
@@ -306,7 +310,7 @@ typedef struct {
       ham_size_t max_bufsize;
     } str_in;
 
-    struct ham_statistics_t *stats_ref;
+    ham_statistics_t *stats_ref;
 #if 0
     ham_db_info_t *db_info_ref;
     ham_env_info_t *env_info_ref;
@@ -2077,7 +2081,7 @@ ham_insert(ham_db_t *db, ham_txn_t *txn, ham_key_t *key,
  * Flag mask to extract the common hint flags from a find/move/insert/erase
  * flag value.
  */
-#define HAM_HINTS_MASK                  0x00FF0000
+#define HAM_HINTS_MASK                  0x001F0000
 
 /**
  * Erases a Database item

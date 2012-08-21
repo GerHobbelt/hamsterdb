@@ -15,6 +15,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 /* a unittest hook triggered when a page is split */
 void (*g_BTREE_INSERT_SPLIT_HOOK)(void);
@@ -145,7 +147,7 @@ __append_key(BtreeBackend *be, Transaction *txn, ham_key_t *key,
     }
 
     node=page_get_btree_node(page);
-    ham_assert(btree_node_is_leaf(node));
+    ham_assert1(btree_node_is_leaf(node), ("iterator points to internal node"));
 
     /*
      * if the page is already full OR this page is not the right-most page
@@ -259,8 +261,8 @@ __append_key(BtreeBackend *be, Transaction *txn, ham_key_t *key,
             ham_assert(!hints->force_prepend && !hints->force_append);
         }
 
-        ham_assert((hints->force_prepend + hints->force_append) < 2,
-                ("Either APPEND or PREPEND flag MAY be set, but not both"));
+        ham_assert1((hints->force_prepend + hints->force_append) < 2,
+                    ("Either APPEND or PREPEND flag MAY be set, but not both"));
     }
     else { /* empty page: force insertion in slot 0 */
         hints->force_append = HAM_FALSE;
@@ -301,7 +303,7 @@ __insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key,
     /*
      * get the root-page...
      */
-    ham_assert(be->get_rootpage()!=0);
+    ham_assert1(be->get_rootpage() != 0, ("btree has no root page"));
     st=db_fetch_page(&root, db, be->get_rootpage(), 0);
     if (st)
         return st;
@@ -501,8 +503,8 @@ __insert_in_page(Page *page, ham_key_t *key,
     ham_size_t maxkeys=scratchpad->be->get_maxkeys();
     btree_node_t *node=page_get_btree_node(page);
 
-    ham_assert(maxkeys > 1,
-            ("invalid result of db_get_maxkeys(): %d", maxkeys));
+    ham_assert1(maxkeys > 1,
+                ("invalid result of db_get_maxkeys(): %d", maxkeys));
     ham_assert(hints->force_append == HAM_FALSE);
     ham_assert(hints->force_prepend == HAM_FALSE);
 
@@ -703,9 +705,9 @@ __insert_nosplit(Page *page, Transaction *txn, ham_key_t *key,
     if (cursor) {
         btree_cursor_get_parent(cursor)->set_to_nil(Cursor::CURSOR_BTREE);
 
-        ham_assert(!btree_cursor_is_uncoupled(cursor),
+        ham_assert1(!btree_cursor_is_uncoupled(cursor),
                 ("coupling an uncoupled cursor, but need a nil-cursor"));
-        ham_assert(!btree_cursor_is_coupled(cursor),
+        ham_assert1(!btree_cursor_is_coupled(cursor),
                 ("coupling a coupled cursor, but need a nil-cursor"));
         btree_cursor_set_flags(cursor,
                 btree_cursor_get_flags(cursor)|BTREE_CURSOR_FLAG_COUPLED);
@@ -783,8 +785,6 @@ __insert_split(Page *page, ham_key_t *key,
      */
     hints->cost++;
     st=db_alloc_page(&newpage, db, Page::TYPE_B_INDEX, 0);
-    ham_assert(st ? page == NULL : 1);
-    ham_assert(!st ? page  != NULL : 1);
     if (st)
         return st;
     ham_assert(newpage->get_db());

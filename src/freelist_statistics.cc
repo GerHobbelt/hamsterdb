@@ -388,7 +388,7 @@ freelist_stats_update(Freelist *fl, FreelistEntry *entry, FreelistPayload *f,
 
         if (entrystats->persisted_bits < position) {
             /* overflow? reset this marker! */
-            ham_assert(entrystats->persisted_bits == 0,
+            ham_assert1(entrystats->persisted_bits == 0,
                 ("Should not get here when not invoked from the [unit]tests!"));
             if (hints->size_bits > entry->allocated_bits)
                 entrystats->persisted_bits = position;
@@ -535,7 +535,7 @@ freelist_stats_edit(Freelist *fl, FreelistEntry *entry, FreelistPayload *f,
                  */
                 //globalstats->extend_count++;
 
-                ham_assert(entrystats->persisted_bits == 0,
+                ham_assert1(entrystats->persisted_bits == 0,
                     ("Should not get here when not invoked from the [unit]tests!"));
                 entrystats->persisted_bits = position +
                     size_bits + entry->allocated_bits;

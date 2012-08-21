@@ -127,6 +127,9 @@
     <ClInclude Include="..\..\src\version.h">
       <Filter>Header Files\Internal</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\duplicates.h">
+      <Filter>Header Files\Internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\unittests\valgrind.supp">
@@ -525,6 +528,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\device.cc">
       <Filter>Source files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\duplicates.cc">
+      <Filter>Source files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

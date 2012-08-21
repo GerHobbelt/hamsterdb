@@ -12,6 +12,8 @@
 
 #include "internal_preparation.h"
 
+using namespace ham;
+
 
 /*
  * forward decl - implemented in hamsterdb.cc
@@ -125,14 +127,21 @@ ham_status_t
 env_fetch_page(Page **page_ref, Environment *env,
         ham_offset_t address, ham_u32_t flags)
 {
-    return (db_fetch_page_impl(page_ref, env, 0, address, flags));
+    ham_status_t st = db_fetch_page_impl(page_ref, env, 0, address, flags);
+	if (!(flags & DB_ONLY_FROM_CACHE))
+		ham_assert1(!st ? *page_ref != NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	ham_assert1(st ? *page_ref == NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	return st;
 }
 
 ham_status_t
 env_alloc_page(Page **page_ref, Environment *env,
                 ham_u32_t type, ham_u32_t flags)
 {
-    return (db_alloc_page_impl(page_ref, env, 0, type, flags));
+    ham_status_t st = db_alloc_page_impl(page_ref, env, 0, type, flags);
+	ham_assert1(!st ? *page_ref != NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	ham_assert1(st ? *page_ref == NULL : 1, ("make sure page vs. status code assumption is true; has been biting me in the ass in the past"));
+	return st;
 }
 
 static ham_status_t
@@ -1204,27 +1213,27 @@ _local_fun_open_db(Environment *env, Database *db,
              |DB_USE_MMAP
              |DB_ENV_IS_PRIVATE);
     db->set_rt_flags(flags|be->get_flags());
-    ham_assert(!(be->get_flags()&HAM_DISABLE_VAR_KEYLEN),
+    ham_assert1(!(be->get_flags()&HAM_DISABLE_VAR_KEYLEN),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_CACHE_STRICT),
+    ham_assert1(!(be->get_flags()&HAM_CACHE_STRICT),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_CACHE_UNLIMITED),
+    ham_assert1(!(be->get_flags()&HAM_CACHE_UNLIMITED),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_DISABLE_MMAP),
+    ham_assert1(!(be->get_flags()&HAM_DISABLE_MMAP),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_WRITE_THROUGH),
+    ham_assert1(!(be->get_flags()&HAM_WRITE_THROUGH),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_READ_ONLY),
+    ham_assert1(!(be->get_flags()&HAM_READ_ONLY),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_DISABLE_FREELIST_FLUSH),
+    ham_assert1(!(be->get_flags()&HAM_DISABLE_FREELIST_FLUSH),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_ENABLE_RECOVERY),
+    ham_assert1(!(be->get_flags()&HAM_ENABLE_RECOVERY),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_AUTO_RECOVERY),
+    ham_assert1(!(be->get_flags()&HAM_AUTO_RECOVERY),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&HAM_ENABLE_TRANSACTIONS),
+    ham_assert1(!(be->get_flags()&HAM_ENABLE_TRANSACTIONS),
             ("invalid persistent database flags 0x%x", be->get_flags()));
-    ham_assert(!(be->get_flags()&DB_USE_MMAP),
+    ham_assert1(!(be->get_flags()&DB_USE_MMAP),
             ("invalid persistent database flags 0x%x", be->get_flags()));
 
     /*
@@ -1514,7 +1523,7 @@ __flush_txn(Environment *env, Transaction *txn)
         /*
          * this op is about to be flushed!
          *
-         * as a concequence, all (txn)cursors which are coupled to this op
+         * as a consequence, all (txn)cursors which are coupled to this op
          * have to be uncoupled, as their parent (btree) cursor was
          * already coupled to the btree item instead
          */

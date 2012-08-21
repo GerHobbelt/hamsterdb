@@ -4,11 +4,11 @@
 EXPORTS
 	;page_get_next
 	;_ham_default_allocator_new
-	blob_allocate
-	blob_duplicate_get
-	blob_free
-	blob_overwrite
-	blob_read
+	;blob_allocate
+	;blob_duplicate_get
+	;blob_free
+	;blob_overwrite
+	;blob_read
 	;bt_cursor_uncouple
 	;cache_delete
 	;cache_get_page
