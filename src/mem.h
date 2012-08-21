@@ -59,7 +59,7 @@ class Allocator
     }
 
     /**
-     * a factory for creating the standard allocator (based on libc malloc 
+     * a factory for creating the standard allocator (based on libc malloc
      * and free)
      */
     static Allocator *create();

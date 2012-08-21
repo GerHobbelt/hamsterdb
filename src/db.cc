@@ -1343,7 +1343,7 @@ retry:
              * or previous node
              */
             else if (txn_op_get_flags(op)&TXN_OP_ERASE) {
-                if (first_loop 
+                if (first_loop
                         && !(ham_key_get_intflags(key)&KEY_IS_APPROXIMATE))
                     exact_is_erased=true;
                 first_loop=false;
@@ -1526,7 +1526,7 @@ DatabaseImplementationLocal::get_parameters(ham_parameter_t *param)
             case HAM_PARAM_GET_KEYS_PER_PAGE:
                 if (m_db->get_backend()) {
                     ham_size_t count=0;
-					ham_u16_t size=db_get_keysize(m_db);
+                    ham_u16_t size=db_get_keysize(m_db);
                     Backend *be = m_db->get_backend();
                     ham_status_t st;
 

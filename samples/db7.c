@@ -40,7 +40,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
     for (i = 0; db_params_out[i].name; i++)
     {
         const char *desc;
-		unsigned int v = db_params_out[i].value.size;
+        unsigned int v = db_params_out[i].value.size;
 
         switch (db_params_out[i].name)
         {
@@ -62,7 +62,7 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
 
         case HAM_PARAM_DBNAME:
             desc = "HAM_PARAM_DBNAME: db ID in database environment (%u)";
-			v = db_params_out[i].value.id;
+            v = db_params_out[i].value.id;
             break;
 
 #if defined(HAM_PARAM_CUSTOM_DEVICE)
@@ -92,12 +92,12 @@ void show_params(ham_env_t *env, ham_db_t *db, const ham_parameter_t *db_params_
 
         case HAM_PARAM_GET_FLAGS:
             desc = "HAM_PARAM_GET_FLAGS: %08x";
-			v = db_params_out[i].value.flags;
+            v = db_params_out[i].value.flags;
             break;
 
         case HAM_PARAM_GET_FILEMODE:
             desc = "HAM_PARAM_GET_FILEMODE: %04o";
-			v = db_params_out[i].value.flags;
+            v = db_params_out[i].value.flags;
             break;
 
         case HAM_PARAM_GET_FILENAME:

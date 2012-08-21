@@ -30,7 +30,7 @@ dbg_snprintf(char *str, size_t size, const char *format, ...)
   va_start(ap, format);
   s=util_vsnprintf(str, size, format, ap);
   va_end(ap);
-  
+
   return (s);
 }
 
@@ -67,7 +67,7 @@ dbg_unlock(void)
   /* not yet needed, we do not yet support multithreading */
 }
 
-void 
+void
 dbg_prepare(int level, const char *file, int line, const char *function,
             const char *expr)
 {
@@ -97,9 +97,9 @@ dbg_log(const char *format, ...)
   va_end(ap);
 
   g_hand(g_level, buffer);
-} 
+}
 
-void 
+void
 dbg_verify_failed(const char *format, ...)
 {
   int s;
@@ -109,8 +109,8 @@ dbg_verify_failed(const char *format, ...)
   if (!g_expr)
     g_expr = "(none)";
 
-  s = dbg_snprintf(buffer, sizeof(buffer), 
-      "ASSERT FAILED in file %s, line %d:\n\t\"%s\"\n", 
+  s = dbg_snprintf(buffer, sizeof(buffer),
+      "ASSERT FAILED in file %s, line %d:\n\t\"%s\"\n",
       g_file, g_line, g_expr);
 
   if (format) {
@@ -118,7 +118,7 @@ dbg_verify_failed(const char *format, ...)
     util_vsnprintf(buffer + s, sizeof(buffer) - s, format, ap);
     va_end(ap);
   }
-  
+
   g_hand(g_level, buffer);
 
   if (ham_test_abort) {

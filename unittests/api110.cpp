@@ -196,7 +196,7 @@ public:
     {
         ham_env_t *env;
         ham_statistics_t stats = {0};
-		char buf[256] = "";
+        char buf[256] = "";
         ham_parameter_t params[] =
         {
             {HAM_PARAM_CACHESIZE, 0},
@@ -215,9 +215,9 @@ public:
             {HAM_PARAM_MAX_ENV_DATABASES, 32},
             {0,0}
         };
-		params[5].value.str_out.buf = buf;
-		params[5].value.str_out.max_bufsize = sizeof(buf);
-		params[6].value.stats_ref = &stats;
+        params[5].value.str_out.buf = buf;
+        params[5].value.str_out.max_bufsize = sizeof(buf);
+        params[6].value.stats_ref = &stats;
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(0,
@@ -249,7 +249,7 @@ public:
     {
         ham_env_t *env;
         ham_statistics_t stats = {0};
-		char buf[256] = "";
+        char buf[256] = "";
         ham_parameter_t params[] =
         {
             {HAM_PARAM_CACHESIZE, 0},
@@ -268,9 +268,9 @@ public:
             {HAM_PARAM_MAX_ENV_DATABASES, 32},
             {0,0}
         };
-		params[5].value.str_out.buf = buf;
-		params[5].value.str_out.max_bufsize = sizeof(buf);
-		params[6].value.stats_ref = &stats;
+        params[5].value.str_out.buf = buf;
+        params[5].value.str_out.max_bufsize = sizeof(buf);
+        params[6].value.stats_ref = &stats;
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(0,
@@ -305,7 +305,7 @@ public:
     {
         ham_db_t *db;
         ham_statistics_t stats = {0};
-		char buf[256] = "";
+        char buf[256] = "";
         ham_parameter_t params[] =
         {
             {HAM_PARAM_CACHESIZE, 0},
@@ -331,9 +331,9 @@ public:
             {0,0}
         };
 
-		params[7].value.str_out.buf = buf;
-		params[7].value.str_out.max_bufsize = sizeof(buf);
-		params[10].value.stats_ref = &stats;
+        params[7].value.str_out.buf = buf;
+        params[7].value.str_out.max_bufsize = sizeof(buf);
+        params[10].value.stats_ref = &stats;
 
         ham_new(&db);
         BFC_ASSERT_EQUAL(0,
@@ -372,7 +372,7 @@ public:
     {
         ham_db_t *db;
         ham_statistics_t stats = {0};
-		char buf[256] = "";
+        char buf[256] = "";
         ham_parameter_t params[] =
         {
             {HAM_PARAM_CACHESIZE, 0},
@@ -398,9 +398,9 @@ public:
             {0,0}
         };
 
-		params[7].value.str_out.buf = buf;
-		params[7].value.str_out.max_bufsize = sizeof(buf);
-		params[10].value.stats_ref = &stats;
+        params[7].value.str_out.buf = buf;
+        params[7].value.str_out.max_bufsize = sizeof(buf);
+        params[10].value.stats_ref = &stats;
 
         ham_new(&db);
         BFC_ASSERT_EQUAL(0,
@@ -475,7 +475,7 @@ public:
 
         ham_new(&db);
         BFC_ASSERT_EQUAL(0,
-                ham_create(db, ".test.db", 
+                ham_create(db, ".test.db",
                         HAM_ENABLE_TRANSACTIONS, 0644));
         BFC_ASSERT_EQUAL(0, ham_txn_begin(&txn, ham_get_env(db), 0, 0, 0));
         BFC_ASSERT_EQUAL(0, ham_insert(db, txn, &key1, &rec1, 0));

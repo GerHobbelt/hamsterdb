@@ -21,7 +21,7 @@ class DefaultAllocator : public Allocator
     {
       typedef std::stack<void *> LookasideList;
 
-      Lookasides() 
+      Lookasides()
       : max_sizes(2) {
         sizes[0] = sizeof(txn_op_t);
         sizes[1] = sizeof(txn_opnode_t);
@@ -68,8 +68,8 @@ class DefaultAllocator : public Allocator
         return ((char *)p + sizeof(ham_u32_t));
 
 #if defined(_CRTDBG_MAP_ALLOC)
-      p = ::_malloc_dbg(size + sizeof(ham_u32_t), _NORMAL_BLOCK, 
-			      __FILE__, __LINE__);
+      p = ::_malloc_dbg(size + sizeof(ham_u32_t), _NORMAL_BLOCK,
+                  __FILE__, __LINE__);
 #else
       p = ::malloc(size+sizeof(ham_u32_t));
 #endif
@@ -89,7 +89,7 @@ class DefaultAllocator : public Allocator
 
       p = (char *)ptr - sizeof(ham_u32_t);
       size = *(ham_u32_t *)p;
- 
+
       for (int i = 0; i < m_ls.max_sizes; i++) {
         if (size == m_ls.sizes[i] && m_ls.lists[i].size() < 10) {
           m_ls.lists[i].push(p);
@@ -109,7 +109,7 @@ class DefaultAllocator : public Allocator
       void *p = ptr ? (char *)ptr - sizeof(ham_u32_t) : 0;
 
 #if defined(_CRTDBG_MAP_ALLOC)
-      ptr = ::_realloc_dbg((void *)p, size + sizeof(ham_u32_t), 
+      ptr = ::_realloc_dbg((void *)p, size + sizeof(ham_u32_t),
             _NORMAL_BLOCK, __FILE__, __LINE__);
 #else
       ptr = ::realloc((void *)p, size + sizeof(ham_u32_t));

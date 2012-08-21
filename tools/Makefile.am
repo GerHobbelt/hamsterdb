@@ -1,10 +1,10 @@
 
-INCLUDES                    = -I$(top_builddir)/include -I$(top_builddir)/src \
-					  -I$(top_builddir)/3rdparty/json
+INCLUDES            = -I$(top_builddir)/include -I$(top_builddir)/src \
+                      -I$(top_builddir)/3rdparty/json
 
 hamzilla_SOURCES    = hamzilla.c getopts.c config.c
 hamzilla_LDADD      = $(top_builddir)/src/libhamsterdb.la \
-		      $(top_builddir)/src/server/libhamserver.la
+                      $(top_builddir)/src/server/libhamserver.la
 
 ham_info_SOURCES    = ham_info.cc getopts.c
 ham_info_LDADD      = $(top_builddir)/src/libhamsterdb.la

@@ -56,7 +56,7 @@ struct ham_srv_t
     /* handlers for each Environment */
     env_t environments[MAX_ENVIRONMENTS];
 
-	struct mg_user_class_t mg_usr;
+    struct mg_user_class_t mg_usr;
 };
 
 static ham_u64_t
@@ -126,12 +126,12 @@ send_wrapper(ham_env_t *henv, struct mg_connection *conn,
     ham_trace(("type %u: sending %d bytes",
                 proto_get_type(wrapper), data_size));
 
-	mg_connection_must_close(conn);
-	mg_add_response_header(conn, 0, "Content-Type", "text/plain");
-	mg_add_response_header(conn, 0, "Connection", "close");
-	mg_write_http_response_head(conn, 200, 0);
+    mg_connection_must_close(conn);
+    mg_add_response_header(conn, 0, "Content-Type", "text/plain");
+    mg_add_response_header(conn, 0, "Connection", "close");
+    mg_write_http_response_head(conn, 200, 0);
 
-	mg_write(conn, data, data_size);
+    mg_write(conn, data, data_size);
 
     env->get_allocator()->free(data);
 }
@@ -1229,57 +1229,57 @@ static void *request_handler(enum mg_event event, struct mg_connection *conn)
 {
     proto_wrapper_t *wrapper;
     env_t *env = NULL;
-	struct mg_user_class_t *user_data = mg_get_user_data(mg_get_context(conn));
-	struct mg_request_info *ri = mg_get_request_info(conn);
+    struct mg_user_class_t *user_data = mg_get_user_data(mg_get_context(conn));
+    struct mg_request_info *ri = mg_get_request_info(conn);
     ham_srv_t *srv;
-	ham_u8_t *rx_buf;
-	size_t rx_bufsize;
-	size_t rx_length;
+    ham_u8_t *rx_buf;
+    size_t rx_bufsize;
+    size_t rx_length;
 
-	if (event != MG_NEW_REQUEST)
-		return 0;
+    if (event != MG_NEW_REQUEST)
+        return 0;
 
-	srv = (ham_srv_t *)user_data->user_data;
-	/* search for registration */
+    srv = (ham_srv_t *)user_data->user_data;
+    /* search for registration */
     for (int i=0; i<MAX_ENVIRONMENTS; i++) {
-        if (srv->environments[i].urlname && 0 == strcmp(ri->uri, srv->environments[i].urlname))	{
+        if (srv->environments[i].urlname && 0 == strcmp(ri->uri, srv->environments[i].urlname)) {
             env = &srv->environments[i];
             break;
         }
     }
 
     //mg_authorize(conn);
-	if (!env)
-		return 0;
+    if (!env)
+        return 0;
 
-	rx_buf = (ham_u8_t *)malloc(rx_bufsize = 65536);
-	if (!rx_buf)
-		return 0;
+    rx_buf = (ham_u8_t *)malloc(rx_bufsize = 65536);
+    if (!rx_buf)
+        return 0;
 
     os_critsec_enter(&env->cs);
 
-	// read post data into buffer:
-	for (rx_length = 0;;) {
-		int n = mg_read(conn, rx_buf + rx_length, rx_bufsize - rx_length);
-		if (n < 0) {
-			free(rx_buf);
-			mg_send_http_error(conn, 500, NULL, "read error %d(%s)", ERRNO, mg_strerror(ERRNO));
-			return (void *)1;
-		}
-		if (n == 0)
-			break;
-		rx_length += n;
-		if (rx_bufsize == rx_length)
-		{
-			rx_bufsize *= 2;
-			rx_buf = (ham_u8_t *)realloc(rx_buf, rx_bufsize);
-			if (!rx_buf)
-			{
-				mg_send_http_error(conn, 500, NULL, "out of memory");
-				return (void *)1;
-			}
-		}
-	}
+    // read post data into buffer:
+    for (rx_length = 0;;) {
+        int n = mg_read(conn, rx_buf + rx_length, rx_bufsize - rx_length);
+        if (n < 0) {
+            free(rx_buf);
+            mg_send_http_error(conn, 500, NULL, "read error %d(%s)", ERRNO, mg_strerror(ERRNO));
+            return (void *)1;
+        }
+        if (n == 0)
+            break;
+        rx_length += n;
+        if (rx_bufsize == rx_length)
+        {
+            rx_bufsize *= 2;
+            rx_buf = (ham_u8_t *)realloc(rx_buf, rx_bufsize);
+            if (!rx_buf)
+            {
+                mg_send_http_error(conn, 500, NULL, "out of memory");
+                return (void *)1;
+            }
+        }
+    }
     wrapper=proto_unpack(rx_length, rx_buf);
     if (!wrapper) {
         ham_trace(("failed to unpack wrapper (%d bytes)\n", (int)rx_length));
@@ -1427,7 +1427,7 @@ bail:
 
     os_critsec_leave(&env->cs);
 
-	return (void *)1;
+    return (void *)1;
 }
 
 ham_status_t
@@ -1436,35 +1436,35 @@ ham_srv_init(ham_srv_config_t *config, ham_srv_t **psrv)
     ham_srv_t *srv;
     char buf[32];
     sprintf(buf, "%d", (int)config->port);
-	const char *options[] =
-	{
-		"ports", buf,
-		"enable_directory_listing", "no",
-		NULL, NULL,
-		NULL, NULL,
-		NULL, NULL
-	};
-	const char **o = &options[4];
+    const char *options[] =
+    {
+        "ports", buf,
+        "enable_directory_listing", "no",
+        NULL, NULL,
+        NULL, NULL,
+        NULL, NULL
+    };
+    const char **o = &options[4];
 
     srv=(ham_srv_t *)malloc(sizeof(ham_srv_t));
     if (!srv)
         return (HAM_OUT_OF_MEMORY);
     memset(srv, 0, sizeof(*srv));
 
-	if (config->access_log_path) {
-		*o++ = "access_log";
-		*o++ = config->access_log_path;
-	}
-	if (config->error_log_path) {
-		*o++ = "error_log";
-		*o++ = config->error_log_path;
-	}
+    if (config->access_log_path) {
+        *o++ = "access_log";
+        *o++ = config->access_log_path;
+    }
+    if (config->error_log_path) {
+        *o++ = "error_log";
+        *o++ = config->error_log_path;
+    }
 
-	srv->mg_usr.user_data = srv;
-	srv->mg_usr.user_callback = request_handler;
-	srv->mg_ctxt = mg_start(&srv->mg_usr, options);
-	if (!srv->mg_ctxt)
-		return (HAM_IO_ERROR);
+    srv->mg_usr.user_data = srv;
+    srv->mg_usr.user_callback = request_handler;
+    srv->mg_ctxt = mg_start(&srv->mg_usr, options);
+    if (!srv->mg_ctxt)
+        return (HAM_IO_ERROR);
 
     *psrv = srv;
     return (HAM_SUCCESS);

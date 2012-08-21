@@ -377,7 +377,7 @@ __insert_cursor(BtreeBackend *be, Transaction *txn, ham_key_t *key,
 }
 
 ham_status_t
-BtreeBackend::do_insert_cursor(Transaction *txn, ham_key_t *key, 
+BtreeBackend::do_insert_cursor(Transaction *txn, ham_key_t *key,
                 ham_record_t *record, btree_cursor_t *cursor, ham_u32_t flags)
 {
     ham_status_t st;
@@ -426,7 +426,7 @@ BtreeBackend::do_insert_cursor(Transaction *txn, ham_key_t *key,
  * @note This is a B+-tree 'backend' method.
  */
 ham_status_t
-BtreeBackend::do_insert(Transaction *txn, ham_key_t *key, 
+BtreeBackend::do_insert(Transaction *txn, ham_key_t *key,
                 ham_record_t *record, ham_u32_t flags)
 {
     return (do_insert_cursor(txn, key, record, 0, flags));

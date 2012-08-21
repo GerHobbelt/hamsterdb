@@ -2249,12 +2249,12 @@ static int HAM_CALLCONV my_compare_func_u32(ham_db_t *db,
     void overwriteLogDirectoryTest()
     {
         ham_db_t *db;
-		char buf[256];
+        char buf[256];
         ham_parameter_t ps[]={
             {HAM_PARAM_LOG_DIRECTORY, 0},
             {0, 0}
         };
-		ps[0].value.str_in.str = "data";
+        ps[0].value.str_in.str = "data";
 
         os::unlink("data/test.db.log0");
         os::unlink("data/test.db.jrn0");

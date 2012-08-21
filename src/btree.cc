@@ -304,7 +304,7 @@ BtreeBackend::do_close(ham_u32_t flags)
         }
         db->set_cursors(0);
     }
-    
+
     /* even when an error occurred, the backend has now been de-activated */
     set_active(false);
 }
@@ -648,8 +648,8 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
 }
 
 
-ham_status_t 
-btree_prepare_key_for_compare(Database *db, int which, 
+ham_status_t
+btree_prepare_key_for_compare(Database *db, int which,
                 btree_key_t *src, ham_key_t *dest)
 {
     BtreeBackend *be=(BtreeBackend *)db->get_backend();

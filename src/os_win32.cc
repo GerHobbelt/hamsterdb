@@ -160,7 +160,7 @@ os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
     st = (ham_status_t)GetLastError();
     ham_log(("CreateFileMapping failed with OS status %u (%s)",
         st, DisplayError(buf, sizeof(buf), st)));
-    if (st == ERROR_NOT_ENOUGH_QUOTA) // not enough resources - fallback to r/w 
+    if (st == ERROR_NOT_ENOUGH_QUOTA) // not enough resources - fallback to r/w
       return (HAM_LIMITS_REACHED);
     return (HAM_IO_ERROR);
   }
@@ -349,7 +349,7 @@ os_seek(ham_fd_t fd, ham_offset_t offset, int whence)
   DWORD st;
   LARGE_INTEGER i;
   i.QuadPart = offset;
-   
+
   i.LowPart = SetFilePointer((HANDLE)fd, i.LowPart, &i.HighPart, whence);
   if (i.LowPart == INVALID_SET_FILE_POINTER &&
     (st = GetLastError())!=NO_ERROR) {
@@ -475,7 +475,7 @@ os_flush(ham_fd_t fd)
   if (!FlushFileBuffers((HANDLE)fd)) {
     char buf[256];
     st = (ham_status_t)GetLastError();
-    ham_log(("FlushFileBuffers failed with OS status %u (%s)", 
+    ham_log(("FlushFileBuffers failed with OS status %u (%s)",
         st, DisplayError(buf, sizeof(buf), st)));
     return (HAM_IO_ERROR);
   }

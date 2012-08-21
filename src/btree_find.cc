@@ -253,11 +253,11 @@ no_fast_track:
                 else {
                     /* otherwise load the left sibling page */
                     if (!btree_node_get_left(node)) {
-                        /* when an error is otherwise unavoidable, see if 
+                        /* when an error is otherwise unavoidable, see if
                            we have an escape route through GT? */
                         if (hints.original_flags & HAM_FIND_GT_MATCH) {
                             /*
-                             * if the index+1 is still in the page, just 
+                             * if the index+1 is still in the page, just
                              * increment the index
                              */
                             if (idx + 1 < btree_node_get_count(node))
@@ -301,12 +301,12 @@ no_fast_track:
                                         btree_node_get_left(node), 0);
                         if (st) {
                             btree_stats_update_find_fail(db, &hints);
-							return (st);
+                            return (st);
                         }
                         node=page_get_btree_node(page);
                         idx=btree_node_get_count(node)-1;
 
-                        ham_key_set_intflags(key, (ham_key_get_intflags(key) 
+                        ham_key_set_intflags(key, (ham_key_get_intflags(key)
                                         & ~KEY_IS_APPROXIMATE) | KEY_IS_LT);
                     }
                 }
@@ -329,16 +329,16 @@ no_fast_track:
                     }
 
                     hints.cost++;
-                    st=db_fetch_page(&page, db, 
+                    st=db_fetch_page(&page, db,
                                 btree_node_get_right(node), 0);
                     if (st) {
                         btree_stats_update_find_fail(db, &hints);
-						return (st);
+                        return (st);
                     }
                     node=page_get_btree_node(page);
                     idx=0;
                 }
-                ham_key_set_intflags(key, (ham_key_get_intflags(key) 
+                ham_key_set_intflags(key, (ham_key_get_intflags(key)
                                         & ~KEY_IS_APPROXIMATE) | KEY_IS_GT);
             }
         }

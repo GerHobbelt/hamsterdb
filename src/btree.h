@@ -49,7 +49,7 @@ class BtreeBackend : public Backend
 
     /** same as above, but only erases a single duplicate */
     // TODO make this private
-    ham_status_t erase_duplicate(Transaction *txn, ham_key_t *key, 
+    ham_status_t erase_duplicate(Transaction *txn, ham_key_t *key,
                         ham_u32_t dupe_id, ham_u32_t flags);
 
     // TODO make this private
@@ -60,7 +60,7 @@ class BtreeBackend : public Backend
     ham_status_t free_page_extkeys(Page *page, ham_u32_t flags);
 
     /** flush the backend */
-    // TODO make this protected 
+    // TODO make this protected
     virtual ham_status_t do_flush_indexdata();
 
     /** get the address of the root node */
@@ -109,11 +109,11 @@ class BtreeBackend : public Backend
     virtual void do_close(ham_u32_t flags);
 
     /** insert (or update) a key in the index */
-    virtual ham_status_t do_insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags);
 
     /** erase a key in the index */
-    virtual ham_status_t do_erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags);
 
     /** iterate the whole tree and enumerate every item */
@@ -123,19 +123,19 @@ class BtreeBackend : public Backend
     virtual ham_status_t do_check_integrity();
 
     /** estimate the number of keys per page, given the keysize */
-    virtual ham_status_t do_calc_keycount_per_page(ham_size_t *keycount, 
+    virtual ham_status_t do_calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize);
 
     /** uncouple all cursors from a page */
     virtual ham_status_t do_uncouple_all_cursors(Page *page, ham_size_t start);
 
     /** same as above, but sets the cursor position to the new item */
-    virtual ham_status_t do_insert_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_insert_cursor(Transaction *txn, ham_key_t *key,
                         ham_record_t *record, btree_cursor_t *cursor,
                         ham_u32_t flags);
 
     /** same as erase(), but with a coupled cursor */
-    virtual ham_status_t do_erase_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_erase_cursor(Transaction *txn, ham_key_t *key,
                         btree_cursor_t *cursor, ham_u32_t flags);
 
   private:

@@ -86,16 +86,16 @@ print_environment(ham_env_t *env)
 
     if (!quiet) {
       printf("environment\n");
-      printf("    pagesize:                   %u\n", 
+      printf("    pagesize:                   %u\n",
                       ((Environment *)env)->get_pagesize());
-      printf("    version:                    %u.%u.%u.%u\n", 
+      printf("    version:                    %u.%u.%u.%u\n",
                       ((Environment *)env)->get_version(0),
                       ((Environment *)env)->get_version(1),
                       ((Environment *)env)->get_version(2),
                       ((Environment *)env)->get_version(3));
-      printf("    serialno:                   %u\n", 
+      printf("    serialno:                   %u\n",
                       ((Environment *)env)->get_serialno());
-      printf("    max databases:              %u\n", 
+      printf("    max databases:              %u\n",
                       ((Environment *)env)->get_max_databases());
     }
 
@@ -127,9 +127,9 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
         printf("    database %d (0x%x)\n", (int)dbname, (int)dbname);
         printf("        max key size:           %u\n", be->get_keysize());
         printf("        max keys per page:      %u\n", be->get_maxkeys());
-        printf("        address of root page:   %llu\n", 
+        printf("        address of root page:   %llu\n",
                 (long long unsigned int)be->get_rootpage());
-        printf("        flags:                  0x%04x\n", 
+        printf("        flags:                  0x%04x\n",
                 ((Database *)db)->get_rt_flags());
     }
 

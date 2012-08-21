@@ -132,7 +132,7 @@ class Backend
     /**
      * find a key in the index
      */
-    ham_status_t find(Transaction *txn, ham_key_t *key, 
+    ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) {
         ScopedLock lock(m_mutex);
         return (do_find(txn, 0, key, record, flags));
@@ -144,7 +144,7 @@ class Backend
      * the backend is responsible for inserting or updating the
      * record. (see blob.h for blob management functions)
      */
-    ham_status_t insert(Transaction *txn, ham_key_t *key, 
+    ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) {
         ScopedLock lock(m_mutex);
         return (do_insert(txn, key, record, flags));
@@ -153,7 +153,7 @@ class Backend
     /**
      * erase a key in the index
      */
-    ham_status_t erase(Transaction *txn, ham_key_t *key, 
+    ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags) {
         ScopedLock lock(m_mutex);
         return (do_erase(txn, key, flags));
@@ -178,7 +178,7 @@ class Backend
     /**
      * estimate the number of keys per page, given the keysize
      */
-    ham_status_t calc_keycount_per_page(ham_size_t *keycount, 
+    ham_status_t calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize) {
         ScopedLock lock(m_mutex);
         return (do_calc_keycount_per_page(keycount, keysize));
@@ -198,7 +198,7 @@ class Backend
     /**
      * looks up a key, points cursor to this key
      */
-    ham_status_t find_cursor(Transaction *txn, Cursor *cursor, 
+    ham_status_t find_cursor(Transaction *txn, Cursor *cursor,
                         ham_key_t *key, ham_record_t *record, ham_u32_t flags) {
         ScopedLock lock(m_mutex);
         return (do_find(txn, cursor, key, record, flags));
@@ -207,7 +207,7 @@ class Backend
     /**
      * inserts a key, points cursor to the new key
      */
-    ham_status_t insert_cursor(Transaction *txn, ham_key_t *key, 
+    ham_status_t insert_cursor(Transaction *txn, ham_key_t *key,
                         ham_record_t *record, btree_cursor_t *cursor,
                         ham_u32_t flags) {
         ScopedLock lock(m_mutex);
@@ -217,7 +217,7 @@ class Backend
     /**
      * erases the key that the cursor points to
      */
-    ham_status_t erase_cursor(Transaction *txn, ham_key_t *key, 
+    ham_status_t erase_cursor(Transaction *txn, ham_key_t *key,
                         btree_cursor_t *cursor, ham_u32_t flags) {
         ScopedLock lock(m_mutex);
         return (do_erase_cursor(txn, key, cursor, flags));
@@ -288,11 +288,11 @@ class Backend
     virtual void do_close(ham_u32_t flags) = 0;
 
     /** implementation for insert() */
-    virtual ham_status_t do_insert(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) = 0;
 
     /** implementation for erase() */
-    virtual ham_status_t do_erase(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags) = 0;
 
     /** implementation for enumerate() */
@@ -303,7 +303,7 @@ class Backend
 
     /** implementation for calc_keycount_per_page */
     // TODO this is btree-private??
-    virtual ham_status_t do_calc_keycount_per_page(ham_size_t *keycount, 
+    virtual ham_status_t do_calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize) = 0;
 
     /** implementation for uncouple_all_cursors() */
@@ -311,12 +311,12 @@ class Backend
                     ham_size_t start) = 0;
 
     /** implementation for insert_cursor() */
-    virtual ham_status_t do_insert_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_insert_cursor(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, btree_cursor_t *cursor,
                     ham_u32_t flags) = 0;
 
     /** implementation for erase_cursor() */
-    virtual ham_status_t do_erase_cursor(Transaction *txn, ham_key_t *key, 
+    virtual ham_status_t do_erase_cursor(Transaction *txn, ham_key_t *key,
                     btree_cursor_t *cursor, ham_u32_t flags) = 0;
 
   private:

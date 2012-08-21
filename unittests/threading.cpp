@@ -42,11 +42,11 @@ static void tlsThread(void) {
         ThreadingTest::ms_tls.reset(new boost::thread::id());
     *ThreadingTest::ms_tls.get()=boost::this_thread::get_id();
 #if defined(WIN32) || defined(_WIN32)
-	Sleep(1000);
+    Sleep(1000);
 #else
-	sleep(1);
+    sleep(1);
 #endif
-	assert(*ThreadingTest::ms_tls.get()==boost::this_thread::get_id());
+    assert(*ThreadingTest::ms_tls.get()==boost::this_thread::get_id());
 }
 
 boost::thread_specific_ptr<boost::thread::id> ThreadingTest::ms_tls;

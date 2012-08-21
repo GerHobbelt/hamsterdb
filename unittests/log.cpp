@@ -1007,7 +1007,7 @@ public:
 
         BFC_ASSERT_EQUAL(0, ham_env_new(&env));
         BFC_ASSERT_EQUAL(0, ham_new(&db));
-        BFC_ASSERT_EQUAL(0, ham_env_create(env, BFC_OPATH(".test"), 
+        BFC_ASSERT_EQUAL(0, ham_env_create(env, BFC_OPATH(".test"),
                     HAM_ENABLE_RECOVERY, 0664));
 
         BFC_ASSERT_EQUAL(0, ham_env_create_db(env, db, 333, 0, 0));

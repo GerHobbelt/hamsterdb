@@ -23,7 +23,7 @@
 /** function prototypes */
 extern void dbg_lock(void);
 extern void dbg_unlock(void);
-extern void dbg_prepare(int level, const char *file, int line, 
+extern void dbg_prepare(int level, const char *file, int line,
     const char *function, const char *expr);
 extern void dbg_log(const char *format, ...);
 extern void dbg_verify_failed(const char *format, ...);
@@ -54,7 +54,7 @@ extern void (*ham_test_abort)();
                 dbg_unlock();                                           \
                }
 #else /* !HAM_DEBUG */
-#   define ham_assert(e, f)  (void)0 
+#   define ham_assert(e, f)  (void)0
 #endif /* HAM_DEBUG */
 
 /**

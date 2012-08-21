@@ -1414,15 +1414,15 @@ BtreeBackend::do_erase(Transaction *txn, ham_key_t *key, ham_u32_t flags)
 }
 
 ham_status_t
-BtreeBackend::erase_duplicate(Transaction *txn, ham_key_t *key, 
+BtreeBackend::erase_duplicate(Transaction *txn, ham_key_t *key,
         ham_u32_t dupe_id, ham_u32_t flags)
 {
     return (btree_erase_impl(this, txn, key, 0, dupe_id, flags));
 }
 
 ham_status_t
-BtreeBackend::do_erase_cursor(Transaction *txn, ham_key_t *key, 
-        btree_cursor_t *cursor, ham_u32_t flags) 
+BtreeBackend::do_erase_cursor(Transaction *txn, ham_key_t *key,
+        btree_cursor_t *cursor, ham_u32_t flags)
 {
     return (btree_erase_impl(this, txn, key, cursor, 0, flags));
 }

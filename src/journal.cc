@@ -743,7 +743,7 @@ Journal::get_path(int i)
         path+=ext;
 #else
         path+="/";
-		path+=::basename((char *)m_env->get_filename().c_str());
+        path+=::basename((char *)m_env->get_filename().c_str());
 #endif
     }
     if (i==0)
