@@ -27,6 +27,19 @@
 #include "error.h"
 #include "page.h"
 #include "changeset.h"
+#include "blob.h"
+#include "duplicates.h"
+
+/**
+ * A helper structure; ham_env_t is declared in ham/hamsterdb.h as an
+ * opaque C structure, but internally we use a C++ class. The ham_env_t
+ * struct satisfies the C compiler, and internally we just cast the pointers.
+ */
+struct ham_env_t {
+    int dummy;
+};
+
+namespace ham {
 
 /**
  * This is the minimum chunk size; all chunks (pages and blobs) are aligned
@@ -99,15 +112,6 @@ typedef HAM_PACK_0 struct HAM_PACK_1
 
 #define envheader_get_version(hdr, i)  ((hdr))->_version[i]
 
-
-/**
- * A helper structure; ham_env_t is declared in ham/hamsterdb.h as an
- * opaque C structure, but internally we use a C++ class. The ham_env_t
- * struct satisfies the C compiler, and internally we just cast the pointers.
- */
-struct ham_env_t {
-    int dummy;
-};
 
 struct db_indexdata_t;
 typedef struct db_indexdata_t db_indexdata_t;
@@ -566,10 +570,43 @@ class Environment
         return (m_log_directory);
     }
 
+    /** get the blob manager */
+    BlobManager *get_blob_manager() {
+        return (&m_blob_manager);
+    }
+
+    /** get the duplicate manager */
+    DuplicateManager *get_duplicate_manager() {
+        return (&m_duplicate_manager);
+    }
+
+    /** locks the Environment and flushes the committed transactions to disk;
+     * this is the worker function for the background thread
+     */
+    ham_status_t flush_committed_txns();
+
     /** get the mutex */
     Mutex &get_mutex() {
         return (m_mutex);
     }
+
+    /** worker function for the background thread */
+    void async_flush_thread();
+
+    /** signal a commit of a transaction; this will either start
+     * the worker thread or immediately flush to disk
+     */
+    ham_status_t signal_commit();
+
+    /** async background flusher */
+    // TODO make this private
+    boost::thread *m_async_thread;
+    boost::condition m_async_cond;
+    Mutex m_async_mutex;
+
+    /** ask async thread to exit */
+    // TODO make this private
+    bool m_exit_async;
 
   private:
     /** a mutex for this Environment */
@@ -651,6 +688,12 @@ class Environment
 
     /** the directory of the log file and journal files */
     std::string m_log_directory;
+
+    /** the BlobManager */
+    BlobManager m_blob_manager;
+
+    /** the DuplicateManager */
+    DuplicateManager m_duplicate_manager;
 };
 
 /**
@@ -727,12 +770,6 @@ extern void
 env_remove_txn(Environment *env, Transaction *txn);
 
 /*
- * flush all committed Transactions to disk
- */
-extern ham_status_t
-env_flush_committed_txns(Environment *env);
-
-/*
  * increments the lsn and returns the incremended value; if the lsn
  * overflows, HAM_LIMITS_REACHED is returned
  *
@@ -747,5 +784,6 @@ env_get_incremented_lsn(Environment *env, ham_u64_t *lsn);
 extern ham_status_t
 env_purge_cache(Environment *env);
 
+} // namespace ham
 
 #endif /* HAM_ENV_H__ */

@@ -22,6 +22,19 @@
 #include "util.h"
 #include "error.h"
 
+/**
+ * A helper structure; ham_txn_t is declared in ham/hamsterdb.h as an
+ * opaque C structure, but internally we use a C++ class. The ham_txn_t
+ * struct satisfies the C compiler, and internally we just cast the pointers.
+ */
+struct ham_txn_t
+{
+    int dummy;
+};
+
+
+namespace ham {
+
 class Transaction;
 
 /**
@@ -265,16 +278,6 @@ typedef struct txn_optree_t
 #define txn_optree_set_db(t, d)     (t)->_db=d
 
 /**
- * A helper structure; ham_txn_t is declared in ham/hamsterdb.h as an
- * opaque C structure, but internally we use a C++ class. The ham_txn_t
- * struct satisfies the C compiler, and internally we just cast the pointers.
- */
-struct ham_txn_t
-{
-    int dummy;
-};
-
-/**
  * a Transaction structure
  */
 class Transaction
@@ -317,13 +320,11 @@ class Transaction
 
     /** Get the memory buffer for the key data */
     ByteArray &get_key_arena() {
-        ham_assert(!(_flags&HAM_TXN_TEMPORARY), (""));
         return (m_key_arena);
     }
 
     /** Get the memory buffer for the record data */
     ByteArray &get_record_arena() {
-        ham_assert(!(_flags&HAM_TXN_TEMPORARY), (""));
         return (m_record_arena);
     }
 
@@ -525,6 +526,8 @@ txn_free_ops(Transaction *txn);
  */
 extern void
 txn_free(Transaction *txn);
+
+} // namespace ham
 
 
 #endif /* HAM_TXN_H__ */

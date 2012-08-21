@@ -12,6 +12,8 @@
 #include "internal_preparation.h"
 
 
+namespace ham {
+
 ham_status_t
 txn_cursor_create(Database *db, Transaction *txn, ham_u32_t flags,
                 txn_cursor_t *cursor, Cursor *parent)
@@ -142,7 +144,7 @@ __move_top_in_node(txn_cursor_t *cursor, txn_opnode_t *node, txn_op_t *op,
                 return (HAM_KEY_ERASED_IN_TXN);
             }
             /* everything else is a bug! */
-            ham_assert(txn_op_get_flags(op)==TXN_OP_NOP, (""));
+            ham_assert(txn_op_get_flags(op)==TXN_OP_NOP);
         }
         else if (txn_get_flags(optxn)&TXN_STATE_ABORTED)
             ; /* nop */
@@ -200,7 +202,7 @@ txn_cursor_move(txn_cursor_t *cursor, ham_u32_t flags)
         node=txn_op_get_node(op);
         op=0;
 
-        ham_assert(!txn_cursor_is_nil(cursor), (""));
+        ham_assert(!txn_cursor_is_nil(cursor));
 
         /* first move to the next key in the current node; if we fail,
          * then move to the next node. repeat till we've found a key or
@@ -223,7 +225,7 @@ txn_cursor_move(txn_cursor_t *cursor, ham_u32_t flags)
         node=txn_op_get_node(op);
         op=0;
 
-        ham_assert(!txn_cursor_is_nil(cursor), (""));
+        ham_assert(!txn_cursor_is_nil(cursor));
 
         /* first move to the previous key in the current node; if we fail,
          * then move to the previous node. repeat till we've found a key or
@@ -239,7 +241,7 @@ txn_cursor_move(txn_cursor_t *cursor, ham_u32_t flags)
         }
     }
     else {
-        ham_assert(!"this flag is not yet implemented", (""));
+        ham_assert(!"this flag is not yet implemented");
     }
 
     return (0);
@@ -251,7 +253,7 @@ txn_cursor_is_erased(txn_cursor_t *cursor)
     txn_op_t *op=txn_cursor_get_coupled_op(cursor);
     txn_opnode_t *node=txn_op_get_node(op);
 
-    ham_assert(!txn_cursor_is_nil(cursor), (""));
+    ham_assert(!txn_cursor_is_nil(cursor));
 
     /* move to the newest op and check if it erased the key */
     return (HAM_KEY_ERASED_IN_TXN
@@ -265,8 +267,8 @@ txn_cursor_is_erased_duplicate(txn_cursor_t *cursor)
     txn_opnode_t *node=txn_op_get_node(op);
     Cursor *pc=txn_cursor_get_parent(cursor);
 
-    ham_assert(!txn_cursor_is_nil(cursor), (""));
-    ham_assert(pc->get_dupecache_index()!=0, (""));
+    ham_assert(!txn_cursor_is_nil(cursor));
+    ham_assert(pc->get_dupecache_index()!=0);
 
     op=txn_opnode_get_newest_op(node);
 
@@ -323,7 +325,7 @@ txn_cursor_find(txn_cursor_t *cursor, ham_key_t *key, ham_u32_t flags)
             return (HAM_KEY_NOT_FOUND);
     }
 
-    ham_assert(!"should never reach this", (""));
+    ham_assert(!"should never reach this");
     return (0);
 }
 
@@ -353,7 +355,7 @@ txn_cursor_get_key(txn_cursor_t *cursor, ham_key_t *key)
         txn_op_t *op=txn_cursor_get_coupled_op(cursor);
         txn_opnode_t *node=txn_op_get_node(op);
 
-        ham_assert(db==txn_opnode_get_db(node), (""));
+        ham_assert(db==txn_opnode_get_db(node));
         source=txn_opnode_get_key(node);
 
         key->size=source->size;
@@ -479,3 +481,4 @@ txn_cursor_erase(txn_cursor_t *cursor)
     return (0);
 }
 
+} // namespace ham

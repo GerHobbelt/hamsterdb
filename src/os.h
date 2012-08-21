@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <limits.h>
 
+namespace ham {
+
 /**
  * read data from a file with mmap
  *
@@ -33,7 +35,7 @@
  */
 extern ham_status_t
 os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
-            ham_offset_t size, ham_bool_t readonly, ham_u8_t **buffer);
+            ham_offset_t size, bool readonly, ham_u8_t **buffer);
 
 /**
  * unmap a buffer
@@ -117,5 +119,6 @@ os_flush(ham_fd_t fd);
 extern ham_status_t
 os_close(ham_fd_t fd);
 
+} // namespace ham
 
 #endif /* HAM_OS_H__ */

@@ -12,6 +12,7 @@
 
 #include "internal_preparation.h"
 
+namespace ham {
 
 #define PURGE_THRESHOLD       (500 * 1024 * 1024) /* 500 mb */
 #define DUMMY_LSN                               1
@@ -38,17 +39,17 @@ __calc_keys_cb(int event, void *param1, void *param2, void *context)
     c=(calckeys_context_t *)context;
 
     switch (event) {
-    case ENUM_EVENT_DESCEND:
+    case HAM_ENUM_EVENT_DESCEND:
         break;
 
-    case ENUM_EVENT_PAGE_START:
+    case HAM_ENUM_EVENT_PAGE_START:
         c->is_leaf=*(ham_bool_t *)param2;
         break;
 
-    case ENUM_EVENT_PAGE_STOP:
+    case HAM_ENUM_EVENT_PAGE_STOP:
         break;
 
-    case ENUM_EVENT_ITEM:
+    case HAM_ENUM_EVENT_ITEM:
         key=(btree_key_t *)param1;
         count=*(ham_size_t *)param2;
 
@@ -57,7 +58,7 @@ __calc_keys_cb(int event, void *param1, void *param2, void *context)
 
             if (!(c->flags&HAM_SKIP_DUPLICATES)
                     && (key_get_flags(key)&KEY_HAS_DUPLICATES)) {
-                ham_status_t st=blob_duplicate_get_count(c->db->get_env(),
+                ham_status_t st=c->db->get_env()->get_duplicate_manager()->get_count(
                             key_get_ptr(key), &dupcount, 0);
                 if (st)
                     return (st);
@@ -76,17 +77,17 @@ __calc_keys_cb(int event, void *param1, void *param2, void *context)
                  * of dupes (=1 if no dupes)
                  */
                 c->total_count+=(count-1)*dupcount;
-                return (CB_DO_NOT_DESCEND);
+                return (HAM_ENUM_DO_NOT_DESCEND);
             }
         }
         break;
 
     default:
-        ham_assert(!"unknown callback event", (""));
+        ham_assert(!"unknown callback event");
         break;
     }
 
-    return (CB_CONTINUE);
+    return (HAM_ENUM_CONTINUE);
 }
 
 
@@ -110,24 +111,24 @@ __free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context)
     c=(free_cb_context_t *)context;
 
     switch (event) {
-    case ENUM_EVENT_DESCEND:
+    case HAM_ENUM_EVENT_DESCEND:
         break;
 
-    case ENUM_EVENT_PAGE_START:
+    case HAM_ENUM_EVENT_PAGE_START:
         c->is_leaf=*(ham_bool_t *)param2;
         break;
 
-    case ENUM_EVENT_PAGE_STOP:
+    case HAM_ENUM_EVENT_PAGE_STOP:
         /* nop */
         break;
 
-    case ENUM_EVENT_ITEM:
+    case HAM_ENUM_EVENT_ITEM:
         key=(btree_key_t *)param1;
 
         if (key_get_flags(key)&KEY_IS_EXTENDED) {
             ham_offset_t blobid=key_get_extended_rid(c->db, key);
             /* delete the extended key */
-            st=extkey_remove(c->db, blobid);
+            st=c->db->remove_extkey(blobid);
             if (st)
                 return (st);
         }
@@ -148,11 +149,11 @@ __free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context)
         break;
 
     default:
-        ham_assert(!"unknown callback event", (0));
-        return (CB_STOP);
+        ham_assert(!"unknown callback event");
+        return (HAM_ENUM_STOP);
     }
 
-    return (CB_CONTINUE);
+    return (HAM_ENUM_CONTINUE);
 }
 
 inline ham_bool_t
@@ -263,6 +264,14 @@ Database::get_name(void)
     return (index_get_dbname(idx));
 }
 
+ham_status_t
+Database::remove_extkey(ham_offset_t blobid)
+{
+  if (get_extkey_cache())
+    get_extkey_cache()->remove(blobid);
+  return (get_env()->get_blob_manager()->free(this, blobid, 0));
+}
+
 Database::~Database()
 {
     /* trash all DB performance data */
@@ -316,11 +325,11 @@ db_default_prefix_compare(ham_db_t *db,
             return (-1);
         if (m>0)
             return (+1);
-        //ham_assert(lhs_real_length < rhs_real_length, (0));
+        //ham_assert(lhs_real_length < rhs_real_length);
 
         /* scenario (2) check: */
         if (lhs_length == lhs_real_length) {
-            ham_assert(lhs_real_length < rhs_real_length, (0));
+            ham_assert(lhs_real_length < rhs_real_length);
             return (-1);
         }
     }
@@ -331,11 +340,11 @@ db_default_prefix_compare(ham_db_t *db,
             return (-1);
         if (m>0)
             return (+1);
-        //ham_assert(lhs_real_length > rhs_real_length, (0));
+        //ham_assert(lhs_real_length > rhs_real_length);
 
         /* scenario (2) check: */
         if (rhs_length == rhs_real_length) {
-            ham_assert(lhs_real_length > rhs_real_length, (0));
+            ham_assert(lhs_real_length > rhs_real_length);
             return (+1);
         }
     }
@@ -434,7 +443,7 @@ Database::get_extended_key(ham_u8_t *key_data,
     ham_u8_t *ptr;
     Allocator *alloc=get_env()->get_allocator();
 
-    ham_assert(key_flags&KEY_IS_EXTENDED, ("key is not extended"));
+    ham_assert(key_flags&KEY_IS_EXTENDED);
 
     /*
      * make sure that we have an extended key-cache
@@ -457,7 +466,7 @@ Database::get_extended_key(ham_u8_t *key_data,
     if (!(get_env()->get_flags()&HAM_IN_MEMORY_DB)) {
         st=get_extkey_cache()->fetch(blobid, &temp, &ptr);
         if (!st) {
-            ham_assert(temp==key_length, ("invalid key length"));
+            ham_assert(temp==key_length);
 
             if (!(ext_key->flags&HAM_KEY_USER_ALLOC)) {
                 ext_key->data=(ham_u8_t *)alloc->alloc(key_length);
@@ -505,7 +514,7 @@ Database::get_extended_key(ham_u8_t *key_data,
     record.size=key_length-(db_get_keysize(this)-sizeof(ham_offset_t));
     record.flags=HAM_RECORD_USER_ALLOC;
 
-    st=blob_read(this, 0, blobid, &record, 0);
+    st=get_env()->get_blob_manager()->read(this, 0, blobid, &record, 0);
     if (st)
         return (st);
 
@@ -529,7 +538,7 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
     ham_bool_t allocated_by_me=HAM_FALSE;
 
     *page_ref = 0;
-    ham_assert(0==(flags&~(PAGE_IGNORE_FREELIST|PAGE_CLEAR_WITH_ZERO)), (0));
+    ham_assert(0==(flags&~(PAGE_IGNORE_FREELIST|PAGE_CLEAR_WITH_ZERO)));
 
     /* first, we ask the freelist for a page */
     if (!(flags&PAGE_IGNORE_FREELIST) && env->get_freelist()) {
@@ -537,8 +546,7 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
         if (st)
             return (st);
         if (tellpos) {
-            ham_assert(tellpos%env->get_pagesize()==0,
-                    ("page id %llu is not aligned", tellpos));
+            ham_assert(tellpos%env->get_pagesize()==0);
             /* try to fetch the page from the cache */
             page=env->get_cache()->get_page(tellpos, 0);
             if (page)
@@ -568,7 +576,7 @@ db_alloc_page_impl(Page **page_ref, Environment *env, Database *db,
         }
     }
 
-    ham_assert(tellpos==0, (0));
+    ham_assert(tellpos==0);
     st=page->allocate();
     if (st)
         return (st);
@@ -619,7 +627,7 @@ db_fetch_page_impl(Page **page_ref, Environment *env, Database *db,
     Page *page=0;
     ham_status_t st;
 
-    ham_assert(0 == (flags & ~(HAM_HINTS_MASK|DB_ONLY_FROM_CACHE)), (0));
+    ham_assert(0 == (flags & ~(HAM_HINTS_MASK|DB_ONLY_FROM_CACHE)));
 
     *page_ref = 0;
 
@@ -627,7 +635,7 @@ db_fetch_page_impl(Page **page_ref, Environment *env, Database *db,
     page=env->get_cache()->get_page(address, Cache::NOREMOVE);
     if (page) {
         *page_ref = page;
-        ham_assert(page->get_pers(), (""));
+        ham_assert(page->get_pers());
         /* store the page in the changeset if recovery is enabled */
         if (env->get_flags()&HAM_ENABLE_RECOVERY)
             env->get_changeset().add_page(page);
@@ -638,7 +646,7 @@ db_fetch_page_impl(Page **page_ref, Environment *env, Database *db,
         return (HAM_SUCCESS);
 
 #if HAM_DEBUG
-    ham_assert(env->get_cache()->get_page(address)==0, (""));
+    ham_assert(env->get_cache()->get_page(address)==0);
 #endif
 
     /* can we allocate a new page for the cache? */
@@ -654,7 +662,7 @@ db_fetch_page_impl(Page **page_ref, Environment *env, Database *db,
         return (st);
     }
 
-    ham_assert(page->get_pers(), (""));
+    ham_assert(page->get_pers());
 
     /* store the page in the cache */
     env->get_cache()->put_page(page);
@@ -697,7 +705,7 @@ db_flush_callback(Page *page, Database *db, ham_u32_t flags)
 ham_status_t
 db_flush_all(Cache *cache, ham_u32_t flags)
 {
-    ham_assert(0 == (flags & ~DB_FLUSH_NODELETE), (0));
+    ham_assert(0 == (flags & ~DB_FLUSH_NODELETE));
 
     if (!cache)
         return (0);
@@ -713,7 +721,7 @@ Database::clone_cursor(Cursor *src, Cursor **dest)
     /* fix the linked list of cursors */
     (*dest)->set_previous(0);
     (*dest)->set_next(get_cursors());
-    ham_assert(get_cursors()!=0, (0));
+    ham_assert(get_cursors()!=0);
     get_cursors()->set_previous(*dest);
     set_cursors(*dest);
 
@@ -733,7 +741,7 @@ Database::close_cursor(Cursor *cursor)
     /* decrease the transaction refcount; the refcount specifies how many
      * cursors are attached to the transaction */
     if (cursor->get_txn()) {
-        ham_assert(txn_get_cursor_refcount(cursor->get_txn())>0, (""));
+        ham_assert(txn_get_cursor_refcount(cursor->get_txn())>0);
         txn_set_cursor_refcount(cursor->get_txn(),
                 txn_get_cursor_refcount(cursor->get_txn())-1);
     }
@@ -840,7 +848,7 @@ __get_key_count_txn(txn_opnode_t *node, void *data)
                 }
             }
             else {
-                ham_assert(!"shouldn't be here", (""));
+                ham_assert(!"shouldn't be here");
                 return;
             }
         }
@@ -897,7 +905,7 @@ db_check_insert_conflicts(Database *db, Transaction *txn,
                     return (HAM_DUPLICATE_KEY);
             }
             else {
-                ham_assert(!"shouldn't be here", (""));
+                ham_assert(!"shouldn't be here");
                 return (HAM_DUPLICATE_KEY);
             }
         }
@@ -966,7 +974,7 @@ db_check_erase_conflicts(Database *db, Transaction *txn,
                 return (0);
             }
             else {
-                ham_assert(!"shouldn't be here", (""));
+                ham_assert(!"shouldn't be here");
                 return (HAM_KEY_NOT_FOUND);
             }
         }
@@ -1377,7 +1385,7 @@ retry:
                 return (copy_record(db, txn, op, record));
             }
             else {
-                ham_assert(!"shouldn't be here", (""));
+                ham_assert(!"shouldn't be here");
                 return (HAM_KEY_NOT_FOUND);
             }
         }
@@ -1446,7 +1454,7 @@ retry:
                 use_btree=true;
         }
         else
-            ham_assert(!"shouldn't be here", (""));
+            ham_assert(!"shouldn't be here");
 
         if (use_btree) {
             if (txnkey.data)
@@ -1682,8 +1690,8 @@ DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key,
      */
     if (m_db->get_rt_flags()&HAM_RECORD_NUMBER) {
         if (flags&HAM_OVERWRITE) {
-            ham_assert(key->size==sizeof(ham_u64_t), (""));
-            ham_assert(key->data!=0, (""));
+            ham_assert(key->size==sizeof(ham_u64_t));
+            ham_assert(key->data!=0);
             recno=*(ham_u64_t *)key->data;
         }
         else {
@@ -1745,7 +1753,7 @@ DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key,
                 key->data=0;
                 key->size=0;
             }
-            ham_assert(st!=HAM_DUPLICATE_KEY, ("duplicate key in recno db!"));
+            ham_assert(st!=HAM_DUPLICATE_KEY);
         }
 
         env->get_changeset().clear();
@@ -1766,7 +1774,7 @@ DatabaseImplementationLocal::insert(Transaction *txn, ham_key_t *key,
         }
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     if (local_txn)
         return (txn_commit(local_txn, 0));
@@ -1832,7 +1840,7 @@ DatabaseImplementationLocal::erase(Transaction *txn, ham_key_t *key,
     if (m_db->get_rt_flags()&HAM_RECORD_NUMBER)
         *(ham_offset_t *)key->data=ham_db2h64(recno);
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     if (local_txn) {
         env->get_changeset().clear();
@@ -1886,8 +1894,8 @@ DatabaseImplementationLocal::find(Transaction *txn, ham_key_t *key,
 
     /* record number: make sure we have a number in little endian */
     if (m_db->get_rt_flags()&HAM_RECORD_NUMBER) {
-        ham_assert(key->size==sizeof(ham_u64_t), (""));
-        ham_assert(key->data!=0, (""));
+        ham_assert(key->size==sizeof(ham_u64_t));
+        ham_assert(key->data!=0);
         recno=*(ham_offset_t *)key->data;
         recno=ham_h2db64(recno);
         *(ham_offset_t *)key->data=recno;
@@ -1934,7 +1942,7 @@ DatabaseImplementationLocal::find(Transaction *txn, ham_key_t *key,
         return (st);
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
     env->get_changeset().clear();
 
     if (local_txn)
@@ -1992,8 +2000,8 @@ DatabaseImplementationLocal::cursor_insert(Cursor *cursor, ham_key_t *key,
      */
     if (m_db->get_rt_flags()&HAM_RECORD_NUMBER) {
         if (flags&HAM_OVERWRITE) {
-            ham_assert(key->size==sizeof(ham_u64_t), (""));
-            ham_assert(key->data!=0, (""));
+            ham_assert(key->size==sizeof(ham_u64_t));
+            ham_assert(key->data!=0);
             recno=*(ham_u64_t *)key->data;
         }
         else {
@@ -2068,7 +2076,7 @@ DatabaseImplementationLocal::cursor_insert(Cursor *cursor, ham_key_t *key,
                 ham_size_t i;
                 txn_cursor_t *txnc=cursor->get_txn_cursor();
                 txn_op_t *op=txn_cursor_get_coupled_op(txnc);
-                ham_assert(op!=0, (""));
+                ham_assert(op!=0);
 
                 for (i=0; i<dc->get_count(); i++) {
                     DupeCacheLine *l=dc->get_element(i);
@@ -2104,7 +2112,7 @@ DatabaseImplementationLocal::cursor_insert(Cursor *cursor, ham_key_t *key,
                 key->data=0;
                 key->size=0;
             }
-            ham_assert(st!=HAM_DUPLICATE_KEY, ("duplicate key in recno db!"));
+            ham_assert(st!=HAM_DUPLICATE_KEY);
         }
 
         env->get_changeset().clear();
@@ -2128,7 +2136,7 @@ DatabaseImplementationLocal::cursor_insert(Cursor *cursor, ham_key_t *key,
         }
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     /* set a flag that the cursor just completed an Insert-or-find
      * operation; this information is needed in ham_cursor_move */
@@ -2177,8 +2185,8 @@ DatabaseImplementationLocal::cursor_erase(Cursor *cursor, ham_u32_t flags)
     /* on success: verify that cursor is now nil */
     if (st==0) {
         cursor->couple_to_btree();
-        ham_assert(txn_cursor_is_nil(cursor->get_txn_cursor()), (""));
-        ham_assert(cursor->is_nil(0), (""));
+        ham_assert(txn_cursor_is_nil(cursor->get_txn_cursor()));
+        ham_assert(cursor->is_nil(0));
         cursor->clear_dupecache();
     }
     else {
@@ -2188,7 +2196,7 @@ DatabaseImplementationLocal::cursor_erase(Cursor *cursor, ham_u32_t flags)
         return (st);
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     /* no need to append the journal entry - it's appended in db_erase_txn(),
      * which is called by txn_cursor_erase() */
@@ -2273,7 +2281,7 @@ DatabaseImplementationLocal::cursor_find(Cursor *cursor, ham_key_t *key,
                  * references the FIRST duplicate (idx 1) then we have
                  * to check if there are other duplicates */
                 txn_op_t *op=txn_cursor_get_coupled_op(txnc);
-                ham_assert(txn_op_get_flags(op)&TXN_OP_ERASE, (""));
+                ham_assert(txn_op_get_flags(op)&TXN_OP_ERASE);
                 if (!txn_op_get_referenced_dupe(op)) {
                     // ALL!
                     st=HAM_KEY_NOT_FOUND;
@@ -2382,7 +2390,7 @@ bail:
         }
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     /* set a flag that the cursor just completed an Insert-or-find
      * operation; this information is needed in ham_cursor_move */
@@ -2444,7 +2452,7 @@ DatabaseImplementationLocal::cursor_get_duplicate_count(Cursor *cursor,
         return (st);
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     /* set a flag that the cursor just completed an Insert-or-find
      * operation; this information is needed in ham_cursor_move */
@@ -2507,7 +2515,7 @@ DatabaseImplementationLocal::cursor_get_record_size(Cursor *cursor,
         return (st);
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     /* set a flag that the cursor just completed an Insert-or-find
      * operation; this information is needed in ham_cursor_move */
@@ -2578,7 +2586,7 @@ DatabaseImplementationLocal::cursor_overwrite(Cursor *cursor,
         return (st);
     }
 
-    ham_assert(st==0, (""));
+    ham_assert(st==0);
 
     /* the journal entry is appended in db_insert_txn() */
 
@@ -2721,8 +2729,7 @@ db_close_callback(Page *page, Database *db, ham_u32_t flags)
             (!(page->get_flags()&Page::NPERS_NO_HEADER)) &&
                 (page->get_type()==Page::TYPE_B_ROOT ||
                     page->get_type()==Page::TYPE_B_INDEX)) {
-            ham_assert(page->get_db(),
-                ("Must be set as page owner when this is a Btree page"));
+            ham_assert(page->get_db());
             Backend *backend=page->get_db()->get_backend();
             BtreeBackend *be=dynamic_cast<BtreeBackend *>(backend);
             if (be)
@@ -2848,7 +2855,7 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
         }
     }
     if (env && env->get_header_page()) {
-        ham_assert(env->get_header_page(), (0));
+        ham_assert(env->get_header_page());
         env->get_header_page()->set_db(newowner);
     }
 
@@ -2874,3 +2881,4 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
     return (st2);
 }
 
+} // namespace ham

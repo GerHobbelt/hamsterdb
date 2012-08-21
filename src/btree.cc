@@ -16,6 +16,7 @@
 
 #include "internal_preparation.h"
 
+namespace ham {
 
 /**
  * perform a binary search for the *smallest* element, which is >= the
@@ -32,7 +33,7 @@ btree_get_slot(Database *db, Page *page,
     ham_s32_t i;
     ham_s32_t last = MAX_KEYS_PER_NODE + 1;
 
-    ham_assert(btree_node_get_count(node)>0, ("node is empty"));
+    ham_assert(btree_node_get_count(node)>0);
 
     /* only one element in this node?  */
     if (r==0) {
@@ -51,8 +52,8 @@ btree_get_slot(Database *db, Page *page,
         if (i==last) {
             *slot=i;
             cmp=1;
-            ham_assert(i>=0, (0));
-            ham_assert(i<(int)MAX_KEYS_PER_NODE+1, (0));
+            ham_assert(i>=0);
+            ham_assert(i<(int)MAX_KEYS_PER_NODE+1);
             break;
         }
 
@@ -70,7 +71,7 @@ btree_get_slot(Database *db, Page *page,
         /* if the key is bigger than the item: search "to the left" */
         if (cmp<0) {
             if (r==0) {
-                ham_assert(i==0, (0));
+                ham_assert(i==0);
                 *slot=-1;
                 break;
             }
@@ -191,7 +192,7 @@ BtreeBackend::do_create(ham_u16_t keysize, ham_u32_t flags)
         return (st);
 
     memset(root->get_raw_payload(), 0,
-            sizeof(btree_node_t)+sizeof(page_data_t));
+            sizeof(btree_node_t)+sizeof(PageData));
     root->set_type(Page::TYPE_B_ROOT);
     root->set_dirty(true);
 
@@ -321,16 +322,12 @@ BtreeBackend::do_uncouple_all_cursors(Page *page, ham_size_t start)
     return (btree_uncouple_all_cursors(page, start));
 }
 
-/**
- * Remove all extended keys for the given @a page from the
- * extended key cache.
- */
 ham_status_t
 BtreeBackend::free_page_extkeys(Page *page, ham_u32_t flags)
 {
     Database *db=get_db();
 
-    ham_assert(page->get_db() == db, (0));
+    ham_assert(page->get_db() == db);
 
     /*
      * if this page has a header, and it's either a B-Tree root page or
@@ -347,8 +344,8 @@ BtreeBackend::free_page_extkeys(Page *page, ham_u32_t flags)
         btree_node_t *node=page_get_btree_node(page);
         ExtKeyCache *c;
 
-        ham_assert(db, ("Must be set as page owner when this is a Btree page"));
-        ham_assert(db==page->get_db(), (""));
+        ham_assert(db);
+        ham_assert(db==page->get_db());
         c=db->get_extkey_cache();
 
         for (i=0; i<btree_node_get_count(node); i++) {
@@ -382,8 +379,8 @@ btree_traverse_tree(Page **page_ref, ham_s32_t *idxptr,
      * make sure that we're not in a leaf page, and that the
      * page is not empty
      */
-    ham_assert(btree_node_get_count(node)>0, (0));
-    ham_assert(btree_node_get_ptr_left(node)!=0, (0));
+    ham_assert(btree_node_get_count(node)>0);
+    ham_assert(btree_node_get_ptr_left(node)!=0);
 
     st=btree_get_slot(db, page, key, &slot, 0);
     if (st) {
@@ -398,8 +395,7 @@ btree_traverse_tree(Page **page_ref, ham_s32_t *idxptr,
         return (db_fetch_page(page_ref, db, btree_node_get_ptr_left(node), 0));
     else {
         bte=btree_node_get_key(db, node, slot);
-        ham_assert(key_get_flags(bte)==0 || key_get_flags(bte)==KEY_IS_EXTENDED,
-                ("invalid key flags 0x%x", key_get_flags(bte)));
+        ham_assert(key_get_flags(bte)==0 || key_get_flags(bte)==KEY_IS_EXTENDED);
         return (db_fetch_page(page_ref, db, key_get_ptr(bte), 0));
     }
 }
@@ -421,7 +417,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
 
     st=btree_get_slot(db, page, key, &slot, &cmp);
     if (st) {
-        ham_assert(st < -1, (0));
+        ham_assert(st < -1);
         return (st);
     }
 
@@ -590,7 +586,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
         if (slot < 0)
             slot = 0;
 
-        ham_assert(slot <= btree_node_get_count(node) - 1, (0));
+        ham_assert(slot <= btree_node_get_count(node) - 1);
 
         if (flags & HAM_FIND_LT_MATCH) {
             if (cmp < 0) {
@@ -602,7 +598,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
                     cmp = 0;
                 }
                 else if (flags & HAM_FIND_GT_MATCH) {
-                    ham_assert(slot == 0, (0));
+                    ham_assert(slot == 0);
                     ham_key_set_intflags(key, ham_key_get_intflags(key)
                                         | KEY_IS_GT);
                     cmp = 0;
@@ -610,7 +606,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
             }
             else {
                 /* key @ slot is SMALLER than the key we search for */
-                ham_assert(cmp > 0, (0));
+                ham_assert(cmp > 0);
                 ham_key_set_intflags(key, ham_key_get_intflags(key)
                                         | KEY_IS_LT);
                 cmp = 0;
@@ -618,7 +614,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
         }
         else if (flags&HAM_FIND_GT_MATCH)   {
             /* When we get here, we're sure HAM_FIND_LT_MATCH is NOT set... */
-            ham_assert(!(flags&HAM_FIND_LT_MATCH), (0));
+            ham_assert(!(flags&HAM_FIND_LT_MATCH));
 
             if (cmp < 0) {
                 /* key @ slot is LARGER than the key we search for ... */
@@ -629,7 +625,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
             else
             {
                 /* key @ slot is SMALLER than the key we search for */
-                ham_assert(cmp > 0, (0));
+                ham_assert(cmp > 0);
                 if (slot < btree_node_get_count(node) - 1) {
                     slot++;
                     ham_key_set_intflags(key, ham_key_get_intflags(key)
@@ -643,7 +639,7 @@ btree_node_search_by_key(Database *db, Page *page, ham_key_t *key,
     if (cmp)
         return (-1);
 
-    ham_assert(slot >= -1, (0));
+    ham_assert(slot >= -1);
     return (slot);
 }
 
@@ -745,7 +741,7 @@ btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
             return (st);
         }
 
-        ham_assert(dest->data!=0, ("invalid extended key"));
+        ham_assert(dest->data!=0);
 
         if (!(dest->flags&HAM_KEY_USER_ALLOC)) {
             if (keysize)
@@ -780,8 +776,8 @@ btree_read_key(Database *db, Transaction *txn, btree_key_t *source,
      */
     if (db->get_rt_flags()&HAM_RECORD_NUMBER) {
         ham_u64_t recno;
-        ham_assert(dest->data!=0, ("this should never happen."));
-        ham_assert(dest->size==sizeof(ham_u64_t), (0));
+        ham_assert(dest->data!=0);
+        ham_assert(dest->size==sizeof(ham_u64_t));
         recno=*(ham_u64_t *)dest->data;
         recno=ham_db2h64(recno);
         memcpy(dest->data, &recno, sizeof(ham_u64_t));
@@ -806,8 +802,7 @@ btree_read_record(Database *db, Transaction *txn, ham_record_t *record,
      */
     if (record->_intflags&KEY_HAS_DUPLICATES) {
         dupe_entry_t entry;
-        ham_status_t st=blob_duplicate_get(db->get_env(), record->_rid,
-                                            0, &entry);
+        ham_status_t st=db->get_env()->get_duplicate_manager()->get(record->_rid, 0, &entry);
         if (st)
             return st;
         record->_intflags=dupe_entry_get_flags(&entry);
@@ -868,7 +863,8 @@ btree_read_record(Database *db, Transaction *txn, ham_record_t *record,
         }
     }
     else if (!noblob && blobsize != 0) {
-        return (blob_read(db, txn, record->_rid, record, flags));
+        return (db->get_env()->get_blob_manager()->read(db, txn,
+                    record->_rid, record, flags));
     }
 
     return (HAM_SUCCESS);
@@ -922,3 +918,4 @@ btree_copy_key_int2pub(Database *db, const btree_key_t *source, ham_key_t *dest)
     return (HAM_SUCCESS);
 }
 
+} // namespace ham

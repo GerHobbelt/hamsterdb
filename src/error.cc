@@ -12,11 +12,14 @@
 
 #include "internal_preparation.h"
 
+#include "internal_fwd_decl.h"
 
-static int         g_level   =0;
-static const char *g_file    =0;
-static int         g_line    =0;
-static const char *g_expr    =0;
+namespace ham {
+
+static int     g_level   =0;
+static const char *g_file  =0;
+static int     g_line  =0;
+static const char *g_expr  =0;
 static const char *g_function=0;
 
 void (*ham_test_abort)(void);
@@ -46,25 +49,18 @@ dbg_errhandler(int level, const char *message)
 
 static ham_errhandler_fun g_hand = dbg_errhandler;
 
-void HAM_CALLCONV
-ham_set_errhandler(ham_errhandler_fun f)
-{
-  if (f)
-    g_hand = f;
-  else
-    g_hand = dbg_errhandler;
-}
+static Mutex dbg_mutex;
 
 void
 dbg_lock(void)
 {
-  /* not yet needed, we do not yet support multithreading */
+  dbg_mutex.lock();
 }
 
 void
 dbg_unlock(void)
 {
-  /* not yet needed, we do not yet support multithreading */
+  dbg_mutex.unlock();
 }
 
 void
@@ -131,5 +127,18 @@ dbg_verify_failed(const char *format, ...)
     ExitProcess(-1);
 #endif
   }
+}
+
+} // namespace ham
+
+// global namespace...
+
+void HAM_CALLCONV
+ham_set_errhandler(ham_errhandler_fun f)
+{
+  if (f)
+    ham::g_hand = f;
+  else
+    ham::g_hand = ham::dbg_errhandler;
 }
 

@@ -19,17 +19,22 @@
 
 #include "internal_fwd_decl.h"
 
+namespace ham {
+
 /**
 * @defgroup ham_cb_status hamsterdb Backend Node/Page Enumerator Status Codes
 * @{
 */
+enum {
+  /** continue with the traversal */
+  HAM_ENUM_CONTINUE                 = 0,
 
-/** continue with the traversal */
-#define CB_CONTINUE            0
-/** do not not descend another level (or descend from page to key traversal) */
-#define CB_DO_NOT_DESCEND    1
-/** stop the traversal entirely */
-#define CB_STOP                2
+  /** do not not descend another level (or from page to key traversal) */
+  HAM_ENUM_DO_NOT_DESCEND           = 1,
+
+  /** stop the traversal entirely */
+  HAM_ENUM_STOP                     = 2
+};
 
 /**
  * @}
@@ -43,28 +48,30 @@
  * @param event one of the @ref ham_cb_event state codes
  *
  * @return one of the @ref ham_cb_status values or a @ref ham_status_codes
- *         error code when an error occurred.
+ *     error code when an error occurred.
  */
 typedef ham_status_t (*ham_enumerate_cb_t)(int event, void *param1,
-                    void *param2, void *context);
+          void *param2, void *context);
 
 /**
 * @defgroup ham_cb_event hamsterdb Backend Node/Page Enumerator State Codes
 * @{
 */
 
-/** descend one level; param1 is an integer value with the new level */
-#define ENUM_EVENT_DESCEND      1
+enum {
+  /** descend one level; param1 is an integer value with the new level */
+  HAM_ENUM_EVENT_DESCEND            = 1,
 
-/** start of a new page; param1 points to the page */
-#define ENUM_EVENT_PAGE_START   2
+  /** start of a new page; param1 points to the page */
+  HAM_ENUM_EVENT_PAGE_START         = 2,
 
-/** end of a new page; param1 points to the page */
-#define ENUM_EVENT_PAGE_STOP    3
+  /** end of a new page; param1 points to the page */
+  HAM_ENUM_EVENT_PAGE_STOP          = 3,
 
-/** an item in the page; param1 points to the key; param2 is the index
- * of the key in the page */
-#define ENUM_EVENT_ITEM         4
+  /** an item in the page; param1 points to the key; param2 is the index
+   * of the key in the page */
+  HAM_ENUM_EVENT_ITEM               = 4
+};
 
 struct btree_cursor_t;
 
@@ -95,8 +102,7 @@ class Backend
      * was allocated and the file was opened
      */
     ham_status_t create(ham_u16_t keysize, ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_create(keysize, flags));
+      return (do_create(keysize, flags));
     }
 
     /**
@@ -106,8 +112,7 @@ class Backend
      * was allocated and the file was opened
      */
     ham_status_t open(ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_open(flags));
+      return (do_open(flags));
     }
 
     /**
@@ -116,8 +121,7 @@ class Backend
      * @remark this function is called before the file is closed
      */
     void close(ham_u32_t flags = 0) {
-        ScopedLock lock(m_mutex);
-        return (do_close(flags));
+      return (do_close(flags));
     }
 
     /**
@@ -125,8 +129,7 @@ class Backend
      * this does not flush the whole index!
      */
     ham_status_t flush_indexdata() {
-        ScopedLock lock(m_mutex);
-        return (do_flush_indexdata());
+      return (do_flush_indexdata());
     }
 
     /**
@@ -134,8 +137,7 @@ class Backend
      */
     ham_status_t find(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_find(txn, 0, key, record, flags));
+      return (do_find(txn, 0, key, record, flags));
     }
 
     /**
@@ -146,8 +148,7 @@ class Backend
      */
     ham_status_t insert(Transaction *txn, ham_key_t *key,
                     ham_record_t *record, ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_insert(txn, key, record, flags));
+      return (do_insert(txn, key, record, flags));
     }
 
     /**
@@ -155,24 +156,21 @@ class Backend
      */
     ham_status_t erase(Transaction *txn, ham_key_t *key,
                     ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_erase(txn, key, flags));
+      return (do_erase(txn, key, flags));
     }
 
     /**
      * iterate the whole tree and enumerate every item
      */
     ham_status_t enumerate(ham_enumerate_cb_t cb, void *context) {
-        ScopedLock lock(m_mutex);
-        return (do_enumerate(cb, context));
+      return (do_enumerate(cb, context));
     }
 
     /**
      * verify the whole tree
      */
     ham_status_t check_integrity() {
-        ScopedLock lock(m_mutex);
-        return (do_check_integrity());
+      return (do_check_integrity());
     }
 
     /**
@@ -180,8 +178,7 @@ class Backend
      */
     ham_status_t calc_keycount_per_page(ham_size_t *keycount,
                     ham_u16_t keysize) {
-        ScopedLock lock(m_mutex);
-        return (do_calc_keycount_per_page(keycount, keysize));
+      return (do_calc_keycount_per_page(keycount, keysize));
     }
 
     /**
@@ -191,36 +188,32 @@ class Backend
      * becoming invalid
      */
     ham_status_t uncouple_all_cursors(Page *page, ham_size_t start) {
-        ScopedLock lock(m_mutex);
-        return (do_uncouple_all_cursors(page, start));
+      return (do_uncouple_all_cursors(page, start));
     }
 
     /**
      * looks up a key, points cursor to this key
      */
     ham_status_t find_cursor(Transaction *txn, Cursor *cursor,
-                        ham_key_t *key, ham_record_t *record, ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_find(txn, cursor, key, record, flags));
+                    ham_key_t *key, ham_record_t *record, ham_u32_t flags) {
+      return (do_find(txn, cursor, key, record, flags));
     }
 
     /**
      * inserts a key, points cursor to the new key
      */
     ham_status_t insert_cursor(Transaction *txn, ham_key_t *key,
-                        ham_record_t *record, btree_cursor_t *cursor,
-                        ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_insert_cursor(txn, key, record, cursor, flags));
+                    ham_record_t *record, btree_cursor_t *cursor,
+                    ham_u32_t flags) {
+      return (do_insert_cursor(txn, key, record, cursor, flags));
     }
 
     /**
      * erases the key that the cursor points to
      */
     ham_status_t erase_cursor(Transaction *txn, ham_key_t *key,
-                        btree_cursor_t *cursor, ham_u32_t flags) {
-        ScopedLock lock(m_mutex);
-        return (do_erase_cursor(txn, key, cursor, flags));
+                    btree_cursor_t *cursor, ham_u32_t flags) {
+      return (do_erase_cursor(txn, key, cursor, flags));
     }
 
     /** implementation for flush_indexdata() */
@@ -229,53 +222,54 @@ class Backend
 
     /** get the database pointer */
     Database *get_db() {
-        return m_db;
+      return m_db;
     }
 
     /** get the key size */
     ham_u16_t get_keysize() {
-        return m_keysize;
+      return m_keysize;
     }
 
     /** set the key size */
     void set_keysize(ham_u16_t keysize) {
-        m_keysize=keysize;
+      m_keysize=keysize;
     }
 
     /** get the flags */
     ham_u32_t get_flags() {
-        return m_flags;
+      return m_flags;
     }
 
     /** set the flags */
     void set_flags(ham_u32_t flags) {
-        m_flags=flags;
+      m_flags = flags;
     }
 
     /** get the last used record number */
     ham_u64_t get_recno() {
-        return m_recno;
+      return m_recno;
     }
 
     /** set the last used record number */
     void set_recno(ham_u64_t recno) {
-        m_recno=recno;
+      m_recno = recno;
     }
 
     /** check whether this backend is active */
     bool is_active() {
-        return m_is_active;
+      return m_is_active;
     }
 
     /** set the is_active-flag */
     void set_active(bool b) {
-        m_is_active=b;
+      m_is_active = b;
     }
 
     /** implementation for find() */
     // TODO make this protected
     virtual ham_status_t do_find(Transaction *txn, Cursor *cursor,
-                    ham_key_t *key, ham_record_t *record, ham_u32_t flags) = 0;
+                            ham_key_t *key, ham_record_t *record,
+                            ham_u32_t flags) = 0;
 
   protected:
     /** implementation for create() */
@@ -289,11 +283,11 @@ class Backend
 
     /** implementation for insert() */
     virtual ham_status_t do_insert(Transaction *txn, ham_key_t *key,
-                    ham_record_t *record, ham_u32_t flags) = 0;
+                            ham_record_t *record, ham_u32_t flags) = 0;
 
     /** implementation for erase() */
     virtual ham_status_t do_erase(Transaction *txn, ham_key_t *key,
-                    ham_u32_t flags) = 0;
+                            ham_u32_t flags) = 0;
 
     /** implementation for enumerate() */
     virtual ham_status_t do_enumerate(ham_enumerate_cb_t cb, void *context) = 0;
@@ -304,25 +298,22 @@ class Backend
     /** implementation for calc_keycount_per_page */
     // TODO this is btree-private??
     virtual ham_status_t do_calc_keycount_per_page(ham_size_t *keycount,
-                    ham_u16_t keysize) = 0;
+                            ham_u16_t keysize) = 0;
 
     /** implementation for uncouple_all_cursors() */
     virtual ham_status_t do_uncouple_all_cursors(Page *page,
-                    ham_size_t start) = 0;
+                            ham_size_t start) = 0;
 
     /** implementation for insert_cursor() */
     virtual ham_status_t do_insert_cursor(Transaction *txn, ham_key_t *key,
-                    ham_record_t *record, btree_cursor_t *cursor,
-                    ham_u32_t flags) = 0;
+                            ham_record_t *record, btree_cursor_t *cursor,
+                            ham_u32_t flags) = 0;
 
     /** implementation for erase_cursor() */
     virtual ham_status_t do_erase_cursor(Transaction *txn, ham_key_t *key,
-                    btree_cursor_t *cursor, ham_u32_t flags) = 0;
+                            btree_cursor_t *cursor, ham_u32_t flags) = 0;
 
   private:
-    /** a mutex for this index backend */
-    Mutex m_mutex;
-
     /** pointer to the database object */
     Database *m_db;
 
@@ -339,4 +330,7 @@ class Backend
     ham_u32_t m_flags;
 };
 
+} // namespace ham
+
 #endif /* HAM_BACKEND_H__ */
+

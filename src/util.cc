@@ -12,6 +12,8 @@
 
 #include "internal_preparation.h"
 
+namespace ham {
+
 int
 util_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
@@ -24,4 +26,6 @@ util_vsnprintf(char *str, size_t size, const char *format, va_list ap)
     return (vsprintf(str, format, ap));
 #endif
 }
+
+} // namespace ham
 

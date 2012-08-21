@@ -32,6 +32,8 @@
 #include "error.h"
 #include "os.h"
 
+namespace ham {
+
 #if 0
 #  define os_log(x)      ham_log(x)
 #else
@@ -100,7 +102,7 @@ os_get_granularity(void)
 
 ham_status_t
 os_mmap(ham_fd_t fd, ham_fd_t *mmaph, ham_offset_t position,
-            ham_offset_t size, ham_bool_t readonly, ham_u8_t **buffer)
+            ham_offset_t size, bool readonly, ham_u8_t **buffer)
 {
   os_log(("os_mmap: fd=%d, position=%lld, size=%lld", fd, position, size));
 
@@ -486,7 +488,7 @@ os_close(ham_fd_t fd)
   ham_status_t st;
 
   /* on posix, we most likely don't want to close descriptors 0 and 1 */
-  ham_assert(fd != 0 && fd != 1, (""));
+  ham_assert(fd != 0 && fd != 1);
 
   /* unlock the file - this is default behaviour since 1.1.0 */
   st=lock_exclusive(fd, false);
@@ -499,3 +501,5 @@ os_close(ham_fd_t fd)
 
   return (HAM_SUCCESS);
 }
+
+} // namespace ham

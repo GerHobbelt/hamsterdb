@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2012 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,6 +19,7 @@
 
 #include "internal_fwd_decl.h"
 
+namespace ham {
 
 #include "packstart.h"
 
@@ -177,5 +178,6 @@ extern ham_status_t
 key_erase_record(Database *db, Transaction *txn, btree_key_t *key,
                 ham_size_t dupe_id, ham_u32_t flags);
 
+} // namespace ham
 
 #endif /* HAM_KEY_H__ */

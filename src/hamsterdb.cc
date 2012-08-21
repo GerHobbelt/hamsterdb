@@ -58,7 +58,7 @@ my_strncat_ex(char *buf, size_t buflen, const char *interject, const char *src)
         buf[buflen - 1] = 0;
         return (buf);
     }
-    ham_assert(!"shouldn't be here", (""));
+    ham_assert(!"shouldn't be here");
     return ((char *)"???");
 }
 
@@ -145,7 +145,7 @@ ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
                             (*buf ? "|" : ""), (unsigned int)flags);
         }
         else {
-            ham_assert(!"shouldn't be here", (""));
+            ham_assert(!"shouldn't be here");
             buf = (char *)"???";
         }
     }
@@ -204,7 +204,7 @@ ham_param2str(char *buf, size_t buflen, ham_u32_t name)
         break;
     }
 
-    ham_assert(!"shouldn't be here", (""));
+    ham_assert(!"shouldn't be here");
     return ("???");
 }
 
@@ -293,7 +293,7 @@ ham_txn_commit(ham_txn_t *htxn, ham_u32_t flags)
         lock=ScopedLock(env->get_mutex());
 
     /* mark this transaction as committed; will also call
-     * env_flush_committed_txns() to write committed transactions
+     * env->signal_commit() to write committed transactions
      * to disk */
     return (env->_fun_txn_commit(env, txn, flags));
 }
@@ -939,7 +939,7 @@ default_case:
                 dbs = DB_MAX_INDICES;
         }
     }
-    ham_assert(dbs != 0, (0));
+    ham_assert(dbs != 0);
 
     /*
      * return the fixed parameters
@@ -1041,7 +1041,7 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
 
 #if HAM_ENABLE_REMOTE
     atexit(curl_global_cleanup);
-    atexit(proto_shutdown);
+    atexit(Protocol::shutdown);
 #endif
 
     /*
@@ -1235,7 +1235,7 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
 
 #if HAM_ENABLE_REMOTE
     atexit(curl_global_cleanup);
-    atexit(proto_shutdown);
+    atexit(Protocol::shutdown);
 #endif
 
     /* make sure that this environment is not yet open/created */
@@ -1464,7 +1464,7 @@ ham_env_remove_file_filter(ham_env_t *henv, ham_file_filter_t *filter)
 
     if (head == filter) {
         if (head->_next) {
-            ham_assert(head->_prev != head, (0));
+            ham_assert(head->_prev != head);
             head->_next->_prev = head->_prev;
         }
         env->set_file_filter(head->_next);
@@ -1590,7 +1590,7 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
         return (0);
 
     /* make sure that the changeset is empty */
-    ham_assert(env->get_changeset().is_empty(), (""));
+    ham_assert(env->get_changeset().is_empty());
 
     /* auto-abort (or commit) all pending transactions */
     if (env && env->get_newest_txn()) {
@@ -1613,7 +1613,7 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
             t=n;
         }
         // make sure all Transactions are flushed
-        env_flush_committed_txns(env);
+        env->signal_commit();
     }
 
     /* close all databases?  */
@@ -1630,22 +1630,22 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
     }
 
     /* flush all transactions */
-    st=env_flush_committed_txns(env);
+    st=env->signal_commit();
     if (st)
         return (st);
-    ham_assert(env->get_changeset().is_empty(), (""));
-
-    /* when all transactions have been properly closed... */
-    if (env->is_active() && env->get_oldest_txn()) {
-        ham_assert(!"Should never get here; the db close loop above "
-                    "should've taken care of all TXNs", (0));
-        return (HAM_INTERNAL_ERROR);
-    }
+    ham_assert(env->get_changeset().is_empty());
 
     /* close the environment */
     st=env->_fun_close(env, flags);
     if (st)
         return (st);
+
+    /* when all transactions have been properly closed... */
+    if (env->is_active() && env->get_oldest_txn()) {
+        ham_assert(!"Should never get here; the db close loop above "
+                    "should've taken care of all TXNs");
+        return (HAM_INTERNAL_ERROR);
+    }
 
     /* delete all performance data */
     btree_stats_trash_globdata(env, env->get_global_perf_data());
@@ -2043,7 +2043,7 @@ __aes_after_read_cb(ham_env_t *henv, ham_file_filter_t *filter,
     ham_size_t i;
     ham_size_t blocks=page_size/16;
 
-    ham_assert(page_size%16==0, ("bogus pagesize"));
+    ham_assert(page_size%16==0);
 
     for (i = 0; i < blocks; i++) {
         aes_decrypt(&page_data[i*16], (ham_u8_t *)filter->userdata,
@@ -2059,7 +2059,7 @@ __aes_close_cb(ham_env_t *henv, ham_file_filter_t *filter)
     Environment *env=(Environment *)henv;
     Allocator *alloc=env->get_allocator();
 
-    ham_assert(alloc, (0));
+    ham_assert(alloc);
 
     if (filter) {
         if (filter->userdata) {
@@ -2161,7 +2161,7 @@ ham_env_enable_encryption(ham_env_t *henv, ham_u8_t key[16], ham_u32_t flags)
      * it; if it's garbage, the key is wrong and we return an error
      */
     if (db) {
-        page_header_t *ph;
+        PageHeader *ph;
 
         st=device->read(env->get_pagesize(), buffer, sizeof(buffer));
         if (st==0) {
@@ -2169,7 +2169,7 @@ ham_env_enable_encryption(ham_env_t *henv, ham_u8_t key[16], ham_u32_t flags)
                                 buffer, sizeof(buffer));
             if (st)
                 goto bail;
-            ph=(page_header_t *)buffer;
+            ph=(PageHeader *)buffer;
             if (ph->_reserved1 || ph->_reserved2) {
                 st=HAM_ACCESS_DENIED;
                 goto bail;
@@ -2299,7 +2299,7 @@ __zlib_after_read_cb(ham_db_t *hdb, ham_record_filter_t *filter,
     if (zret==Z_DATA_ERROR)
         st=HAM_INTEGRITY_VIOLATED;
     else if (zret==Z_OK) {
-        ham_assert(origsize==newsize, (""));
+        ham_assert(origsize==newsize);
         st=0;
     }
     else {
@@ -2748,9 +2748,8 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
     if (!env || !(*db)())
         return (0);
 
-    /* don't lock the env if it's private */
     ScopedLock lock;
-    if (!(flags&HAM_DONT_LOCK) && !(db->get_rt_flags(true)&DB_ENV_IS_PRIVATE))
+    if (!(flags&HAM_DONT_LOCK))// && !(db->get_rt_flags(true)&DB_ENV_IS_PRIVATE))
         lock=ScopedLock(env->get_mutex());
 
     /* check if this database is modified by an active transaction */
@@ -2806,7 +2805,7 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
         }
     }
     // make sure all Transactions are flushed
-    env_flush_committed_txns(env);
+    env->signal_commit();
 
     db->set_error(0);
 
@@ -3031,7 +3030,7 @@ ham_cursor_move(ham_cursor_t *hcursor, ham_key_t *key,
     st=(*db)()->cursor_move(cursor, key, record, flags);
 
     /* make sure that the changeset is empty */
-    ham_assert(env->get_changeset().is_empty(), (""));
+    ham_assert(env->get_changeset().is_empty());
 
     return (db->set_error(st));
 }
@@ -3429,7 +3428,7 @@ ham_remove_record_filter(ham_db_t *hdb, ham_record_filter_t *filter)
 
     if (head == filter) {
         if (head->_next) {
-            ham_assert(head->_prev != head, (0));
+            ham_assert(head->_prev != head);
             head->_next->_prev = head->_prev;
         }
         db->set_record_filter(head->_next);

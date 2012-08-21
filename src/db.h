@@ -30,9 +30,16 @@
 #include "btree.h"
 #include "mem.h"
 
+/**
+ * A helper structure; ham_db_t is declared in ham/hamsterdb.h as an
+ * opaque C structure, but internally we use a C++ class. The ham_db_t
+ * struct satisfies the C compiler, and internally we just cast the pointers.
+ */
+struct ham_db_t {
+    int dummy;
+};
 
-/** a magic and version indicator for the remote protocol */
-#define HAM_TRANSFER_MAGIC_V1   (('h'<<24)|('a'<<16)|('m'<<8)|'1')
+namespace ham {
 
 /**
  * the maximum number of indices (if this file is an environment with
@@ -115,6 +122,7 @@ HAM_PACK_0 struct HAM_PACK_1 db_indexdata_t
 
 #define index_clear_reserved(p)           { (p)->_reserved1=0;            \
                                             (p)->_reserved2=0; }
+class Database;
 
 /**
  * This helper class provides the actual implementation of the
@@ -123,7 +131,7 @@ HAM_PACK_0 struct HAM_PACK_1 db_indexdata_t
 class DatabaseImplementation
 {
   public:
-    DatabaseImplementation(Database *db)
+    DatabaseImplementation(ham::Database *db)
       : m_db(db) {
     }
 
@@ -192,7 +200,7 @@ class DatabaseImplementation
     virtual ham_status_t close(ham_u32_t flags) = 0;
 
   protected:
-    Database *m_db;
+    ham::Database *m_db;
 };
 
 /**
@@ -343,15 +351,6 @@ class DatabaseImplementationRemote : public DatabaseImplementation
 
 
 /**
- * A helper structure; ham_db_t is declared in ham/hamsterdb.h as an
- * opaque C structure, but internally we use a C++ class. The ham_db_t
- * struct satisfies the C compiler, and internally we just cast the pointers.
- */
-struct ham_db_t {
-    int dummy;
-};
-
-/**
  * The Database object
  */
 class Database
@@ -364,7 +363,7 @@ class Database
     ~Database();
 
     /** initialize the database for local use */
-    ham_status_t initialize_local(void) {
+    ham_status_t initialize_local() {
         if (m_impl)
             delete m_impl;
         m_impl=new DatabaseImplementationLocal(this);
@@ -539,7 +538,7 @@ class Database
     }
 
     /** check whether this database has been opened/created */
-    bool is_active(void) {
+    bool is_active() {
         return (m_is_active);
     }
 
@@ -575,7 +574,7 @@ class Database
 
 #if HAM_ENABLE_REMOTE
     /** get the remote database handle */
-    ham_u64_t get_remote_handle(void) {
+    ham_u64_t get_remote_handle() {
         return (m_remote_handle);
     }
 
@@ -586,12 +585,15 @@ class Database
 #endif
 
     /** get the transaction tree */
-    struct txn_optree_t *get_optree(void) {
+    struct txn_optree_t *get_optree() {
         return (&m_optree);
     }
 
     /** get the database name */
-    ham_u16_t get_name(void);
+    ham_u16_t get_name();
+
+    /** remove an extendex key from the cache and the blob */
+    ham_status_t remove_extkey(ham_offset_t blobid);
 
     /**
      * function which compares two keys
@@ -610,7 +612,7 @@ class Database
         /* need prefix compare? if no key is extended we can just call the
          * normal compare function */
         if (!(lhs->_flags&KEY_IS_EXTENDED) && !(rhs->_flags&KEY_IS_EXTENDED)) {
-            return (foo((ham_db_t *)this, (ham_u8_t *)lhs->data, lhs->size,
+            return (foo((::ham_db_t *)this, (ham_u8_t *)lhs->data, lhs->size,
                             (ham_u8_t *)rhs->data, rhs->size));
         }
 
@@ -626,7 +628,7 @@ class Database
             else
                 rhsprefixlen=rhs->size;
 
-            cmp=prefoo((ham_db_t *)this,
+            cmp=prefoo((::ham_db_t *)this,
                         (ham_u8_t *)lhs->data, lhsprefixlen, lhs->size,
                         (ham_u8_t *)rhs->data, rhsprefixlen, rhs->size);
             if (cmp<-1 && cmp!=HAM_PREFIX_REQUEST_FULLKEY)
@@ -653,7 +655,7 @@ class Database
             }
 
             /* 3. run the comparison function */
-            cmp=foo((ham_db_t *)this, (ham_u8_t *)lhs->data, lhs->size,
+            cmp=foo((::ham_db_t *)this, (ham_u8_t *)lhs->data, lhs->size,
                             (ham_u8_t *)rhs->data, rhs->size);
         }
         return (cmp);
@@ -683,7 +685,7 @@ class Database
                 return st;
             ham_assert(dest->data!=0, ("invalid extended key"));
             /* dest->size is set by db->get_extended_key() */
-            ham_assert(dest->size == source->size, (0));
+            ham_assert(dest->size == source->size);
             /* the extended flag is set later, when this key is inserted */
             dest->_flags=source->_flags&(~KEY_IS_EXTENDED);
         }
@@ -1009,5 +1011,6 @@ extern ham_status_t
 db_erase_txn(Database *db, Transaction *txn, ham_key_t *key, ham_u32_t flags,
                 struct txn_cursor_t *cursor);
 
+} // namespace ham
 
 #endif /* HAM_DB_H__ */

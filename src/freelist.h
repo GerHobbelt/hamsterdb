@@ -22,6 +22,7 @@
 #include "internal_fwd_decl.h"
 #include "freelist_statistics.h"
 
+namespace ham {
 
 /**
  * an entry in the freelist cache
@@ -169,9 +170,6 @@ class Freelist
                     freelist_global_hints_t *hints, ham_s32_t start_index);
 
   private:
-    /** a mutex to protect the freelist */
-    Mutex m_mutex;
-
     /** the Environment */
     Environment *m_env;
 
@@ -271,5 +269,6 @@ HAM_PACK_0 struct HAM_PACK_1 FreelistPayload
 /** get the v1.1.0+ persisted entry performance statistics */
 #define freel_get_statistics(fl)         &((fl)->_statistics)
 
+} // namespace ham
 
 #endif /* HAM_FREELIST_H__ */

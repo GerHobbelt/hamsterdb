@@ -15,6 +15,8 @@
 #include <stack>
 
 
+namespace ham {
+
 class DefaultAllocator : public Allocator
 {
     struct Lookasides
@@ -131,3 +133,4 @@ Allocator::create()
   return (new DefaultAllocator());
 }
 
+} // namespace ham

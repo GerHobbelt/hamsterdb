@@ -13,6 +13,8 @@
 #include "internal_preparation.h"
 
 
+namespace ham {
+
 /* stuff for rb.h */
 #ifndef __ssize_t_defined
 typedef signed ssize_t;
@@ -31,7 +33,7 @@ __cmpfoo(void *vlhs, void *vrhs)
     txn_opnode_t *rhs=(txn_opnode_t *)vrhs;
     Database *db=txn_opnode_get_db(lhs);
 
-    ham_assert(txn_opnode_get_db(lhs)==txn_opnode_get_db(rhs), (""));
+    ham_assert(txn_opnode_get_db(lhs)==txn_opnode_get_db(rhs));
     if (lhs==rhs)
         return (0);
 
@@ -49,7 +51,7 @@ rb_wrap(static, rbt_, txn_optree_t, txn_opnode_t, node, __cmpfoo)
 void
 txn_op_add_cursor(txn_op_t *op, struct txn_cursor_t *cursor)
 {
-    ham_assert(!txn_cursor_is_nil(cursor), (""));
+    ham_assert(!txn_cursor_is_nil(cursor));
 
     txn_cursor_set_coupled_next(cursor, txn_op_get_cursors(op));
     txn_cursor_set_coupled_previous(cursor, 0);
@@ -65,7 +67,7 @@ txn_op_add_cursor(txn_op_t *op, struct txn_cursor_t *cursor)
 void
 txn_op_remove_cursor(txn_op_t *op, struct txn_cursor_t *cursor)
 {
-    ham_assert(!txn_cursor_is_nil(cursor), (""));
+    ham_assert(!txn_cursor_is_nil(cursor));
 
     if (txn_op_get_cursors(op)==cursor) {
         txn_op_set_cursors(op, txn_cursor_get_coupled_next(cursor));
@@ -229,7 +231,7 @@ txn_opnode_create(Database *db, ham_key_t *key)
     Allocator *alloc=db->get_env()->get_allocator();
 
     /* make sure that a node with this key does not yet exist */
-    ham_assert(txn_opnode_get(db, key, 0)==0, (""));
+    ham_assert(txn_opnode_get(db, key, 0)==0);
 
     /* create the new node (with a copy for the key) */
     node=(txn_opnode_t *)alloc->alloc(sizeof(*node));
@@ -285,7 +287,7 @@ txn_opnode_append(Transaction *txn, txn_opnode_t *node, ham_u32_t orig_flags,
 
     /* store it in the chronological list which is managed by the node */
     if (!txn_opnode_get_newest_op(node)) {
-        ham_assert(txn_opnode_get_oldest_op(node)==0, (""));
+        ham_assert(txn_opnode_get_oldest_op(node)==0);
         txn_opnode_set_newest_op(node, op);
         txn_opnode_set_oldest_op(node, op);
     }
@@ -298,7 +300,7 @@ txn_opnode_append(Transaction *txn, txn_opnode_t *node, ham_u32_t orig_flags,
 
     /* store it in the chronological list which is managed by the transaction */
     if (!txn_get_newest_op(txn)) {
-        ham_assert(txn_get_oldest_op(txn)==0, (""));
+        ham_assert(txn_get_oldest_op(txn)==0);
         txn_set_newest_op(txn, op);
         txn_set_oldest_op(txn, op);
     }
@@ -348,13 +350,13 @@ txn_commit(Transaction *txn, ham_u32_t flags)
     Environment *env=txn_get_env(txn);
 
     /* are cursors attached to this txn? if yes, fail */
-    ham_assert(txn_get_cursor_refcount(txn)==0, (""));
+    ham_assert(txn_get_cursor_refcount(txn)==0);
 
     /* this transaction is now committed!  */
     txn_set_flags(txn, txn_get_flags(txn)|TXN_STATE_COMMITTED);
 
     /* now flush all committed Transactions to disk */
-    return (env_flush_committed_txns(env));
+    return (env->signal_commit());
 }
 
 ham_status_t
@@ -490,3 +492,4 @@ txn_free(Transaction *txn)
     delete txn;
 }
 
+} // namespace ham
