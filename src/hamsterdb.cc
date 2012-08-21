@@ -21,6 +21,8 @@
 #  include "protocol/protocol.h"
 #endif
 
+#include "worker.h"
+
 #ifndef HAM_DISABLE_ENCRYPTION
 #  include "../3rdparty/aes/aes.h"
 #endif
@@ -91,6 +93,10 @@ ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
     if (flags & HAM_DISABLE_VAR_KEYLEN) {
         flags &= ~HAM_DISABLE_VAR_KEYLEN;
         buf = my_strncat_ex(buf, buflen, NULL, "HAM_DISABLE_VAR_KEYLEN");
+    }
+    if (flags & HAM_DISABLE_ASYNCHRONOUS_FLUSH) {
+        flags &= ~HAM_DISABLE_ASYNCHRONOUS_FLUSH;
+        buf = my_strncat_ex(buf, buflen, NULL, "HAM_DISABLE_ASYNCHRONOUS_FLUSH");
     }
     if (flags & HAM_IN_MEMORY_DB)
     {
@@ -573,6 +579,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                         |HAM_USE_BTREE
                         |HAM_DONT_LOCK
                         |HAM_DISABLE_VAR_KEYLEN
+                        |HAM_DISABLE_ASYNCHRONOUS_FLUSH
                         |HAM_RECORD_NUMBER
                         |HAM_SORT_DUPLICATES
                         |(create ? HAM_ENABLE_DUPLICATES : 0))))
@@ -594,6 +601,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                         |HAM_USE_BTREE
                         |HAM_DISABLE_VAR_KEYLEN
                         |HAM_RECORD_NUMBER
+                        |HAM_DISABLE_ASYNCHRONOUS_FLUSH
                         |(create ? HAM_ENABLE_DUPLICATES : 0))))));
         return (HAM_INV_PARAMETER);
     }
@@ -1041,6 +1049,13 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
         return (HAM_INV_PARAMETER);
     }
 
+    if ((flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
+            && !(flags&HAM_ENABLE_TRANSACTIONS)) {
+        ham_trace(("flag HAM_DISABLE_ASYNCHRONOUS_FLUSH only allowed if "
+                "Transactions are enabled"));
+        return (HAM_INV_PARAMETER);
+    }
+
     ScopedLock lock(env->get_mutex());
 
 #if HAM_ENABLE_REMOTE
@@ -1232,6 +1247,13 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
 
     if (!env) {
         ham_trace(("parameter 'env' must not be NULL"));
+        return (HAM_INV_PARAMETER);
+    }
+
+    if ((flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
+            && !(flags&HAM_ENABLE_TRANSACTIONS)) {
+        ham_trace(("flag HAM_DISABLE_ASYNCHRONOUS_FLUSH only allowed if "
+                "Transactions are enabled"));
         return (HAM_INV_PARAMETER);
     }
 
@@ -1586,8 +1608,17 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
     }
 
     ScopedLock lock;
-    if (!(flags&HAM_DONT_LOCK))
+    if (!(flags&HAM_DONT_LOCK)) {
+        // join the worker thread before the mutex is locked
+        if (env->get_worker_thread())
+            env->get_worker_thread()->join();
         lock=ScopedLock(env->get_mutex());
+    }
+
+    if (env->get_worker_thread()) {
+        delete env->get_worker_thread();
+        env->set_worker_thread(0);
+    }
 
     /* it's ok to close an uninitialized Environment */
     if (!env->_fun_close)
@@ -1616,9 +1647,12 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
             }
             t=n;
         }
-        // make sure all Transactions are flushed
-        env->signal_commit();
     }
+
+    /* flush all committed transactions */
+    st=env->flush_committed_txns(true);
+    if (st)
+        return (st);
 
     /* close all databases?  */
     if (env->get_databases()) {
@@ -1633,10 +1667,6 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
         env->set_databases(0);
     }
 
-    /* flush all transactions */
-    st=env->signal_commit();
-    if (st)
-        return (st);
     ham_assert(env->get_changeset().is_empty());
 
     /* close the environment */
@@ -1650,7 +1680,6 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
                     "should've taken care of all TXNs");
         return (HAM_INTERNAL_ERROR);
     }
-
     /* delete all performance data */
     btree_stats_trash_globdata(env, env->get_global_perf_data());
 
@@ -2753,8 +2782,12 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
         return (0);
 
     ScopedLock lock;
-    if (!(flags&HAM_DONT_LOCK))// && !(db->get_rt_flags(true)&DB_ENV_IS_PRIVATE))
+    if (!(flags&HAM_DONT_LOCK)) {
+        // join the worker thread before the mutex is locked
+        if (env->get_worker_thread())
+            env->get_worker_thread()->join();
         lock=ScopedLock(env->get_mutex());
+    }
 
     /* check if this database is modified by an active transaction */
     txn_optree_t *tree=db->get_optree();
@@ -2797,11 +2830,11 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
                 ; /* nop */
             else {
                 if (flags&HAM_TXN_AUTO_COMMIT) {
-                    if ((st=ham_txn_commit((ham_txn_t *)t, 0)))
+                    if ((st=ham_txn_commit((ham_txn_t *)t, HAM_DONT_LOCK)))
                         return (st);
                 }
                 else { /* if (flags&HAM_TXN_AUTO_ABORT) */
-                    if ((st=ham_txn_abort((ham_txn_t *)t, 0)))
+                    if ((st=ham_txn_abort((ham_txn_t *)t, HAM_DONT_LOCK)))
                         return (st);
                 }
             }
@@ -2809,7 +2842,9 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
         }
     }
     // make sure all Transactions are flushed
-    env->signal_commit();
+    st=env->flush_committed_txns(true);
+    if (st)
+        return (st);
 
     db->set_error(0);
 
