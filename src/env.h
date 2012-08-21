@@ -595,35 +595,17 @@ class Environment
      * ALWAYS a worker thread, right?) */
     ham_status_t signal_commit();
 
-    /** set the worker thread 
+    /** set the worker thread
      * TODO move this into an implementation class */
     void set_worker_thread(Worker *thread) {
         m_worker_thread = thread;
     }
 
-    /** get the worker thread 
+    /** get the worker thread
      * TODO move this into an implementation class */
     Worker *get_worker_thread() {
         return (m_worker_thread);
     }
-
-    /** worker function for the background thread */
-    void async_flush_thread();
-
-    /** signal a commit of a transaction; this will either start
-     * the worker thread or immediately flush to disk
-     */
-    ham_status_t signal_commit();
-
-    /** async background flusher */
-    // TODO make this private
-    boost::thread *m_async_thread;
-    boost::condition m_async_cond;
-    Mutex m_async_mutex;
-
-    /** ask async thread to exit */
-    // TODO make this private
-    bool m_exit_async;
 
   private:
     /** a mutex for this Environment */

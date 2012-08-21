@@ -37,8 +37,7 @@ typedef struct free_cb_context_t
 } free_cb_context_t;
 
 Environment::Environment()
-  : m_async_thread(0), m_exit_async(false),
-    m_file_mode(0), m_txn_id(0), m_context(0), m_device(0), m_cache(0),
+  : m_file_mode(0), m_txn_id(0), m_context(0), m_device(0), m_cache(0),
     m_alloc(0), m_hdrpage(0), m_oldest_txn(0), m_newest_txn(0), m_log(0),
     m_journal(0), m_freelist(0), m_flags(0), m_databases(0), m_pagesize(0),
     m_cachesize(0), m_max_databases_cached(0), m_is_active(false),
@@ -520,14 +519,6 @@ fail_with_fake_cleansing:
                         HAM_DONT_CLEAR_LOG|HAM_DONT_LOCK);
             return (st);
         }
-    }
-
-    /* disable async flush if transactions are disabled or if it's an
-     * in-memory database */
-    if (flags&HAM_ENABLE_TRANSACTIONS
-            && !(flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
-            && !(flags&HAM_IN_MEMORY_DB)) {
-        env->m_async_thread=new boost::thread(boost::bind(&Environment::async_flush_thread, env));
     }
 
     /* disable async flush if transactions are disabled or if it's an

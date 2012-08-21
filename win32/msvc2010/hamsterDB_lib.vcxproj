@@ -482,6 +482,7 @@
     <ClInclude Include="..\..\src\txn_cursor.h" />
     <ClInclude Include="..\..\src\util.h" />
     <ClInclude Include="..\..\src\version.h" />
+    <ClInclude Include="..\..\src\worker.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\AUTHORS" />

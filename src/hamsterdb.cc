@@ -21,8 +21,6 @@
 #  include "protocol/protocol.h"
 #endif
 
-#include "worker.h"
-
 #ifndef HAM_DISABLE_ENCRYPTION
 #  include "../3rdparty/aes/aes.h"
 #endif
