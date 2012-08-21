@@ -21,3 +21,5 @@ configure       text eol=lf
 *.sln           text eol=crlf
 *.dsw           text eol=crlf
 *.dsp           text eol=crlf
+
+*.bat           text eol=crlf
