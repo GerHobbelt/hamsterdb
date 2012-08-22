@@ -183,7 +183,7 @@ btree_erase_impl(BtreeBackend *be, Transaction *txn, ham_key_t *key,
         btree_stats_update_erase_fail(db, &hints);
         return HAM_KEY_NOT_FOUND;
     }
-    st=db_fetch_page(&root, db, rootaddr, 0); // !! got the wrong flags before !!
+    st=db_fetch_page(&root, db, rootaddr, 0);
     if (st)
         return (st);
 
