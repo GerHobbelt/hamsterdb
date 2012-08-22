@@ -18,6 +18,9 @@
 using namespace ham;
 
 
+using namespace ham;
+
+
 /* a unittest hook triggered when a page is split */
 void (*g_BTREE_INSERT_SPLIT_HOOK)(void);
 

@@ -17,6 +17,8 @@
 
 using namespace ham;
 
+using namespace ham;
+
 
 ham_status_t
 BtreeBackend::do_find(Transaction *txn, Cursor *hcursor, ham_key_t *key,

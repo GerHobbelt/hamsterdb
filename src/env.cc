@@ -16,6 +16,8 @@ using namespace ham;
 
 #include "worker.h"
 
+using namespace ham;
+
 /*
  * forward decl - implemented in hamsterdb.cc
  */
