@@ -4,3 +4,6 @@
 [submodule "3rdparty/mongoose"]
 	path = 3rdparty/mongoose
 	url = git@github.com:GerHobbelt/mongoose.git
+[submodule "3rdparty/zlib"]
+	path = 3rdparty/zlib
+	url = git@github.com:GerHobbelt/zlib.git
