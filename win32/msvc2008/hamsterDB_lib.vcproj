@@ -517,6 +517,10 @@
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{9DE41B37-B0C0-4FB2-960B-3FC6544394C3}"
+			RelativePathToProject="..\..\3rdparty\zlib\libzlib_lib.2008.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter

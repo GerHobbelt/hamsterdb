@@ -511,14 +511,6 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="3rdparty_mongoose.vcxproj">
-      <Project>{fc4eff85-2c41-4ed6-a13e-eb98409de435}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
-    </ProjectReference>
     <ProjectReference Include="hamsterDB_dll.vcxproj">
       <Project>{b82d2df8-f8b2-4331-86d0-508bbd806507}</Project>
       <Private>true</Private>

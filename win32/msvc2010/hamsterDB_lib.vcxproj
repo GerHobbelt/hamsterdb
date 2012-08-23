@@ -583,9 +583,6 @@
     <ProjectReference Include="3rdparty_json.vcxproj">
       <Project>{6c5bf542-782b-4c2e-ad5a-0bc25ccef5da}</Project>
     </ProjectReference>
-    <ProjectReference Include="3rdparty_zlib.vcxproj">
-      <Project>{ab39816e-52c4-44ce-b8dd-604dca380173}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\blob.cc" />
