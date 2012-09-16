@@ -28,6 +28,7 @@
 #include "hamster_fixture.hpp"
 
 using namespace bfc;
+using namespace ham;
 
 
 class APIv110Test : public hamsterDB_fixture
@@ -62,7 +63,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_env_new(&m_env));
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY_DB, 0));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY, 0));
     }
 
     virtual void teardown()

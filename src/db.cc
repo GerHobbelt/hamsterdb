@@ -22,7 +22,7 @@ typedef struct
     Database *db;               /* [in] */
     ham_u32_t flags;            /* [in] */
     ham_offset_t total_count;   /* [out] */
-    ham_bool_t is_leaf;         /* [scratch] */
+    bool is_leaf;               /* [scratch] */
 }  calckeys_context_t;
 
 /*
@@ -32,7 +32,7 @@ typedef struct
 static ham_status_t
 __calc_keys_cb(int event, void *param1, void *param2, void *context)
 {
-    btree_key_t *key;
+    BtreeKey *key;
     calckeys_context_t *c;
     ham_size_t count;
 
@@ -43,23 +43,23 @@ __calc_keys_cb(int event, void *param1, void *param2, void *context)
         break;
 
     case HAM_ENUM_EVENT_PAGE_START:
-        c->is_leaf=*(ham_bool_t *)param2;
+        c->is_leaf=*(bool *)param2;
         break;
 
     case HAM_ENUM_EVENT_PAGE_STOP:
         break;
 
     case HAM_ENUM_EVENT_ITEM:
-        key=(btree_key_t *)param1;
+        key=(BtreeKey *)param1;
         count=*(ham_size_t *)param2;
 
         if (c->is_leaf) {
             ham_size_t dupcount=1;
 
             if (!(c->flags&HAM_SKIP_DUPLICATES)
-                    && (key_get_flags(key)&KEY_HAS_DUPLICATES)) {
+                    && (key->get_flags()&BtreeKey::KEY_HAS_DUPLICATES)) {
                 ham_status_t st=c->db->get_env()->get_duplicate_manager()->get_count(
-                            key_get_ptr(key), &dupcount, 0);
+                            key->get_ptr(), &dupcount, 0);
                 if (st)
                     return (st);
                 c->total_count+=dupcount;
@@ -94,7 +94,7 @@ __calc_keys_cb(int event, void *param1, void *param2, void *context)
 typedef struct free_cb_context_t
 {
     Database *db;
-    ham_bool_t is_leaf;
+    bool is_leaf;
 
 } free_cb_context_t;
 
@@ -105,7 +105,7 @@ ham_status_t
 __free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context)
 {
     ham_status_t st;
-    btree_key_t *key;
+    BtreeKey *key;
     free_cb_context_t *c;
 
     c=(free_cb_context_t *)context;
@@ -115,7 +115,7 @@ __free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context)
         break;
 
     case HAM_ENUM_EVENT_PAGE_START:
-        c->is_leaf=*(ham_bool_t *)param2;
+        c->is_leaf=*(bool *)param2;
         break;
 
     case HAM_ENUM_EVENT_PAGE_STOP:
@@ -123,26 +123,26 @@ __free_inmemory_blobs_cb(int event, void *param1, void *param2, void *context)
         break;
 
     case HAM_ENUM_EVENT_ITEM:
-        key=(btree_key_t *)param1;
+        key=(BtreeKey *)param1;
 
-        if (key_get_flags(key)&KEY_IS_EXTENDED) {
-            ham_offset_t blobid=key_get_extended_rid(c->db, key);
+        if (key->get_flags()&BtreeKey::KEY_IS_EXTENDED) {
+            ham_offset_t blobid=key->get_extended_rid(c->db);
             /* delete the extended key */
             st=c->db->remove_extkey(blobid);
             if (st)
                 return (st);
         }
 
-        if (key_get_flags(key)&(KEY_BLOB_SIZE_TINY
-                            |KEY_BLOB_SIZE_SMALL
-                            |KEY_BLOB_SIZE_EMPTY))
+        if (key->get_flags()&(BtreeKey::KEY_BLOB_SIZE_TINY
+                            |BtreeKey::KEY_BLOB_SIZE_SMALL
+                            |BtreeKey::KEY_BLOB_SIZE_EMPTY))
             break;
 
         /*
          * if we're in the leaf page, delete the blob
          */
         if (c->is_leaf) {
-            st=key_erase_record(c->db, 0, key, 0, HAM_ERASE_ALL_DUPLICATES);
+            st=key->erase_record(c->db, 0, 0, true);
             if (st)
                 return (st);
         }
@@ -166,7 +166,7 @@ __cache_needs_purge(Environment *env)
     /* purge the cache, if necessary. if cache is unlimited, then we purge very
      * very rarely (but we nevertheless purge to avoid OUT OF MEMORY conditions
      * which can happen on 32bit Windows) */
-    if (cache && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+    if (cache && !(env->get_flags()&HAM_IN_MEMORY)) {
         ham_bool_t purge=cache->is_too_big();
 #if defined(WIN32) && defined(HAM_32BIT)
         if (env->get_flags()&HAM_CACHE_UNLIMITED) {
@@ -249,8 +249,6 @@ Database::Database()
     m_indexdata_offset(0), m_record_filters(0), m_data_access_mode(0),
     m_is_active(0), m_impl(0)
 {
-    memset(&m_perf_data, 0, sizeof(m_perf_data));
-
 #if HAM_ENABLE_REMOTE
     m_remote_handle=0;
 #endif
@@ -274,9 +272,6 @@ Database::remove_extkey(ham_offset_t blobid)
 
 Database::~Database()
 {
-    /* trash all DB performance data */
-    btree_stats_trash_dbdata(this, get_perf_data());
-
     delete m_impl;
 }
 
@@ -312,9 +307,9 @@ db_default_prefix_compare(ham_db_t *db,
     Note:
 
     there's a 'tiny' caveat to it all: often these comparisons are between a database key
-    (btree_key_t based) and a user-specified key (ham_key_t based), where the latter will always
+    (BtreeKey based) and a user-specified key (ham_key_t based), where the latter will always
     appear in the LHS and the important part here is: ham_key_t-based comparisons will have
-    their key lengths possibly LARGER than the usual 'short' btree_key_t key length as the
+    their key lengths possibly LARGER than the usual 'short' BtreeKey key length as the
     ham_key_t data doesn't need extending - the result is that simply looking at the lhs_length
     is not good enough here to ensure the key is actually shorter than the other.
      */
@@ -443,7 +438,7 @@ Database::get_extended_key(ham_u8_t *key_data,
     ham_u8_t *ptr;
     Allocator *alloc=get_env()->get_allocator();
 
-    ham_assert(key_flags&KEY_IS_EXTENDED);
+    ham_assert(key_flags&BtreeKey::KEY_IS_EXTENDED);
 
     /*
      * make sure that we have an extended key-cache
@@ -452,18 +447,18 @@ Database::get_extended_key(ham_u8_t *key_data,
      * advantages; it only duplicates the data and wastes memory.
      * therefore we don't use it.
      */
-    if (!(get_env()->get_flags()&HAM_IN_MEMORY_DB)) {
+    if (!(get_env()->get_flags()&HAM_IN_MEMORY)) {
         if (!get_extkey_cache())
             set_extkey_cache(new ExtKeyCache(this));
     }
 
-    /* almost the same as: blobid = key_get_extended_rid(db, key); */
+    /* almost the same as: blobid = key->get_extended_rid(db); */
     memcpy(&blobid, key_data+(db_get_keysize(this)-sizeof(ham_offset_t)),
             sizeof(blobid));
     blobid=ham_db2h_offset(blobid);
 
     /* fetch from the cache */
-    if (!(get_env()->get_flags()&HAM_IN_MEMORY_DB)) {
+    if (!(get_env()->get_flags()&HAM_IN_MEMORY)) {
         st=get_extkey_cache()->fetch(blobid, &temp, &ptr);
         if (!st) {
             ham_assert(temp==key_length);
@@ -1321,7 +1316,7 @@ db_find_txn(Database *db, Transaction *txn,
     tree=db->get_optree();
 
     ham_key_set_intflags(key,
-        (ham_key_get_intflags(key)&(~KEY_IS_APPROXIMATE)));
+        (ham_key_get_intflags(key)&(~BtreeKey::KEY_IS_APPROXIMATE)));
 
     /* get the node for this key (but don't create a new one if it does
      * not yet exist) */
@@ -1358,19 +1353,19 @@ retry:
              */
             else if (txn_op_get_flags(op)&TXN_OP_ERASE) {
                 if (first_loop
-                        && !(ham_key_get_intflags(key)&KEY_IS_APPROXIMATE))
+                        && !(ham_key_get_intflags(key)&BtreeKey::KEY_IS_APPROXIMATE))
                     exact_is_erased=true;
                 first_loop=false;
                 if (flags&HAM_FIND_LT_MATCH) {
                     node=txn_opnode_get_previous_sibling(node);
                     ham_key_set_intflags(key,
-                        (ham_key_get_intflags(key)|KEY_IS_APPROXIMATE));
+                        (ham_key_get_intflags(key)|BtreeKey::KEY_IS_APPROXIMATE));
                     goto retry;
                 }
                 else if (flags&HAM_FIND_GT_MATCH) {
                     node=txn_opnode_get_next_sibling(node);
                     ham_key_set_intflags(key,
-                        (ham_key_get_intflags(key)|KEY_IS_APPROXIMATE));
+                        (ham_key_get_intflags(key)|BtreeKey::KEY_IS_APPROXIMATE));
                     goto retry;
                 }
                 return (HAM_KEY_NOT_FOUND);
@@ -1385,7 +1380,7 @@ retry:
                     || (txn_op_get_flags(op)&TXN_OP_INSERT_DUP)) {
                 // approx match? leave the loop and continue
                 // with the btree
-                if (ham_key_get_intflags(key)&KEY_IS_APPROXIMATE)
+                if (ham_key_get_intflags(key)&BtreeKey::KEY_IS_APPROXIMATE)
                     break;
                 // otherwise copy the record and return
                 return (copy_record(db, txn, op, record));
@@ -1407,11 +1402,11 @@ retry:
      * if there was an approximate match: check if the btree provides
      * a better match
      */
-    if (op && ham_key_get_intflags(key)&KEY_IS_APPROXIMATE) {
+    if (op && ham_key_get_intflags(key)&BtreeKey::KEY_IS_APPROXIMATE) {
         ham_key_t txnkey={0};
         ham_key_t *k=txn_opnode_get_key(txn_op_get_node(op));
         txnkey.size=k->size;
-        txnkey._flags=KEY_IS_APPROXIMATE;
+        txnkey._flags=BtreeKey::KEY_IS_APPROXIMATE;
         txnkey.data=db->get_env()->get_allocator()->alloc(txnkey.size);
         memcpy(txnkey.data, k->data, txnkey.size);
 
@@ -1440,7 +1435,7 @@ retry:
         else if (st)
             return (st);
         // the btree key is a direct match? then return it
-        if ((!(ham_key_get_intflags(key)&KEY_IS_APPROXIMATE))
+        if ((!(ham_key_get_intflags(key)&BtreeKey::KEY_IS_APPROXIMATE))
                 && (flags&HAM_FIND_EXACT_MATCH)) {
             if (txnkey.data)
                 db->get_env()->get_allocator()->free(txnkey.data);
@@ -1472,7 +1467,7 @@ retry:
                             flags|HAM_FIND_EXACT_MATCH);
             if (st==0)
                 ham_key_set_intflags(key,
-                    (ham_key_get_intflags(key)|KEY_IS_APPROXIMATE));
+                    (ham_key_get_intflags(key)|BtreeKey::KEY_IS_APPROXIMATE));
             return (st);
         }
         else { // use txn
@@ -1588,7 +1583,7 @@ DatabaseImplementationLocal::check_integrity(Transaction *txn)
     be=m_db->get_backend();
 
     /* check the cache integrity */
-    if (!(m_db->get_rt_flags()&HAM_IN_MEMORY_DB)) {
+    if (!(m_db->get_rt_flags()&HAM_IN_MEMORY)) {
         st=m_db->get_env()->get_cache()->check_integrity();
         if (st)
             return (st);
@@ -1823,8 +1818,6 @@ DatabaseImplementationLocal::erase(Transaction *txn, ham_key_t *key,
             return (st);
     }
 
-    db_update_global_stats_erase_query(m_db, key->size);
-
     /*
      * if transactions are enabled: append a 'erase key' operation into
      * the txn tree; otherwise immediately erase the key from disk
@@ -1914,8 +1907,6 @@ DatabaseImplementationLocal::find(Transaction *txn, ham_key_t *key,
         if (st)
             return (st);
     }
-
-    db_update_global_stats_find_query(m_db, key->size);
 
     /*
      * if transactions are enabled: read keys from transaction trees,
@@ -2049,9 +2040,7 @@ DatabaseImplementationLocal::cursor_insert(Cursor *cursor, ham_key_t *key,
      */
     temprec=*record;
     st=__record_filters_before_write(m_db, &temprec);
-    if (!st)
-        db_update_global_stats_insert_query(m_db, key->size, temprec.size);
-    else
+    if (st)
         return (st);
 
     /* if user did not specify a transaction, but transactions are enabled:
@@ -2166,8 +2155,6 @@ DatabaseImplementationLocal::cursor_erase(Cursor *cursor, ham_u32_t flags)
     Environment *env=m_db->get_env();
     Transaction *local_txn=0;
 
-    db_update_global_stats_erase_query(m_db, 0);
-
     /* if user did not specify a transaction, but transactions are enabled:
      * create a temporary one */
     if (!cursor->get_txn()
@@ -2242,8 +2229,6 @@ DatabaseImplementationLocal::cursor_find(Cursor *cursor, ham_key_t *key,
         recno=ham_h2db64(recno);
         *(ham_offset_t *)key->data=recno;
     }
-
-    db_update_global_stats_find_query(m_db, key->size);
 
     /* purge cache if necessary */
     if (__cache_needs_purge(env)) {
@@ -2730,6 +2715,8 @@ db_close_callback(Page *page, Database *db, ham_u32_t flags)
          * if this page has a header, and it's either a B-Tree root page or
          * a B-Tree index page: remove all extended keys from the cache,
          * and/or free their blobs
+         *
+         * TODO move BtreeBackend to backend
          */
         if (page->get_pers() &&
             (!(page->get_flags()&Page::NPERS_NO_HEADER)) &&
@@ -2757,7 +2744,6 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
     ham_status_t st=HAM_SUCCESS;
     ham_status_t st2=HAM_SUCCESS;
     Backend *be;
-    ham_bool_t has_other_db=HAM_FALSE;
     Database *newowner=0;
     ham_record_filter_t *record_head;
 
@@ -2768,15 +2754,11 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
     if (env) {
         Database *n=env->get_databases();
         while (n) {
-            if (n!=m_db) {
-                has_other_db=HAM_TRUE;
+            if (n!=m_db)
                 break;
-            }
             n=n->get_next();
         }
     }
-
-    btree_stats_flush_dbdata(m_db, m_db->get_perf_data(), has_other_db);
 
     be=m_db->get_backend();
 
@@ -2786,7 +2768,7 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
      */
     if (env
             && env->get_header_page()
-            && !(env->get_flags()&HAM_IN_MEMORY_DB)
+            && !(env->get_flags()&HAM_IN_MEMORY)
             && env->get_device()
             && env->get_device()->is_open()
             && (!(m_db->get_rt_flags()&HAM_READ_ONLY))) {
@@ -2805,9 +2787,9 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
     }
 
     /* in-memory-database: free all allocated blobs */
-    if (be && be->is_active() && env->get_flags()&HAM_IN_MEMORY_DB) {
+    if (be && be->is_active() && env->get_flags()&HAM_IN_MEMORY) {
         Transaction *txn;
-        free_cb_context_t context;
+        free_cb_context_t context = {0};
         context.db=m_db;
         st=txn_begin(&txn, env, 0, HAM_TXN_TEMPORARY);
         if (st && st2==0)
@@ -2875,14 +2857,6 @@ DatabaseImplementationLocal::close(ham_u32_t flags)
         record_head=next;
     }
     m_db->set_record_filter(0);
-
-    /*
-     * trash all DB performance data
-     *
-     * This must happen before the DB is removed from the ENV as the ENV
-     * (when it exists) provides the required allocator.
-     */
-    btree_stats_trash_dbdata(m_db, m_db->get_perf_data());
 
     return (st2);
 }

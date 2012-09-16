@@ -92,7 +92,7 @@
 	  <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
 	</ClCompile>
 	<Link>
-      <OutputFile>$(OutDir)hamserver-2.0.4.dll</OutputFile>
+      <OutputFile>$(OutDir)hamserver-2.0.5.dll</OutputFile>
 	  <AdditionalLibraryDirectories>../../../hamsterdb-alien/boost;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 	  <GenerateDebugInformation>true</GenerateDebugInformation>
 	  <SubSystem>Windows</SubSystem>
@@ -120,7 +120,7 @@
 	</ClCompile>
 	<Link>
 	  <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hamserver-2.0.4.dll</OutputFile>
+      <OutputFile>$(OutDir)hamserver-2.0.5.dll</OutputFile>
 	  <AdditionalLibraryDirectories>../../../hamsterdb-alien/boost/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 	  <GenerateDebugInformation>true</GenerateDebugInformation>
 	  <SubSystem>Windows</SubSystem>
@@ -141,7 +141,7 @@
 	  <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
 	</ClCompile>
 	<Link>
-      <OutputFile>$(OutDir)hamserver-2.0.4.dll</OutputFile>
+      <OutputFile>$(OutDir)hamserver-2.0.5.dll</OutputFile>
 	  <AdditionalLibraryDirectories>../../../hamsterdb-alien/boost;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 	  <GenerateDebugInformation>true</GenerateDebugInformation>
 	  <SubSystem>Windows</SubSystem>
@@ -167,7 +167,7 @@
 	</ClCompile>
 	<Link>
 	  <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)hamserver-2.0.4.dll</OutputFile>
+      <OutputFile>$(OutDir)hamserver-2.0.5.dll</OutputFile>
 	  <AdditionalLibraryDirectories>../../../hamsterdb-alien/boost/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
 	  <GenerateDebugInformation>true</GenerateDebugInformation>
 	  <SubSystem>Windows</SubSystem>

@@ -12,9 +12,6 @@
 
 #include "internal_preparation.h"
 
-using namespace ham;
-
-#include "worker.h"
 
 using namespace ham;
 
@@ -44,7 +41,7 @@ Environment::Environment()
     m_journal(0), m_freelist(0), m_flags(0), m_databases(0), m_pagesize(0),
     m_cachesize(0), m_max_databases_cached(0), m_is_active(false),
     m_file_filters(0), m_blob_manager(this), m_duplicate_manager(this),
-    m_worker_thread(0)
+    m_worker_thread(0), m_committed_txns_count(0)
 {
 #if HAM_ENABLE_REMOTE
     m_curl=0;
@@ -70,9 +67,6 @@ Environment::Environment()
 
 Environment::~Environment()
 {
-    /* delete all performance data */
-    btree_stats_trash_globdata(this, get_global_perf_data());
-
     /* close the device if it still exists */
     if (get_device()) {
         Device *device=get_device();
@@ -155,9 +149,6 @@ _local_fun_create(Environment *env, const char *filename,
     Device *device=0;
     ham_size_t pagesize=env->get_pagesize();
 
-    /* reset all performance data */
-    btree_stats_init_globdata(env, env->get_global_perf_data());
-
     ham_assert(!env->get_header_page());
 
     /* initialize the device if it does not yet exist */
@@ -210,7 +201,7 @@ _local_fun_create(Environment *env, const char *filename,
     }
 
     /* create the freelist */
-    if (!(env->get_flags()&HAM_IN_MEMORY_DB)) {
+    if (!(env->get_flags()&HAM_IN_MEMORY)) {
         Freelist *f=new Freelist(env);
         env->set_freelist(f);
     }
@@ -241,8 +232,8 @@ _local_fun_create(Environment *env, const char *filename,
     /* disable async flush if transactions are disabled or if it's an
      * in-memory database */
     if (flags&HAM_ENABLE_TRANSACTIONS
-            && !(flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
-            && !(flags&HAM_IN_MEMORY_DB)) {
+            && flags&HAM_ENABLE_ASYNCHRONOUS_FLUSH
+            && !(flags&HAM_IN_MEMORY)) {
         env->set_worker_thread(new Worker(env));
     }
 
@@ -355,9 +346,6 @@ _local_fun_open(Environment *env, const char *filename, ham_u32_t flags,
     ham_status_t st;
     Device *device=0;
     ham_u32_t pagesize=0;
-
-    /* reset all performance data */
-    btree_stats_init_globdata(env, env->get_global_perf_data());
 
     /* initialize the device if it does not yet exist */
     if (!env->get_device()) {
@@ -503,7 +491,7 @@ fail_with_fake_cleansing:
     env->set_cache(new Cache(env, env->get_cachesize()));
 
     /* create the freelist */
-    if (!(env->get_flags()&HAM_IN_MEMORY_DB)
+    if (!(env->get_flags()&HAM_IN_MEMORY)
             && !(env->get_flags()&HAM_READ_ONLY)) {
         Freelist *f=new Freelist(env);
         env->set_freelist(f);
@@ -526,8 +514,8 @@ fail_with_fake_cleansing:
     /* disable async flush if transactions are disabled or if it's an
      * in-memory database */
     if (flags&HAM_ENABLE_TRANSACTIONS
-            && !(flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
-            && !(flags&HAM_IN_MEMORY_DB)) {
+            && flags&HAM_ENABLE_ASYNCHRONOUS_FLUSH
+            && !(flags&HAM_IN_MEMORY)) {
         env->set_worker_thread(new Worker(env));
     }
 
@@ -601,7 +589,7 @@ _local_fun_erase_db(Environment *env, ham_u16_t name, ham_u32_t flags)
      * if it's an in-memory environment: no need to go on, if the
      * database was closed, it does no longer exist
      */
-    if (env->get_flags()&HAM_IN_MEMORY_DB)
+    if (env->get_flags()&HAM_IN_MEMORY)
         return (HAM_DATABASE_NOT_FOUND);
 
     /*
@@ -710,7 +698,9 @@ _local_fun_close(Environment *env, ham_u32_t flags)
     ham_file_filter_t *file_head;
 
     /* flush all committed transactions */
-    env->flush_committed_txns(true);
+    st=env->flush_committed_txns(true);
+    if (st)
+        return (st);
 
     /* flush the freelist */
     if (env->get_freelist()) {
@@ -723,7 +713,7 @@ _local_fun_close(Environment *env, ham_u32_t flags)
      * and the dirty-flag is true: flush the page-header to disk
      */
     if (env->get_header_page()
-            && !(env->get_flags()&HAM_IN_MEMORY_DB)
+            && !(env->get_flags()&HAM_IN_MEMORY)
             && env->get_device()
             && env->get_device()->is_open()
             && (!(env->get_flags()&HAM_READ_ONLY))) {
@@ -872,7 +862,7 @@ _local_fun_flush(Environment *env, ham_u32_t flags)
     (void)flags;
 
     /* never flush an in-memory-database */
-    if (env->get_flags()&HAM_IN_MEMORY_DB)
+    if (env->get_flags()&HAM_IN_MEMORY)
         return (0);
 
     /* flush all committed transactions */
@@ -939,9 +929,6 @@ _local_fun_create_db(Environment *env, Database *db,
 
     /* store the env pointer in the database */
     db->set_env(env);
-
-    /* reset all DB performance data */
-    btree_stats_init_dbdata(db, db->get_perf_data());
 
     /*
      * set the flags; strip off run-time (per session) flags for the
@@ -1139,9 +1126,6 @@ _local_fun_open_db(Environment *env, Database *db,
 
     /* store the env pointer in the database */
     db->set_env(env);
-
-    /* reset the DB performance data */
-    btree_stats_init_dbdata(db, db->get_perf_data());
 
     /*
      * search for a database with this name
@@ -1502,7 +1486,6 @@ __flush_txn(Environment *env, Transaction *txn)
             ham_trace(("failed to flush op: %d (%s)",
                             (int)st, ham_strerror(st)));
             env->get_changeset().clear();
-            env->get_changeset().clear();
             return (st);
         }
 
@@ -1542,17 +1525,22 @@ next_op:
 }
 
 static ham_status_t
-env_flush_committed_txns_nolock(Environment *env)
+env_flush_committed_txns_nolock(Environment *env, bool only_one = false)
 {
     Transaction *oldest;
+    ham_u64_t last_id = 0;
 
     /* always get the oldest transaction; if it was committed: flush
      * it; if it was aborted: discard it; otherwise return */
     while ((oldest=env->get_oldest_txn())) {
         if (txn_get_flags(oldest)&TXN_STATE_COMMITTED) {
+            if (last_id)
+                ham_assert(last_id != txn_get_id(oldest));
+            last_id = txn_get_id(oldest);
             ham_status_t st=__flush_txn(env, oldest);
             if (st)
                 return (st);
+            env->dec_committed_txns_count();
         }
         else if (txn_get_flags(oldest)&TXN_STATE_ABORTED) {
             ; /* nop */
@@ -1565,6 +1553,9 @@ env_flush_committed_txns_nolock(Environment *env)
 
         /* and free the whole memory */
         txn_free(oldest);
+
+        if (only_one)
+            break;
     }
 
     /* clear the changeset; if the loop above was not entered or the
@@ -1575,13 +1566,28 @@ env_flush_committed_txns_nolock(Environment *env)
 }
 
 ham_status_t
-Environment::flush_committed_txns(bool dontlock)
+Environment::flush_committed_txns(bool dontlock, bool only_one)
 {
     ScopedLock lock;
     if (!dontlock)
         lock=ScopedLock(m_mutex);
 
-    return (env_flush_committed_txns_nolock(this));
+    while (true) {
+        ham_status_t st = env_flush_committed_txns_nolock(this, only_one);
+        if (st)
+            return (st);
+
+        if (get_committed_txns_count() == 0)
+            return (st);
+
+        // briefly release the lock
+        if (!dontlock) {
+            lock.unlock();
+            lock.lock();
+        }
+    }
+
+    return (0);
 }
 
 ham_status_t
@@ -1635,11 +1641,25 @@ env_purge_cache(Environment *env)
     Cache *cache=env->get_cache();
 
     /* in-memory-db: don't remove the pages or they would be lost */
-    if (env->get_flags()&HAM_IN_MEMORY_DB)
+    if (env->get_flags()&HAM_IN_MEMORY)
         return (0);
 
     return (cache->purge(purge_callback,
                 (env->get_flags()&HAM_CACHE_STRICT) != 0));
+}
+
+bool
+Environment::has_worker_error()
+{
+    return (m_worker_thread
+            ? (m_worker_thread->get_last_error() != 0)
+            : false);
+}
+
+ham_status_t
+Environment::get_and_reset_worker_error()
+{
+    return (m_worker_thread->get_last_error(true));
 }
 
 } // namespace ham

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2012 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -197,7 +197,7 @@ btree_cursor_uncouple(btree_cursor_t *c, ham_u32_t flags);
  * returns true if a cursor points to this btree key, otherwise false
  */
 extern bool
-btree_cursor_points_to(btree_cursor_t *cursor, btree_key_t *key);
+btree_cursor_points_to(btree_cursor_t *cursor, BtreeKey *key);
 
 /**
  * returns true if a cursor points to this external key, otherwise false

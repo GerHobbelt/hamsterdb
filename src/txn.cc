@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Christoph Rupp (chris@crupp.de).
+ * Copyright (C) 2005-2012 Christoph Rupp (chris@crupp.de).
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -215,10 +215,10 @@ txn_opnode_get(Database *db, ham_key_t *key, ham_u32_t flags)
     /* approx. matching: set the key flag */
     if (match<0)
         ham_key_set_intflags(key, (ham_key_get_intflags(key)
-                        & ~KEY_IS_APPROXIMATE) | KEY_IS_LT);
+                        & ~BtreeKey::KEY_IS_APPROXIMATE) | BtreeKey::KEY_IS_LT);
     else if (match>0)
         ham_key_set_intflags(key, (ham_key_get_intflags(key)
-                        & ~KEY_IS_APPROXIMATE) | KEY_IS_GT);
+                        & ~BtreeKey::KEY_IS_APPROXIMATE) | BtreeKey::KEY_IS_GT);
 
     return (node);
 }
@@ -354,6 +354,7 @@ txn_commit(Transaction *txn, ham_u32_t flags)
 
     /* this transaction is now committed!  */
     txn_set_flags(txn, txn_get_flags(txn)|TXN_STATE_COMMITTED);
+    env->inc_committed_txns_count();
 
     /* now flush all committed Transactions to disk */
     return (env->signal_commit());

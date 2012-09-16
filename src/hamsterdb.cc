@@ -92,14 +92,14 @@ ham_create_flags2str(char *buf, size_t buflen, ham_u32_t flags)
         flags &= ~HAM_DISABLE_VAR_KEYLEN;
         buf = my_strncat_ex(buf, buflen, NULL, "HAM_DISABLE_VAR_KEYLEN");
     }
-    if (flags & HAM_DISABLE_ASYNCHRONOUS_FLUSH) {
-        flags &= ~HAM_DISABLE_ASYNCHRONOUS_FLUSH;
-        buf = my_strncat_ex(buf, buflen, NULL, "HAM_DISABLE_ASYNCHRONOUS_FLUSH");
+    if (flags & HAM_ENABLE_ASYNCHRONOUS_FLUSH) {
+        flags &= ~HAM_ENABLE_ASYNCHRONOUS_FLUSH;
+        buf = my_strncat_ex(buf, buflen, NULL, "HAM_ENABLE_ASYNCHRONOUS_FLUSH");
     }
-    if (flags & HAM_IN_MEMORY_DB)
+    if (flags & HAM_IN_MEMORY)
     {
-        flags &= ~HAM_IN_MEMORY_DB;
-        buf = my_strncat_ex(buf, buflen, NULL, "HAM_IN_MEMORY_DB");
+        flags &= ~HAM_IN_MEMORY;
+        buf = my_strncat_ex(buf, buflen, NULL, "HAM_IN_MEMORY");
     }
     if (flags & HAM_DISABLE_MMAP)
     {
@@ -201,9 +201,6 @@ ham_param2str(char *buf, size_t buflen, ham_u32_t name)
     case HAM_PARAM_GET_KEYS_PER_PAGE:
         return "HAM_PARAM_GET_KEYS_PER_PAGE";
 
-    case HAM_PARAM_GET_STATISTICS:
-        return "HAM_PARAM_GET_STATISTICS";
-
     default:
         if (buf && buflen > 13) {
             util_snprintf(buf, buflen, "HAM_PARAM(0x%x)", (unsigned int)name);
@@ -220,9 +217,9 @@ static ham_bool_t
 __check_recovery_flags(ham_u32_t flags)
 {
     if (flags&HAM_ENABLE_RECOVERY) {
-        if (flags&HAM_IN_MEMORY_DB) {
+        if (flags&HAM_IN_MEMORY) {
             ham_trace(("combination of HAM_ENABLE_RECOVERY and "
-                       "HAM_IN_MEMORY_DB not allowed"));
+                       "HAM_IN_MEMORY not allowed"));
             return (HAM_FALSE);
         }
         if (flags&HAM_DISABLE_FREELIST_FLUSH) {
@@ -257,6 +254,11 @@ ham_txn_begin(ham_txn_t **htxn, ham_env_t *henv, const char *name,
     ScopedLock lock;
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (!(env->get_flags()&HAM_ENABLE_TRANSACTIONS)) {
         ham_trace(("transactions are disabled (see HAM_ENABLE_TRANSACTIONS)"));
@@ -300,6 +302,11 @@ ham_txn_commit(ham_txn_t *htxn, ham_u32_t flags)
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     /* mark this transaction as committed; will also call
      * env->signal_commit() to write committed transactions
      * to disk */
@@ -324,6 +331,11 @@ ham_txn_abort(ham_txn_t *htxn, ham_u32_t flags)
     ScopedLock lock;
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     return (env->_fun_txn_abort(env, txn, flags));
 }
@@ -407,6 +419,9 @@ ham_strerror(ham_status_t result)
             return ("Invalid log file header");
         case HAM_NETWORK_ERROR:
             return ("Remote I/O error/Network error");
+        case HAM_ASYNCHRONOUS_ERROR_PENDING:
+            return ("Failure in background thread; see "
+                    "ham_env_get_asnychronous_error()");
         default:
             return ("Unknown error");
     }
@@ -515,7 +530,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
     /*
      * cannot open an in-memory-db
      */
-    if (!create && (flags & HAM_IN_MEMORY_DB)) {
+    if (!create && (flags & HAM_IN_MEMORY)) {
         ham_trace(("cannot open an in-memory database"));
         return (HAM_INV_PARAMETER);
     }
@@ -563,7 +578,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
      * DB create: only a few flags are allowed
      */
     if (db && (flags & ~((!create ? HAM_READ_ONLY : 0)
-                        |(create ? HAM_IN_MEMORY_DB : 0)
+                        |(create ? HAM_IN_MEMORY : 0)
                         |(!env ? (HAM_WRITE_THROUGH
                                 |HAM_DISABLE_MMAP
                                 |HAM_DISABLE_FREELIST_FLUSH
@@ -577,7 +592,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                         |HAM_USE_BTREE
                         |HAM_DONT_LOCK
                         |HAM_DISABLE_VAR_KEYLEN
-                        |HAM_DISABLE_ASYNCHRONOUS_FLUSH
+                        |HAM_ENABLE_ASYNCHRONOUS_FLUSH
                         |HAM_RECORD_NUMBER
                         |HAM_SORT_DUPLICATES
                         |(create ? HAM_ENABLE_DUPLICATES : 0))))
@@ -586,7 +601,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
         ham_trace(("invalid flags specified: %s",
                 ham_create_flags2str(msgbuf, sizeof(msgbuf),
                 (flags & ~((!create ? HAM_READ_ONLY : 0)
-                        |(create ? HAM_IN_MEMORY_DB : 0)
+                        |(create ? HAM_IN_MEMORY : 0)
                         |(!env ? (HAM_WRITE_THROUGH
                                 |HAM_DISABLE_MMAP
                                 |HAM_DISABLE_FREELIST_FLUSH
@@ -599,7 +614,7 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
                         |HAM_USE_BTREE
                         |HAM_DISABLE_VAR_KEYLEN
                         |HAM_RECORD_NUMBER
-                        |HAM_DISABLE_ASYNCHRONOUS_FLUSH
+                        |HAM_ENABLE_ASYNCHRONOUS_FLUSH
                         |(create ? HAM_ENABLE_DUPLICATES : 0))))));
         return (HAM_INV_PARAMETER);
     }
@@ -715,7 +730,6 @@ __check_create_parameters(Environment *env, Database *db, const char *filename,
             case HAM_PARAM_GET_FILEMODE:
             case HAM_PARAM_GET_FILENAME:
             case HAM_PARAM_GET_KEYS_PER_PAGE:
-            case HAM_PARAM_GET_STATISTICS:
             default:
 default_case:
                 ham_trace(("unsupported/unknown parameter %d (%s)",
@@ -738,7 +752,7 @@ default_case:
     }
 
     if ((env && !db) || (!env && db)) {
-        if (!filename && !(flags&HAM_IN_MEMORY_DB)) {
+        if (!filename && !(flags&HAM_IN_MEMORY)) {
             ham_trace(("filename is missing"));
             return (HAM_INV_PARAMETER);
         }
@@ -794,14 +808,14 @@ default_case:
     /*
      * in-memory-db? don't allow cache limits!
      */
-    if (flags&HAM_IN_MEMORY_DB) {
+    if (flags&HAM_IN_MEMORY) {
         if (flags&HAM_CACHE_STRICT) {
-            ham_trace(("combination of HAM_IN_MEMORY_DB and HAM_CACHE_STRICT "
+            ham_trace(("combination of HAM_IN_MEMORY and HAM_CACHE_STRICT "
                         "not allowed"));
             return (HAM_INV_PARAMETER);
         }
         if (cachesize!=0) {
-            ham_trace(("combination of HAM_IN_MEMORY_DB and cachesize != 0 "
+            ham_trace(("combination of HAM_IN_MEMORY and cachesize != 0 "
                         "not allowed"));
             return (HAM_INV_PARAMETER);
         }
@@ -843,7 +857,7 @@ default_case:
     /*
      * in-memory-db? use a default pagesize of 16kb
      */
-    if (flags&HAM_IN_MEMORY_DB) {
+    if (flags&HAM_IN_MEMORY) {
         if (!pagesize) {
             pagesize = 16*1024;
             no_mmap = HAM_TRUE;
@@ -892,7 +906,7 @@ default_case:
         if (flags&HAM_RECORD_NUMBER)
             keysize = sizeof(ham_u64_t);
         else
-            keysize = DB_CHUNKSIZE - (db_get_int_key_header_size());
+            keysize = DB_CHUNKSIZE - (BtreeKey::ms_sizeof_overhead);
     }
 
     /*
@@ -1047,9 +1061,9 @@ ham_env_create_ex(ham_env_t *henv, const char *filename,
         return (HAM_INV_PARAMETER);
     }
 
-    if ((flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
+    if ((flags&HAM_ENABLE_ASYNCHRONOUS_FLUSH)
             && !(flags&HAM_ENABLE_TRANSACTIONS)) {
-        ham_trace(("flag HAM_DISABLE_ASYNCHRONOUS_FLUSH only allowed if "
+        ham_trace(("flag HAM_ENABLE_ASYNCHRONOUS_FLUSH only allowed if "
                 "Transactions are enabled"));
         return (HAM_INV_PARAMETER);
     }
@@ -1141,6 +1155,11 @@ ham_env_create_db(ham_env_t *henv, ham_db_t *hdb,
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (env->is_private()) {
         ham_trace(("Environment was not properly created with ham_env_create, "
                    "ham_env_open"));
@@ -1192,6 +1211,11 @@ ham_env_open_db(ham_env_t *henv, ham_db_t *hdb,
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (env->is_private()) {
         ham_trace(("Environment was not properly created with ham_env_create, "
                    "ham_env_open"));
@@ -1207,7 +1231,7 @@ ham_env_open_db(ham_env_t *henv, ham_db_t *hdb,
         ham_trace(("database name must be lower than 0xf000"));
         return (db->set_error(HAM_INV_PARAMETER));
     }
-    if (env->get_flags()&HAM_IN_MEMORY_DB) {
+    if (env->get_flags()&HAM_IN_MEMORY) {
         ham_trace(("cannot open a Database in an In-Memory Environment"));
         return (db->set_error(HAM_INV_PARAMETER));
     }
@@ -1248,9 +1272,9 @@ ham_env_open_ex(ham_env_t *henv, const char *filename,
         return (HAM_INV_PARAMETER);
     }
 
-    if ((flags&HAM_DISABLE_ASYNCHRONOUS_FLUSH)
+    if ((flags&HAM_ENABLE_ASYNCHRONOUS_FLUSH)
             && !(flags&HAM_ENABLE_TRANSACTIONS)) {
-        ham_trace(("flag HAM_DISABLE_ASYNCHRONOUS_FLUSH only allowed if "
+        ham_trace(("flag HAM_ENABLE_ASYNCHRONOUS_FLUSH only allowed if "
                 "Transactions are enabled"));
         return (HAM_INV_PARAMETER);
     }
@@ -1343,6 +1367,11 @@ ham_env_rename_db(ham_env_t *henv, ham_u16_t oldname,
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!oldname) {
         ham_trace(("parameter 'oldname' must not be 0"));
         return (HAM_INV_PARAMETER);
@@ -1383,6 +1412,11 @@ ham_env_erase_db(ham_env_t *henv, ham_u16_t name, ham_u32_t flags)
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!name) {
         ham_trace(("parameter 'name' must not be 0"));
         return (HAM_INV_PARAMETER);
@@ -1410,6 +1444,11 @@ ham_env_add_file_filter(ham_env_t *henv, ham_file_filter_t *filter)
     }
 
     ScopedLock lock(env->get_mutex());
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (env->get_flags()&DB_IS_REMOTE) {
         ham_trace(("ham_env_add_file_filter is not supported by remote "
@@ -1474,6 +1513,11 @@ ham_env_remove_file_filter(ham_env_t *henv, ham_file_filter_t *filter)
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!filter) {
         ham_trace(("parameter 'filter' must not be NULL"));
         return (HAM_INV_PARAMETER);
@@ -1531,6 +1575,11 @@ ham_env_get_database_names(ham_env_t *henv, ham_u16_t *names, ham_size_t *count)
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!names) {
         ham_trace(("parameter 'names' must not be NULL"));
         return (HAM_INV_PARAMETER);
@@ -1559,6 +1608,11 @@ ham_env_get_parameters(ham_env_t *henv, ham_parameter_t *param)
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!param) {
         ham_trace(("parameter 'param' must not be NULL"));
         return (HAM_INV_PARAMETER);
@@ -1584,6 +1638,11 @@ ham_env_flush(ham_env_t *henv, ham_u32_t flags)
     ScopedLock lock;
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (!env->_fun_flush) {
         ham_trace(("Environment was not initialized"));
@@ -1611,6 +1670,11 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
         if (env->get_worker_thread())
             env->get_worker_thread()->join();
         lock=ScopedLock(env->get_mutex());
+    }
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
     }
 
     if (env->get_worker_thread()) {
@@ -1678,12 +1742,8 @@ ham_env_close(ham_env_t *henv, ham_u32_t flags)
                     "should've taken care of all TXNs");
         return (HAM_INTERNAL_ERROR);
     }
-    /* delete all performance data */
-    btree_stats_trash_globdata(env, env->get_global_perf_data());
 
-    /*
-     * finally, close the memory allocator
-     */
+    /* finally, close the memory allocator */
     if (env->get_allocator()) {
         delete env->get_allocator();
         env->set_allocator(0);
@@ -1889,7 +1949,7 @@ ham_create_ex(ham_db_t *hdb, const char *filename,
      * setup the parameters for ham_env_create_ex
      */
     env_param[0].name=HAM_PARAM_CACHESIZE;
-    env_param[0].value.size=(flags&HAM_IN_MEMORY_DB) ? 0 : cachesize;
+    env_param[0].value.size=(flags & HAM_IN_MEMORY) ? 0 : cachesize;
     env_param[1].name=HAM_PARAM_PAGESIZE;
     env_param[1].value.size=pagesize;
     env_param[2].name=HAM_PARAM_MAX_ENV_DATABASES;
@@ -1918,7 +1978,7 @@ ham_create_ex(ham_db_t *hdb, const char *filename,
      * in ham_env_create_db; then set up the parameter list
      */
     flags &= ~(HAM_WRITE_THROUGH
-            |HAM_IN_MEMORY_DB
+            |HAM_IN_MEMORY
             |HAM_DISABLE_MMAP
             |HAM_DISABLE_FREELIST_FLUSH
             |HAM_CACHE_UNLIMITED
@@ -1999,6 +2059,19 @@ ham_get_error(ham_db_t *hdb)
         lock=ScopedLock(db->get_env()->get_mutex());
 
     return (db->get_error());
+}
+
+ham_status_t HAM_CALLCONV
+ham_env_get_asnychronous_error(ham_env_t *henv)
+{
+    Environment *env=(Environment *)henv;
+    if (!env) {
+        ham_trace(("parameter 'env' must not be NULL"));
+        return (0);
+    }
+
+    ScopedLock lock=ScopedLock(env->get_mutex());
+    return (env->get_and_reset_worker_error());
 }
 
 ham_status_t HAM_CALLCONV
@@ -2135,7 +2208,7 @@ ham_env_enable_encryption(ham_env_t *henv, ham_u8_t key[16], ham_u32_t flags)
                 "servers"));
         return (HAM_NOT_IMPLEMENTED);
     }
-    if (env->get_flags()&HAM_IN_MEMORY_DB)
+    if (env->get_flags()&HAM_IN_MEMORY)
         return (0);
 
     device=env->get_device();
@@ -2442,6 +2515,11 @@ ham_find(ham_db_t *hdb, ham_txn_t *htxn, ham_key_t *key,
 
     ScopedLock lock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!key) {
         ham_trace(("parameter 'key' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -2461,7 +2539,7 @@ ham_find(ham_db_t *hdb, ham_txn_t *htxn, ham_key_t *key,
         return (db->set_error(HAM_INV_PARAMETER));
     }
     if ((flags&HAM_DIRECT_ACCESS)
-            && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+            && !(env->get_flags()&HAM_IN_MEMORY)) {
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                     "In-Memory Databases"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -2495,8 +2573,8 @@ ham_find(ham_db_t *hdb, ham_txn_t *htxn, ham_key_t *key,
 int HAM_CALLCONV
 ham_key_get_approximate_match_type(ham_key_t *key)
 {
-    if (key && (ham_key_get_intflags(key) & KEY_IS_APPROXIMATE)) {
-        int rv = (ham_key_get_intflags(key) & KEY_IS_LT) ? -1 : +1;
+    if (key && (ham_key_get_intflags(key) & BtreeKey::KEY_IS_APPROXIMATE)) {
+        int rv = (ham_key_get_intflags(key) & BtreeKey::KEY_IS_LT) ? -1 : +1;
         return (rv);
     }
 
@@ -2525,6 +2603,11 @@ ham_insert(ham_db_t *hdb, ham_txn_t *htxn, ham_key_t *key,
     ScopedLock lock;
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (!key) {
         ham_trace(("parameter 'key' must not be NULL"));
@@ -2650,6 +2733,11 @@ ham_erase(ham_db_t *hdb, ham_txn_t *htxn, ham_key_t *key, ham_u32_t flags)
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!key) {
         ham_trace(("parameter 'key' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -2684,6 +2772,11 @@ ham_check_integrity(ham_db_t *hdb, ham_txn_t *htxn)
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     return (db->set_error((*db)()->check_integrity(txn)));
 }
 
@@ -2708,6 +2801,11 @@ ham_calc_maxkeys_per_page(ham_db_t *hdb, ham_size_t *keycount,
     }
 
     ScopedLock lock(db->get_env()->get_mutex());
+
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (db->get_env()->get_flags()&DB_IS_REMOTE) {
         ham_trace(("ham_calc_maxkeys_per_page is not supported by remote "
@@ -2785,6 +2883,11 @@ ham_close(ham_db_t *hdb, ham_u32_t flags)
         if (env->get_worker_thread())
             env->get_worker_thread()->join();
         lock=ScopedLock(env->get_mutex());
+    }
+
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
     }
 
     /* check if this database is modified by an active transaction */
@@ -2917,6 +3020,11 @@ ham_cursor_create(ham_db_t *hdb, ham_txn_t *htxn, ham_u32_t flags,
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!(*db)()) {
         ham_trace(("Database was not initialized"));
         return (db->set_error(HAM_NOT_INITIALIZED));
@@ -2965,6 +3073,11 @@ ham_cursor_clone(ham_cursor_t *hsrc, ham_cursor_t **hdest)
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     db->clone_cursor(src, dest);
 
     return (db->set_error(0));
@@ -2991,6 +3104,11 @@ ham_cursor_overwrite(ham_cursor_t *hcursor, ham_record_t *record,
     }
 
     ScopedLock lock(db->get_env()->get_mutex());
+
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (flags) {
         ham_trace(("function does not support a non-zero flags value; "
@@ -3040,6 +3158,11 @@ ham_cursor_move(ham_cursor_t *hcursor, ham_key_t *key,
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if ((flags&HAM_ONLY_DUPLICATES) && (flags&HAM_SKIP_DUPLICATES)) {
         ham_trace(("combination of HAM_ONLY_DUPLICATES and "
                     "HAM_SKIP_DUPLICATES not allowed"));
@@ -3049,7 +3172,7 @@ ham_cursor_move(ham_cursor_t *hcursor, ham_key_t *key,
     env=db->get_env();
 
     if ((flags&HAM_DIRECT_ACCESS)
-            && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+            && !(env->get_flags()&HAM_IN_MEMORY)) {
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                    "In-Memory Databases"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3110,12 +3233,17 @@ ham_cursor_find_ex(ham_cursor_t *hcursor, ham_key_t *key,
     if (!(flags&HAM_DONT_LOCK))
         lock=ScopedLock(env->get_mutex());
 
+    if (env->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!key) {
         ham_trace(("parameter 'key' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
     }
     if ((flags&HAM_DIRECT_ACCESS)
-            && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
+            && !(env->get_flags()&HAM_IN_MEMORY)) {
         ham_trace(("flag HAM_DIRECT_ACCESS is only allowed in "
                    "In-Memory Databases"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3171,6 +3299,11 @@ ham_cursor_insert(ham_cursor_t *hcursor, ham_key_t *key,
 
     db=cursor->get_db();
     ScopedLock lock(db->get_env()->get_mutex());
+
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     if (!key) {
         ham_trace(("parameter 'key' must not be NULL"));
@@ -3298,6 +3431,11 @@ ham_cursor_erase(ham_cursor_t *hcursor, ham_u32_t flags)
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (db->get_rt_flags()&HAM_READ_ONLY) {
         ham_trace(("cannot erase from a read-only database"));
         return (db->set_error(HAM_DB_READ_ONLY));
@@ -3337,6 +3475,11 @@ ham_cursor_get_duplicate_count(ham_cursor_t *hcursor,
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!count) {
         ham_trace(("parameter 'count' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3368,6 +3511,11 @@ ham_cursor_get_record_size(ham_cursor_t *hcursor, ham_offset_t *size)
 
     ScopedLock lock(db->get_env()->get_mutex());
 
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
+
     if (!size) {
         ham_trace(("parameter 'size' must not be NULL"));
         return (db->set_error(HAM_INV_PARAMETER));
@@ -3398,6 +3546,11 @@ ham_cursor_close(ham_cursor_t *hcursor)
     }
 
     ScopedLock lock(db->get_env()->get_mutex());
+
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
+    }
 
     db->close_cursor(cursor);
 
@@ -3601,24 +3754,12 @@ ham_get_key_count(ham_db_t *hdb, ham_txn_t *htxn, ham_u32_t flags,
 
     ScopedLock lock(db->get_env()->get_mutex());
 
-    return (db->set_error((*db)()->get_key_count(txn, flags, keycount)));
-}
-
-ham_status_t HAM_CALLCONV
-ham_clean_statistics_datarec(ham_statistics_t *s)
-{
-    if (!s) {
-        ham_trace(("parameter 's' must not be NULL"));
-        return (HAM_INV_PARAMETER);
+    if (db->get_env()->has_worker_error()) {
+        ham_trace(("background thread has pending error"));
+        return (HAM_ASYNCHRONOUS_ERROR_PENDING);
     }
 
-    if (s->_free_func)
-        s->_free_func(s);
-
-    ham_assert1(s->_free_func == 0,
-        ("the cleanup function must eradicate itself from the struct"));
-
-    return (0);
+    return (db->set_error((*db)()->get_key_count(txn, flags, keycount)));
 }
 
 ham_status_t HAM_CALLCONV

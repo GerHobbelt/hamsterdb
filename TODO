@@ -85,28 +85,79 @@ x implementation of hamsterdb should move into namespace ham; otherwise
     there are conflicts if users have a C++ class called Database or
     Environment etc
 
+x see Laurent's email on the mailing list
+    x 30 million keys (with Transactions)
+    x group 2 million inserts into a single Transaction
+    x then commit; the commit requires about 100 seconds
+    -> do profiling on "master" and "v2"!
+
+x rename HAM_IN_MEMORY_DB to HAM_IN_MEMORY
+
+x continue with refacoring - indention, coding style, better design etc...
+    x backend.h
+    x hamsterdb_stats - make private, not public
+        x rename to statistics.h
+        x remove everything that's not required
+    x btree_stats.h
+        x remove everything that is not required
+        x namespace Btree::Statistics
+        x adjust coding style
+        x fix get_global_perf_data, db_get_perf_data
+    x btree_stats.cc
+        x adjust coding style
+        x move from db.h to btree.h
+        x should use arena for lower/upper bounds and use
+            HAM_KEY_USERALLOC when calling db->get_extended_key()
+    x btree.h
+        x remove namespace Btree
+        x Statistics -> BtreeStatistics
+        x rename btree_node_t -> BtreeNode (with getters/setters)
+        x move BtreeNode to btree_node.h
+        x remove global functions
+        x do not use btree_cursor_t in backend.h, only use Cursor
+    x btree.cc
+        x code formatting
+        x get rid of ham_bool_t
+        x replace db_get_keysize() with backend->get_keysize()
+    x btree_key.h
+        x code formatting
+        x rename btree_key_t -> BtreeKey (with getters/setters)
+        x Backend::read_key -> move to BtreeBackend? no, leave it
+        x all #defines -> enum
+        x db_get_int_key_header_size -> Backend::get_full_keysize(payload_size)
+    x btree_key.cc
+        x code formatting
+    x btree_check.cc
+        x improve BtreeCheckAction; use it as template for enum, find, etc
+        x constructor takes BtreeBackend
+    x btree_enum.cc
+        x remove scratchpad, use member variables
+    x btree_find.cc
+        x remove scratchpad, use member variables
+
 o involve everyone in decisions on the new interface
-  Do you use any of the HAM_HINT_* flags?
-    If yes, would it be very problematic if I would remove this functionality?
-  Do you use any of the HAM_DAM_* flags?
-    If yes, would it be very problematic if I would remove this functionality?
-  Do you use AES encryption?
-    If yes, would it be very problematic if I would remove this functionality?
-  Do you use zlib compression?
-    If yes, would it be very problematic if I would remove this functionality?
-  Do you use other file filters/record filters?
-  Do you use any of the functions/structures in hamsterdb_stats.h?
-  Do you use any of the functions/structures in hamsterdb_int.h?
-    TODO @@@ - be more specific
-  Do you use to insert duplicate keys at exact positions (i.e. use one of
+    Do you use any of the HAM_HINT_* flags?
+      If yes, would it be very problematic if I would remove this functionality?
+    Do you use any of the HAM_DAM_* flags?
+      If yes, would it be very problematic if I would remove this functionality?
+    Do you use AES encryption?
+      If yes, would it be very problematic if I would remove this functionality?
+    Do you use zlib compression?
+      If yes, would it be very problematic if I would remove this functionality?
+    Do you use other file filters/record filters?
+    Do you use any of the functions/structures in hamsterdb_stats.h?
+    Do you use any of the functions/structures in hamsterdb_int.h?
+      ham_get_keycount_per_page
+      TODO @@@ - be more specific
+    Do you use to insert duplicate keys at exact positions (i.e. use one of
         HAM_CURSOR_INSERT_BEFORE, HAM_CURSOR_INSERT_AFTER,
         HAM_CURSOR_INSERT_FIRST, HAM_CURSOR_INSERT_LAST)?
-    If yes, would it be very problematic if I would remove this functionality?
-  Do you use ham_cursor_move in combination with HAM_SKIP_DUPLICATES
+      If yes, would it be very problematic if I would remove this functionality?
+    Do you use ham_cursor_move in combination with HAM_SKIP_DUPLICATES
         or HAM_ONLY_DUPLICATES?
-    If yes, would it be very problematic if I would remove this functionality?
-  Do you use sorted duplicates?
-    If yes, would it be very problematic if I would remove this functionality?
+      If yes, would it be very problematic if I would remove this functionality?
+    Do you use sorted duplicates?
+      If yes, would it be very problematic if I would remove this functionality?
 
 o clean up interface
     o rename ham_env_open_ex to ham_env_open, remove ham_open[_ex]
@@ -140,63 +191,58 @@ o flush in background (asynchronously)
         x if in-memory database: disable async flush
         x if transactions are disabled: disable async flush
 
-    o how to deal with an error in the background thread???
-        -> store in Environment, then return in every exported function
-        o add unittests
+    x how to deal with an error in the background thread???
+        x store in Environment, then return in every exported function
+        x required in Java API
+        x required in .NET API
+        x add unittests (needs error inducer?)
+
+    x default: async flush is OFF!
+        x change documentation in header file
+        x change the code
+
+    x default: async flush is OFF!
+        x change documentation in header file
+        x change the code
+        x add test (w/ ham_env_flush)
+        x unlock env->mutex after EVERY committed transaction
 
     o extend monster tests
-        o with async flush
-        o without async flush
-        o extend performance test
-        o run performance test against master branch
+        x with async flush
+        x without async flush
+        o extend/run performance test
+        o run monster tests
 
-    o do "group commits" make sense? run some tests
-        o verify that the logging/recovery works if we're group committing
-        o but ham_env_flush and database::close must commit ALL
-    o unlock global mutex after each single btree operation, to get a higher
-        degree of concurrency? (unless we come from ham_env_flush)
-    o how to improve performance when flushing? use database cursors?
+    o documentation
+        o tutorial
+        o faq
 
-o see Laurent's email on the mailing list
-    o 30 million keys (with Transactions)
-    o group 2 million inserts into a single Transaction
-    o then commit; the commit requires about 100 seconds
-    -> do profiling on "master" and "v2"!
+===============================
 
-o rename HAM_INV_PARAMETER to HAM_INVALID_PARAMETER
-o rename HAM_IN_MEMORY_DB to HAM_IN_MEMORY
+o a lot of monster tests fail with --use-transactions=5
+    ./test --use-transactions=5 --verbose=1 --verbose=1 220.tst 
+    o fix this
+    o add --use-transactions=5 to monster.sh
+
+===============================
 
 o continue with refacoring - indention, coding style, better design etc...
-    x backend.h
-
-    o btree.h
-    o btree.cc
-        - introduce namespace Btree
-
-    o btree_key.h
-    o btree_key.cc
-        - rewrite into Btree::Key
-        - constructors get "(const) ham_u8_t *" pointer to the key data
-        - provide getters/setters
-
-    o btree_stats.h
-        - remove everything that is not required
-        - namespace Btree::Statistics
-    o btree_stats.cc
-        - should use arena for lower/upper bounds
-
-    o btree_check.cc
-        - improve BtreeCheckAction; use it as template for enum, find, etc
-
-    o btree_enum.cc
-
-    o btree_find.cc
     o btree_insert.cc
+        o remove scratchpad, use member variables
+        o split when going down
+        o replace db_get_keysize() with backend->get_keysize()
     o btree_erase.cc
+        o replace db_get_keysize() with backend->get_keysize()
+        o remove scratchpad, use member variables
+        o try to simplify the whole flow
 
     o btree_cursor.cc
     o btree_cursor.h
+        o use memory arena for uncoupling the key
+        o replace db_get_keysize() with backend->get_keysize()
 
+    ==> get rid of the whole freelist; no need to refactor the existing
+        code
     o freelist.h
     o freelist.cc
     o freelist_statistics.h
@@ -244,6 +290,8 @@ o continue with refacoring - indention, coding style, better design etc...
         o code formatting
         o reduce bfc to a single header file, or use boost unittest framework
             http://www.boost.org/doc/libs/1_35_0/libs/test/doc/components/utf/index.html
+            http://www.beroux.com/english/articles/boost_unit_testing/
+            http://www.alittlemadness.com/2009/03/31/c-unit-testing-with-boosttest/
 
     o get rid of ham_bool_t, replace with bool whenever possible
 
@@ -272,6 +320,9 @@ o clean up the "close" functions
     o Cursor::close: currently (nearly) empty; merge with ~Cursor and
         Database::close_cursor()
     o do not have st2/st; just fail if there's a serious problem
+
+o BtreeFindAction: always use a cursor, and when doing approx matching
+    then simply move left or right with that cursor
 
 o python API - update and integrate
     o rewrite with boost::python??

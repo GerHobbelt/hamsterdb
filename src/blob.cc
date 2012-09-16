@@ -16,6 +16,8 @@ using namespace ham;
 
 using namespace ham;
 
+using namespace ham;
+
 
 #define SMALLEST_CHUNK_SIZE  (sizeof(ham_offset_t) + sizeof(blob_t) + 1)
 
@@ -227,7 +229,7 @@ BlobManager::allocate(Database *db, ham_record_t *record, ham_u32_t flags,
    * in-memory-database: the blobid is actually a pointer to the memory
    * buffer, in which the blob (with the blob-header) is stored
    */
-  if (m_env->get_flags() & HAM_IN_MEMORY_DB) {
+  if (m_env->get_flags() & HAM_IN_MEMORY) {
     blob_t *hdr;
     ham_u8_t *p = (ham_u8_t *)m_env->get_allocator()->alloc(
                                 record->size + sizeof(blob_t));
@@ -486,7 +488,7 @@ BlobManager::read(Database *db, Transaction *txn, ham_offset_t blobid,
    * in-memory-database: the blobid is actually a pointer to the memory
    * buffer, in which the blob is stored
    */
-  if (db->get_env()->get_flags() & HAM_IN_MEMORY_DB) {
+  if (db->get_env()->get_flags() & HAM_IN_MEMORY) {
     blob_t *hdr = (blob_t *)U64_TO_PTR(blobid);
     ham_u8_t *data = (ham_u8_t *)(U64_TO_PTR(blobid)) + sizeof(blob_t);
 
@@ -606,7 +608,7 @@ BlobManager::get_datasize(Database *db, ham_offset_t blobid, ham_offset_t *size)
    * in-memory-database: the blobid is actually a pointer to the memory
    * buffer, in which the blob is stored
    */
-  if (m_env->get_flags() & HAM_IN_MEMORY_DB) {
+  if (m_env->get_flags() & HAM_IN_MEMORY) {
     blob_t *hdr = (blob_t *)U64_TO_PTR(blobid);
     *size = (ham_size_t)blob_get_size(hdr);
     return (0);
@@ -653,7 +655,7 @@ BlobManager::overwrite(Database *db, ham_offset_t old_blobid,
    * allocate a new blob (but if both sizes are equal, just overwrite
    * the data)
    */
-  if (m_env->get_flags() & HAM_IN_MEMORY_DB) {
+  if (m_env->get_flags() & HAM_IN_MEMORY) {
     blob_t *nhdr, *phdr = (blob_t *)U64_TO_PTR(old_blobid);
 
     if (blob_get_size(phdr) == record->size) {
@@ -801,7 +803,7 @@ BlobManager::free(Database *db, ham_offset_t blobid, ham_u32_t flags)
    * in-memory-database: the blobid is actually a pointer to the memory
    * buffer, in which the blob is stored
    */
-  if (m_env->get_flags()&HAM_IN_MEMORY_DB) {
+  if (m_env->get_flags() & HAM_IN_MEMORY) {
     m_env->get_allocator()->free((void *)U64_TO_PTR(blobid));
     return (0);
   }

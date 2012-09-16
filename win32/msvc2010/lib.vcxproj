@@ -92,7 +92,7 @@
 	</ProjectReference>
 	<Lib>
 	  <AdditionalDependencies>..\..\..\hamsterdb-alien\libcurl\msvc2010/libcurl_x86_debug.lib;..\..\..\hamsterdb-alien\boost\msvc2010\x86\libboost_thread-vc100-mt-gd-1_49.lib;ws2_32.lib;%(AdditionalDependencies);Wldap32.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)libhamsterdb-2.0.4.lib</OutputFile>
+      <OutputFile>$(OutDir)libhamsterdb-2.0.5.lib</OutputFile>
 	</Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -117,7 +117,7 @@
 	</ProjectReference>
 	<Lib>
 	  <AdditionalDependencies>..\..\..\hamsterdb-alien\libcurl\msvc2010/libcurl_x64_debug.lib;..\..\..\hamsterdb-alien\boost\msvc2010\x64\libboost_thread-vc100-mt-gd-1_49.lib;ws2_32.lib;%(AdditionalDependencies);Wldap32.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)\libhamsterdb-2.0.4.lib</OutputFile>
+      <OutputFile>$(OutDir)\libhamsterdb-2.0.5.lib</OutputFile>
 	  <AdditionalLibraryDirectories>
 	  </AdditionalLibraryDirectories>
 	</Lib>
@@ -138,7 +138,7 @@
 	</ProjectReference>
 	<Lib>
 	  <AdditionalDependencies>..\..\..\hamsterdb-alien\libcurl\msvc2010/libcurl_x86.lib;..\..\..\hamsterdb-alien\boost\msvc2010\x86\libboost_thread-vc100-mt-1_49.lib;ws2_32.lib;%(AdditionalDependencies);Wldap32.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)libhamsterdb-2.0.4.lib</OutputFile>
+      <OutputFile>$(OutDir)libhamsterdb-2.0.5.lib</OutputFile>
 	  <AdditionalLibraryDirectories>
 	  </AdditionalLibraryDirectories>
 	  <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -163,7 +163,7 @@
 	</ProjectReference>
 	<Lib>
 	  <AdditionalDependencies>..\..\..\hamsterdb-alien\libcurl\msvc2010/libcurl_x64.lib;..\..\..\hamsterdb-alien\boost\msvc2010\x64\libboost_thread-vc100-mt-1_49.lib;ws2_32.lib;%(AdditionalDependencies);Wldap32.lib</AdditionalDependencies>
-      <OutputFile>$(OutDir)libhamsterdb-2.0.4.lib</OutputFile>
+      <OutputFile>$(OutDir)libhamsterdb-2.0.5.lib</OutputFile>
 	  <AdditionalLibraryDirectories>
 	  </AdditionalLibraryDirectories>
 	</Lib>
@@ -172,6 +172,7 @@
 	<ClInclude Include="..\..\src\backend.h" />
 	<ClInclude Include="..\..\src\blob.h" />
 	<ClInclude Include="..\..\src\btree.h" />
+    <ClInclude Include="..\..\src\btree_node.h" />
 	<ClInclude Include="..\..\src\btree_cursor.h" />
 	<ClInclude Include="..\..\src\btree_key.h" />
 	<ClInclude Include="..\..\src\btree_stats.h" />

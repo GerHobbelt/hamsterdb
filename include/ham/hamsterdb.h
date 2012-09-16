@@ -13,7 +13,7 @@
  * @file hamsterdb.h
  * @brief Include file for hamsterdb Embedded Storage
  * @author Christoph Rupp, chris@crupp.de
- * @version 2.0.4
+ * @version 2.0.5
  *
  * @mainpage
  *
@@ -450,6 +450,8 @@ typedef struct {
 #define HAM_LOG_INV_FILE_HEADER         (-300)
 /** Remote I/O error/Network error */
 #define HAM_NETWORK_ERROR               (-400)
+/** Failure in background thread; @sa ham_env_get_asnychronous_error() */
+#define HAM_ASYNCHRONOUS_ERROR_PENDING  (-500)
 
 /**
  * @}
@@ -612,7 +614,7 @@ ham_env_create(ham_env_t *env, const char *filename,
  *      if Transactions are disabled. Slows down performance but makes
  *      sure that all file handles and operating system caches are
  *      transferred to disk, thus providing a stronger durability.
- *     <li>@ref HAM_IN_MEMORY_DB</li> Creates an In-Memory Environment. No
+ *     <li>@ref HAM_IN_MEMORY</li> Creates an In-Memory Environment. No
  *      file will be created, and the Database contents are lost after
  *      the Environment is closed. The @a filename parameter can
  *      be NULL. Do <b>NOT</b> use in combination with
@@ -637,13 +639,13 @@ ham_env_create(ham_env_t *env, const char *filename,
  *      a given file at a given time. Deprecated - this is now the
  *      default
  *     <li>@ref HAM_ENABLE_RECOVERY</li> Enables logging/recovery for this
- *      Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB
+ *      Database. Not allowed in combination with @ref HAM_IN_MEMORY
  *      and @ref HAM_DISABLE_FREELIST_FLUSH.
  *     <li>@ref HAM_ENABLE_TRANSACTIONS</li> Enables Transactions for this
  *      Database.
  *      This flag implies @ref HAM_ENABLE_RECOVERY.
- *     <li>@ref HAM_DISABLE_ASYNCHRONOUS_FLUSH</li> Disable asynchronous
- *      flush of committed Transactions. Enabled by default. Only
+ *     <li>@ref HAM_ENABLE_ASYNCHRONOUS_FLUSH</li> Enable asynchronous
+ *      flush of committed Transactions. Disabled by default. Only
  *      if Transactions are enabled.
  *    </ul>
  *
@@ -758,14 +760,14 @@ ham_env_open(ham_env_t *env, const char *filename, ham_u32_t flags);
  *     <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
  *      Database. Will return @ref HAM_NEED_RECOVERY, if the Database
  *      is in an inconsistent state. Not allowed in combination
- *      with @ref HAM_IN_MEMORY_DB and @ref HAM_DISABLE_FREELIST_FLUSH.
+ *      with @ref HAM_IN_MEMORY and @ref HAM_DISABLE_FREELIST_FLUSH.
  *     <li>@ref HAM_AUTO_RECOVERY </li> Automatically recover the Database,
  *      if necessary. This flag implies @ref HAM_ENABLE_RECOVERY.
  *     <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
  *      Database.
  *      This flag imples @ref HAM_ENABLE_RECOVERY.
- *     <li>@ref HAM_DISABLE_ASYNCHRONOUS_FLUSH</li> Disable asynchronous
- *      flush of committed Transactions. Enabled by default. Only
+ *     <li>@ref HAM_ENABLE_ASYNCHRONOUS_FLUSH</li> Enable asynchronous
+ *      flush of committed Transactions. Disabled by default. Only
  *      if Transactions are enabled.
  *    </ul>
  * @param param An array of ham_parameter_t structures. The following
@@ -1339,7 +1341,7 @@ ham_create(ham_db_t *db, const char *filename,
  *     <li>@ref HAM_DISABLE_VAR_KEYLEN </li> Do not allow the use of variable
  *      length keys. Inserting a key, which is larger than the
  *      B+Tree index key size, returns @ref HAM_INV_KEYSIZE.
- *     <li>@ref HAM_IN_MEMORY_DB </li> Creates an In-Memory Database. No file
+ *     <li>@ref HAM_IN_MEMORY </li> Creates an In-Memory Database. No file
  *      will be created, and the Database contents are lost after
  *      the Database is closed. The @a filename parameter can
  *      be NULL. Do <b>NOT</b> use in combination with
@@ -1379,7 +1381,7 @@ ham_create(ham_db_t *db, const char *filename,
  *      a given file at a given time. Deprecated - this is now the
  *      default
  *     <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
- *      Database. Not allowed in combination with @ref HAM_IN_MEMORY_DB
+ *      Database. Not allowed in combination with @ref HAM_IN_MEMORY
  *      and @ref HAM_DISABLE_FREELIST_FLUSH.
  *     <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
  *      Database.
@@ -1493,7 +1495,7 @@ ham_open(ham_db_t *db, const char *filename, ham_u32_t flags);
  *     <li>@ref HAM_ENABLE_RECOVERY </li> Enables logging/recovery for this
  *      Database. Will return @ref HAM_NEED_RECOVERY, if the Database
  *      is in an inconsistent state. Not allowed in combination
- *      with @ref HAM_IN_MEMORY_DB and @ref HAM_DISABLE_FREELIST_FLUSH.
+ *      with @ref HAM_IN_MEMORY and @ref HAM_DISABLE_FREELIST_FLUSH.
  *     <li>@ref HAM_AUTO_RECOVERY </li> Automatically recover the Database,
  *      if necessary. This flag implies @ref HAM_ENABLE_RECOVERY.
  *     <li>@ref HAM_ENABLE_TRANSACTIONS </li> Enables Transactions for this
@@ -1566,7 +1568,9 @@ ham_open_ex(ham_db_t *db, const char *filename,
 
 /** Flag for @ref ham_create, @ref ham_create_ex.
  * This flag is non persistent. */
-#define HAM_IN_MEMORY_DB                            0x00000080
+#define HAM_IN_MEMORY                               0x00000080
+/** @deprecated */
+#define HAM_IN_MEMORY_DB                            HAM_IN_MEMORY
 
 /* reserved: DB_USE_MMAP (not persistent)           0x00000100 */
 
@@ -1630,7 +1634,7 @@ ham_open_ex(ham_db_t *db, const char *filename,
 /** Flag for @ref ham_create, @ref ham_create_ex,
  * @ref ham_open, @ref ham_open_ex
  * This flag is non persistent. */
-#define HAM_DISABLE_ASYNCHRONOUS_FLUSH              0x00800000
+#define HAM_ENABLE_ASYNCHRONOUS_FLUSH               0x00800000
 
 /**
  * Returns the last error code
@@ -1643,6 +1647,22 @@ ham_open_ex(ham_db_t *db, const char *filename,
  */
 HAM_EXPORT ham_status_t HAM_CALLCONV
 ham_get_error(ham_db_t *db);
+
+/**
+ * Returns the last error code from the background thread
+ *
+ * When Transactions are enabled (@sa HAM_ENABLE_TRANSACTIONS), committed
+ * Transactions are flushed to disk by a background thread. If this thread
+ * causes errors then every other API function returns 
+ * @a HAM_ASYNCHRONOUS_ERROR_PENDING till @a ham_env_get_asynchronous_error
+ * is called.
+ *
+ * @param env A valid Environment handle
+ *
+ * @return The last error code from the background thread
+ */
+HAM_EXPORT ham_status_t HAM_CALLCONV
+ham_env_get_asnychronous_error(ham_env_t *env);
 
 /**
  * Typedef for a prefix comparison function

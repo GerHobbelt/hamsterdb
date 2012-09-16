@@ -48,7 +48,7 @@ public:
         __super::setup();
 
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
-        BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY_DB, 0));
+        BFC_ASSERT_EQUAL(0, ham_create(m_db, 0, HAM_IN_MEMORY, 0));
 
         ExtKeyCache *c=new ExtKeyCache((Database *)m_db);
         BFC_ASSERT(c!=0);
@@ -66,8 +66,8 @@ public:
     void insertFetchRemoveTest(void)
     {
         ExtKeyCache *c=((Database *)m_db)->get_extkey_cache();
-        ham_u8_t *pbuffer, buffer[12]={0};
-        ham_size_t size;
+        ham_u8_t *pbuffer = 0, buffer[12]={0};
+        ham_size_t size = 0;
 
         c->insert(0x123, sizeof(buffer), buffer);
 

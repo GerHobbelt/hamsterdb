@@ -21,6 +21,7 @@
 #include "../src/blob.h"
 #include "../src/txn.h"
 #include "../src/log.h"
+#include "../src/btree_node.h"
 #include "../src/freelist.h"
 
 #include "bfc-testsuite.hpp"
@@ -65,7 +66,7 @@ public:
         BFC_ASSERT_EQUAL(0, ham_new(&m_db));
         BFC_ASSERT_EQUAL(0,
                 ham_env_create(m_env, BFC_OPATH(".test"),
-                        (m_inmemory ? HAM_IN_MEMORY_DB : 0), 0644));
+                        (m_inmemory ? HAM_IN_MEMORY : 0), 0644));
         BFC_ASSERT_EQUAL(0,
                 ham_env_create_db(m_env, m_db, 13,
                         HAM_ENABLE_DUPLICATES, 0));
@@ -283,16 +284,14 @@ public:
 
     void checkStructurePackingTest(void)
     {
-        int i;
-
         // checks to make sure structure packing by the compiler is still okay
         // HAM_PACK_0 HAM_PACK_1 HAM_PACK_2 OFFSETOF
         BFC_ASSERT(compare_sizes(sizeof(blob_t), 28));
         BFC_ASSERT(compare_sizes(sizeof(dupe_entry_t), 16));
         BFC_ASSERT(compare_sizes(sizeof(dupe_table_t),
                 8 + sizeof(dupe_entry_t)));
-        BFC_ASSERT(compare_sizes(sizeof(btree_node_t), 28+sizeof(btree_key_t)));
-        BFC_ASSERT(compare_sizes(sizeof(btree_key_t), 12));
+        BFC_ASSERT(compare_sizes(sizeof(BtreeNode), 28+sizeof(BtreeKey)));
+        BFC_ASSERT(compare_sizes(sizeof(BtreeKey), 12));
         BFC_ASSERT(compare_sizes(sizeof(env_header_t), 20));
         BFC_ASSERT(compare_sizes(sizeof(db_indexdata_t), 32));
         BFC_ASSERT(compare_sizes(DB_INDEX_SIZE, 32));
@@ -304,7 +303,7 @@ public:
         BFC_ASSERT(compare_sizes(HAM_FREELIST_SLOT_SPREAD, 16-5+1));
         BFC_ASSERT(compare_sizes(db_get_freelist_header_size(),
                 16 + 12 + sizeof(freelist_page_statistics_t)));
-        BFC_ASSERT(compare_sizes(db_get_int_key_header_size(), 11));
+        BFC_ASSERT(compare_sizes(BtreeKey::ms_sizeof_overhead, 11));
         BFC_ASSERT(compare_sizes(sizeof(Log::Header), 16));
         BFC_ASSERT(compare_sizes(sizeof(Log::Entry), 32));
         BFC_ASSERT(compare_sizes(sizeof(PageData), 13));
@@ -312,7 +311,7 @@ public:
         BFC_ASSERT(compare_sizes(sizeof(p._s), 13));
         BFC_ASSERT(compare_sizes(Page::sizeof_persistent_header, 12));
 
-        BFC_ASSERT(compare_sizes(OFFSETOF(btree_node_t, _entries), 28));
+        BFC_ASSERT(compare_sizes(OFFSETOF(BtreeNode, _entries), 28));
         Page page;
         Database db;
         db.set_env((Environment *)m_env);
@@ -322,11 +321,6 @@ public:
         page.set_db(&db);
         db.set_backend(&be);
         be.set_keysize(666);
-        for (i = 0; i < 5; i++) {
-            BFC_ASSERT_I(compare_sizes(
-                (ham_size_t)btree_node_get_key_offset(&page, i),
-                (ham_size_t)1000+12+28+(i*(11+666))), i);
-        }
         BFC_ASSERT(compare_sizes(Page::sizeof_persistent_header, 12));
         // make sure the 'header page' is at least as large as your usual
         // header page, then hack it...

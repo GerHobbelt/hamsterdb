@@ -29,8 +29,17 @@ class Worker
   public:
     /** default constructor starts the new thread */
     Worker(Environment *env)
-      : m_env(env), m_exit_requested(false) {
+      : m_env(env), m_exit_requested(false), m_last_error(0) {
       m_thread = boost::thread(boost::bind(&Worker::run, this));
+    }
+
+    /** retrieve the last error */
+    ham_status_t get_last_error(bool reset = false) {
+      ScopedLock lock(m_last_error_mutex);
+      ham_status_t st = m_last_error;
+      if (reset)
+        m_last_error = 0;
+      return (st);
     }
 
     /** worker function for the background thread */
@@ -39,20 +48,28 @@ class Worker
 
       while (!m_exit_requested) {
         m_cond.wait(lock);
+
         if (m_exit_requested)
           return;
-        m_env->flush_committed_txns(false);
+
+        ham_status_t st = m_env->flush_committed_txns(false, true);
+        if (st) {
+          ScopedLock lock2(m_last_error_mutex);
+          m_last_error = st;
+        }
       }
     }
 
-    /** signal a commit of a transaction; this will lock the Environment
+    /**
+     * signal a commit of a transaction; this will lock the Environment
      * and start flushing to disk
      */
     void signal_commit() {
       m_cond.notify_all();
     }
 
-    /** ask the thread to exit and join the parent thread; this will again
+    /**
+     * ask the thread to exit and join the parent thread; this will again
      * flush all committed transactions, but it will not lock the Environment
      * since it was already locked in ham_env_close
      */
@@ -66,6 +83,9 @@ class Worker
     /** a mutex to protect the thread members */
     Mutex m_mutex;
 
+    /** and another one for the last_error variable */
+    Mutex m_last_error_mutex;
+
     /** a condition for signalling */
     boost::condition m_cond;
 
@@ -77,6 +97,9 @@ class Worker
 
     /** ask async thread to exit */
     bool m_exit_requested;
+
+    /** last seen error */
+    ham_status_t m_last_error;
 };
 
 } // namespace ham

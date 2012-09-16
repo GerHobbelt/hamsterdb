@@ -18,6 +18,9 @@ using namespace ham;
 using namespace ham;
 
 
+using namespace ham;
+
+
 ham_status_t
 DeviceImplDisk::alloc_page(Page *page)
 {
