@@ -476,7 +476,8 @@ struct ApproxFixture : BaseFixture {
     ups_key_t key = ups_make_key((void *)"aa", 3);
     ups_record_t rec = {0};
 
-    REQUIRE(0 == ups_db_find(db, txn, &key, &rec, UPS_FIND_GEQ_MATCH));
+    REQUIRE(UPS_KEY_NOT_FOUND ==
+                  ups_db_find(db, txn, &key, &rec, UPS_FIND_GEQ_MATCH));
   }
 
   void issue52Test() {

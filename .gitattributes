@@ -7,7 +7,7 @@ configure       text eol=lf
 
 # Xcode
 *.pbxproj       text eol=crlf
-.* icns         binary
+*.icns          binary
 
 # Visual Studio
 *.csproj        text eol=crlf

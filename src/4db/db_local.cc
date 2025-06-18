@@ -124,12 +124,20 @@ is_modified_by_active_transaction(TxnIndex *txn_index)
       // if the transaction is still active, or if it is committed
       // but was not yet flushed then return an error
       if (!optxn->is_aborted() && !optxn->is_committed())
-        if (NOTSET(op->flags, TxnOperation::kIsFlushed))
+        if (NOTSET(op->flags, TxnOperation::kIsFlushed)) // XXX: always true
           return true;
     }
   }
   return false;
 }
+
+static inline bool
+is_an_insertion(const TxnOperation* op) {
+  return ISSETANY(op->flags, TxnOperation::kInsert
+                             | TxnOperation::kInsertOverwrite
+                             | TxnOperation::kInsertDuplicate);
+}
+
 
 static inline bool
 is_key_erased(Context *context, TxnIndex *txn_index, ups_key_t *key)
@@ -149,14 +157,12 @@ is_key_erased(Context *context, TxnIndex *txn_index, ups_key_t *key)
       continue;
     if (optxn->is_committed() || context->txn == optxn) {
       if (ISSET(op->flags, TxnOperation::kIsFlushed))
-        continue;
+        continue; // XXX: why looking at operations preceding flushed ones?
       if (ISSET(op->flags, TxnOperation::kErase)) {
         // TODO does not check duplicates!!
         return true;
       }
-      if (ISSETANY(op->flags, TxnOperation::kInsert
-                                    | TxnOperation::kInsertOverwrite
-                                    | TxnOperation::kInsertDuplicate))
+      if (is_an_insertion(op))
         return false;
     }
   }
@@ -190,16 +196,14 @@ check_erase_conflicts(LocalDb *db, Context *context, TxnNode *node,
 
     if (optxn->is_committed() || context->txn == optxn) {
       if (ISSET(op->flags, TxnOperation::kIsFlushed))
-        continue;
+        continue; // XXX: why are flushed operations simply ignored???
       // if key was erased then it doesn't exist and can be
       // inserted without problems
       if (ISSET(op->flags, TxnOperation::kErase))
         return UPS_KEY_NOT_FOUND;
       // if the key already exists then we can only continue if
       // we're allowed to overwrite it or to insert a duplicate
-      if (ISSETANY(op->flags, TxnOperation::kInsert
-                                    | TxnOperation::kInsertOverwrite
-                                    | TxnOperation::kInsertDuplicate))
+      if (is_an_insertion(op))
         return 0;
       if (NOTSET(op->flags, TxnOperation::kNop)) {
         assert(!"shouldn't be here");
@@ -245,16 +249,14 @@ check_insert_conflicts(LocalDb *db, Context *context, TxnNode *node,
 
     if (optxn->is_committed() || context->txn == optxn) {
       if (ISSET(op->flags, TxnOperation::kIsFlushed))
-        continue;
+        continue; // XXX: why are flushed operations simply ignored???
       /* if key was erased then it doesn't exist and can be
        * inserted without problems */
       if (ISSET(op->flags, TxnOperation::kErase))
         return 0;
       /* if the key already exists then we can only continue if
        * we're allowed to overwrite it or to insert a duplicate */
-      if (ISSETANY(op->flags, TxnOperation::kInsert
-                                    | TxnOperation::kInsertOverwrite
-                                    | TxnOperation::kInsertDuplicate)) {
+      if (is_an_insertion(op)) {
         if (ISSETANY(flags, UPS_OVERWRITE | UPS_DUPLICATE))
           return 0;
         return UPS_DUPLICATE_KEY;
@@ -291,31 +293,141 @@ check_insert_conflicts(LocalDb *db, Context *context, TxnNode *node,
   }
 }
 
+static inline bool
+key_is_configured_for_exact_match_lookup(ups_key_t *key) {
+  return NOTSET(ups_key_get_intflags(key), BtreeKey::kApproximate);
+}
+
+static inline bool
+key_is_configured_for_approximate_lookup(ups_key_t *key) {
+  return ISSETANY(ups_key_get_intflags(key), BtreeKey::kApproximate);
+}
+
+static inline void
+configure_key_for_approximate_lookup(ups_key_t *key) {
+  ups_key_set_intflags(key,
+                    (ups_key_get_intflags(key) | BtreeKey::kApproximate));
+}
+
+static inline void
+configure_key_for_exact_match_lookup(ups_key_t *key) {
+  ups_key_set_intflags(key,
+        (ups_key_get_intflags(key) & (~BtreeKey::kApproximate)));
+}
+
+namespace
+{
+
+class FindTxn
+{
+public: // functions
+  FindTxn(LocalDb *db_arg, Context *context_arg, LocalCursor *cursor_arg)
+      : db(db_arg)
+      , context(context_arg)
+      , cursor(cursor_arg)
+      , key_arena(&db->key_arena(context->txn))
+      , record_arena(&db->record_arena(context->txn))
+  {
+  }
+
+  ups_status_t find(ups_key_t *key, ups_record_t *record, uint32_t flags);
+
+private: // types
+  enum Status {
+    SUCCESS,
+    KEY_NOT_FOUND,
+    TXN_CONFLICT,
+    CHECK_BTREE,
+    TRY_PREVIOUS_NODE,
+    TRY_NEXT_NODE
+  };
+
+private: // functions
+  Status check_txns(ups_key_t *key, ups_record_t *record, uint32_t flags);
+  Status check_txn_node(ups_key_t *key, TxnNode* node, ups_record_t *record, uint32_t flags);
+  Status handle_key_inserted_in_a_txn(ups_key_t *key, ups_record_t *record);
+  Status handle_key_erased_in_a_txn(ups_key_t *key, uint32_t flags);
+  ups_status_t check_btree(ups_key_t *key, ups_record_t *record, uint32_t flags);
+  ups_status_t find_non_erased_key_in_btree(ups_key_t *key, ups_record_t *record, uint32_t flags);
+  bool txn_result_is_better(ups_key_t* key, uint32_t flags);
+  void use_approx_result_from_txn(ups_key_t *key, ups_record_t *record);
+
+private: //data
+  LocalDb *const db;
+  Context *const context;
+  LocalCursor *const cursor;
+  ByteArray *const key_arena;
+  ByteArray *const record_arena;
+  TxnOperation *op = 0;
+
+};
+
 // Lookup of a key/record pair in the Txn index and in the btree,
 // if transactions are disabled/not successful; copies the
 // record into |record|. Also performs approx. matching.
-static inline ups_status_t
-find_txn(LocalDb *db, Context *context, LocalCursor *cursor, ups_key_t *key,
-                ups_record_t *record, uint32_t flags)
+ups_status_t
+FindTxn::find(ups_key_t *key, ups_record_t *record, uint32_t flags)
 {
-  ups_status_t st = 0;
-  TxnOperation *op = 0;
-  bool exact_is_erased = false;
-
-  ByteArray *key_arena = &db->key_arena(context->txn);
-  ByteArray *record_arena = &db->record_arena(context->txn);
-
-  ups_key_set_intflags(key,
-        (ups_key_get_intflags(key) & (~BtreeKey::kApproximate)));
+  configure_key_for_exact_match_lookup(key);
 
   // cursor: reset the dupecache, set to nil
   if (cursor)
     cursor->set_to_nil();
 
+  switch ( check_txns(key, record, flags) ) {
+    case SUCCESS:       return UPS_SUCCESS;
+    case KEY_NOT_FOUND: return UPS_KEY_NOT_FOUND;
+    case TXN_CONFLICT:  return UPS_TXN_CONFLICT;
+    case CHECK_BTREE:   return check_btree(key, record, flags);
+  }
+}
+
+ups_status_t
+FindTxn::check_btree(ups_key_t *key, ups_record_t *record, uint32_t flags)
+{
+  const bool txns_had_an_approx_match = op != nullptr;
+
+  const ups_status_t st = find_non_erased_key_in_btree(key, record, flags);
+
+  if (unlikely(txns_had_an_approx_match)) {
+    if (st == UPS_KEY_NOT_FOUND
+        || st == 0 && txn_result_is_better(key, flags) ) {
+      use_approx_result_from_txn(key, record);
+      return 0;
+    }
+  }
+
+  if ( likely(st == 0) ) {
+    if ( cursor )
+      cursor->activate_btree();
+  }
+
+  return st;
+}
+
+FindTxn::Status
+FindTxn::check_txns(ups_key_t *key, ups_record_t *record, uint32_t flags)
+{
   // get the node for this key (but don't create a new one if it does
   // not yet exist)
   TxnNode *node = db->txn_index->get(key, flags);
 
+  while ( node ) {
+    const Status st = check_txn_node(key, node, record, flags);
+    switch ( st )
+    {
+      case TRY_PREVIOUS_NODE: node = node->previous_sibling(); break;
+      case TRY_NEXT_NODE:     node = node->next_sibling();     break;
+      default:                return st;
+    }
+    op = nullptr;
+  }
+  return CHECK_BTREE;
+}
+
+FindTxn::Status
+FindTxn::check_txn_node(ups_key_t *key, TxnNode* node, ups_record_t *record, uint32_t flags)
+{
   //
   // pick the node of this key, and walk through each operation
   // in reverse chronological order (from newest to oldest):
@@ -327,192 +439,149 @@ find_txn(LocalDb *db, Context *context, LocalCursor *cursor, ups_key_t *key,
   // - if a committed txn has erased the item then there's no need
   //    to continue checking older, committed txns
   //
-retry:
-  if (node)
-    op = node->newest_op;
 
-  for (; op != 0; op = op->previous_in_node) {
+  for (op = node->newest_op; op != 0; op = op->previous_in_node) {
     Txn *optxn = op->txn;
     if (optxn->is_aborted())
       continue;
 
     if (optxn->is_committed() || context->txn == optxn) {
       if (unlikely(ISSET(op->flags, TxnOperation::kIsFlushed)))
-        continue;
+        continue; // XXX: why are flushed operations simply ignored???
 
-      // if the key already exists then return its record; do not
-      // return pointers to TxnOperation::get_record, because it may be
-      // flushed and the user's pointers would be invalid
-      if (ISSETANY(op->flags, TxnOperation::kInsert
-                                | TxnOperation::kInsertOverwrite
-                                | TxnOperation::kInsertDuplicate)) {
-        if (cursor)
-          cursor->activate_txn(op);
-        // approx match? leave the loop and continue with the btree
-        if (ISSETANY(ups_key_get_intflags(key), BtreeKey::kApproximate))
-          break;
-        // otherwise copy the record and return
-        if (likely(record != 0))
-          copy_record(db, context->txn, op, record);
-        return 0;
+      if (is_an_insertion(op)) {
+        return handle_key_inserted_in_a_txn(key, record);
       }
 
-      // if key was erased then it doesn't exist and we can return
-      // immediately
-      //
-      // if an approximate match is requested then move to the next
-      // or previous node
       if (ISSET(op->flags, TxnOperation::kErase)) {
-        if (NOTSET(ups_key_get_intflags(key), BtreeKey::kApproximate))
-          exact_is_erased = true;
-        if (ISSET(flags, UPS_FIND_LT_MATCH)) {
-          node = node->previous_sibling();
-          if (!node)
-            break;
-          ups_key_set_intflags(key,
-              (ups_key_get_intflags(key) | BtreeKey::kApproximate));
-          goto retry;
-        }
-        if (ISSET(flags, UPS_FIND_GT_MATCH)) {
-          node = node->next_sibling();
-          if (!node)
-            break;
-          ups_key_set_intflags(key,
-              (ups_key_get_intflags(key) | BtreeKey::kApproximate));
-          goto retry;
-        }
-        // if a duplicate was deleted then check if there are other duplicates
-        // left
-        if (cursor)
-          cursor->activate_txn(op);
-        if (op->referenced_duplicate > 1) {
-          // not the first dupe - there are other dupes
-          return 0;
-        }
-        if (op->referenced_duplicate == 1) {
-          // check if there are other dupes
-          cursor->synchronize(context, LocalCursor::kSyncOnlyEqualKeys);
-          return cursor->duplicate_cache_count(context) > 0
-                    ? 0
-                    : UPS_KEY_NOT_FOUND;
-        }
-        return UPS_KEY_NOT_FOUND;
+        return handle_key_erased_in_a_txn(key, flags);
       }
 
       if (unlikely(NOTSET(op->flags, TxnOperation::kNop))) {
         assert(!"shouldn't be here");
-        return UPS_KEY_NOT_FOUND;
+        return KEY_NOT_FOUND;
       }
 
       continue;
     }
 
-    return UPS_TXN_CONFLICT;
+    return TXN_CONFLICT;
   }
-
-  // if there was an approximate match: check if the btree provides
-  // a better match
-  if (unlikely(op
-          && ISSETANY(ups_key_get_intflags(key), BtreeKey::kApproximate))) {
-    ups_key_set_intflags(key, 0);
-
-    // create a duplicate of the key
-    ups_key_t *source = op->node->key();
-    ups_key_t copy = ups_make_key(::alloca(source->size), source->size);
-    copy._flags = BtreeKey::kApproximate;
-    ::memcpy(copy.data, source->data, source->size);
-
-    // now lookup in the btree, but make sure that the retrieved key was
-    // not deleted or overwritten in a transaction
-    bool first_run = true;
-    do {
-      uint32_t new_flags = flags; 
-
-      // the "exact match" key was erased? then don't fetch it again
-      if (!first_run || exact_is_erased) {
-        first_run = false;
-        new_flags = flags & (~UPS_FIND_EQ_MATCH);
-      }
-
-      st = db->btree_index->find(context, cursor, key, key_arena, record,
-                      record_arena, new_flags);
-      if (st)
-        break;
-      exact_is_erased = is_key_erased(context, db->txn_index.get(), key);
-    } while (exact_is_erased);
-
-    // if the key was not found in the btree: return the key which was found
-    // in the transaction tree
-    if (st == UPS_KEY_NOT_FOUND) {
-      if (cursor)
-        cursor->activate_txn(op);
-      copy_key(db, context->txn, &copy, key);
-      if (likely(record != 0))
-        copy_record(db, context->txn, op, record);
-      return 0;
-    }
-
-    if (unlikely(st))
-      return st;
-
-    // the btree key is a direct match? then return it
-    if (NOTSET(ups_key_get_intflags(key), BtreeKey::kApproximate)
-          && ISSET(flags, UPS_FIND_EQ_MATCH)
-          && !exact_is_erased) {
-      if (cursor)
-        cursor->activate_btree();
-      return 0;
-    }
-
-    // if there's an approx match in the btree: compare both keys and
-    // use the one that is closer. if the btree is closer: make sure
-    // that it was not erased or overwritten in a transaction
-    int cmp = db->btree_index->compare_keys(key, &copy);
-    bool use_btree = false;
-    if (ISSET(flags, UPS_FIND_GT_MATCH)) {
-      if (cmp < 0)
-        use_btree = true;
-    }
-    else if (ISSET(flags, UPS_FIND_LT_MATCH)) {
-      if (cmp > 0)
-        use_btree = true;
-    }
-    else
-      assert(!"shouldn't be here");
-
-    // use the btree key
-    if (likely(use_btree)) {
-      if (cursor)
-        cursor->activate_btree();
-      return 0;
-    }
-    else { // use the txn key
-      if (cursor)
-        cursor->activate_txn(op);
-      copy_key(db, context->txn, &copy, key);
-      if (likely(record != 0))
-        copy_record(db, context->txn, op, record);
-      return 0;
-    }
-  }
-
-  //
-  // no approximate match:
-  //
-  // we've successfully checked all un-flushed transactions and there
-  // were no conflicts, and we have not found the key: now try to
-  // lookup the key in the btree.
-  //
-  st = db->btree_index->find(context, cursor, key, key_arena, record,
-                          record_arena, flags);
-  if (unlikely(st))
-    return st;
-  if (cursor)
-    cursor->activate_btree();
-  return 0;
+  return CHECK_BTREE;
 }
 
-static inline void 
+FindTxn::Status
+FindTxn::handle_key_inserted_in_a_txn(ups_key_t *key, ups_record_t *record)
+{
+  if (cursor)
+    cursor->activate_txn(op);
+  // approx match? leave the loop and continue with the btree
+  if (key_is_configured_for_approximate_lookup(key))
+    return CHECK_BTREE;
+  // Do not return pointers to TxnOperation::get_record, because it may be
+  // flushed and the user's pointers would be invalid
+  if (likely(record != 0))
+    copy_record(db, context->txn, op, record);
+  return SUCCESS;
+}
+
+FindTxn::Status
+FindTxn::handle_key_erased_in_a_txn(ups_key_t *key, uint32_t flags)
+{
+  // if an approximate match is requested then move to the next
+  // or previous node
+  if (ISSET(flags, UPS_FIND_LT_MATCH)) {
+    configure_key_for_approximate_lookup(key);
+    return TRY_PREVIOUS_NODE; // XXX: what if UPS_FIND_GT_MATCH is also
+                              // XXX: requested, previous node doesn't
+                              // XXX: exist but the next node exists?
+  }
+  if (ISSET(flags, UPS_FIND_GT_MATCH)) {
+    configure_key_for_approximate_lookup(key);
+    return TRY_NEXT_NODE;
+  }
+  // if a duplicate was deleted then check if there are other duplicates
+  // left
+  if (cursor)
+    cursor->activate_txn(op);
+  if (op->referenced_duplicate > 1) {
+    // not the first dupe - there are other dupes
+    return SUCCESS;
+  }
+  if (op->referenced_duplicate == 1) {
+    // check if there are other dupes
+    cursor->synchronize(context, LocalCursor::kSyncOnlyEqualKeys);
+    return cursor->duplicate_cache_count(context) > 0
+      ? SUCCESS
+      : KEY_NOT_FOUND;
+  }
+  return KEY_NOT_FOUND;
+}
+
+ups_status_t
+FindTxn::find_non_erased_key_in_btree(ups_key_t *key, ups_record_t *record, uint32_t flags)
+{
+  ups_status_t st = 0;
+
+  ups_key_set_intflags(key, 0);
+
+  do
+  {
+    st = db->btree_index->find(context, cursor, key, key_arena, record,
+                    record_arena, flags);
+    flags &= (~UPS_FIND_EQ_MATCH); // Exact match must be attempted only once
+  }
+  while ( st == 0 && is_key_erased(context, db->txn_index.get(), key) );
+
+  return st;
+}
+
+void
+FindTxn::use_approx_result_from_txn(ups_key_t *key, ups_record_t *record)
+{
+  if (cursor)
+    cursor->activate_txn(op);
+
+  copy_key(db, context->txn, op->node->key(), key);
+  key->_flags = BtreeKey::kApproximate;
+
+  if (likely(record != 0))
+    copy_record(db, context->txn, op, record);
+}
+
+bool
+FindTxn::txn_result_is_better(ups_key_t* key, uint32_t flags)
+{
+  if (key_is_configured_for_exact_match_lookup(key)
+        && ISSET(flags, UPS_FIND_EQ_MATCH)) {
+    // the btree key is a direct match
+    return false;
+  }
+
+  // if there's an approx match in the btree: compare both keys and
+  // use the one that is closer. if the btree is closer: make sure
+  // that it was not erased or overwritten in a transaction
+  int cmp = db->btree_index->compare_keys(key, op->node->key());
+  if (ISSET(flags, UPS_FIND_GT_MATCH)) {
+    return cmp > 0;
+  }
+  else {
+    assert(ISSET(flags, UPS_FIND_LT_MATCH));
+    return cmp < 0;
+  }
+}
+
+} // unnamed namespace
+
+static inline ups_status_t
+find_txn(LocalDb *db, Context *context, LocalCursor *cursor, ups_key_t *key,
+                ups_record_t *record, uint32_t flags)
+{
+    FindTxn ft(db, context, cursor);
+    return ft.find(key, record, flags);
+}
+
+static inline void
 update_other_cursors_after_erase(LocalDb *db, Context *context, TxnNode *node,
                 LocalCursor *current_cursor)
 {
@@ -533,7 +602,7 @@ update_other_cursors_after_erase(LocalDb *db, Context *context, TxnNode *node,
         hit = true;
     }
     // if cursor is coupled to the same key in the btree: increment
-    // duplicate index (if required) 
+    // duplicate index (if required)
     else if (!c->btree_cursor.is_nil()
             && c->btree_cursor.points_to(context, node->key()))
       hit = true;
@@ -817,7 +886,7 @@ struct MetricsVisitor : public BtreeVisitor {
     else
       node->fill_metrics(&metrics->btree_internal_metrics);
   }
-  
+
   ups_env_metrics_t *metrics;
 };
 
@@ -961,7 +1030,7 @@ prepare_record_number(LocalDb *db, ups_key_t *key, ByteArray *arena,
   *(T *)key->data = record_number;
 }
 
-static inline void 
+static inline void
 update_other_cursors_after_insert(LocalDb *db, Context *context, TxnNode *node,
                 LocalCursor *current_cursor)
 {
@@ -982,7 +1051,7 @@ update_other_cursors_after_insert(LocalDb *db, Context *context, TxnNode *node,
         hit = true;
     }
     // if cursor is coupled to the same key in the btree: increment
-    // duplicate index (if required) 
+    // duplicate index (if required)
     else if (c->btree_cursor.points_to(context, node->key()))
       hit = true;
 
@@ -1291,7 +1360,7 @@ LocalDb::bulk_operations(Txn *txn, ups_operation_t *ops, size_t ops_length,
         ops->result = find(0, txn, &ops->key, &ops->record, ops->flags);
         if (likely(ops->result == 0)) {
           // copy key if approx. matching was used
-          if (ISSETANY(ups_key_get_intflags(&ops->key), BtreeKey::kApproximate)
+          if (key_is_configured_for_approximate_lookup(&ops->key)
                   && NOTSET(ops->key.flags, UPS_KEY_USER_ALLOC)) {
             ka.append((uint8_t *)ops->key.data, ops->key.size);
           }
@@ -1330,7 +1399,7 @@ LocalDb::bulk_operations(Txn *txn, ups_operation_t *ops, size_t ops_length,
         break;
       case UPS_OP_FIND:
         // copy key if approx. matching was used
-        if (ISSETANY(ups_key_get_intflags(&ops->key), BtreeKey::kApproximate)
+        if (key_is_configured_for_approximate_lookup(&ops->key)
                   && NOTSET(ops->key.flags, UPS_KEY_USER_ALLOC)) {
           ops->key.data = kptr;
           kptr += ops->key.size;
@@ -1389,8 +1458,18 @@ LocalDb::cursor_move(Cursor *hcursor, ups_key_t *key,
   if (unlikely(st))
     return st;
 
-  // store the direction
-  cursor->last_operation = flags & (UPS_CURSOR_NEXT | UPS_CURSOR_PREVIOUS);
+  const uint32_t this_op = flags & (UPS_CURSOR_NEXT | UPS_CURSOR_PREVIOUS);
+  if ( cursor->last_operation == LocalCursor::kLookupOrInsert
+       && this_op == 0 ) {
+    // This was a pseudo-move on a possibly desynchronized
+    // state of the btree and txn cursors, and they were NOT synchronized
+    // because of an optimization in LocalCursor::move(). Therefore
+    // not updating cursor->last_operation (as if this pseudo-move call
+    // to cursor_move() didn't even happen).
+  } else {
+    // store the direction
+    cursor->last_operation = this_op;
+  }
 
   return 0;
 }
@@ -1450,7 +1529,7 @@ LocalDb::select_range(SelectStatement *stmt, LocalCursor *begin,
   ups_key_t key = {0};
   ups_record_t record = {0};
   ScopedPtr<LocalCursor> tmpcursor;
- 
+
   LocalCursor *cursor = begin;
   if (unlikely(cursor && cursor->is_nil()))
     return UPS_CURSOR_IS_NIL;
@@ -1624,10 +1703,8 @@ LocalDb::flush_txn_operation(Context *context, LocalTxn *txn, TxnOperation *op)
   // which are coupled to this op have to be uncoupled, and must be coupled
   // to the btree item instead.
   //
-  if (ISSETANY(op->flags, TxnOperation::kInsert
-                                | TxnOperation::kInsertOverwrite
-                                | TxnOperation::kInsertDuplicate)) {
-    uint32_t additional_flag = 
+  if (is_an_insertion(op)) {
+    uint32_t additional_flag =
       ISSET(op->flags, TxnOperation::kInsertDuplicate)
           ? UPS_DUPLICATE
           : UPS_OVERWRITE;

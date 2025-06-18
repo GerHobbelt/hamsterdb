@@ -1,5 +1,7 @@
 issue32
 issue43
+issue101
+issue105
 testdb*
 *.o
 *.lo

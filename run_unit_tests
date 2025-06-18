@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+set -e
+tmpdir=$(mktemp -d -p /run/user/$UID upscaledb_testing.XXXXXX)
+
+RED="$(tput setaf 1)"
+GREEN="$(tput setaf 2)"
+WHITE="$(tput setaf 7)"
+all_tests_were_run=0
+failure_count=0
+cleanup()
+{
+    if [ "$all_tests_were_run" -ne 1 ]
+    then
+        echo "$RED### NOT ALL TESTS WERE RUN ####$WHITE"
+    elif (( failure_count != 0 ))
+    then
+        echo "$RED### There were $failure_count failures ####$WHITE"
+    else
+        echo "$GREEN========== OK ============$WHITE"
+    fi
+    rm -rf "$tmpdir"
+}
+
+trap cleanup EXIT
+
+run_test()
+{
+    echo "$*"
+    if ! "$@"
+    then
+        let ++failure_count
+    fi
+}
+
+mydir="$(dirname "$0")"
+mydir="$(cd "$mydir"; pwd)"
+cd "$mydir"/unittests
+make plugin
+make
+cp -r test issue{32,43,101,105} plugin.so data Makefile.am "$tmpdir"
+cd "$tmpdir"
+
+run_test ./test "$@"
+run_test ./issue32 -i
+run_test ./issue32 -r
+run_test ./issue43
+run_test ./issue101
+for i in {1..10} {45..55} {70..80}
+do
+    run_test ./issue105 "$i"
+done
+all_tests_were_run=1
+exit $((failure_count != 0))

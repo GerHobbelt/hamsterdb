@@ -1830,6 +1830,17 @@ struct LongTxnCursorFixture : public BaseCursorFixture {
     REQUIRE(UPS_KEY_NOT_FOUND == compare(0, 0, 0));
   }
 
+  void moveNextWhileInsertingTxn2Test() {
+    REQUIRE(0 == insertBtree("1", "aaaaa"));
+    REQUIRE(0 == insertTxn  ("8", "aaaac"));
+
+    REQUIRE(0 == compare  ("1", "aaaaa", BTREE));
+    REQUIRE(0 == insertTxn("5", "xxxxx"));
+    REQUIRE(0 == compare  ("5", "xxxxx", TXN));
+    REQUIRE(0 == compare  ("8", "aaaac", TXN));
+    REQUIRE(UPS_KEY_NOT_FOUND == compare(0, 0, 0));
+  }
+
   void moveNextWhileInsertingMixedTest() {
     REQUIRE(0 == insertBtree("11111", "aaaaa"));
     REQUIRE(0 == insertBtree("11112", "aaaab"));
@@ -3486,6 +3497,12 @@ TEST_CASE("Cursor/longtxn/moveNextWhileInsertingTxnTest", "")
 {
   LongTxnCursorFixture f;
   f.moveNextWhileInsertingTxnTest();
+}
+
+TEST_CASE("Cursor/longtxn/moveNextWhileInsertingTxn2Test", "[!shouldfail]")
+{
+  LongTxnCursorFixture f;
+  f.moveNextWhileInsertingTxn2Test();
 }
 
 TEST_CASE("Cursor/longtxn/moveNextWhileInsertingMixedTest", "")

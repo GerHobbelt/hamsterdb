@@ -36,13 +36,20 @@ doc documentation/html:
 	VERSION=$(VERSION) ;            \
 	export VERSION;                 \
 	doxygen documentation/Doxyfile
- 
+
 
 html-dist: doc
 	tar cvzf upscaledb-html-documentation.$(VERSION).tar.gz documentation/html
 
 test:
-	cd unittests && make && ./test && ./issue32 -i && ./issue32 -r && ./issue43
+	cd unittests    && \
+	make            && \
+	./test          && \
+	./issue32 -i    && \
+	./issue32 -r    && \
+	./issue43       && \
+	./issue101      && \
+	./issue105
 if ENABLE_JAVA
 	cd java && make test
 endif

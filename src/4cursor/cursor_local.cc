@@ -407,8 +407,7 @@ LocalCursor::move_next_key_singlestep(Context *context)
   ups_status_t st = 0;
 
   // make sure that the cursor advances if the other cursor is nil
-  if ((is_nil(kTxn) && !is_nil(kBtree))
-      || (is_nil(kBtree) && !is_nil(kTxn))) {
+  if (is_nil(kTxn) != is_nil(kBtree)) {
     last_cmp = 0;
   }
 

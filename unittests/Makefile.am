@@ -1,5 +1,5 @@
-noinst_PROGRAMS = test recovery issue32 issue43 issue101
-noinst_BIN = test recovery issue32 issue43 issue101
+noinst_PROGRAMS = test recovery issue32 issue43 issue101 issue105
+noinst_BIN = test recovery issue32 issue43 issue101 issue105
 
 EXTRA_DIST      = recovery.pl valgrind.supp data/* plugin.cc
 
@@ -104,6 +104,9 @@ issue43_LDADD   = $(top_builddir)/src/libupscaledb.la
 
 issue101_SOURCES = issue101.cc
 issue101_LDADD   = $(top_builddir)/src/libupscaledb.la
+
+issue105_SOURCES = issue105.cc
+issue105_LDADD   = $(top_builddir)/src/libupscaledb.la
 
 plugin: plugin.cc
 	$(CXX) -fPIC -shared -o plugin.so plugin.cc $(AM_CPPFLAGS)
