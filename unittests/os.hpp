@@ -12,7 +12,7 @@
 #ifndef OS_HPP__
 #define OS_HPP__
 
-#ifdef WIN32
+#ifdef _WIN32
 #   include <windows.h>
 #else
 #   include <unistd.h>
@@ -30,7 +30,7 @@
 class os
 {
 protected:
-#ifdef WIN32
+#ifdef _WIN32
     static const char *DisplayError(char* buf, ham_size_t buflen, DWORD errorcode)
     {
 #ifdef UNDER_CE
@@ -55,7 +55,7 @@ public:
      */
     static bool unlink(const char *path, bool fail_silently = true)
     {
-#ifdef WIN32
+#ifdef _WIN32
 #   ifdef UNDER_CE
         wchar_t wpath[1024];
         MultiByteToWideChar(CP_ACP, 0, path, -1, wpath,
@@ -88,7 +88,7 @@ public:
      * copy a file
      */
     static bool copy(const char *src, const char *dest) {
-#ifdef WIN32
+#ifdef _WIN32
 #   ifdef UNDER_CE
         wchar_t wsrc[1024];
         wchar_t wdest[1024];
@@ -126,7 +126,7 @@ public:
      * check if a file exists
      */
     static bool file_exists(const char *path) {
-#ifdef WIN32
+#ifdef _WIN32
         struct _stat buf={0};
         if (::_stat(path, &buf)<0)
             return (false);

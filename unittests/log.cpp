@@ -612,7 +612,7 @@ public:
 
     void recoverAllocatePageTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         Database *db=(Database *)m_db;
         g_CHANGESET_POST_LOG_HOOK=(hook_func_t)copyLog;
         ham_size_t ps=m_env->get_pagesize();
@@ -660,7 +660,7 @@ public:
 
     void recoverAllocateMultiplePageTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         g_CHANGESET_POST_LOG_HOOK=(hook_func_t)copyLog;
         ham_size_t ps=m_env->get_pagesize();
         Page *page[10];
@@ -715,7 +715,7 @@ public:
 
     void recoverModifiedPageTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         g_CHANGESET_POST_LOG_HOOK=(hook_func_t)copyLog;
         ham_size_t ps=m_env->get_pagesize();
         Page *page;
@@ -763,7 +763,7 @@ public:
 
     void recoverModifiedMultiplePageTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         g_CHANGESET_POST_LOG_HOOK=(hook_func_t)copyLog;
         ham_size_t ps=m_env->get_pagesize();
         Page *page[10];
@@ -821,7 +821,7 @@ public:
 
     void recoverMixedAllocatedModifiedPageTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         g_CHANGESET_POST_LOG_HOOK=(hook_func_t)copyLog;
         ham_size_t ps=m_env->get_pagesize();
         Page *page[10];
@@ -901,7 +901,7 @@ public:
 
     void aesFilterTest()
     {
-#ifndef WIN32
+#ifndef _WIN32
 #ifndef HAM_DISABLE_ENCRYPTION
         /* close m_db, otherwise ham_env_create fails */
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));
@@ -947,7 +947,7 @@ public:
 
     void aesFilterRecoverTest()
     {
-#ifndef WIN32
+#ifndef _WIN32
 #ifndef HAM_DISABLE_ENCRYPTION
         /* close m_db, otherwise ham_env_create fails on win32 */
         BFC_ASSERT_EQUAL(0, ham_close(m_db, 0));

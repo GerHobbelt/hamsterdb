@@ -86,7 +86,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
         /* target dependencies */
 
-#if defined(MSDOS) || (defined(WINDOWS) && !defined(WIN32))
+#if defined(MSDOS) || (defined(WINDOWS) && !defined(_WIN32))
 #  define OS_CODE  0x00
 #  if defined(__TURBOC__) || defined(__BORLANDC__)
 #    if(__STDC__ == 1) && (defined(__LARGE__) || defined(__COMPACT__))
@@ -137,7 +137,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE  0x0a
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #  ifndef __CYGWIN__  /* Cygwin is Unix, not Win32 */
 #    define OS_CODE  0x0b
 #  endif
@@ -194,7 +194,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  ifdef __TURBOC__
 #    define NO_vsnprintf
 #  endif
-#  ifdef WIN32
+#  ifdef _WIN32
      /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
 #    if !defined(vsnprintf) && !defined(NO_vsnprintf)
 #      define vsnprintf _vsnprintf

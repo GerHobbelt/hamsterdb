@@ -21,7 +21,7 @@
 
 using namespace bfc;
 
-#if WIN32
+#ifdef _WIN32
 #   include <windows.h>
 #else
 #   include <unistd.h>
@@ -134,7 +134,7 @@ public:
 
     void closeTest()
     {
-#ifndef WIN32  // crashs in ntdll.dll
+#ifndef _WIN32  // crashs in ntdll.dll
         ham_status_t st;
 
         st=os_close((ham_fd_t)0x12345, 0);

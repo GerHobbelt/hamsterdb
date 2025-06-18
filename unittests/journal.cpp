@@ -778,7 +778,7 @@ public:
 
     void recoverAutoAbortTxnsTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         ham_txn_t *txn[5];
         LogEntry vec[20];
         unsigned p=0;
@@ -850,7 +850,7 @@ public:
 
     void recoverSkipAlreadyFlushedTest(void)
     {
-#ifndef WIN32
+#ifndef _WIN32
         ham_txn_t *txn[2];
         LogEntry vec[20];
         unsigned p=0;

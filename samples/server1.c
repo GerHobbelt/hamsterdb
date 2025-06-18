@@ -19,7 +19,7 @@
 #include <ham/hamsterdb.h>
 #include <ham/hamsterdb_srv.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #   define EXT ".exe"
 #else
 #   define EXT ""

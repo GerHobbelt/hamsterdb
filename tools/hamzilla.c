@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdarg.h>
-#ifndef WIN32
+#ifndef _WIN32
 #  include <unistd.h>
 #  include <signal.h>
 #  include <sys/signal.h>
@@ -95,7 +95,7 @@ static option_t opts[]={
         "pid",
         "store pid in file",
         GETOPTS_NEED_ARGUMENT },
-#ifdef WIN32
+#ifdef _WIN32
     {
         ARG_INSTALL,
         "i",
@@ -142,7 +142,7 @@ static int log_level  = LOG_NORMAL;
 static void
 init_syslog(void)
 {
-#ifndef WIN32
+#ifndef _WIN32
     openlog(EXENAME, LOG_PID, LOG_DAEMON);
 #endif
 }
@@ -150,7 +150,7 @@ init_syslog(void)
 static void
 close_syslog(void)
 {
-#ifndef WIN32
+#ifndef _WIN32
     closelog();
 #endif
 }
@@ -172,7 +172,7 @@ hlog(int level, const char *format, ...)
         fprintf(stderr, "%s", &buffer[0]);
     }
     else {
-#ifdef WIN32
+#ifdef _WIN32
         TCHAR msg[1024];
 
         mbstowcs(msg, buffer, 1024);
@@ -222,7 +222,7 @@ signal_handler(int sig)
     running = 0;
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 
 static void
 daemonize(void)
@@ -301,7 +301,7 @@ write_pidfile(const char *pidfile)
         hlog(LOG_FATAL, "failed to write pidfile: %s\n", strerror(errno));
         exit(-1);
     }
-#ifdef WIN32
+#ifdef _WIN32
     fprintf(fp, "%u", (unsigned)_getpid());
 #else
     fprintf(fp, "%u", (unsigned)getpid());
@@ -429,7 +429,7 @@ initialize_server(ham_srv_t *srv, config_table_t *params)
     }
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 static void
 win32_service_install(void)
 {
@@ -725,7 +725,7 @@ main(int argc, char **argv)
     ham_srv_config_t cfg;
     config_table_t *params=0;
     char configbuffer[MAX_PATH_LENGTH*2];
-#ifdef WIN32
+#ifdef _WIN32
     int win32_action=ARG_RUN;
 #endif
 
@@ -777,7 +777,7 @@ main(int argc, char **argv)
                 printf("       -f:         run in foreground\n");
                 printf("       configfile: path of configuration file\n");
                 return (0);
-#ifdef WIN32
+#ifdef _WIN32
             case ARG_INSTALL:
                 hlog(LOG_DBG, "Paramter: Installing service\n");
                 win32_action=ARG_INSTALL;
@@ -817,7 +817,7 @@ main(int argc, char **argv)
      * different extension ".config") in the same directory
      * as hamsvc[.exe] */
     if (!configfile) {
-#ifdef WIN32
+#ifdef _WIN32
         char *p;
         p=configbuffer+strlen(configbuffer)-1;
         while (*p!='.')
@@ -836,7 +836,7 @@ main(int argc, char **argv)
 
     /* register signals; these are the signals that will terminate the daemon */
     hlog(LOG_DBG, "Registering signal handlers\n");
-#ifndef WIN32
+#ifndef _WIN32
     signal(SIGHUP, signal_handler);
     signal(SIGQUIT, signal_handler);
     signal(SIGKILL, signal_handler);
@@ -845,7 +845,7 @@ main(int argc, char **argv)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-#ifdef WIN32
+#ifdef _WIN32
     switch (win32_action) {
         case ARG_INSTALL:
             hlog(LOG_NORMAL, "hamsrv is installing...\n");
@@ -886,7 +886,7 @@ main(int argc, char **argv)
     /* on Unix we first daemonize, then write the pidfile (otherwise we do
      * not know the pid of the daemon process). On Win32, we first write
      * the pidfile and then call the service startup routine later. */
-#ifndef WIN32
+#ifndef _WIN32
     if (!foreground) {
         hlog(LOG_DBG, "Running in background...\n");
         daemonize();
@@ -909,7 +909,7 @@ main(int argc, char **argv)
      * Any registered signal will terminate the server by setting the
      * 'running' flag to 0. (The Win32 main loop is hidden in
      * win32_service_run()). */
-#ifndef WIN32
+#ifndef _WIN32
     hlog(LOG_DBG, "Daemon is entering main loop\n");
     while (running)
         sleep(1);

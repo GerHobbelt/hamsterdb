@@ -218,7 +218,7 @@ public:
         BFC_ASSERT_EQUAL(HAM_INV_PARAMETER,
                 ham_open_ex(db, "test.db", HAM_ENABLE_DUPLICATES, params));
 
-#if WIN32
+#ifdef _WIN32
         BFC_ASSERT_EQUAL(HAM_IO_ERROR,
                 ham_open(db, "c:\\windows", 0));
 #else

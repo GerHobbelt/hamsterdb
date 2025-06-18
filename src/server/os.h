@@ -25,7 +25,7 @@ extern "C" {
 /*
  * a critical section
  */
-#ifdef WIN32
+#ifdef _WIN32
 #   include <windows.h>
 typedef CRITICAL_SECTION os_critsec_t;
 #else

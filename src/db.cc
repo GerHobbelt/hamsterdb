@@ -196,7 +196,7 @@ __cache_needs_purge(Environment *env)
      * which can happen on 32bit Windows) */
     if (cache && !(env->get_flags()&HAM_IN_MEMORY_DB)) {
         ham_bool_t purge=cache->is_too_big();
-#if defined(WIN32) && defined(HAM_32BIT)
+#if defined(_WIN32) && defined(HAM_32BIT)
         if (env->get_flags()&HAM_CACHE_UNLIMITED) {
             if (cache->get_cur_elements()*env->get_pagesize()
                     > PURGE_THRESHOLD)

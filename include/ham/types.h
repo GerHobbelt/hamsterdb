@@ -32,7 +32,7 @@ extern "C" {
 #   define HAM_OS_WINCE 1
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #   undef  HAM_OS_WIN32
 #   define HAM_OS_WIN32 1
 #   ifdef WIN64
@@ -75,7 +75,7 @@ extern "C" {
  * make sure crtdbg.h is loaded before malloc.h!
  */
 #if defined(_MSC_VER) && defined(HAM_OS_WIN32)
-#   if (defined(WIN32) || defined(__WIN32)) && !defined(UNDER_CE)
+#   if !defined(UNDER_CE)
 #      if defined(DEBUG) || defined(_DEBUG)
 #         ifndef _CRTDBG_MAP_ALLOC
 #            define _CRTDBG_MAP_ALLOC 1

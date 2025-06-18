@@ -14,7 +14,7 @@
 void
 os_critsec_init(os_critsec_t *cs)
 {
-#ifdef WIN32
+#ifdef _WIN32
     InitializeCriticalSection(cs);
 #else
     pthread_mutex_init(cs, 0);
@@ -24,7 +24,7 @@ os_critsec_init(os_critsec_t *cs)
 void
 os_critsec_enter(os_critsec_t *cs)
 {
-#ifdef WIN32
+#ifdef _WIN32
     EnterCriticalSection(cs);
 #else
     pthread_mutex_lock(cs);
@@ -34,7 +34,7 @@ os_critsec_enter(os_critsec_t *cs)
 void
 os_critsec_leave(os_critsec_t *cs)
 {
-#ifdef WIN32
+#ifdef _WIN32
     LeaveCriticalSection(cs);
 #else
     pthread_mutex_unlock(cs);
@@ -44,7 +44,7 @@ os_critsec_leave(os_critsec_t *cs)
 void
 os_critsec_close(os_critsec_t *cs)
 {
-#ifdef WIN32
+#ifdef _WIN32
     DeleteCriticalSection(cs);
 #else
     pthread_mutex_destroy(cs);
