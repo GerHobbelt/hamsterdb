@@ -19,7 +19,7 @@
  * A simple example, which creates a database, inserts some values,
  * looks them up and erases them. Uses the C++ api.
  */
-
+#include <stdlib.h>
 #include <iostream>
 #include <set>
 #include <ups/upscaledb.hpp>
