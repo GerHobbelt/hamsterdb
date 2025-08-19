@@ -55,7 +55,17 @@
  */
 #ifndef HAM_LITTLE_ENDIAN
 #   ifndef HAM_BIG_ENDIAN
+//#if (defined(__BYTE_ORDER__) && defined(__FLOAT_WORD_ORDER__) && __BYTE_ORDER__ == __FLOAT_WORD_ORDER__) ||\
+//    defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_AMD64) || defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+// // This macro indicates that integer and floating point endianness is the same
+//#define BOOST_ATOMIC_DETAIL_INT_FP_ENDIAN_MATCH
+//#endif
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_AMD64)
+#define HAM_LITTLE_ENDIAN  1
+#else
+//  defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC) || ...
 #       error "neither HAM_LITTLE_ENDIAN nor HAM_BIG_ENDIAN defined"
+#endif
 #   endif
 #endif
 
