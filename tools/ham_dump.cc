@@ -248,11 +248,18 @@ dump_database(ham_db_t *db, ham_u16_t dbname, int key_fmt, int max_keysize,
     printf("\n");
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_dump_main
+#endif
+
+extern "C"
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     unsigned opt;
-    char *param, *filename=0, *endptr=0;
+	const char *param, *filename=0;
+	char *endptr=0;
     int key=FMT_BINARY, rec=FMT_BINARY, keysize=16, recsize=16;
     unsigned short dbname=0xffff;
 

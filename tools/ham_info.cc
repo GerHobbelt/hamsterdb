@@ -172,11 +172,18 @@ print_database(ham_db_t *db, ham_u16_t dbname, int full)
     printf("        total records (bytes):  %u\n", total_rec_size);
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_info_main
+#endif
+
+extern "C"
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     unsigned opt;
-    char *param, *filename=0, *endptr=0;
+	const char *param, *filename=0;
+	char *endptr=0;
     unsigned short dbname=0xffff;
     int full=0;
 

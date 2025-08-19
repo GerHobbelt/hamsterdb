@@ -847,7 +847,7 @@ __freel_set_bits(Device *device, Environment *env, freelist_entry_t *entry,
 static __inline ham_u32_t
 BITSCAN_MSBit(ham_u64_t v, ham_u32_t pos)
 {
-    register ham_s64_t value = (ham_s64_t)v;
+    ham_s64_t value = (ham_s64_t)v;
 
     /*
      * test top bit by checking two's complement sign.
@@ -866,7 +866,7 @@ BITSCAN_MSBit(ham_u64_t v, ham_u32_t pos)
 static __inline ham_u32_t
 BITSCAN_MSBit8(ham_u8_t v, ham_u32_t pos)
 {
-    register ham_s8_t value = (ham_s8_t)v;
+    ham_s8_t value = (ham_s8_t)v;
 
     /*
      * test top bit by checking two's complement sign.
@@ -889,7 +889,7 @@ BITSCAN_MSBit8(ham_u8_t v, ham_u32_t pos)
 static __inline ham_u32_t
 BITSCAN_LSBit(ham_u64_t v, ham_u32_t pos)
 {
-    register ham_u64_t value = v;
+    ham_u64_t value = v;
 
     /*
      * test bottom bit.
@@ -908,7 +908,7 @@ BITSCAN_LSBit(ham_u64_t v, ham_u32_t pos)
 static __inline ham_u32_t
 BITSCAN_LSBit8(ham_u8_t v, ham_u32_t pos)
 {
-    register ham_u8_t value = v;
+    ham_u8_t value = v;
 
     /*
      * test bottom bit.
@@ -1547,9 +1547,9 @@ __freel_search_bits_ex(Device *device, Environment *env,
             /* BM search with a startup twist already done */
             for (;;) {
                 /* -1 because we have checked the END qword already */
-                register ham_u32_t r = bm_l - 1;
+                ham_u32_t r = bm_l - 1;
                 /* +l: INCLUSIVE lower bound */
-                register ham_u32_t l = bm_l - min_slice_width64 + 1;
+                ham_u32_t l = bm_l - min_slice_width64 + 1;
 
                 ham_assert(bm_l > 0, (0));
                 ham_assert(bm_l >= min_slice_width64 - 1, (0));
@@ -1888,9 +1888,9 @@ __freel_search_bits_ex(Device *device, Environment *env,
             /* BM search with a startup twist already done */
             for (;;) {
                 /* -1 because we have checked the END byte already */
-                register ham_u32_t r = bm_l - 1;
+                ham_u32_t r = bm_l - 1;
                 /* +1 because INCLUSIVE lower bound */
-                register ham_u32_t l = bm_l - min_slice_width8 + 1;
+                ham_u32_t l = bm_l - min_slice_width8 + 1;
 
                 ham_assert(bm_l > 0, (0));
                 ham_assert(bm_l >= min_slice_width8 - 1, (0));
@@ -2281,9 +2281,9 @@ __freel_search_bits_ex(Device *device, Environment *env,
             /* BM search with a startup twist already done */
             for (;;) {
                 /* -1 because we have checked the END BIT already */
-                register ham_u32_t r = bm_l - 1;
+                ham_u32_t r = bm_l - 1;
                 /* +1 because INCLUSIVE lower bound */
-                register ham_u32_t l = bm_l - min_slice_width + 1;
+                ham_u32_t l = bm_l - min_slice_width + 1;
 
                 ham_assert(bm_l > 0, (0));
                 ham_assert(bm_l >= min_slice_width - 1, (0));

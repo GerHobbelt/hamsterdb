@@ -22,7 +22,7 @@
 #endif
 #include <ham/hamsterdb.h>
 
-void
+static void
 error(const char *foo, ham_status_t st)
 {
 #if UNDER_CE
@@ -76,8 +76,13 @@ typedef struct
     /* ... additional information could follow here */
 } order_t;
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_env2_example_main
+#endif
+
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     int i;
     ham_status_t st;        /* status variable */

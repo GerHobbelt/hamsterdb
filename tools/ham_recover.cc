@@ -40,11 +40,17 @@ error(const char *foo, ham_status_t st)
     exit(-1);
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_recover_main
+#endif
+
+extern "C"
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     unsigned opt;
-    char *param, *filename=0;
+    const char *param, *filename=0;
 
     ham_status_t st;
     ham_env_t *env;

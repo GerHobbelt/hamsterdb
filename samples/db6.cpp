@@ -18,7 +18,7 @@
 
 #define LOOP 10
 
-int
+static int
 run_demo(void)
 {
     int i;
@@ -115,8 +115,14 @@ run_demo(void)
     return (0);
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_db6_example_main
+#endif
+
+extern "C"
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     try {
         return (run_demo());

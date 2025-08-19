@@ -49,7 +49,7 @@
  * of the page' marker as the starting point for (uber-)fast searches.
  *
  * 'utilization': keep track of the number of free chunks and allocated
- * chunks in the middle zone ~ the zone between FIRST and LST marker:
+ * chunks in the middle zone ~ the zone between FIRST and LAST marker:
  * the ratio is a measure of the chance we expect to have when searching
  * this zone for a free spot - by not coding/designing to cover a
  * specific pathological case (add+delete @ start & end of store and
@@ -195,8 +195,8 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
 
     if (v)
     {
-        register ham_u16_t power = 64;
-        register ham_s64_t value = (ham_s64_t)v;
+        ham_u16_t power = 64;
+        ham_s64_t value = (ham_s64_t)v;
 
         /*
          * test top bit by checking two's complement sign.
@@ -225,8 +225,8 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
  */
 static __inline ham_u16_t ham_log16(ham_size_t v)
 {
-    register ham_size_t value = v;
-    register ham_u16_t power = !!value;
+    ham_size_t value = v;
+    ham_u16_t power = !!value;
     
     if (value)
     {
@@ -1005,7 +1005,7 @@ db_get_global_freelist_hints(freelist_global_hints_t *dst, Device *device, Envir
              * for our seed. Note that we use the fail_count only as all
              * this randomization is fine and dandy, but we don't want
              * it to help thrash the page cache, so the freelist page
-             * entry probe pattern should remian the same until a probe
+             * entry probe pattern should remain the same until a probe
              * FAILs; only then do we really need to change the pattern.
              */
             dst->skip_init_offset=globalstats->fail_count;

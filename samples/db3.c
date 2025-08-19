@@ -28,8 +28,13 @@ my_string_compare(ham_db_t *db, const ham_u8_t *lhs, ham_size_t lhs_length,
             lhs_length<rhs_length ? lhs_length : rhs_length);
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_db3_example_main
+#endif
+
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     ham_status_t st;      /* status variable */
     ham_db_t *db;         /* hamsterdb database object */

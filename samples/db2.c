@@ -18,21 +18,21 @@
 #include <stdlib.h> /* for exit() */
 #include <ham/hamsterdb.h>
 
-void
+static void
 error(const char *foo, ham_status_t st)
 {
     printf("%s() returned error %d: %s\n", foo, st, ham_strerror(st));
     exit(-1);
 }
 
-void
+static void
 usage(void)
 {
     printf("usage: ./db2 <source> <destination>\n");
     exit(-1);
 }
 
-void
+static void
 copy_db(ham_db_t *source, ham_db_t *dest)
 {
     ham_cursor_t *cursor;    /* hamsterdb cursor object */
@@ -78,8 +78,13 @@ copy_db(ham_db_t *source, ham_db_t *dest)
     ham_cursor_close(cursor);
 }
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_db2_example_main
+#endif
+
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     ham_status_t st;
     ham_db_t *src, *dest;

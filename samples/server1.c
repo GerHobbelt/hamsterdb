@@ -25,6 +25,11 @@
 #   define EXT ""
 #endif
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_server_example_main
+#endif
+
 int
 main(void)
 {

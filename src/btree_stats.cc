@@ -187,8 +187,8 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
 
     if (v)
     {
-        register ham_u16_t power = 64;
-        register ham_s64_t value = (ham_s64_t)v;
+        ham_u16_t power = 64;
+        ham_s64_t value = (ham_s64_t)v;
 
         /*
          * test top bit by checking two's complement sign.
@@ -217,8 +217,8 @@ static __inline ham_u16_t ham_log2(ham_u64_t v)
  */
 static __inline ham_u16_t ham_log16(ham_size_t v)
 {
-    register ham_size_t value = v;
-    register ham_u16_t power = !!value;
+    ham_size_t value = v;
+    ham_u16_t power = !!value;
     
     if (value)
     {

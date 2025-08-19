@@ -20,15 +20,19 @@
 
 #define LOOP 10
 
-void
+static void
 error(const char *foo, ham_status_t st)
 {
     printf("%s() returned error %d: %s\n", foo, st, ham_strerror(st));
     exit(-1);
 }
 
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_client1_example_main
+#endif
+
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     int i;
     ham_status_t st;       /* status variable */

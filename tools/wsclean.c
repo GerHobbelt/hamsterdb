@@ -157,7 +157,7 @@ static const option_t opts[] =
     { 0, 0, 0, 0, 0 }               // sentinel
 };
 
-const char *filename(const char *path)
+static const char *filename(const char *path)
 {
     const char *delims = "/\\:";
 
@@ -171,7 +171,7 @@ const char *filename(const char *path)
 
 static const char **infiles = NULL;
 
-void add_infile(const char *path)
+static void add_infile(const char *path)
 {
     int idx = 0;
 
@@ -195,7 +195,7 @@ typedef struct
     FILE *fout;
 } filedef_t;
 
-int pop_filedef(filedef_t *dst, const char **filepath, const char *out_fname)
+static int pop_filedef(filedef_t *dst, const char **filepath, const char *out_fname)
 {
     static int idx = 0;
 
@@ -234,7 +234,7 @@ int pop_filedef(filedef_t *dst, const char **filepath, const char *out_fname)
     return 0;
 }
 
-char *readfile(filedef_t *f, size_t *read_length)
+static char *readfile(filedef_t *f, size_t *read_length)
 {
     char *buf;
     char *dst;
@@ -273,7 +273,7 @@ char *readfile(filedef_t *f, size_t *read_length)
     return buf;
 }
 
-int writefile(filedef_t *f, const char *buf, size_t size)
+static int writefile(filedef_t *f, const char *buf, size_t size)
 {
     int len;
 
@@ -302,7 +302,7 @@ int writefile(filedef_t *f, const char *buf, size_t size)
     return len;
 }
 
-void closefile(filedef_t *f)
+static void closefile(filedef_t *f)
 {
     if (f->fin && f->fin != stdin)
     {
@@ -324,13 +324,13 @@ typedef struct
     unsigned lf_mode: 2; /* 0: autodetect, 1: UNIX, 2: MSDOS, 3: old-style Mac (CR-only) */
 } cmd_t;
 
-void report_lf_mode(cmd_t cmd)
+static void report_lf_mode(cmd_t cmd)
 {
     if (cmd.verbose)
         fprintf(stderr, "            Detected LF mode: %s\n", (cmd.lf_mode == 1 ? "UNIX" : cmd.lf_mode == 2 ? "Windows/MSDOS" : "old Mac"));
 }
 
-char *strtolower(char *s)
+static char *strtolower(char *s)
 {
     while (*s)
     {
@@ -343,7 +343,7 @@ char *strtolower(char *s)
     return s;
 }
 
-int determine_indent_language(cmd_t cmd, const char *lang, const char *fname, const char *buf, size_t len)
+static int determine_indent_language(cmd_t cmd, const char *lang, const char *fname, const char *buf, size_t len)
 {
     int smart = (lang && strcmp(lang, "none") != 0);
     const char *ext = strrchr(fname, '.');
@@ -385,7 +385,11 @@ int determine_indent_language(cmd_t cmd, const char *lang, const char *fname, co
 }
 
 
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_wsclean_main
+#endif
+
+int main(int argc, const char **argv)
 {
     unsigned int opt;
     char *param;

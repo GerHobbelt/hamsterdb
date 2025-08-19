@@ -541,7 +541,7 @@ protected:
 public:
     virtual ~bfc_value_catcher_int64() {};
     virtual const char *value(void) {
-        sprintf(_msg, "%L64d", _v);
+        sprintf(_msg, "%I64d", _v);
         return _msg;
     }
 };
@@ -560,7 +560,7 @@ protected:
 public:
     virtual ~bfc_value_catcher_uint64() {};
     virtual const char *value(void) {
-        sprintf(_msg, "%L64u", _v);
+        sprintf(_msg, "%I64u", _v);
         return _msg;
     }
 };

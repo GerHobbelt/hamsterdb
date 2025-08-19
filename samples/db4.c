@@ -19,8 +19,13 @@
 #include <string.h>
 #include <ham/hamsterdb.h>
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main  hamster_db4_example_main
+#endif
+
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     ham_status_t st;      /* status variable */
     ham_db_t *db;         /* hamsterdb database object */
